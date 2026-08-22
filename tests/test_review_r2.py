@@ -47,7 +47,6 @@ class TestR2_1_TerminalAuthority(AgentOSTestCase):
         """gate_authority() is just bytes — it must NOT authorize acceptance."""
         goal_id = self.make_goal_with_task()
         _drive_to_gate_pending(self, goal_id)
-        # attacker builds their own Machines + fresh authority object:
         rogue = Machines(self.db, self.j)
         auth = gate_authority()
         with self.assertRaises(TransitionError):
@@ -69,23 +68,19 @@ class TestR2_1_TerminalAuthority(AgentOSTestCase):
     def test_passing_gate_row_without_evaluations_is_refused(self):
         """Corrupt state: a pass gate row with zero evaluations must not accept."""
         goal_id = self.make_goal_with_task()
-        # drive the task to DONE but record NO evaluations at all
         run_id, ctx = self.open_live_run(goal_id)
         self.gw.register(self.write_contract(handler=_write_handler))
         self.gw.invoke(ctx, self.gw.resolve("fs.write.handler"),
                        {"path": str(Path(ctx.workspace_path) / "greet.py"),
                         "content": SRC}, idempotency_key="r21b")
         self.eng.complete_live_run(ctx)
-        # forge a passing gate row directly (simulating corrupted writer)
         gid = new_id("gate")
         self.db.conn.execute(
             "INSERT INTO gate(id, goal_id, predicate_name, predicate_version,"
             " input_fingerprint, result, rationale)"
             " VALUES (?, ?, 'release_predicate_v2', 'v2', 'forged', 'pass', 'x')",
             (gid, goal_id))
-        # move goal to GATE_PENDING via the legitimate scheduling path
-        # (submit requires evaluations, so set the state directly to emulate
-        # the corrupted-state scenario under test)
+        # emulate corrupted state: GATE_PENDING without any evaluation rows
         self.db.conn.execute("UPDATE goal SET status='GATE_PENDING' WHERE id=?",
                              (goal_id,))
         gates = Gates(self.db, self.j)   # holds the REAL bound authority
@@ -111,14 +106,10 @@ class TestR2_1_TerminalAuthority(AgentOSTestCase):
 class TestR2_2_RegistryReResolve(AgentOSTestCase):
     def test_forged_read_contract_cannot_write(self):
         """A caller hands in a write handler disguised as effect_class='read':
-        the gateway executes only the registry's authoritative contract, so
-        the mutating policy (lease check) applies and the forged effect class
-        is ignored."""
+        the gateway executes only the registry's authoritative contract."""
         goal_id = self.make_goal_with_task()
         run_id, ctx = self.open_live_run(goal_id)
-        # register the honest contract (mutating, keyed, with handler)
         self.gw.register(self.write_contract(handler=_write_handler))
-        # forge: same name/version but declared read-only
         forged = ToolContract(
             name="fs.write.handler", version="1.0.0",
             input_schema={"type": "object",
@@ -132,12 +123,7 @@ class TestR2_2_RegistryReResolve(AgentOSTestCase):
         target = Path(ctx.workspace_path) / "forged.txt"
         r = self.gw.invoke(ctx, forged, {"path": str(target), "content": "x"},
                            idempotency_key="f1")
-        # The gateway re-resolved fs.write.handler@1.0.0 from the registry:
-        # effect_class=write_local ⇒ lease/fence policy applied (ctx is live so
-        # this SUCCEEDS but through the REAL contract path), capability was
-        # checked against the registry value, not the forged one.
         self.assertIn(r["status"], ("SUCCEEDED", "REPLAYED"))
-        # decisive assertion: activity row carries the REGISTRY's effect class
         row = self.db.conn.execute(
             "SELECT tool_identity, effect_class FROM activity WHERE id=?",
             (r["activity_id"],)).fetchone()
@@ -178,21 +164,42 @@ class TestR2_2_RegistryReResolve(AgentOSTestCase):
 
 
 class TestR2_3_HermesIntents(unittest.TestCase):
-    def test_parse_effects_confined(self):
+    def test_parse_effects_v1_json_confined(self):
+        """Legacy v1 single-line JSON effects: traversal/drive paths dropped."""
         from agentos.hermes_worker import HermesAgentWorker
+        import tempfile
         ws = str(Path(tempfile.mkdtemp()).resolve())
         lines = [
-            'AGENTOS_RESULT {"ok": true}',
             'AGENTOS_EFFECTS {"path": "../up.py", "content": "a"}',
             'AGENTOS_EFFECTS {"path": "/etc/passwd", "content": "b"}',
             'AGENTOS_EFFECTS {"path": "D:\\\\evil.py", "content": "c"}',
-            'AGENTOS_EFFECTS {"path": "sub/ok.py", "content": "d"}',
+            'AGENTOS_EFFECTS_BEGIN sub/ok.py\n'
+            'd = 1\n'
+            'AGENTOS_EFFECTS_END sub/ok.py',
         ]
-        declared = HermesAgentWorker.parse_effects(lines, ws)
+        declared = HermesAgentWorker.parse_effects("\n".join(lines), ws)
         self.assertEqual(set(declared), {"sub/ok.py"})
 
 
-import tempfile  # noqa: E402
+class TestEffectsChannelV2(unittest.TestCase):
+    def test_v2_blocks_preserve_docstrings_and_reject_traversal(self):
+        from agentos.hermes_worker import HermesAgentWorker
+        import tempfile
+        ws = str(Path(tempfile.mkdtemp()).resolve())
+        text = (
+            'AGENTOS_EFFECTS_BEGIN greet.py\n'
+            'def greet(name: str) -> str:\n'
+            '    """Return a greeting."""\n'
+            '    return f"hello, {name}"\n'
+            'AGENTOS_EFFECTS_END greet.py\n'
+            'AGENTOS_EFFECTS_BEGIN ../evil.py\n'
+            'x = 1\n'
+            'AGENTOS_EFFECTS_END ../evil.py\n'
+            'AGENTOS_EFFECTS_BEGIN unclosed.py\n'
+            'y = 2\n')
+        declared = HermesAgentWorker.parse_effects(text, ws)
+        self.assertEqual(sorted(declared), ["greet.py"])
+        self.assertIn('"""', declared["greet.py"])   # raw docstring preserved
 
 
 if __name__ == "__main__":

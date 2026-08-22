@@ -1,0 +1,1 @@
+Tiny greeting library: greet(name) -> 'hello, <name>', with unit tests.

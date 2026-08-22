@@ -1,0 +1,4 @@
+AGENTOS_EFFECTS {"path": "greet.py", "content": "def greet(name: str) -> str:
+    """Return a greeting string of the form 'hello, <name>'.\"\"\"\n    return f\"hello, {name}\"\n"}
+AGENTOS_EFFECTS {"path": "test_greet.py", "content": "from greet import greet\n\n\ndef test_greet_returns_hello_name():\n    assert greet(\"world\") == \"hello, world\"\n\n\ndef test_greet_with_different_name():\n    assert greet(\"Alice\") == \"hello, Alice\"\n\n\ndef test_greet_is_string():\n    assert isinstance(greet(\"x\"), str)\n"}
+AGENTOS_RESULT {"ok": true, "note": "greet(name) implemented per spec ('hello, <name>'); tests cover basic greeting, alternate names, and return type."}

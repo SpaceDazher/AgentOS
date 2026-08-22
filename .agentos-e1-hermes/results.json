@@ -1,0 +1,72 @@
+{
+  "schema": "agentos.e1-results/v0",
+  "mode": "end-to-end-hermes-pilot",
+  "summary": {
+    "episodes_total": 3,
+    "pass_1": 1.0,
+    "by_task": {
+      "add-int": {
+        "successes": 1,
+        "episodes": 1
+      },
+      "max-of-list": {
+        "successes": 1,
+        "episodes": 1
+      },
+      "flaky-recover": {
+        "successes": 1,
+        "episodes": 1
+      }
+    }
+  },
+  "episodes": [
+    {
+      "task": "add-int",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "calc.py exposes add(a,b)->int; tests in test_calc.py cover positive, negative, mixed-sign, zero, and int-return cases.",
+      "duration_ms": 14989,
+      "goal_id": "goal_VENT1NNE69088KHV01M0N2TKF7"
+    },
+    {
+      "task": "max-of-list",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "lists.py exposes maximum(xs) (ValueError on empty); test_lists.py covers ints, floats, negatives, duplicates, empty, and builtin-parity.",
+      "duration_ms": 20555,
+      "goal_id": "goal_YNTHWXX3TSEDCFY201M0N2V23H"
+    },
+    {
+      "task": "flaky-recover",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "no_bad_rows": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "counter.py exposes bump(n)->n+1; tests in test_counter.py cover zero, positive, negative, and parametrized cases.",
+      "duration_ms": 13038,
+      "goal_id": "goal_AX3Q71C0JXETM8FQ01M0N2VP5T"
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+{"files":{"test_greet.py":"from greet import greet\n\n\ndef test_greet_basic():\n    assert greet(\"world\") == \"hello, world\"\n\n\ndef test_greet_custom_name():\n    assert greet(\"Alice\") == \"hello, Alice\"\n"}}
