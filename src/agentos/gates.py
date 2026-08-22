@@ -106,9 +106,18 @@ class Evaluator:
                 p.write_text(content, encoding="utf-8")
             driver = tdp / "__eval_driver__.py"
             if params.get("call"):
+                # args: either a literal (single arg) or a JSON list of literals
+                raw = params.get("arg", "")
+                try:
+                    parsed = json.loads(raw)
+                    if not isinstance(parsed, list):
+                        parsed = [parsed]
+                except (json.JSONDecodeError, TypeError):
+                    parsed = [raw]
+                call_args = ", ".join(repr(a) for a in parsed)
                 driver.write_text(
                     f"import {Path(entry).stem} as m\n"
-                    f"_r = m.{params['call']}({params['arg']!r})\n"
+                    f"_r = m.{params['call']}({call_args})\n"
                     f"print(_r)\n", encoding="utf-8")
             else:
                 driver.write_text(f"import {Path(entry).stem}\n", encoding="utf-8")
