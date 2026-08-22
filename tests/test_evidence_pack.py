@@ -15,11 +15,33 @@ REQUIRED_KEYS = [
 ]
 
 
+def _fs_write_handler(path, content):
+    p = Path(path)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(content, encoding="utf-8")
+    return {"written": str(p), "bytes": len(content)}
+
+
 class TestEvidencePack(AgentOSTestCase):
     def _happy_to_gate_pending(self) -> str:
-        """Full happy flow up to (but not including) gate release."""
+        """Full happy flow up to (but not including) gate release.
+
+        F-P0-3: the evaluator now validates real content, so the scripted code
+        artifact must contain an actual module with a test function. The file
+        is written through the gateway inside a live run (F7 semantics)."""
         goal_id = self.make_goal_with_task()
-        self.run_simple_task(goal_id)
+        run_id, ctx = self.open_live_run(goal_id)
+        src = ("def greet(name):\n"
+               "    return f'hello, {name}'\n\n\n"
+               "def test_greet():\n"
+               "    assert greet('world') == 'hello, world'\n")
+        self.gw.register(self.write_contract(
+            handler=_fs_write_handler))
+        res = self.gw.invoke(ctx, self.gw.resolve("fs.write.handler"),
+                             {"path": str(Path(ctx.workspace_path) / "greet.py"),
+                              "content": src}, idempotency_key="ep1")
+        self.assertEqual(res["status"], "SUCCEEDED")
+        self.eng.complete_live_run(ctx, outputs={"files": {"greet.py": src}})
         ev = self.ev.run(goal_id, "has_code")
         self.assertEqual(ev["result"], "pass")
         self.eng.submit_to_gate(goal_id)

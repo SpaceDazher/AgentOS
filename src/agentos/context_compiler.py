@@ -63,7 +63,8 @@ class ContextCompiler:
         auth = {"specification": 90, "concept": 80, "plan": 70}
         for i, r in enumerate(rows):
             try:
-                text = open(r["storage_path"], encoding="utf-8").read()[:1200]
+                with open(r["storage_path"], encoding="utf-8") as fh:
+                    text = fh.read()[:1200]
             except OSError:
                 text = f"<unreadable:{r['storage_path']}>"
             out.append(RetrievalHit("artifact", r["id"], text,

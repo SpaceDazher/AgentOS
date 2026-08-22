@@ -37,13 +37,35 @@ class TestLeases(AgentOSTestCase):
 
 class TestAlternativeTrajectory(AgentOSTestCase):
     def test_alternatively_correct_result_passes_same_criteria(self):
-        """Evaluator checks observable end state, not a fixed script output."""
+        """Evaluator checks observable end state, not a fixed script output:
+        two different implementations both pass the same criteria."""
         goal_id = self.make_goal_with_task()
         task_id = self.db.conn.execute(
             "SELECT id FROM task WHERE goal_id=?", (goal_id,)).fetchone()[0]
-        alt = FakeWorker([{"ok": True, "outputs": {"implementation": "alt-correct",
-                                                   "style": "different-but-valid"}}])
-        self.eng.start_task(task_id, alt)
+        run_id, ctx = self.open_live_run(goal_id)
+        # implementation A: written through the gateway (real file + artifact)
+        src_a = ("def greet(name):\n"
+                 "    return 'hi ' + name\n\n\n"
+                 "def test_greet():\n"
+                 "    assert greet('x') == 'hi x'\n")
+
+        def _write(path, content):
+            p = Path(path)
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text(content, encoding="utf-8")
+            return {"written": str(p)}
+
+        self.gw.register(self.write_contract(handler=_write))
+        res = self.gw.invoke(ctx, self.gw.resolve("fs.write.handler"),
+                             {"path": str(Path(ctx.workspace_path) / "greet.py"),
+                              "content": src_a}, idempotency_key="alt1")
+        self.assertEqual(res["status"], "SUCCEEDED")
+        # implementation B (alternative-but-valid): different code entirely
+        src_b = ("def greet(name):\n"
+                 "    return f'hello, {name}'\n\n\n"
+                 "def test_greet():\n"
+                 "    assert greet('world') == 'hello, world'\n")
+        self.eng.complete_live_run(ctx, outputs={"files": {"greet.py": src_b}})
         ev = self.ev.run(goal_id, "has_code")
         self.assertEqual(ev["result"], "pass")
         self.eng.submit_to_gate(goal_id)

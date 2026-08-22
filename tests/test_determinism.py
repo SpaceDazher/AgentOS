@@ -27,6 +27,8 @@ def _run_scripted_scenario(root_dir: Path) -> dict:
         j = Journal(db)
         eng = Engine(db, root_dir)
         ev = Evaluator(db, root_dir)
+        from agentos.gateway import ToolContract, ToolGateway
+        gw = ToolGateway(db, j)
 
         goal_id = eng.create_goal("demo concept")
         eng.refine_spec(goal_id, "spec text", criteria=[
@@ -40,7 +42,33 @@ def _run_scripted_scenario(root_dir: Path) -> dict:
 
         task_id = db.conn.execute(
             "SELECT id FROM task WHERE goal_id=?", (goal_id,)).fetchone()[0]
-        eng.start_task(task_id, FakeWorker())
+        # F-P0-3: evaluator validates real content — write a real module with a
+        # test through the gateway inside a live run, then complete.
+        run_id, ctx = eng.open_run(task_id)
+        src = ("def greet(name):\n"
+               "    return f'hello, {name}'\n\n\n"
+               "def test_greet():\n"
+               "    assert greet('world') == 'hello, world'\n")
+
+        def _write(path, content):
+            p = Path(path)
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text(content, encoding="utf-8")
+            return {"written": str(p)}
+
+        gw.register(ToolContract(
+            name="fs.write.handler", version="1.0.0",
+            input_schema={"type": "object",
+                          "properties": {"path": {"type": "string"},
+                                         "content": {"type": "string"}},
+                          "required": ["path", "content"]},
+            required_capability="fs.write_local", effect_class="write_local",
+            idempotency="keyed", handler=_write))
+        r = gw.invoke(ctx, gw.resolve("fs.write.handler"),
+                      {"path": str(Path(ctx.workspace_path) / "greet.py"),
+                       "content": src}, idempotency_key="det1")
+        assert r["status"] == "SUCCEEDED", r
+        eng.complete_live_run(ctx, outputs={"files": {"greet.py": src}})
 
         ev_res = ev.run(goal_id, "has_code")
         eng.submit_to_gate(goal_id)

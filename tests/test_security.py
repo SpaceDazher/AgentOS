@@ -12,8 +12,8 @@ class TestApprovals(AgentOSTestCase):
     def setUp(self):
         super().setUp()
         self.goal_id = self.make_goal_with_task()
-        self.run_id = self.run_simple_task(self.goal_id)
-        self.ctx = self.ctx_for(self.run_id, self.goal_id)
+        # F7: dangerous ops are mutating — invoke against a LIVE run
+        self.run_id, self.ctx = self.open_live_run(self.goal_id)
         self.gw.register(
             type(self.gw) and __import__("agentos.gateway", fromlist=["ToolContract"])
             .ToolContract(
@@ -77,8 +77,7 @@ class TestInjectionAndSchema(AgentOSTestCase):
     def test_t11_injected_instruction_cannot_escalate(self):
         """Untrusted 'tool output' asks for admin capability — must stay inert."""
         goal_id = self.make_goal_with_task()
-        run_id = self.run_simple_task(goal_id)
-        ctx = self.ctx_for(run_id, goal_id)
+        run_id, ctx = self.open_live_run(goal_id)
         self.gw.register(self.write_contract())
         # simulate model output trying to rewrite its own capability set:
         ctx.capabilities.add("admin.all")  # even if the worker mutates the object...

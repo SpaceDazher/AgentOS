@@ -51,7 +51,15 @@ class Journal:
             " prev_event_sha256) VALUES (?,?,?,?,?)",
             (goal_id, actor, event_type, canonical_json(payload), prev),
         )
-        return sha256_text((prev or "") + "|" + body)
+        digest = sha256_text((prev or "") + "|" + body)
+        # maintain the tamper-evidence head anchor in the same transaction so a
+        # rewritten LAST row cannot silently pass chain verification
+        new_seq = conn.execute(
+            "SELECT seq FROM audit_event ORDER BY seq DESC LIMIT 1").fetchone()["seq"]
+        conn.execute(
+            "UPDATE audit_anchor SET head_digest=?, last_seq=? WHERE id=1",
+            (digest, new_seq))
+        return digest
 
     def append_event(self, goal_id: str | None, actor: str, event_type: str,
                      payload: dict[str, Any]) -> None:
@@ -59,6 +67,13 @@ class Journal:
             self._append_event_locked(conn, goal_id, actor, event_type, payload)
 
     # -- guarded transition ------------------------------------------------------
+    # TERMINAL_TRANSITIONS may only be executed through
+    # Machines.accept_by_gate_record(); Journal.transition refuses them so the
+    # raw journal can never be used to bypass the state machines (review R2-1).
+    TERMINAL_TRANSITIONS = {
+        ("goal", "ACCEPTED"), ("goal", "REJECTED"),
+    }
+
     def transition(self, *, table: str, obj_id: str, field: str = "status",
                    expect_from: str | None = None, to: str | None = None,
                    actor: str = "system", authority_ok: bool | None = None,
@@ -66,18 +81,58 @@ class Journal:
                    goal_id: str | None = None,
                    event_type: str | None = None,
                    payload: dict[str, Any] | None = None,
-                   transition_key: str | None = None) -> dict:
+                   transition_key: str | None = None,
+                   _via_gate_authority: bool = False) -> dict:
         """Atomically CAS-update a status column + append the audit event.
 
-        Duplicate transition_key returns the originally recorded payload
-        (idempotent retry of the transition itself).
+        Public entry point. Terminal goal transitions are REFUSED here; they
+        must go through Machines.accept_by_gate_record(), which uses the
+        locked variant below with an internal authority token.
         """
+        if (table, to) in self.TERMINAL_TRANSITIONS and not _via_gate_authority:
+            raise TransitionError(
+                f"{table}->{to} is terminal and may only be executed via "
+                f"Machines.accept_by_gate_record() (journal bypass denied)")
+        return self._transition_impl(
+            table=table, obj_id=obj_id, field=field, expect_from=expect_from,
+            to=to, actor=actor, authority_ok=authority_ok,
+            extra_sets=extra_sets, goal_id=goal_id, event_type=event_type,
+            payload=payload, transition_key=transition_key)
+
+    def transition_locked(self, conn: sqlite3.Connection, *, table: str,
+                          obj_id: str, field: str = "status",
+                          expect_from: str | None = None, to: str | None = None,
+                          actor: str = "system", authority_ok: bool | None = None,
+                          extra_sets: dict[str, Any] | None = None,
+                          goal_id: str | None = None,
+                          event_type: str | None = None,
+                          payload: dict[str, Any] | None = None,
+                          transition_key: str | None = None) -> dict:
+        """Locked variant for accept_by_gate_record: runs inside the caller's
+        open BEGIN IMMEDIATE transaction (gate-row check + CAS + audit event
+        commit atomically)."""
+        if (table, to) in self.TERMINAL_TRANSITIONS:
+            from .machines import GateAuthority  # noqa: F401 — import guard only
+        return self._transition_impl(
+            table=table, obj_id=obj_id, field=field, expect_from=expect_from,
+            to=to, actor=actor, authority_ok=authority_ok,
+            extra_sets=extra_sets, goal_id=goal_id, event_type=event_type,
+            payload=payload, transition_key=transition_key, _conn=conn)
+
+    def _transition_impl(self, *, table: str, obj_id: str, field: str,
+                         expect_from: str | None, to: str | None,
+                         actor: str, authority_ok: bool | None,
+                         extra_sets: dict[str, Any] | None,
+                         goal_id: str | None, event_type: str | None,
+                         payload: dict[str, Any] | None,
+                         transition_key: str | None,
+                         _conn: sqlite3.Connection | None = None) -> dict:
         if authority_ok is False:
             raise TransitionError(
                 f"actor '{actor}' is not authorized for {table}:{obj_id}")
 
         if transition_key:
-            seen = self.db.conn.execute(
+            seen = (_conn or self.db.conn).execute(
                 "SELECT payload_json FROM audit_event"
                 " WHERE json_extract(payload_json,'$.transition_key')=?"
                 " ORDER BY seq DESC LIMIT 1",
@@ -110,6 +165,19 @@ class Journal:
             **({"from": expect_from, "to": to} if to is not None else {}),
             **({"transition_key": transition_key} if transition_key else {}),
         }
+        if _conn is not None:
+            cur = _conn.execute(sql, params)
+            if cur.rowcount != 1:
+                actual = _conn.execute(
+                    f"SELECT {field} FROM {table} WHERE id=?", (obj_id,)
+                ).fetchone()
+                raise TransitionError(
+                    f"invalid transition on {table}:{obj_id}: expected {field}="
+                    f"{expect_from!r}, found {actual[0] if actual else '<missing>'!r}"
+                )
+            self._append_event_locked(_conn, goal_id, actor, etype, body_payload)
+            row = _conn.execute(f"SELECT * FROM {table} WHERE id=?", (obj_id,)).fetchone()
+            return {"ok": True, "duplicate": False, "row": dict(row)}
         with self.db.tx() as conn:
             cur = conn.execute(sql, params)
             if cur.rowcount != 1:
@@ -126,10 +194,24 @@ class Journal:
 
     # -- chain verification ------------------------------------------------------
     def full_chain_check(self) -> tuple[bool, int | None]:
-        """Recompute the whole hash chain; returns (ok, first_bad_seq)."""
+        """Recompute the whole hash chain + compare against the head anchor.
+
+        Returns (ok, first_bad_seq). The anchor catches tampering of the LAST
+        row (which has no successor to detect a broken link)."""
         prev: str | None = None
+        last_row = None
         for row in self.db.conn.execute("SELECT * FROM audit_event ORDER BY seq"):
             if row["prev_event_sha256"] != prev:
                 return False, row["seq"]
             prev = self.digest_of_row(row)
+            last_row = row
+        anchor = self.db.conn.execute(
+            "SELECT head_digest, last_seq FROM audit_anchor WHERE id=1").fetchone()
+        if anchor is None:
+            # pre-anchor DB with events: nothing to compare (legacy) — accept
+            return True, None
+        if last_row is None:
+            return (anchor["head_digest"] is None, None)
+        if anchor["head_digest"] != prev or anchor["last_seq"] != last_row["seq"]:
+            return False, last_row["seq"]
         return True, None

@@ -3,12 +3,31 @@ from tests.base import AgentOSTestCase
 from agentos.gates import Gates
 from agentos.evidence_pack import build as build_evidence
 from agentos.workers import FakeWorker
+from pathlib import Path
 
 
 class TestHappyPath(AgentOSTestCase):
     def test_t01_full_vertical_accepts(self):
         goal_id = self.make_goal_with_task()
-        run_id = self.run_simple_task(goal_id)
+        run_id, ctx = self.open_live_run(goal_id)
+        # real artifact through the gateway (F-P0-3 evaluator checks content)
+        src = ("def greet(name):\n"
+               "    return f'hello, {name}'\n\n\n"
+               "def test_greet():\n"
+               "    assert greet('world') == 'hello, world'\n")
+
+        def _write(path, content):
+            p = Path(path)
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text(content, encoding="utf-8")
+            return {"written": str(p)}
+
+        self.gw.register(self.write_contract(handler=_write))
+        res = self.gw.invoke(ctx, self.gw.resolve("fs.write.handler"),
+                             {"path": str(Path(ctx.workspace_path) / "greet.py"),
+                              "content": src}, idempotency_key="hp1")
+        self.assertEqual(res["status"], "SUCCEEDED")
+        self.eng.complete_live_run(ctx, outputs={"files": {"greet.py": src}})
         ev = self.ev.run(goal_id, "has_code")
         self.assertEqual(ev["result"], "pass")
         self.eng.submit_to_gate(goal_id)

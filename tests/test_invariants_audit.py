@@ -131,8 +131,7 @@ class TestMemoryScopingNegative(AgentOSTestCase):
 class TestIdempotencyConflict(AgentOSTestCase):
     def test_same_key_different_args_denied_and_recorded(self):
         goal_id = self.make_goal_with_task()
-        run_id = self.run_simple_task(goal_id)
-        ctx = self.ctx_for(run_id, goal_id)
+        run_id, ctx = self.open_live_run(goal_id)  # F7: mutating needs live run
         self.gw.register(self.write_contract())
         c = self.gw.resolve("fs.write.handler")
 
@@ -174,8 +173,7 @@ class TestApprovalOneTimeUse(AgentOSTestCase):
 
     def test_nonce_is_single_use(self):
         goal_id = self.make_goal_with_task()   # normal tier => cmd.local granted
-        run_id = self.run_simple_task(goal_id)
-        ctx = self.ctx_for(run_id, goal_id)
+        run_id, ctx = self.open_live_run(goal_id)  # F7: mutating needs live run
         self.gw.register(self._dangerous_tool())
         c = self.gw.resolve("deploy.prod")
 

@@ -58,14 +58,24 @@ class Engine:
             raise RuntimeError("goal not open for spec refinement")
         spec_id = self._store_artifact(goal_id, "specification", spec_text,
                                        supersede_kind=True)
-        self.db.conn.execute("DELETE FROM acceptance_criteria WHERE goal_id=?",
-                             (goal_id,))
+        # F-P0-2: criteria are append-only immutable VERSIONS. A re-refinement
+        # adds criterion_version+1 rows instead of deleting history, so old
+        # evaluations bind to their (now superseded) version.
+        prev_max = {r["criterion_id"]: r["v"] for r in self.db.conn.execute(
+            "SELECT criterion_id, MAX(criterion_version) v FROM acceptance_criteria"
+            " WHERE goal_id=? GROUP BY criterion_id", (goal_id,)).fetchall()}
         for c in criteria:
+            import hashlib
+            cfg = canonical_json({"kind": c["kind"],
+                                  **c.get("params", {})})
+            chash = sha256_text(cfg)
+            ver = int(prev_max.get(c["criterion_id"], 0)) + 1
             self.db.conn.execute(
-                "INSERT INTO acceptance_criteria(id, goal_id, criterion_id, kind,"
-                " params_json) VALUES (?,?,?,?,?)",
-                (new_id("crit"), goal_id, c["criterion_id"], c["kind"],
-                 canonical_json(c.get("params", {}))))
+                "INSERT INTO acceptance_criteria(id, goal_id, criterion_id,"
+                " criterion_version, kind, params_json, config_hash)"
+                " VALUES (?,?,?,?,?,?,?)",
+                (new_id("crit"), goal_id, c["criterion_id"], ver, c["kind"],
+                 canonical_json(c.get("params", {})), chash))
         self.j.append_event(goal_id, actor, "spec.refined",
                             {"spec_artifact": spec_id, "criteria":
                              [c["criterion_id"] for c in criteria]})
@@ -205,6 +215,82 @@ class Engine:
         return [r["id"] for r in rows]
 
     # -- runs --------------------------------------------------------------------
+    def open_run(self, task_id: str, lease_minutes: int = 30) -> tuple[str, RunContext]:
+        """Open a live worker session: the task moves to RUNNING and stays there
+        across multiple gateway invocations until close_run()/complete/fail.
+        This models a real long-lived worker holding its lease while it works."""
+        task = self.db.conn.execute(
+            "SELECT * FROM task WHERE id=?", (task_id,)).fetchone()
+        if not task:
+            raise RuntimeError("no such task")
+        if task["owner_run_id"]:
+            active = self.db.conn.execute(
+                "SELECT status FROM run WHERE id=?",
+                (task["owner_run_id"],)).fetchone()
+            if active and active["status"] == "RUNNING":
+                raise LeaseHeldError(
+                    f"task {task_id} already owned by run {task['owner_run_id']}")
+        goal_id = task["goal_id"]
+        run_id = new_id("run")
+        ws = self.root / "workspaces" / run_id
+        ws.mkdir(parents=True, exist_ok=True)
+        expires = _iso(_now() + timedelta(minutes=lease_minutes))
+        self.db.conn.execute(
+            "INSERT INTO run(id, task_id, goal_id, worker_type, lease_owner,"
+            " lease_expires_at, workspace_path, status, resumed_from_run_id)"
+            " VALUES (?,?,?,?,?,?,?, 'PLANNED', NULL)",
+            (run_id, task_id, goal_id, "interactive", run_id, expires, str(ws)))
+        self.m.run_transition(run_id, "PLANNED", "RUNNING", "worker", goal_id)
+        prev_owner = task["owner_run_id"]
+        self.m.task_transition(task_id, "READY", "RUNNING", "worker", goal_id,
+                               extra_sets={"owner_run_id": run_id})
+        ctx = RunContext(run_id=run_id, goal_id=goal_id, task_id=task_id,
+                         lease_owner=run_id,
+                         capabilities=self._capabilities_for(goal_id),
+                         workspace_path=str(ws))
+        return run_id, ctx
+
+    def complete_live_run(self, ctx: RunContext, outputs: dict | None = None) -> None:
+        """Finish an open_run session successfully.
+
+        F-P0-3: when the caller passes no explicit outputs, the code artifact is
+        re-derived from the files actually written through the gateway during
+        this run (the trusted effect record) — never from worker claims."""
+        from .workers import StepResult
+        if outputs is None:
+            rows = self.db.conn.execute(
+                "SELECT args_canonical_json FROM activity"
+                " WHERE run_id=? AND op_name LIKE 'fs.write%' AND status='SUCCEEDED'",
+                (ctx.run_id,)).fetchall()
+            files: dict[str, str] = {}
+            for r in rows:
+                args = json.loads(r["args_canonical_json"])
+                p = Path(args.get("path", ""))
+                try:
+                    content = p.read_text(encoding="utf-8")
+                    rel = str(p.relative_to(ctx.workspace_path)).replace("\\\\", "/")
+                    files[rel] = content
+                except (OSError, ValueError):
+                    continue
+            outputs = {"files": files} if files else {}
+        task = self.db.conn.execute(
+            "SELECT * FROM task WHERE id=?", (ctx.task_id,)).fetchone()
+        self.complete_run(ctx, task,
+                          StepResult(ok=True, note="live run completed",
+                                     outputs=outputs,
+                                     next_action={"done": True}))
+
+    def close_run(self, run_id: str) -> None:
+        """Abandon a live run without completing the task (worker detached)."""
+        row = self.db.conn.execute(
+            "SELECT status FROM run WHERE id=?", (run_id,)).fetchone()
+        if row and row["status"] == "RUNNING":
+            self.fail_run(run_id,
+                          self.db.conn.execute(
+                              "SELECT goal_id FROM run WHERE id=?",
+                              (run_id,)).fetchone()["goal_id"],
+                          "detached", "run closed by operator")
+
     def start_task(self, task_id: str, worker: WorkerAdapter,
                    lease_minutes: int = 30, resumed_from_run: str | None = None,
                    checkpoint_payload_path: str | None = None) -> str:
@@ -287,11 +373,26 @@ class Engine:
         step = self._attempts_before(ctx.task_id)   # script position across retries
         checkpoint: dict | None = None
         if checkpoint_payload_path:
-            payload = json.loads(Path(checkpoint_payload_path).read_text("utf-8"))
-            if sha256_text(canonical_json(payload)) != payload.get("_sha"):
-                pass  # integrity checked below via stored sha
-            checkpoint = payload.get("state") if isinstance(payload, dict) else None
-            step = len(checkpoint.get("completed", [])) if checkpoint else 0
+            # F6: verify the file digest against the DB-recorded sha256 BEFORE
+            # using it; any mismatch refuses resume (fail-closed).
+            cp_row = self.db.conn.execute(
+                "SELECT sha256 FROM checkpoint WHERE payload_path=?"
+                " ORDER BY seq DESC LIMIT 1", (str(checkpoint_payload_path),)
+            ).fetchone()
+            if cp_row is None:
+                raise RuntimeError("resume refused: checkpoint not registered in DB")
+            raw = json.loads(Path(checkpoint_payload_path).read_bytes().decode("utf-8"))
+            stored_sha = raw.get("_sha")
+            # the writer hashes the body WITHOUT the _sha field
+            body = {k: v for k, v in raw.items() if k != "_sha"}
+            if sha256_text(canonical_json(body)) != stored_sha:
+                raise RuntimeError("resume refused: checkpoint file self-hash mismatch")
+            if stored_sha != cp_row["sha256"]:
+                raise RuntimeError(
+                    "resume refused: checkpoint file digest != DB sha256")
+            checkpoint = raw.get("payload") if isinstance(raw, dict) else None
+            if checkpoint is None:
+                raise RuntimeError("resume refused: checkpoint payload missing")
 
         packet = self.compiler.compile(goal_id, task["title"]).render()
 
@@ -430,11 +531,14 @@ class Engine:
         crits = self.db.conn.execute(
             "SELECT COUNT(DISTINCT e.criterion_id) FROM evaluation e"
             " JOIN acceptance_criteria c ON c.criterion_id=e.criterion_id"
-            " AND c.goal_id=e.goal_id"
-            " WHERE e.goal_id=?", (goal_id,)).fetchone()[0]
-        need = self.db.conn.execute(
-            "SELECT COUNT(*) FROM acceptance_criteria WHERE goal_id=?",
+            " AND c.goal_id=e.goal_id AND c.criterion_version=e.criterion_version"
+            " WHERE e.goal_id=? AND c.criterion_version = ("
+            "   SELECT MAX(c2.criterion_version) FROM acceptance_criteria c2"
+            "   WHERE c2.goal_id=c.goal_id AND c2.criterion_id=c.criterion_id)",
             (goal_id,)).fetchone()[0]
+        need = self.db.conn.execute(
+            "SELECT COUNT(DISTINCT criterion_id) FROM acceptance_criteria"
+            " WHERE goal_id=?", (goal_id,)).fetchone()[0]
         if crits < need:
-            raise RuntimeError("each criterion needs ≥1 passing evaluation before gate")
-        self.m.goal_transition(goal_id, "ACTIVE", "GATE_PENDING", "gate")
+            raise RuntimeError("each current criterion version needs ≥1 evaluation before gate")
+        self.m.goal_transition(goal_id, "ACTIVE", "GATE_PENDING", "system")
