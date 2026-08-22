@@ -1,0 +1,36 @@
+# AgentOS claim-to-evidence matrix
+
+`E` = direct empirical-effect support. `J` = engineering/transfer justification. Ratings are ordinal expert judgments, not probabilities. Full citations and source locators are in `agentos_evidence_review.md`.
+
+| ID | Final claim | E | J | Principal support | Counterevidence / limitation | Decision |
+|---|---|---:|---:|---|---|---|
+| C01 | A deterministic envelope with bounded model decisions is preferable to either a fully fixed or fully free loop. | Medium | High | SWE-agent and Agentless harness effects; Anthropic workflow guidance; Temporal determinism boundary | No factorial AgentOS trial; task topology matters | Adopt as provisional baseline; ablate against free loop |
+| C02 | Durable versioned artifacts, not dialogue alone, are the system of record. | Medium | High | Anthropic long-horizon bundle and Managed Agents; durable workflow semantics | Vendor bundle lacks component ablation | Adopt; conversation remains a clarification interface |
+| C03 | Workflow, world, epistemic and execution state are useful semantics. | Low | Medium | Cross-domain architecture synthesis | Exact taxonomy and storage split untested | Keep as schema views, not four services |
+| C04 | Typed provenance is justified; four physical graphs are not. | Low | High for typed semantics | W3C PROV, OSLC RM, SACM | Standards do not mandate a single graph, projections or AgentOS schema | Start with a common ID/relation layer; preserve native semantics |
+| C05 | Claims need evidence, counterevidence, freshness and validation plans. | Low | Medium | SACM assurance concepts; research integrity practice | No AgentOS outcome ablation; numeric confidence uncalibrated | Store ordinal status and evidence; defer decimal confidence |
+| C06 | Role labels do not create independent evidence. | Medium | Medium | Correlated Errors; self-correction/error-location failures | Error correlation varies by task/model; multi-agent paper does not model identical repeated trajectories | Measure covariance; diversify evidence channels/procedures |
+| C07 | Parallel agents are conditional, not the default. | Medium | High | Anthropic breadth-first results; Scaling Agent Systems matched-resource comparisons | Vendor result confounded by compute; one matched-budget preprint | Use candidate predictors; run causal and deployment comparisons separately |
+| C08 | Creator, Critic and Verifier are functions/contracts, not necessarily separate personas. | Medium | High | Reflexion ablation; Huang intrinsic correction; Tyen error localization | Small/benchmark-specific effects; verifier can be wrong | Separate contracts and preservation gate; measure decorrelation |
+| C09 | Concurrency needs ownership and stale-writer control only when contention/reassignment exists. | Low in agent domain | High | Durable/distributed-systems transfer | Lease alone is unsafe; external sink may not support fencing | Require at most one valid commit authority; use fencing only where enforceable |
+| C10 | Logical run state must survive worker/container loss. | Medium | High | Temporal durability; Anthropic Managed Agents | AI-specific causal uplift not isolated | Adopt checkpoints and crash-resume tests |
+| C11 | Policy-driven context selection is supported. | High | High | Lost in the Middle, LongMemEval, LoCoMo | Benchmarks/settings narrow; exact compiler pipeline untested | Build a provisional Context Compiler and ablate stages |
+| C12 | External memory helps; seven stores and even four views are provisional. | Medium | Medium | LongMemEval, LoCoMo; AgentPoison/MINJA write-path risks | No universal optimal taxonomy | Begin with one substrate and four removable logical views |
+| C13 | Tools should be versioned, scoped, auditable contracts. | Low as efficacy | High | SWE-agent interface effects; NIST/MCP security semantics | Metadata does not guarantee server behavior | Enforce policy in gateway; treat annotations as hints |
+| C14 | Approval must bind to the exact action and is only one control. | Low as efficacy | High | Security design transfer; AgentDojo/CaMeL threat evidence | Agent approval UX not directly evaluated; human is not oracle | Exact one-time authorization with trusted rendering and TOCTOU protection |
+| C15 | Retriable mutation needs idempotency or explicit reconciliation/compensation. | Low in agent domain | High | RFC 9110, AWS idempotency, Sagas | Compensation can fail and is not rollback | Adopt per effect; reconcile unknown outcome before retry |
+| C16 | Transactional audit/provenance is needed; full event sourcing is optional. | Low as outcome effect | High for audit semantics | PROV, OpenTelemetry sampling semantics, Temporal history | Append-only is not automatically tamper-evident or causal proof | Atomic transition+journal; stronger sink by risk; no external-effect replay |
+| C17 | Acceptance combines observed goal state, invariants, required process and evidence. | High for benchmark failure modes | High | τ-bench process constraint; UTBoost/OpenAI evaluator defects | Evaluator coverage bounds the conclusion | Use `AcceptedEpisodeSuccess`; never claim absolute proof |
+| C18 | Gates are useful; automatic descendant invalidation is unproven. | Low | Medium | Typed dependency/assurance transfer | No comparative AgentOS evidence | Start with explicit stale marking and evaluate precision/recall |
+| C19 | Human gates belong at meaningful risk boundaries, not everywhere. | Medium, indirect/mixed | Medium | Vaccaro et al. human–AI meta-analysis | Not an adversarial agent-approval study; high heterogeneity | Treat human as fallible control; test UX and overreliance locally |
+| C20 | Routing should follow measured frontiers, not guessed expected value. | Low in this corpus | Medium | General decision principle; multi-agent cost evidence | Routing literature was not systematically synthesized here | Hard budgets first; learn routing only from AgentOS eval data |
+| C21 | Repeated reliability and evaluator quality must be measured. | High | High | τ-bench `pass^k`; UTBoost; infrastructure-noise study | Requires adequate repeats and task-clustered uncertainty | Adopt explicit estimands, denominators and CIs |
+| C22 | External content/model output are untrusted; enforcement stays outside the model. | High for attacks | High for trust boundary | InjecAgent, AgentDojo, NIST AML, CaMeL | Threat models differ; no control composition is universally secure | Adopt explicit threat model, TCB and per-call enforcement |
+| C23 | Execution, assurance and governance are useful responsibility boundaries. | Low | Medium-High | Synthesis of durable, assurance and security evidence | No comparative proof of this exact composition | Keep as logical planes in a monolith; split only on measured need |
+| C24 | The multiplicative capability equation is not a scientific law. | Low | Low as literal formula | Harness interactions show non-separable effects | No calibrated functional form | Retain as qualitative bottleneck checklist only |
+
+## Decision key
+
+- **Adopt:** mature mechanism or strongly supported failure prevention, still tested locally.
+- **Provisional baseline:** plausible composition selected for an ablation, not declared optimal.
+- **Defer:** no evidence of necessity or insufficient calibration.
