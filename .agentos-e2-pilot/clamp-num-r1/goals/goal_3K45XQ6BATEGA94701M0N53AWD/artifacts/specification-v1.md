@@ -1,0 +1,1 @@
+Module clamp.py exposes clamp(v,lo,hi)->number.

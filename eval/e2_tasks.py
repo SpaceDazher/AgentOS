@@ -1,0 +1,246 @@
+"""E2 task frame expansion: 20 demo-class tasks (N=20 per protocol).
+
+Frame freeze rules (docs/EVALUATION_PROTOCOL.md): ids are stable; existing
+entries must not be edited; new tasks append with new keys. Each task needs
+machine-checkable acceptance criteria — the evaluator executes real code.
+"""
+from __future__ import annotations
+
+# Reuse E1's five tasks as-is (frozen), append 15 new ones.
+try:
+    from .e1_tasks import E1_TASKS  # package import
+except ImportError:                 # direct script/eval-path import
+    from e1_tasks import E1_TASKS   # noqa: F401
+
+E2_TASKS = E1_TASKS + [
+    {
+        "key": "mul-int",
+        "module": "calc2.py",
+        "concept": "Arithmetic helper: multiply(a, b) -> a * b, with tests.",
+        "spec": "Module calc2.py exposes multiply(a,b)->int. Include tests.",
+        "criteria": [
+            {"criterion_id": "has_code", "kind": "tests_present"},
+            {"criterion_id": "runs", "kind": "command_exit_0",
+             "params": {"entry": "calc2.py", "call": "multiply",
+                        "arg": "[3, 4]", "expect_stdout_contains": "12"}},
+        ],
+        "plan": [{"key": "impl", "title": "Implement multiply with tests",
+                  "definition_of_done": "calc2.py written via gateway"}],
+        "script": [{"ok": True}],
+    },
+    {
+        "key": "sub-int",
+        "module": "calc3.py",
+        "concept": "Arithmetic helper: subtract(a, b) -> a - b, with tests.",
+        "spec": "Module calc3.py exposes subtract(a,b)->int. Include tests.",
+        "criteria": [
+            {"criterion_id": "has_code", "kind": "tests_present"},
+            {"criterion_id": "runs", "kind": "command_exit_0",
+             "params": {"entry": "calc3.py", "call": "subtract",
+                        "arg": "[10, 3]", "expect_stdout_contains": "7"}},
+        ],
+        "plan": [{"key": "impl", "title": "Implement subtract with tests",
+                  "definition_of_done": "calc3.py written via gateway"}],
+        "script": [{"ok": True}],
+    },
+    {
+        "key": "upper-str",
+        "module": "strutil2.py",
+        "concept": "String utility: to_upper(s) -> uppercase string, with tests.",
+        "spec": "Module strutil2.py exposes to_upper(s)->str. Include tests.",
+        "criteria": [
+            {"criterion_id": "has_code", "kind": "tests_present"},
+            {"criterion_id": "runs", "kind": "command_exit_0",
+             "params": {"entry": "strutil2.py", "call": "to_upper",
+                        "arg": "abc", "expect_stdout_contains": "ABC"}},
+        ],
+        "plan": [{"key": "impl", "title": "Implement to_upper with tests",
+                  "definition_of_done": "strutil2.py written via gateway"}],
+        "script": [{"ok": True}],
+    },
+    {
+        "key": "min-of-list",
+        "module": "lists2.py",
+        "concept": "List utility: minimum(xs) -> smallest element, with tests.",
+        "spec": "Module lists2.py exposes minimum(xs)->number (raises ValueError on empty). Include tests.",
+        "criteria": [
+            {"criterion_id": "has_code", "kind": "tests_present"},
+            {"criterion_id": "runs", "kind": "command_exit_0",
+             "params": {"entry": "lists2.py", "call": "minimum",
+                        "arg": "[[5, 2, 8]]", "expect_stdout_contains": "2"}},
+        ],
+        "plan": [{"key": "impl", "title": "Implement minimum with tests",
+                  "definition_of_done": "lists2.py written via gateway"}],
+        "script": [{"ok": True}],
+    },
+    {
+        "key": "sum-list",
+        "module": "lists3.py",
+        "concept": "List utility: total(xs) -> sum of elements, with tests.",
+        "spec": "Module lists3.py exposes total(xs)->number (empty -> 0). Include tests.",
+        "criteria": [
+            {"criterion_id": "has_code", "kind": "tests_present"},
+            {"criterion_id": "runs", "kind": "command_exit_0",
+             "params": {"entry": "lists3.py", "call": "total",
+                        "arg": "[[1, 2, 3]]", "expect_stdout_contains": "6"}},
+        ],
+        "plan": [{"key": "impl", "title": "Implement total with tests",
+                  "definition_of_done": "lists3.py written via gateway"}],
+        "script": [{"ok": True}],
+    },
+    {
+        "key": "is-palindrome",
+        "module": "palindrome.py",
+        "concept": "String utility: is_palindrome(s) -> bool (case-insensitive). Include tests.",
+        "spec": "Module palindrome.py exposes is_palindrome(s)->bool; comparison ignores case.",
+        "criteria": [
+            {"criterion_id": "has_code", "kind": "tests_present"},
+            {"criterion_id": "runs", "kind": "command_exit_0",
+             "params": {"entry": "palindrome.py", "call": "is_palindrome",
+                        "arg": "Anna", "expect_stdout_contains": "True"}},
+        ],
+        "plan": [{"key": "impl", "title": "Implement is_palindrome with tests",
+                  "definition_of_done": "palindrome.py written via gateway"}],
+        "script": [{"ok": True}],
+    },
+    {
+        "key": "count-vowels",
+        "module": "vowels.py",
+        "concept": "String utility: count_vowels(s) -> number of vowels (aeiou, case-insensitive).",
+        "spec": "Module vowels.py exposes count_vowels(s)->int.",
+        "criteria": [
+            {"criterion_id": "has_code", "kind": "tests_present"},
+            {"criterion_id": "runs", "kind": "command_exit_0",
+             "params": {"entry": "vowels.py", "call": "count_vowels",
+                        "arg": "Education", "expect_stdout_contains": "5"}},
+        ],
+        "plan": [{"key": "impl", "title": "Implement count_vowels with tests",
+                  "definition_of_done": "vowels.py written via gateway"}],
+        "script": [{"ok": True}],
+    },
+    {
+        "key": "fib-list",
+        "module": "fib.py",
+        "concept": "Sequence utility: fib(n) -> list of first n Fibonacci numbers.",
+        "spec": "Module fib.py exposes fib(n)->list; fib(0)==[], fib(1)==[0].",
+        "criteria": [
+            {"criterion_id": "has_code", "kind": "tests_present"},
+            {"criterion_id": "runs", "kind": "command_exit_0",
+             "params": {"entry": "fib.py", "call": "fib", "arg": "7",
+                        "expect_stdout_contains": "[0, 1, 1, 2, 3, 5, 8]"}},
+        ],
+        "plan": [{"key": "impl", "title": "Implement fib with tests",
+                  "definition_of_done": "fib.py written via gateway"}],
+        "script": [{"ok": True}],
+    },
+    {
+        "key": "dict-merge",
+        "module": "dictutil.py",
+        "concept": "Dict utility: merge(a, b) -> new dict with b overriding a.",
+        "spec": "Module dictutil.py exposes merge(a,b)->dict without mutating inputs.",
+        "criteria": [
+            {"criterion_id": "has_code", "kind": "tests_present"},
+            {"criterion_id": "runs", "kind": "command_exit_0",
+             "params": {"entry": "dictutil.py", "call": "merge",
+                        "arg": '[{"x": 1}, {"y": 2}]',
+                        "expect_stdout_contains": "'y': 2"}},
+        ],
+        "plan": [{"key": "impl", "title": "Implement merge with tests",
+                  "definition_of_done": "dictutil.py written via gateway"}],
+        "script": [{"ok": True}],
+    },
+    {
+        "key": "flatten-once",
+        "module": "flatten.py",
+        "concept": "List utility: flatten_once(xss) -> single-level list from one level of nesting.",
+        "spec": "Module flatten.py exposes flatten_once(xss)->list; [[1,2],[3]] -> [1,2,3].",
+        "criteria": [
+            {"criterion_id": "has_code", "kind": "tests_present"},
+            {"criterion_id": "runs", "kind": "command_exit_0",
+             "params": {"entry": "flatten.py", "call": "flatten_once",
+                        "arg": "[[[1], [2, 3]]]",
+                        # note: outer arg is a list of two lists
+                        "expect_stdout_contains": "[1, 2, 3]"}},
+        ],
+        "plan": [{"key": "impl", "title": "Implement flatten_once with tests",
+                  "definition_of_done": "flatten.py written via gateway"}],
+        "script": [{"ok": True}],
+    },
+    {
+        "key": "clamp-num",
+        "module": "clamp.py",
+        "concept": "Numeric utility: clamp(v, lo, hi) -> v bounded to [lo, hi], with a pytest-style test file (test_clamp.py).",
+        "spec": "Module clamp.py exposes clamp(v,lo,hi)->number. Include a separate pytest-style test file test_clamp.py with test_* functions (doctests alone do not satisfy acceptance).",
+        "criteria": [
+            {"criterion_id": "has_code", "kind": "tests_present"},
+            {"criterion_id": "runs", "kind": "command_exit_0",
+             "params": {"entry": "clamp.py", "call": "clamp",
+                        "arg": "[15, 0, 10]", "expect_stdout_contains": "10"}},
+        ],
+        "plan": [{"key": "impl", "title": "Implement clamp with tests",
+                  "definition_of_done": "clamp.py written via gateway"}],
+        "script": [{"ok": True}],
+    },
+    {
+        "key": "unique-sorted",
+        "module": "uniq.py",
+        "concept": "List utility: unique_sorted(xs) -> sorted list of distinct elements.",
+        "spec": "Module uniq.py exposes unique_sorted(xs)->list.",
+        "criteria": [
+            {"criterion_id": "has_code", "kind": "tests_present"},
+            {"criterion_id": "runs", "kind": "command_exit_0",
+             "params": {"entry": "uniq.py", "call": "unique_sorted",
+                        "arg": "[[3, 1, 3, 2]]",
+                        "expect_stdout_contains": "[1, 2, 3]"}},
+        ],
+        "plan": [{"key": "impl", "title": "Implement unique_sorted with tests",
+                  "definition_of_done": "uniq.py written via gateway"}],
+        "script": [{"ok": True}],
+    },
+    {
+        "key": "word-count",
+        "module": "wc.py",
+        "concept": "Text utility: word_count(s) -> number of whitespace-separated words.",
+        "spec": "Module wc.py exposes word_count(s)->int (empty -> 0).",
+        "criteria": [
+            {"criterion_id": "has_code", "kind": "tests_present"},
+            {"criterion_id": "runs", "kind": "command_exit_0",
+             "params": {"entry": "wc.py", "call": "word_count",
+                        "arg": "one two  three", "expect_stdout_contains": "3"}},
+        ],
+        "plan": [{"key": "impl", "title": "Implement word_count with tests",
+                  "definition_of_done": "wc.py written via gateway"}],
+        "script": [{"ok": True}],
+    },
+    {
+        "key": "slugify",
+        "module": "slug.py",
+        "concept": "Text utility: slugify(s) -> lowercase words joined by hyphens.",
+        "spec": "Module slug.py exposes slugify(s)->str; 'Hello World' -> 'hello-world'.",
+        "criteria": [
+            {"criterion_id": "has_code", "kind": "tests_present"},
+            {"criterion_id": "runs", "kind": "command_exit_0",
+             "params": {"entry": "slug.py", "call": "slugify",
+                        "arg": "Hello World", "expect_stdout_contains":
+                            "hello-world"}},
+        ],
+        "plan": [{"key": "impl", "title": "Implement slugify with tests",
+                  "definition_of_done": "slug.py written via gateway"}],
+        "script": [{"ok": True}],
+    },
+    {
+        "key": "divmod-check",
+        "module": "divmod2.py",
+        "concept": "Integer division helper: div_check(a, b) -> [a // b, a % b]; ZeroDivisionError on b=0.",
+        "spec": "Module divmod2.py exposes div_check(a,b)->list [q, r].",
+        "criteria": [
+            {"criterion_id": "has_code", "kind": "tests_present"},
+            {"criterion_id": "runs", "kind": "command_exit_0",
+             "params": {"entry": "divmod2.py", "call": "div_check",
+                        "arg": "[17, 5]", "expect_stdout_contains": "[3, 2]"}},
+        ],
+        "plan": [{"key": "impl", "title": "Implement div_check with tests",
+                  "definition_of_done": "divmod2.py written via gateway"}],
+        "script": [{"ok": True}],
+    },
+]

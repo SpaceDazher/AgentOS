@@ -1,0 +1,1 @@
+Numeric utility: clamp(v, lo, hi) -> v bounded to [lo, hi].

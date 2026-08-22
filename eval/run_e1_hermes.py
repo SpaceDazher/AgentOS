@@ -20,6 +20,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from e1_tasks import E1_TASKS  # noqa: E402
 
+try:
+    from e2_tasks import E2_TASKS  # noqa: E402  (N=20 expanded frame)
+except ImportError:
+    E2_TASKS = None
+
 from agentos.db import open_db  # noqa: E402
 from agentos.engine import Engine  # noqa: E402
 from agentos.gates import Evaluator, Gates  # noqa: E402
@@ -135,8 +140,10 @@ def _make_gateway_write(root: Path):
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="run_e1_hermes")
-    ap.add_argument("--tasks", nargs="*", default=["greet-basic", "reverse-str"],
-                    help="task keys from the frozen frame")
+    ap.add_argument("--tasks", nargs="*", default=None,
+                    help="task keys from the frame (default: all in frame)")
+    ap.add_argument("--frame", choices=["e1", "e2"], default="e2",
+                    help="task frame: e1 (5 tasks) or e2 (20 tasks)")
     ap.add_argument("--repeats", type=int, default=2)
     ap.add_argument("--timeout", type=int, default=300,
                     help="per-step hermes timeout, seconds")
@@ -146,7 +153,15 @@ def main(argv=None) -> int:
 
     root = Path(args.db).resolve()
     root.mkdir(parents=True, exist_ok=True)
-    tasks = [t for t in E1_TASKS if t["key"] in set(args.tasks)]
+    frame = E1_TASKS if args.frame == "e1" else (E2_TASKS or E1_TASKS)
+    if args.tasks:
+        wanted = set(args.tasks)
+        tasks = [t for t in frame if t["key"] in wanted]
+        missing = wanted - {t["key"] for t in tasks}
+        if missing:
+            raise SystemExit(f"unknown task keys: {sorted(missing)}")
+    else:
+        tasks = list(frame)
     results = []
     for task in tasks:
         for repeat in range(1, args.repeats + 1):

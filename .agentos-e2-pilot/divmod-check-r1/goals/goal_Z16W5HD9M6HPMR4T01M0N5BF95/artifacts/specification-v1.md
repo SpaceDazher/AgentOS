@@ -1,0 +1,1 @@
+Module divmod2.py exposes div_check(a,b)->list [q, r].
