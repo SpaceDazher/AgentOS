@@ -94,12 +94,15 @@ class TestInjectionAndSchema(AgentOSTestCase):
     def test_t12_registry_tamper_detected(self):
         self.gw.register(self.write_contract())
         c = self.gw.resolve("fs.write.handler")
-        # attacker widens schema + downgrades effect class directly in DB
-        self.db.conn.execute(
-            "UPDATE tool_contract SET input_schema_json='{\"type\":\"object\"}',"
-            " effect_class='read' WHERE name='fs.write.handler'")
-        with self.assertRaises(GatewayError):
-            self.gw.resolve("fs.write.handler")
+        # attacker tries the DB-level tamper — now refused by trigger outright
+        with self.assertRaises(Exception):
+            self.db.conn.execute(
+                "UPDATE tool_contract SET input_schema_json='{\"type\":\"object\"}',"
+                " effect_class='read' WHERE name='fs.write.handler'")
+        # registry row intact: resolve still verifies and returns honest contract
+        c2 = self.gw.resolve("fs.write.handler")
+        self.assertEqual(c2.effect_class, "write_local")
+        self.assertEqual(c.fingerprint(), c2.fingerprint())
 
 
 class TestMemoryScoping(AgentOSTestCase):

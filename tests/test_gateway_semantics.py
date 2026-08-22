@@ -39,20 +39,27 @@ class TestIdempotency(AgentOSTestCase):
     def test_t05c_incomplete_intent_never_reexecutes(self):
         """F5: an intent recorded without an outcome must not re-run the handler;
         it returns UNKNOWN_OUTCOME and demands reconciliation."""
-        c = self.gw.resolve("fs.write.handler")
+        # register a NEW version (append-only registry — no DELETE) whose
+        # handler simulates a crash after the first effect
         calls = {"n": 0}
 
         def counting_handler(path, content):
             calls["n"] += 1
             if calls["n"] == 1:
-                # simulate crash AFTER effect, BEFORE outcome recorded
                 raise RuntimeError("simulated crash mid-effect")
             return {"written": path}
 
-        contract = self.write_contract(handler=counting_handler)
-        self.db.conn.execute("DELETE FROM tool_contract WHERE name='fs.write.handler'")
+        from agentos.gateway import ToolContract
+        contract = ToolContract(
+            name="fs.write.handler", version="2.0.0",
+            input_schema={"type": "object",
+                          "properties": {"path": {"type": "string"},
+                                         "content": {"type": "string"}},
+                          "required": ["path", "content"]},
+            required_capability="fs.write_local", effect_class="write_local",
+            idempotency="keyed", handler=counting_handler)
         self.gw.register(contract)
-        c2 = self.gw.resolve("fs.write.handler")
+        c2 = self.gw.resolve("fs.write.handler")  # latest => 2.0.0
         r1 = self.gw.invoke(self.ctx, c2, self._args("crashy"), idempotency_key="kc")
         self.assertEqual(r1["status"], "FAILED")  # handler raised -> known failure
         # simulate the crash window: intent exists, no digest

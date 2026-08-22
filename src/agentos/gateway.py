@@ -402,10 +402,20 @@ class ToolGateway:
         if mutating:
             fence = self._next_fence()
 
-        # execute handler
+        # execute handler; mutating handlers that declare a `_fence` kwarg get
+        # the sink-validated token injected (P1: sink-side stale rejection).
         try:
-            result = (contract.handler(**args)
-                      if contract.handler else {"echo": args})
+            if contract.handler is not None:
+                import inspect
+                sig = inspect.signature(contract.handler)
+                kwargs = dict(args)
+                if mutating and "_fence" in sig.parameters:
+                    kwargs["_fence"] = fence
+                    if "_sink" in sig.parameters:
+                        kwargs["_sink"] = ctx.workspace_path
+                result = contract.handler(**kwargs)
+            else:
+                result = {"echo": args}
             digest = sha256_text(canonical_json(result))
             out = record("SUCCEEDED", digest, fence=fence)
             if key_hash:

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+from pathlib import Path
 from typing import Any
 
 from .ids import canonical_json, sha256_text
@@ -59,6 +60,16 @@ class Journal:
         conn.execute(
             "UPDATE audit_anchor SET head_digest=?, last_seq=? WHERE id=1",
             (digest, new_seq))
+        # P1: mirror the anchor OUTSIDE the database (separate tamper channel).
+        # An attacker rewriting both audit_event and audit_anchor must also
+        # notice and rewrite this file; a periodic off-host copy of it gives
+        # true external anchoring (see GAP_REGISTER).
+        try:
+            anchor_file = Path(self.db.path).parent / "audit_anchor.head"
+            anchor_file.parent.mkdir(parents=True, exist_ok=True)
+            anchor_file.write_text(f"{new_seq} {digest}\n", encoding="utf-8")
+        except OSError:
+            pass  # read-only DB location: in-DB anchor still maintained
         return digest
 
     def append_event(self, goal_id: str | None, actor: str, event_type: str,
