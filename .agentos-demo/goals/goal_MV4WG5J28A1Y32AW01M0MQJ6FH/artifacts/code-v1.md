@@ -1,0 +1,1 @@
+{"files":{"greet.py":"def greet(name):\n    return f'hello, {name}'\n\n\ndef test_greet():\n    assert greet('world') == 'hello, world'\n"}}
