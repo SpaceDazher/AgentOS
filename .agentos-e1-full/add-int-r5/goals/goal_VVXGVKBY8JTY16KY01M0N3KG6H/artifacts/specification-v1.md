@@ -1,0 +1,1 @@
+Module calc.py exposes add(a,b)->int. Include tests.

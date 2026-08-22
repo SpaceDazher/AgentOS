@@ -1,0 +1,1 @@
+Counter module with tests; worker fails once then recovers (retry drill).

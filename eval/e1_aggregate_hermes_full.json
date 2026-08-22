@@ -1,0 +1,56 @@
+{
+  "schema": "agentos.e1-aggregate/v0",
+  "pass_1": {
+    "successes": 25,
+    "n": 25,
+    "rate": 1.0,
+    "wilson95": [
+      0.867,
+      1.0
+    ]
+  },
+  "pass_5": {
+    "definition": "all first-5 repeats pass, per task",
+    "tasks_passing": 5,
+    "n_tasks": 5,
+    "rate": 1.0,
+    "wilson95": [
+      0.566,
+      1.0
+    ],
+    "note": "task-clustered; CI over tasks is coarse at n=5 \u2014 protocol calls for N=20 before external claims"
+  },
+  "cost_latency": {
+    "duration_ms_mean_all": 29961,
+    "duration_ms_mean_conditional_success": 29961,
+    "tool_calls_mean": 1.0
+  },
+  "evaluation_failures_by_criterion": {},
+  "per_task": {
+    "add-int": {
+      "episodes": 5,
+      "successes": 5,
+      "mean_duration_ms": 22878
+    },
+    "flaky-recover": {
+      "episodes": 5,
+      "successes": 5,
+      "mean_duration_ms": 38708
+    },
+    "greet-basic": {
+      "episodes": 5,
+      "successes": 5,
+      "mean_duration_ms": 24650
+    },
+    "max-of-list": {
+      "episodes": 5,
+      "successes": 5,
+      "mean_duration_ms": 29450
+    },
+    "reverse-str": {
+      "episodes": 5,
+      "successes": 5,
+      "mean_duration_ms": 34120
+    }
+  }
+}

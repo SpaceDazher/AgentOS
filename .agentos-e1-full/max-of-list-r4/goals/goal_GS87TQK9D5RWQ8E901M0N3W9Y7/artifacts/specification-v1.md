@@ -1,0 +1,1 @@
+Module lists.py exposes maximum(xs)->number (raises ValueError on empty). Include tests.

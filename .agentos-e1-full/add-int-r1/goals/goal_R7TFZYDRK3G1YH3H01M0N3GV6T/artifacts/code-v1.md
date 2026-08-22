@@ -1,0 +1,1 @@
+{"files":{"calc.py":"def add(a, b):\n    return a + b","test_calc.py":"from calc import add\n\n\ndef test_add_integers():\n    assert add(2, 3) == 5\n    assert add(-1, 1) == 0\n    assert add(0, 0) == 0\n\n\ndef test_add_large():\n    assert add(10**18, 10**18) == 2 * 10**18"}}

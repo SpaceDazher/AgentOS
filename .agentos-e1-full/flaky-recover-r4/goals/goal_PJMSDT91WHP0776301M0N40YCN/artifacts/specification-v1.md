@@ -1,0 +1,1 @@
+Module counter.py exposes bump(n)->n+1. Include tests.
