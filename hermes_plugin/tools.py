@@ -14,9 +14,15 @@ import sys
 from pathlib import Path
 
 # --- AgentOS import bootstrap -------------------------------------------------
-# Layout:  <repo>/hermes_plugin/tools.py  ->  parents[0]=hermes_plugin, parents[1]=<repo>
-_REPO_ROOT = Path(__file__).resolve().parents[1]
+# The plugin is a thin client: the AgentOS repo lives at a fixed local path
+# (override with AGENTOS_REPO env var). Layout: <repo>/src/agentos/...
+_REPO_ROOT = Path(os.environ.get("AGENTOS_REPO", r"D:\Project\AgentOS")).resolve()
 _SRC_DIR = _REPO_ROOT / "src"
+if not (_SRC_DIR / "agentos").is_dir():
+    # fallback: repo next to the plugin dir (dev checkout layout)
+    _alt = Path(__file__).resolve().parents[1] / "src"
+    if (_alt / "agentos").is_dir():
+        _SRC_DIR = _alt
 if str(_SRC_DIR) not in sys.path:
     sys.path.insert(0, str(_SRC_DIR))
 
@@ -62,6 +68,23 @@ def _open(db_dir: str | None):
 
 def _err(exc: BaseException) -> str:
     return json.dumps({"success": False, "error": f"{type(exc).__name__}: {exc}"})
+
+
+def tool_adapter(handler):
+    """Hermes dispatches plugin tools as handler(args_dict, **kwargs); some
+    hosts also forward stray schema kwargs (e.g. task_id from a shared tool
+    envelope). Accept both shapes and merge them into one args dict."""
+    def wrapped(args=None, **kwargs):
+        if isinstance(args, dict):
+            params = dict(args)
+        elif args is None:
+            params = {}
+        else:
+            params = {"__positional__": args}
+        params.update(kwargs)
+        return handler(params)
+    wrapped.__name__ = getattr(handler, "__name__", "wrapped")
+    return wrapped
 
 
 # --- tool handlers ---------------------------------------------------------------

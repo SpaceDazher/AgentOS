@@ -22,13 +22,14 @@ from .tools import (
     handle_agentos_run_demo,
     handle_agentos_status,
 )
+from .tools import tool_adapter  # noqa: F401 — re-exported for clarity
 
 # (tool name, schema, handler, emoji) — handlers take the JSON args dict positionally.
 _TOOLS = (
-    ("agentos_status", AGENTOS_STATUS_SCHEMA, handle_agentos_status, "\U0001f4ca"),
-    ("agentos_create_goal", AGENTOS_CREATE_GOAL_SCHEMA, handle_agentos_create_goal, "\U0001f3af"),
-    ("agentos_run_demo", AGENTOS_RUN_DEMO_SCHEMA, handle_agentos_run_demo, "\u25b6\ufe0f"),
-    ("agentos_evidence_pack", AGENTOS_EVIDENCE_PACK_SCHEMA, handle_agentos_evidence_pack, "\U0001f9fe"),
+    ("agentos_status", AGENTOS_STATUS_SCHEMA, tool_adapter(handle_agentos_status), "\U0001f4ca"),
+    ("agentos_create_goal", AGENTOS_CREATE_GOAL_SCHEMA, tool_adapter(handle_agentos_create_goal), "\U0001f3af"),
+    ("agentos_run_demo", AGENTOS_RUN_DEMO_SCHEMA, tool_adapter(handle_agentos_run_demo), "\u25b6\ufe0f"),
+    ("agentos_evidence_pack", AGENTOS_EVIDENCE_PACK_SCHEMA, tool_adapter(handle_agentos_evidence_pack), "\U0001f9fe"),
 )
 
 
