@@ -1,0 +1,1 @@
+Arithmetic helper: multiply(a, b) -> a * b, with tests.

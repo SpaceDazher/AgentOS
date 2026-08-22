@@ -1,0 +1,1 @@
+Module fib.py exposes fib(n)->list; fib(0)==[], fib(1)==[0].

@@ -1,0 +1,1 @@
+String utility: to_upper(s) -> uppercase string, with tests.

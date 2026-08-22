@@ -1,0 +1,1 @@
+List utility: unique_sorted(xs) -> sorted list of distinct elements.

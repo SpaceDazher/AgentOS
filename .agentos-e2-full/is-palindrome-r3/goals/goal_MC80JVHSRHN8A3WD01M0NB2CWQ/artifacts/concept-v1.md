@@ -1,0 +1,1 @@
+String utility: is_palindrome(s) -> bool (case-insensitive). Include tests.

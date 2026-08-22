@@ -1,0 +1,1 @@
+{"tasks":[{"depends_on":[],"id":"task_E36AB24JYNBTSADW01M0NB1A93","title":"Implement is_palindrome with tests"}]}

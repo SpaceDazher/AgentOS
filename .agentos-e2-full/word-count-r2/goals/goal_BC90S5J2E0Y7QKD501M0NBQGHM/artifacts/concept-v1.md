@@ -1,0 +1,1 @@
+Text utility: word_count(s) -> number of whitespace-separated words.

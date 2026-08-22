@@ -1,0 +1,1 @@
+String utility: count_vowels(s) -> number of vowels (aeiou, case-insensitive).

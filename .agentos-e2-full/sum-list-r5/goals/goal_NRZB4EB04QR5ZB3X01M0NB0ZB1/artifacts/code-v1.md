@@ -1,0 +1,1 @@
+{"files":{"lists3.py":"def total(xs):\n    \"\"\"Return the sum of xs; empty (or missing) -> 0.\"\"\"\n    return sum(xs)\n\n\nif __name__ == \"__main__\":\n    # Tests\n    assert total([]) == 0\n    assert total([1, 2, 3]) == 6\n    assert total([-5]) == -5\n    assert total([1.5, 2.5]) == 4.0\n    print(\"all tests passed\")"}}

@@ -1,0 +1,1 @@
+List utility: total(xs) -> sum of elements, with tests.

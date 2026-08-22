@@ -1,0 +1,1 @@
+Sequence utility: fib(n) -> list of first n Fibonacci numbers.

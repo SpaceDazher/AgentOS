@@ -1,0 +1,1706 @@
+{
+  "schema": "agentos.e1-results/v0",
+  "mode": "end-to-end-hermes-pilot",
+  "summary": {
+    "episodes_total": 100,
+    "pass_1": 0.93,
+    "by_task": {
+      "greet-basic": {
+        "successes": 5,
+        "episodes": 5
+      },
+      "add-int": {
+        "successes": 5,
+        "episodes": 5
+      },
+      "reverse-str": {
+        "successes": 5,
+        "episodes": 5
+      },
+      "max-of-list": {
+        "successes": 5,
+        "episodes": 5
+      },
+      "flaky-recover": {
+        "successes": 5,
+        "episodes": 5
+      },
+      "mul-int": {
+        "successes": 5,
+        "episodes": 5
+      },
+      "sub-int": {
+        "successes": 5,
+        "episodes": 5
+      },
+      "upper-str": {
+        "successes": 5,
+        "episodes": 5
+      },
+      "min-of-list": {
+        "successes": 5,
+        "episodes": 5
+      },
+      "sum-list": {
+        "successes": 3,
+        "episodes": 5
+      },
+      "is-palindrome": {
+        "successes": 5,
+        "episodes": 5
+      },
+      "count-vowels": {
+        "successes": 5,
+        "episodes": 5
+      },
+      "fib-list": {
+        "successes": 3,
+        "episodes": 5
+      },
+      "dict-merge": {
+        "successes": 4,
+        "episodes": 5
+      },
+      "flatten-once": {
+        "successes": 4,
+        "episodes": 5
+      },
+      "clamp-num": {
+        "successes": 5,
+        "episodes": 5
+      },
+      "unique-sorted": {
+        "successes": 5,
+        "episodes": 5
+      },
+      "word-count": {
+        "successes": 4,
+        "episodes": 5
+      },
+      "slugify": {
+        "successes": 5,
+        "episodes": 5
+      },
+      "divmod-check": {
+        "successes": 5,
+        "episodes": 5
+      }
+    }
+  },
+  "episodes": [
+    {
+      "task": "greet-basic",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "greet(name)->'hello, <name>' implemented in greet.py; tests in test_greet.py cover basic greeting, alternate name, and return type.",
+      "duration_ms": 14471,
+      "goal_id": "goal_MFZ3T1VD9VN8KHNC01M0NAA663"
+    },
+    {
+      "task": "greet-basic",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "greet(name)->'hello, <name>' implemented in greet.py with pytest tests in test_greet.py covering basic greeting, arbitrary names, and return type.",
+      "duration_ms": 13484,
+      "goal_id": "goal_APKWJ868CJG2VMHM01M0NAAMAV"
+    },
+    {
+      "task": "greet-basic",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "greet.py with greet(name)->'hello, <name>' plus pytest tests declared as effects.",
+      "duration_ms": 14953,
+      "goal_id": "goal_88DFC6GPBB9N684301M0NAB1FN"
+    },
+    {
+      "task": "greet-basic",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "Implemented greet.py exposing greet(name)->str returning 'hello, <name>', plus parametrized pytest suite in test_greet.py.",
+      "duration_ms": 17189,
+      "goal_id": "goal_9HK4BRVBW6SMY5P501M0NABG2R"
+    },
+    {
+      "task": "greet-basic",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "greet(name)->str returning 'hello, <name>' declared in greet.py; tests in test_greet.py cover basic, parametrized cases and return type. No direct writes performed.",
+      "duration_ms": 12574,
+      "goal_id": "goal_8N2KA8YRT5NMTTFB01M0NAC0VZ"
+    },
+    {
+      "task": "add-int",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "calc.py exposes add(a,b)->int with type validation; pytest suite covers positive/zero/negative/large ints and non-int rejection.",
+      "duration_ms": 15061,
+      "goal_id": "goal_E7Z0H9P9BBVAZXSV01M0NACD4T"
+    },
+    {
+      "task": "add-int",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "calc.py exposes add(a,b)->int (int-coerced sum); pytest suite covers positive/negative/zero, int return type, and non-numeric rejection.",
+      "duration_ms": 13488,
+      "goal_id": "goal_RMBR3DW7HYN3RQCC01M0NACVVK"
+    },
+    {
+      "task": "add-int",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "calc.py with add(a,b)->int plus pytest suite covering positive/negative/zero/mixed/coercion/type/invalid-input cases.",
+      "duration_ms": 14439,
+      "goal_id": "goal_KDNV4K23T8YG3MYY01M0NAD912"
+    },
+    {
+      "task": "add-int",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "calc.py exposes add(a,b)->int; pytest suite in tests/test_calc.py covers positive/negative/zero/mixed/large cases and return type.",
+      "duration_ms": 14692,
+      "goal_id": "goal_C63NMWN7YAPN4EP601M0NADQ46"
+    },
+    {
+      "task": "add-int",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "Declared calc.py exposing add(a,b)->int (with type checks raising TypeError on non-ints) and test_calc.py covering positive/negative/mixed/zero/large inputs and type-error cases.",
+      "duration_ms": 16862,
+      "goal_id": "goal_2070V4023DV8YQYQ01M0NAE5FF"
+    },
+    {
+      "task": "reverse-str",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "strutil.py with reverse(s)->str (TypeError on non-str) plus pytest suite covering basic, empty, single-char, palindrome, unicode, punctuation, and type-error cases.",
+      "duration_ms": 12452,
+      "goal_id": "goal_CHH5BHJD9N11FE5Q01M0NAENYB"
+    },
+    {
+      "task": "reverse-str",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "strutil.py implements reverse(s)->str with type validation; test_strutil.py covers empty/unicode/palindrome cases, purity, TypeError on non-strings, and involution.",
+      "duration_ms": 15126,
+      "goal_id": "goal_WR6PJHBCWG3Y2EHV01M0NAF23J"
+    },
+    {
+      "task": "reverse-str",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "Declared strutil.py (reverse(s)->str, type-checked) and test_strutil.py with 7 tests covering basic/empty/unicode/palindrome/punctuation/error cases.",
+      "duration_ms": 15243,
+      "goal_id": "goal_R77S90AZGA0JNFQE01M0NAFGW8"
+    },
+    {
+      "task": "reverse-str",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "strutil.py with reverse(s)->str (TypeError on non-str) plus pytest suite test_strutil.py covering basic, empty, single-char, palindrome, unicode, punctuation, and non-string input cases.",
+      "duration_ms": 21737,
+      "goal_id": "goal_71NVB55H0ZBNX03N01M0NAFZRG"
+    },
+    {
+      "task": "reverse-str",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "strutil.py exposes reverse(s)->str (TypeError on non-str); test_strutil.py covers basic/empty/single/unicode/palindrome/type-error cases.",
+      "duration_ms": 15034,
+      "goal_id": "goal_ZKKV11QC4DAE91JD01M0NAGMZW"
+    },
+    {
+      "task": "max-of-list",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "lists.py implements maximum(xs) via manual iteration (raises ValueError on empty, TypeError on non-iterable); test_lists.py covers basic/single/negative/float/mixed/duplicate/empty/iterable cases.",
+      "duration_ms": 17122,
+      "goal_id": "goal_0RAJBVBTRYB016DP01M0NAH3NQ"
+    },
+    {
+      "task": "max-of-list",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "lists.py exposes maximum(xs) raising ValueError on empty; test_lists.py covers ints, negatives, floats, mixed, duplicates, empty-raises, return type.",
+      "duration_ms": 13060,
+      "goal_id": "goal_XBRKPM38KPQTFDB701M0NAHMCN"
+    },
+    {
+      "task": "max-of-list",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "lists.py exposes maximum(xs)->number (raises ValueError on empty); unittest tests cover basic, negatives, mixed floats/ints, duplicates, single-element, and empty-list error cases.",
+      "duration_ms": 15706,
+      "goal_id": "goal_S54JRRXXD76WKKEH01M0NAJ14W"
+    },
+    {
+      "task": "max-of-list",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "lists.py exposes maximum(xs)->number raising ValueError on empty; tests cover basic, negative/float, duplicates, empty-raises cases.",
+      "duration_ms": 16895,
+      "goal_id": "goal_PW2Q318BDQV61QZC01M0NAJGFS"
+    },
+    {
+      "task": "max-of-list",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "lists.py exposes maximum(xs)->number, raises ValueError on empty input; test_lists.py covers basic, unsorted, empty-raises, and float/mixed cases.",
+      "duration_ms": 13531,
+      "goal_id": "goal_8X9VX0JH63SK6Z6B01M0NAK0ZH"
+    },
+    {
+      "task": "flaky-recover",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "no_bad_rows": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "counter.py with bump(n)->n+1 plus parametrized pytest suite (zero/positive/negative/large cases) declared as effects for gateway replay.",
+      "duration_ms": 8660,
+      "goal_id": "goal_DWM954YKNVN6X9NM01M0NAKE6F"
+    },
+    {
+      "task": "flaky-recover",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "no_bad_rows": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "counter.py implements bump(n)->n+1; test_counter.py includes unit and parametrized tests.",
+      "duration_ms": 13751,
+      "goal_id": "goal_DH8K86MDQ6KXNF6401M0NAKPN3"
+    },
+    {
+      "task": "flaky-recover",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "no_bad_rows": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "counter.py with bump(n)->n+1 plus pytest suite (zero, positive, negative, large, float) declared as effects; no direct writes.",
+      "duration_ms": 13961,
+      "goal_id": "goal_8TET4MFDDBN1NDYF01M0NAM42T"
+    },
+    {
+      "task": "flaky-recover",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "no_bad_rows": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "counter.py with bump(n)->n+1 and unit tests in test_counter.py (int, negative, large, float cases) declared as effects.",
+      "duration_ms": 15288,
+      "goal_id": "goal_QV1YMQHKJ66RCEZ801M0NAMHQ0"
+    },
+    {
+      "task": "flaky-recover",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "no_bad_rows": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "counter.py exposes bump(n)->n+1; test_counter.py includes 8 assertions (unit + parametrized). Declared via effects blocks for gateway replay.",
+      "duration_ms": 13345,
+      "goal_id": "goal_CZVR6ZRW2JQXHDAS01M0NAN0MS"
+    },
+    {
+      "task": "mul-int",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "calc2.py exposes multiply(a,b)->int; tests cover positive, negative, zero, float-input int coercion, and large numbers.",
+      "duration_ms": 33560,
+      "goal_id": "goal_TPWRM17X296P5P4F01M0NANDPB"
+    },
+    {
+      "task": "mul-int",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "calc2.py exposes multiply(a,b)->int (coerces to int); tests cover positive/negative/zero/float-coercion/return-type.",
+      "duration_ms": 13703,
+      "goal_id": "goal_TJZGGNP2YG07EJHT01M0NAPEEM"
+    },
+    {
+      "task": "mul-int",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "calc2.py with multiply(a,b)->int plus unittest suite covering positive/negative/zero/identity/int-type cases; declared via effects blocks for gateway replay.",
+      "duration_ms": 20085,
+      "goal_id": "goal_A3GB2Y9VYKRTHW1801M0NAPVTW"
+    },
+    {
+      "task": "mul-int",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "calc2.py exposes multiply(a,b)->int; tests cover positives, negatives, zero, identity, overflow-scale, and float coercion to int.",
+      "duration_ms": 14480,
+      "goal_id": "goal_Q49Y3YYEBADGHGG101M0NAQFEG"
+    },
+    {
+      "task": "mul-int",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "calc2.py exposes multiply(a,b)->int; test_calc2.py covers positive, negative, zero, and int-return cases.",
+      "duration_ms": 15606,
+      "goal_id": "goal_WEH4DRDE9CM3NRNZ01M0NAQXJY"
+    },
+    {
+      "task": "sub-int",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "calc3.py with subtract(a,b)->int plus test_calc3.py (6 assertions incl. type coercion); declared as effects, no direct writes.",
+      "duration_ms": 13870,
+      "goal_id": "goal_EHHR7HSNX0NYP8MG01M0NARCTP"
+    },
+    {
+      "task": "sub-int",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "calc3.py with subtract(a,b)->int plus pytest suite in test_calc3.py (basics, negative numbers, float inputs coerced to int, large values).",
+      "duration_ms": 11664,
+      "goal_id": "goal_EHZFMHCT8PSMZAET01M0NARTC4"
+    },
+    {
+      "task": "sub-int",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "calc3.py with subtract(a,b)->int (int type check) plus unittest suite test_calc3.py covering positive, negative, zero, and TypeError cases; declared as effects for gateway replay.",
+      "duration_ms": 12125,
+      "goal_id": "goal_6EQ6W7K1A2R6B0SW01M0NAS5RV"
+    },
+    {
+      "task": "sub-int",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "calc3.py exposes subtract(a,b)->int; test_calc3.py covers basic, negative, zero, int return type, and float-input cases.",
+      "duration_ms": 11250,
+      "goal_id": "goal_NETSBCZK7Q29999101M0NASHKK"
+    },
+    {
+      "task": "sub-int",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "calc3.py exposes subtract(a,b)->int; test_calc3.py covers positive/negative/zero/negative-operand cases, return-type check, and parametrized table.",
+      "duration_ms": 17799,
+      "goal_id": "goal_JWNP6CY7ADEJ8G5Z01M0NASWKH"
+    },
+    {
+      "task": "upper-str",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "strutil2.py exposes to_upper(s)->str (str-only, delegates to str.upper); tests in test_strutil2.py cover basic, empty, mixed, unicode and non-string TypeError cases.",
+      "duration_ms": 10448,
+      "goal_id": "goal_T6KN8DEK8ZFQ5T2X01M0NATDZY"
+    },
+    {
+      "task": "upper-str",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "strutil2.py with to_upper(s)->str (TypeError on non-str) plus unittest suite test_strutil2.py covering basic, empty, unicode, and error cases.",
+      "duration_ms": 15604,
+      "goal_id": "goal_TDGRF38DBH245N1Z01M0NATR5T"
+    },
+    {
+      "task": "upper-str",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "strutil2.py defines to_upper(s)->str (TypeError on non-str); test_strutil2.py covers basic/empty/already-upper/mixed/unicode/non-str cases.",
+      "duration_ms": 14108,
+      "goal_id": "goal_NZ3TY641P30Z62G601M0NAV7DT"
+    },
+    {
+      "task": "upper-str",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "strutil2.py implements to_upper(s)->str (TypeError on non-str); test_strutil2.py covers basic, empty, unicode, and type-error cases.",
+      "duration_ms": 15088,
+      "goal_id": "goal_RSTC9C8NRJZCH85D01M0NAVN6J"
+    },
+    {
+      "task": "upper-str",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "strutil2.py implements to_upper(s)->str (TypeError on non-str); tests in test_strutil2.py cover basic/empty/mixed/unicode/error cases.",
+      "duration_ms": 14441,
+      "goal_id": "goal_3XC6R2DX4CCXHHMW01M0NAW3XT"
+    },
+    {
+      "task": "min-of-list",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "lists2.py with minimum(xs) (ValueError on empty) and unittest tests covering ints, floats, negatives, duplicates, generators, and empty input.",
+      "duration_ms": 16755,
+      "goal_id": "goal_AR8E7C9QZ170SYWP01M0NAWJ12"
+    },
+    {
+      "task": "min-of-list",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "lists2.py implements minimum(xs) raising ValueError on empty; 8 tests in test_lists2.py cover ints, floats, negatives, duplicates, single element, and empty-input error.",
+      "duration_ms": 18293,
+      "goal_id": "goal_DB90SHMGX8ZJ3JAN01M0NAX2CP"
+    },
+    {
+      "task": "min-of-list",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "lists2.py implements minimum(xs) raising ValueError on empty; tests cover basic, single-element, negatives/floats, duplicates, and empty-input case.",
+      "duration_ms": 13908,
+      "goal_id": "goal_JBSH3XR937QRKDFS01M0NAXM8A"
+    },
+    {
+      "task": "min-of-list",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "lists2.py implements minimum(xs) raising ValueError on empty input; tests cover ints, floats, negatives, single element, tuple, and empty-sequence error.",
+      "duration_ms": 15688,
+      "goal_id": "goal_VV9TK03Q311EMN1S01M0NAY1TZ"
+    },
+    {
+      "task": "min-of-list",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "lists2.py implements minimum(xs) raising ValueError on empty input; test_lists2.py covers basic, single-element, negative, float, and empty cases.",
+      "duration_ms": 17138,
+      "goal_id": "goal_YHSSSWDBBDZTFA9Q01M0NAYH5N"
+    },
+    {
+      "task": "sum-list",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "fail"
+      },
+      "worker_ok": true,
+      "worker_note": "list3.py exposes total(xs)->number (empty -> 0); tests in test_list3.py cover empty, single, positive, negative, and float cases.",
+      "duration_ms": 14416,
+      "goal_id": "goal_MXKKG1D8GXKXYEQP01M0NAZ1WX"
+    },
+    {
+      "task": "sum-list",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "lists3.total(xs)->number implemented (empty -> 0) with unittest suite test_lists3.py, 7 tests passing.",
+      "duration_ms": 17443,
+      "goal_id": "goal_2AT2RHJN16E8WZFT01M0NAZFZX"
+    },
+    {
+      "task": "sum-list",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "lists3.py with total(xs)->number (empty -> 0) plus unit tests in test_lists3.py declared; no direct writes performed.",
+      "duration_ms": 18199,
+      "goal_id": "goal_SGKHTT5ZSTA7GWVQ01M0NB010H"
+    },
+    {
+      "task": "sum-list",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "lists3.py exposes total(xs)->number (empty/None -> 0); tests cover empty, single, positive, negative and float cases via unittest.",
+      "duration_ms": 12861,
+      "goal_id": "goal_2DKZEE8TFQPENQTW01M0NB0JSD"
+    },
+    {
+      "task": "sum-list",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "lists3.py with total(xs) (empty->0) plus inline tests",
+      "duration_ms": 11193,
+      "goal_id": "goal_NRZB4EB04QR5ZB3X01M0NB0ZB1"
+    },
+    {
+      "task": "is-palindrome",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "palindrome.py declares is_palindrome (case-insensitive via casefold) plus unittest suite covering simple, case, non-palindromes, empty/single, and type errors.",
+      "duration_ms": 14615,
+      "goal_id": "goal_ZPXQJFBW7980930X01M0NB1A8W"
+    },
+    {
+      "task": "is-palindrome",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "palindrome.py exposes is_palindrome(s)->bool with case-insensitive comparison (lower()); tests cover simple/mixed-case/unicode/empty/non-string cases.",
+      "duration_ms": 20839,
+      "goal_id": "goal_TGJS9XYTT36NN07101M0NB1RHF"
+    },
+    {
+      "task": "is-palindrome",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "Implemented is_palindrome in palindrome.py (case-insensitive via lower(), type-checked for str) plus pytest suite test_palindrome.py covering empty/single-char/even/odd palindromes, mixed case, negati",
+      "duration_ms": 30564,
+      "goal_id": "goal_MC80JVHSRHN8A3WD01M0NB2CWQ"
+    },
+    {
+      "task": "is-palindrome",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "palindrome.py with case-insensitive is_palindrome(s)->bool plus pytest suite (simple, single-char, empty, mixed-case, negatives) declared as effects.",
+      "duration_ms": 13248,
+      "goal_id": "goal_ZVH167FPSPDY6MH701M0NB3ARK"
+    },
+    {
+      "task": "is-palindrome",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "Implemented is_palindrome(s)->bool in palindrome.py (case-insensitive via lower(), TypeError on non-str) plus pytest suite test_palindrome.py covering case-insensitivity, edge cases (empty, single cha",
+      "duration_ms": 19790,
+      "goal_id": "goal_15D91DDGGY5TD19N01M0NB3QP8"
+    },
+    {
+      "task": "count-vowels",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "vowels.py with count_vowels(s)->int plus unittest tests in test_vowels.py declared as effects",
+      "duration_ms": 16425,
+      "goal_id": "goal_NBXMN3QA6M38JCWH01M0NB4B08"
+    },
+    {
+      "task": "count-vowels",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "vowels.py exposes count_vowels(s)->int (case-insensitive aeiou, TypeError on non-str); test_vowels.py covers empty/no-vowel/all-vowel/mixed-case/sentence/y/non-string cases.",
+      "duration_ms": 17789,
+      "goal_id": "goal_TWV8MJ3R2H1Z1CJ501M0NB4V23"
+    },
+    {
+      "task": "count-vowels",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "vowels.py implements count_vowels(s)->int (case-insensitive aeiou, TypeError on non-string); test_vowels.py covers empty, no-vowels, all-vowels, mixed case, sentence, punctuation/digits, and non-strin",
+      "duration_ms": 14726,
+      "goal_id": "goal_M8GTE8ADYNR3GYTN01M0NB5CDN"
+    },
+    {
+      "task": "count-vowels",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "vowels.py with count_vowels(s)->int plus stdlib unittest suite in test_vowels.py; both declared as effects.",
+      "duration_ms": 18821,
+      "goal_id": "goal_07YKTY3N872VDX7201M0NB5TSN"
+    },
+    {
+      "task": "count-vowels",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "vowels.py exposes count_vowels(s)->int; test_vowels.py covers empty, no-vowels, mixed case, punctuation, y-as-consonant cases.",
+      "duration_ms": 14837,
+      "goal_id": "goal_X39QVCM5KD8T0JV301M0NB6D5R"
+    },
+    {
+      "task": "fib-list",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "fib.py exposes fib(n)->list satisfying fib(0)==[] and fib(1)==[0]; pytest suite test_fib.py covers 0,1,2,5,10 and negative input.",
+      "duration_ms": 16822,
+      "goal_id": "goal_FRY3QJ8ND087T3F901M0NB6VNQ"
+    },
+    {
+      "task": "fib-list",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "fib.py declared: fib(n)->list, fib(0)==[], fib(1)==[0], plus inline tests covering n=0,1,2,5,10 and negative/non-int error cases",
+      "duration_ms": 11196,
+      "goal_id": "goal_6T44JWQPEYDZKG1G01M0NB7C3P"
+    },
+    {
+      "task": "fib-list",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "fib.py declares fib(n)->list with negative-input ValueError; embedded tests verify fib(0)==[], fib(1)==[0], and further cases.",
+      "duration_ms": 16318,
+      "goal_id": "goal_E8YQHX1SN3VYBHZK01M0NB7Q13"
+    },
+    {
+      "task": "fib-list",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "fib.py implements fib(n)->list per DoD (fib(0)==[], fib(1)==[0]); pytest suite test_fib.py covers edge cases.",
+      "duration_ms": 16679,
+      "goal_id": "goal_TRHQT8CRDGS4BDV101M0NB86Z9"
+    },
+    {
+      "task": "fib-list",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "fib.py exposes fib(n)->list; fib(0)==[], fib(1)==[0]; pytest suite included.",
+      "duration_ms": 9986,
+      "goal_id": "goal_F0Q8KJ2P978HYS6M01M0NB8Q9M"
+    },
+    {
+      "task": "dict-merge",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "dictutil.py with merge(a,b) -> dict: recursive deep merge returning new dicts, inputs never mutated (nested copies built fresh). Includes inline tests covering overrides, nesting, non-mutation identit",
+      "duration_ms": 23155,
+      "goal_id": "goal_G8ZJQFXQBXTSWWDE01M0NB9108"
+    },
+    {
+      "task": "dict-merge",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "dictutil.merge implemented as non-mutating recursive deep merge (deepcopy for shared subtrees); 5-test suite verified passing via real execution (5/5 PASS, exit 0).",
+      "duration_ms": 74914,
+      "goal_id": "goal_GJ5FSRJBJJDHFND801M0NB9QM6"
+    },
+    {
+      "task": "dict-merge",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "dictutil.py exposes pure deep merge(a,b)->dict (no mutation of inputs or nested dicts); test_dictutil.py covers shallow/nested/conflict/no-mutation/empty cases.",
+      "duration_ms": 19887,
+      "goal_id": "goal_KNMX404CVCYB6WED01M0NBC0S8"
+    },
+    {
+      "task": "dict-merge",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "dictutil.py exposes merge(a,b)->dict performing a deep, non-mutating merge (b wins); test_dictutil.py covers flat/nested merges, precedence, type replacement, empties, and explicit no-mutation checks ",
+      "duration_ms": 23553,
+      "goal_id": "goal_K91ZA1K5CWDJB27S01M0NBCM6R"
+    },
+    {
+      "task": "dict-merge",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "dictutil.py exposes merge(a,b)->dict returning a fresh deep-copied dict with recursive dict merging; neither input nor nested structures mutated. Tests in test_dictutil.py cover flat/nested merge, non",
+      "duration_ms": 25598,
+      "goal_id": "goal_YGYV7AHGPECY85AP01M0NBDB6H"
+    },
+    {
+      "task": "flatten-once",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "flatten.py implements flatten_once via list comprehension ([[1,2],[3]] -> [1,2,3]); test_flatten.py covers basic, empty outer/inner lists, mixed scalars, single-level-only semantics, non-mutation, and",
+      "duration_ms": 19823,
+      "goal_id": "goal_P8G6GBYC11QHJMHJ01M0NBE46E"
+    },
+    {
+      "task": "flatten-once",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "flatten.py declared with flatten_once([[1,2],[3]]) -> [1,2,3] plus pytest-style tests (basic, deep-nesting preserved at level 2, empty inputs, tuples/strings); runnable standalone.",
+      "duration_ms": 18302,
+      "goal_id": "goal_SZ064WMXEYQDJXKF01M0NBEQHZ"
+    },
+    {
+      "task": "flatten-once",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "flatten.py exposes flatten_once(xss)->list flattening exactly one level ([[1,2],[3]] -> [1,2,3]); tests cover basic, empty, deeper nesting untouched, non-list items, and no input mutation.",
+      "duration_ms": 15892,
+      "goal_id": "goal_GA8AQ3CQPVW9V12K01M0NBF9E9"
+    },
+    {
+      "task": "flatten-once",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "flatten.py declares flatten_once(xss)->list; [[1,2],[3]] -> [1,2,3]. Includes doctests and __main__ self-tests covering empty, nested, and non-list inputs.",
+      "duration_ms": 9378,
+      "goal_id": "goal_KWRGP7CV7FXJK79A01M0NBFRYZ"
+    },
+    {
+      "task": "flatten-once",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "flatten.py exposes flatten_once(xss)->list; [[1,2],[3]] -> [1,2,3]; tests cover empty/mixed/deep-nesting/tuple/identity/error cases.",
+      "duration_ms": 15436,
+      "goal_id": "goal_BPNKQ2FXDKH6N4H801M0NBG23N"
+    },
+    {
+      "task": "clamp-num",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "clamp.py exposes clamp(v,lo,hi)->number with ValueError on inverted bounds; test_clamp.py provides 7 pytest-style test functions covering inside/below/above range, inclusive boundaries, floats, negati",
+      "duration_ms": 19262,
+      "goal_id": "goal_TD574HGTF1GD7CNN01M0NBGH6D"
+    },
+    {
+      "task": "clamp-num",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "clamp.py with clamp(v,lo,hi) (raises ValueError on inverted bounds) plus separate pytest file test_clamp.py covering in-range, low/high clamping, inclusive boundaries, negatives, floats.",
+      "duration_ms": 13400,
+      "goal_id": "goal_A9TS8NMCA99BEDJV01M0NBH3ZT"
+    },
+    {
+      "task": "clamp-num",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "clamp.py exposes clamp(v,lo,hi) with inverted-bounds ValueError; test_clamp.py has 5 pytest test functions covering in-range, low/high clamping, floats, and error case.",
+      "duration_ms": 15887,
+      "goal_id": "goal_73ESWBQR4K8KZWS401M0NBHH2H"
+    },
+    {
+      "task": "clamp-num",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "clamp.py exposes clamp(v,lo,hi)->number with ValueError on inverted bounds; test_clamp.py provides 7 pytest-style test functions covering inside/below/above, boundaries, negatives, floats, and error c",
+      "duration_ms": 15985,
+      "goal_id": "goal_Z0Z735CK6BPH95JP01M0NBJ0KC"
+    },
+    {
+      "task": "clamp-num",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "clamp.py with clamp(v,lo,hi) plus pytest-style test_clamp.py covering in-range, low/high clamping, boundaries, floats, and invalid bounds.",
+      "duration_ms": 7520,
+      "goal_id": "goal_XAN4D4KVBWGEWBPJ01M0NBJG76"
+    },
+    {
+      "task": "unique-sorted",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "uniq.py defines unique_sorted(xs) (sorted(set(xs))) plus unittest tests covering empty, duplicates, negatives/floats/strings, non-mutation, and return type.",
+      "duration_ms": 18615,
+      "goal_id": "goal_0FYRAQMT4Y783NDA01M0NBJQJ3"
+    },
+    {
+      "task": "unique-sorted",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "uniq.py exposes unique_sorted(xs)->list (sorted(set(xs))); tests in test_uniq.py cover dedup+sort, empty input, strings, negatives, and list-return type. Logic self-verified by execution.",
+      "duration_ms": 24717,
+      "goal_id": "goal_T32JA9K05T3PJ2WG01M0NBK9QE"
+    },
+    {
+      "task": "unique-sorted",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "uniq.py implements unique_sorted(xs)->list via sorted(set(xs)); tests cover empty, duplicates+ordering, negatives, strings, set input, and list return type.",
+      "duration_ms": 12600,
+      "goal_id": "goal_JDYT8M4NW62V3SCM01M0NBM1VS"
+    },
+    {
+      "task": "unique-sorted",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "uniq.py exposes unique_sorted(xs)->list (sorted(set)); tests in test_uniq.py cover dedup+sort, empty, strings, negatives, generators, return type.",
+      "duration_ms": 16412,
+      "goal_id": "goal_Y4W8022H2V77PQAC01M0NBME6M"
+    },
+    {
+      "task": "unique-sorted",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "uniq.py exposes unique_sorted(xs)->list (sorted(set(xs))); tests in test_uniq.py cover empty, dupes, negatives, strings, non-mutation, list return.",
+      "duration_ms": 17764,
+      "goal_id": "goal_R2R6B6QKEFJMNQZ101M0NBMY6Z"
+    },
+    {
+      "task": "word-count",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "Declared wc.py exposing word_count(s)->int (empty/None -> 0) plus unittest suite test_wc.py covering empty, whitespace-only, single/multiple words, irregular whitespace.",
+      "duration_ms": 66553,
+      "goal_id": "goal_EE153SARG5ZN746N01M0NBNFHM"
+    },
+    {
+      "task": "word-count",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "wc.py exposes word_count(s)->int (empty/whitespace-only -> 0, raises TypeError on non-string); test_wc.py covers empty, whitespace-only, single/multiple words, extra whitespace, tabs/newlines, and non",
+      "duration_ms": 11044,
+      "goal_id": "goal_BC90S5J2E0Y7QKD501M0NBQGHM"
+    },
+    {
+      "task": "word-count",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "wc.py exposes word_count(s)->int (empty/whitespace-only -> 0); test_wc.py covers empty, whitespace-only, single/multiple words, mixed whitespace, and non-string input (6 tests).",
+      "duration_ms": 30703,
+      "goal_id": "goal_Q5RK6KKD3M4THKS201M0NBQVAV"
+    },
+    {
+      "task": "word-count",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "wc.py declared: word_count(s)->int via str.split(), empty string returns 0; no direct file writes performed.",
+      "duration_ms": 14601,
+      "goal_id": "goal_Z2K0ATWXPQWR0M0M01M0NBRS9V"
+    },
+    {
+      "task": "word-count",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "wc.py with word_count(s)->int (empty/None -> 0) plus unittest suite covering empty, whitespace-only, single/multiple words, mixed separators.",
+      "duration_ms": 15474,
+      "goal_id": "goal_AABHC069AA4NXTPM01M0NBS7J2"
+    },
+    {
+      "task": "slugify",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "slug.py implements slugify (ASCII-fold, strip punctuation, lowercase, collapse whitespace/hyphens to single hyphen); test_slug.py covers basic mapping 'Hello World'->'hello-world', punctuation, accent",
+      "duration_ms": 12784,
+      "goal_id": "goal_CB9ERGB9KXM26CTV01M0NBSPP3"
+    },
+    {
+      "task": "slugify",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "slug.py with slugify(s)->str (NFKD accent-stripping, non-alnum runs collapsed to hyphens) plus 6 passing tests; DoD case verified.",
+      "duration_ms": 13945,
+      "goal_id": "goal_JMPGSJ8QGWQ9H01101M0NBT355"
+    },
+    {
+      "task": "slugify",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "slug.py implements slugify(s)->str (NFKD accent-stripping, non-alphanumerics to hyphens, trim); test_slug.py covers basic 'Hello World'->'hello-world', punctuation, accents, trimming, empty string.",
+      "duration_ms": 18464,
+      "goal_id": "goal_ZQW8F8K33CJXP5MH01M0NBTGS8"
+    },
+    {
+      "task": "slugify",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "slug.py implements slugify(s)->str with unicode normalization; test_slug.py covers the required 'Hello World' -> 'hello-world' case plus punctuation, case, accents, empty input, and TypeError. Declare",
+      "duration_ms": 16533,
+      "goal_id": "goal_8YCYKYTSYYE1844301M0NBV2TG"
+    },
+    {
+      "task": "slugify",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "slug.py implements slugify(s)->str (unicode-normalizing, punctuation-collapsing); test_slug.py covers the required case plus edge cases.",
+      "duration_ms": 19920,
+      "goal_id": "goal_KQX2P4BFE7SJEF6N01M0NBVJYJ"
+    },
+    {
+      "task": "divmod-check",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "divmod2.py exposes div_check(a,b)->[q,r] with Python floor-division semantics; test suite covers positives, negatives, zero dividend, zero divisor (raises), and list return type.",
+      "duration_ms": 9579,
+      "goal_id": "goal_DRF0TPXH03MZ11GK01M0NBW6D7"
+    },
+    {
+      "task": "divmod-check",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "divmod2.py implements div_check(a,b)->[q,r] with floor-division semantics matching Python's // and %; raises ZeroDivisionError on b==0 and TypeError on non-numeric input. test_divmod2.py covers exact ",
+      "duration_ms": 16238,
+      "goal_id": "goal_ZXAEN1G734GJ6TN301M0NBWFRT"
+    },
+    {
+      "task": "divmod-check",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "divmod2.py defines div_check(a,b)->[q,r] (floor division semantics); tests cover basic/exact/negative/zero-divisor cases plus a roundtrip property sweep.",
+      "duration_ms": 17402,
+      "goal_id": "goal_4GDAHEFAYAWA9Y3A01M0NBWZM8"
+    },
+    {
+      "task": "divmod-check",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "divmod2.py exposes div_check(a,b)->list [q,r] using Python floor-division semantics; tests cover positives, negatives, zero dividend, exact division, and ZeroDivisionError.",
+      "duration_ms": 17209,
+      "goal_id": "goal_1GXSEXTTRW3B9DWZ01M0NBXGME"
+    },
+    {
+      "task": "divmod-check",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "divmod2.py exposes div_check(a,b)->[q,r] (floor division, raises ZeroDivisionError on b==0); pytest suite included.",
+      "duration_ms": 12027,
+      "goal_id": "goal_6EWSS5QTSG3D024W01M0NBY1DJ"
+    }
+  ]
+}

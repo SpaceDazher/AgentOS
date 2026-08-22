@@ -1,0 +1,1 @@
+{"files":{"wc.py":"def word_count(s: str) -> int:\n    \"\"\"Count whitespace-separated words in s. Empty/whitespace-only -> 0.\"\"\"\n    if not isinstance(s, str):\n        raise TypeError(\"word_count expects a string\")\n    return len(s.split())"}}

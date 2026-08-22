@@ -1,0 +1,1 @@
+Module calc2.py exposes multiply(a,b)->int. Include tests.

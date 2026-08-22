@@ -1,0 +1,1 @@
+Module strutil2.py exposes to_upper(s)->str. Include tests.

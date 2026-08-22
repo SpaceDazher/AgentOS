@@ -1,0 +1,1 @@
+Module strutil.py exposes reverse(s)->str. Include tests.

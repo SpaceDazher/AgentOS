@@ -1,0 +1,1 @@
+Module palindrome.py exposes is_palindrome(s)->bool; comparison ignores case.
