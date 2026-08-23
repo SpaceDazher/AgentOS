@@ -20,6 +20,9 @@ class ARCase(unittest.TestCase):
         self.db = open_db(self.root / "t.db")
         self.se = StageEvals(self.db, self.root)
         self.ar = Autoresearch(self.db, self.root, self.se)
+        self.db.conn.execute(
+            "INSERT INTO goal(id, concept_text, status) VALUES (?,?,?)",
+            ("goal_AR", "probe", "ACTIVE"))
         self.manifest = CampaignManifest(
             baseline_ref="commit-base", primary_metric="pass^1",
             mutable_scope=["src/agentos/prompts.py"],
@@ -100,7 +103,8 @@ class TestFakeCampaign(ARCase):
         ]
         results = self.ar.run_fake_campaign(
             self.manifest, scenarios,
-            dev_eval_fn=lambda wt, seed: 0.5)
+            dev_eval_fn=lambda wt, seed: 0.5,
+            goal_id="goal_AR")
         statuses = [r["status"] for r in results]
         # QUARANTINED halts the campaign -> trailing CAMPAIGN_STOPPED marker
         self.assertEqual(statuses, ["KEEP", "DISCARD", "RETEST", "CRASH",
@@ -119,7 +123,8 @@ class TestFakeCampaign(ARCase):
                  "infrastructure_failure": True}
         results = self.ar.run_fake_campaign(
             self.manifest, [dict(crash) for _ in range(5)],
-            dev_eval_fn=lambda wt, seed: 0.5)
+            dev_eval_fn=lambda wt, seed: 0.5,
+            goal_id="goal_AR")
         stops = [r for r in results if r["status"] == "CAMPAIGN_STOPPED"]
         self.assertEqual(len(stops), 1)
         self.assertEqual(stops[0]["reason"], "infra_failures_3")
@@ -137,7 +142,8 @@ class TestFakeCampaign(ARCase):
             budget=2)
         results = self.ar.run_fake_campaign(
             tight, [dict(good) for _ in range(5)],
-            dev_eval_fn=lambda wt, seed: 0.5)
+            dev_eval_fn=lambda wt, seed: 0.5,
+            goal_id="goal_AR")
         self.assertEqual(results[-1]["status"], "CAMPAIGN_STOPPED")
         self.assertEqual(results[-1]["reason"], "budget_exhausted")
         keeps = [r for r in results if r["status"] == "KEEP"]
@@ -152,7 +158,8 @@ class TestFakeCampaign(ARCase):
                  "measurements": {"dev": 0.3}}
         results = self.ar.run_fake_campaign(
             self.manifest, [bad, after],
-            dev_eval_fn=lambda wt, seed: 0.5)
+            dev_eval_fn=lambda wt, seed: 0.5,
+            goal_id="goal_AR")
         self.assertEqual(results[0]["status"], "QUARANTINED")
         # campaign halts immediately after quarantine
         self.assertEqual(results[-1]["reason"], "security_violation")

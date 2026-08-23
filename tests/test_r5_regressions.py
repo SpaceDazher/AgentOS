@@ -39,21 +39,21 @@ class TestFailClosedGates(R5Case):
                               metric="clarity", threshold=0.8)
 
     def test_empty_required_set_fails_closed(self):
-        gate = self.se.stage_gate("concept", [], goal_id="goal_A")
+        gate = self.se.stage_gate("concept", [], goal_id="goal_A", artifact_chain_hash="chain-A")
         self.assertEqual(gate["decision"], "fail")
 
     def test_no_runs_for_goal_fails(self):
         did, _ = self._defn()
-        gate = self.se.stage_gate("concept", [did], goal_id="goal_B")
+        gate = self.se.stage_gate("concept", [did], goal_id="goal_B", artifact_chain_hash="chain-A")
         self.assertEqual(gate["decision"], "fail")
 
     def test_cross_goal_reuse_impossible(self):
         """A passing run for goal_A must not satisfy goal_B's gate."""
         did, _ = self._defn()
         case = {"id": "c1"}
-        self.se.run_case(did, case, lambda c: (True, {}), goal_id="goal_A")
-        ok_gate = self.se.stage_gate("concept", [did], goal_id="goal_A")
-        cross_gate = self.se.stage_gate("concept", [did], goal_id="goal_B")
+        self.se.run_case(did, case, lambda c: (True, {}), goal_id="goal_A", artifact_chain_hash="chain-A")
+        ok_gate = self.se.stage_gate("concept", [did], goal_id="goal_A", artifact_chain_hash="chain-A")
+        cross_gate = self.se.stage_gate("concept", [did], goal_id="goal_B", artifact_chain_hash="chain-A")
         self.assertEqual(ok_gate["decision"], "pass")
         self.assertEqual(cross_gate["decision"], "fail")
 
@@ -74,9 +74,11 @@ class TestLLMJudgeAdvisoryOnly(R5Case):
         case = {"id": "c"}
         with self.assertRaises(StageEvalError):
             self.se.run_case(did, case, lambda c: (True, {}), goal_id="goal_A",
+                             artifact_chain_hash="chain-A",
                              judge={"model_id": "m", "prompt_version": "pX",
                                     "rubric_version": "r1"})
         r = self.se.run_case(did, case, lambda c: (True, {}), goal_id="goal_A",
+                             artifact_chain_hash="chain-A",
                              judge={"model_id": "m", "prompt_version": "p1",
                                     "rubric_version": "r1"})
         self.assertEqual(r["outcome"], "pass")
@@ -89,7 +91,7 @@ class TestImmutableDecisions(R5Case):
 
     def test_stage_gate_and_experiment_are_append_only(self):
         did, _ = self._defn()
-        gate = self.se.stage_gate("concept", [did], goal_id="goal_A")
+        gate = self.se.stage_gate("concept", [did], goal_id="goal_A", artifact_chain_hash="chain-A")
         with self.assertRaises(Exception):
             self.db.conn.execute(
                 "UPDATE stage_gate SET decision='pass' WHERE id=?",
@@ -120,6 +122,9 @@ class TestRealWorktreeCampaign(unittest.TestCase):
         self.frozen = frozen
         self.root = Path(tempfile.mkdtemp())
         self.db = open_db(self.root / "t.db")
+        self.db.conn.execute(
+            "INSERT INTO goal(id, concept_text, status) VALUES (?,?,?)",
+            ("goal_AR", "probe", "ACTIVE"))
         from agentos.stage_evals import StageEvals
         from agentos.autoresearch import Autoresearch
         self.ar = Autoresearch(self.db, self.root, None,
@@ -151,7 +156,9 @@ class TestRealWorktreeCampaign(unittest.TestCase):
             self._manifest(),
             [{"hypothesis": "better prompt", "candidate_ref": "c1",
               "apply": apply, "measurements": {}}],
-            dev_eval_fn=lambda wt, seed: 0.4 if wt else 0.5)
+            goal_id="goal_AR",
+            dev_eval_fn=lambda wt, seed: 0.4 if wt else 0.5,
+            holdout_fn=lambda wt, seed: {"passed": True})
         self.assertTrue(calls, "apply(worktree) was never invoked")
         self.assertEqual(results[0]["status"], "KEEP")
 
@@ -167,7 +174,9 @@ class TestRealWorktreeCampaign(unittest.TestCase):
             [{"hypothesis": "evil", "candidate_ref": "evil-1",
               "apply": apply},
              {"hypothesis": "innocent", "candidate_ref": "ok"}],
-            dev_eval_fn=lambda wt, seed: 0.3 if wt else 0.5)
+            dev_eval_fn=lambda wt, seed: 0.3 if wt else 0.5,
+            holdout_fn=lambda wt, seed: {"passed": True},
+            goal_id="goal_AR")
         self.assertEqual(results[0]["status"], "QUARANTINED")
         self.assertIn("FROZEN file modified",
                       results[0]["rationale"])
@@ -182,7 +191,9 @@ class TestRealWorktreeCampaign(unittest.TestCase):
             self._manifest(),
             [{"hypothesis": "scope creep", "candidate_ref": "sc",
               "apply": apply}],
-            dev_eval_fn=lambda wt, seed: 0.3 if wt else 0.5)
+            dev_eval_fn=lambda wt, seed: 0.3 if wt else 0.5,
+            holdout_fn=lambda wt, seed: {"passed": True},
+            goal_id="goal_AR")
         self.assertIn(results[0]["status"],
                       ("QUARANTINED", "DISCARD"))
 

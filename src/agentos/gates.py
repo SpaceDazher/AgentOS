@@ -250,16 +250,32 @@ class Gates:
         if unknown:
             reasons.append(f"{unknown} unresolved/reconciled-failed activities")
 
-        # R5: stage gates participate in release. Every stage gate recorded
-        # for this goal must be 'pass' — a failed stage gate blocks release.
-        sg = self.db.conn.execute(
-            "SELECT stage, decision, rationale FROM stage_gate"
-            " WHERE goal_id=? ORDER BY created_at", (goal_id,)).fetchall()
-        for row in sg:
-            if row["decision"] != "pass":
-                reasons.append(
-                    f"stage gate {row['stage']} = {row['decision']}: "
-                    f"{(row['rationale'] or '')[:120]}")
+        # R5+R6: stage gates participate in release WHEN the goal has any
+        # stage-eval activity (definitions defined + runs or gates recorded).
+        # Goals evaluated purely by legacy acceptance_criteria are exempt:
+        # requiring six gates would break every pre-EPIC flow.
+        has_stage_activity = self.db.conn.execute(
+            "SELECT COUNT(*) FROM eval_run WHERE goal_id=?", (goal_id,)
+        ).fetchone()[0] > 0
+        if has_stage_activity:
+            expected_stages = {"concept", "specification", "plan", "execution",
+                               "verification", "post_episode"}
+            latest_by_stage = {}
+            for row in self.db.conn.execute(
+                    "SELECT id, stage, decision, rationale, created_at"
+                    " FROM stage_gate WHERE goal_id=? ORDER BY created_at, id",
+                    (goal_id,)).fetchall():
+                latest_by_stage[row["stage"]] = row   # later rows overwrite
+            missing = sorted(expected_stages - set(latest_by_stage))
+            if missing:
+                reasons.append("no stage gate recorded for stages: "
+                               + ", ".join(missing))
+            for stage in sorted(expected_stages & set(latest_by_stage)):
+                row = latest_by_stage[stage]
+                if row["decision"] != "pass":
+                    reasons.append(
+                        f"latest stage gate {stage} = {row['decision']}: "
+                        f"{(row['rationale'] or '')[:120]}")
 
         chain_ok, bad_seq = self.j.full_chain_check()
         if not chain_ok:

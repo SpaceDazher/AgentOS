@@ -98,9 +98,9 @@ class TestRunsAndGates(StageEvalsCase):
         did, _ = self._defn()
         case = {"id": "c1", "label": "x"}
         r1 = self.se.run_case(did, case, lambda c: (True, {}),
-                              goal_id="goal_A")
+                              goal_id="goal_A", artifact_chain_hash="chain-A")
         r2 = self.se.run_case(did, case, lambda c: (False, {"why": "gap"}),
-                              goal_id="goal_A")
+                              goal_id="goal_A", artifact_chain_hash="chain-A")
         self.assertEqual(r1["outcome"], "pass")
         self.assertEqual(r2["outcome"], "fail")
 
@@ -109,22 +109,22 @@ class TestRunsAndGates(StageEvalsCase):
         adv_id, _ = self._defn(required=False, metric="polish")
         bad = {"id": "c"}
         # both fail once (same goal)
-        self.se.run_case(req_id, bad, lambda c: (False, {}), goal_id="goal_A")
-        self.se.run_case(adv_id, bad, lambda c: (False, {}), goal_id="goal_A")
+        self.se.run_case(req_id, bad, lambda c: (False, {}), goal_id="goal_A", artifact_chain_hash="chain-A")
+        self.se.run_case(adv_id, bad, lambda c: (False, {}), goal_id="goal_A", artifact_chain_hash="chain-A")
         gate = self.se.stage_gate("specification", [req_id, adv_id],
-                                  goal_id="goal_A")
+                                  goal_id="goal_A", artifact_chain_hash="chain-A")
         self.assertEqual(gate["decision"], "fail")
         self.assertTrue(any("eval.specification.traceability" in r
                             for r in gate["reasons"]))
         # advisory failure alone must not fail the gate
         gate2 = self.se.stage_gate("specification", [adv_id],
-                                   goal_id="goal_A")
+                                   goal_id="goal_A", artifact_chain_hash="chain-A")
         self.assertEqual(gate2["decision"], "pass")
         self.assertTrue(gate2["reasons"])   # but it is recorded
 
     def test_gate_fails_when_required_eval_has_no_runs(self):
         did, _ = self._defn(required=True)
-        gate = self.se.stage_gate("specification", [did], goal_id="goal_B")
+        gate = self.se.stage_gate("specification", [did], goal_id="goal_B", artifact_chain_hash="chain-A")
         self.assertEqual(gate["decision"], "fail")
         self.assertTrue(any("no eval runs" in r for r in gate["reasons"]))
 
@@ -133,10 +133,11 @@ class TestRunsAndGates(StageEvalsCase):
         case = {"id": "c"}
         with self.assertRaises(StageEvalError):
             self.se.run_case(did, case, lambda c: (True, {}),
-                             goal_id="goal_A",
+                             goal_id="goal_A", artifact_chain_hash="chain-A",
                              judge={"prompt_version": "p1"})  # no model_id
         # with full provenance it runs and the judge block is persisted
         r = self.se.run_case(did, case, lambda c: (True, {}), goal_id="goal_A",
+                             artifact_chain_hash="chain-A",
                              judge={"model_id": "m", "prompt_version": "p1",
                                     "rubric_version": "r1"})
         self.assertEqual(r["outcome"], "pass")

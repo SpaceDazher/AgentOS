@@ -15,9 +15,13 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import shutil
+import subprocess
+import sys
 import tempfile
 import time
+import types
 from pathlib import Path
 
 from .gateway import GatewayError
@@ -56,7 +60,9 @@ def _tree_hashes(root: Path) -> dict:
 
 
 class FrozenManifest:
-    """Attribute-frozen wrapper: any write raises."""
+    """Deeply frozen wrapper: attribute writes raise AND returned containers
+    are immutable copies, so `manifest.mutable_scope.append(...)` cannot
+    mutate the manifest without changing its hash."""
 
     def __init__(self, inner: dict, hash_value: str):
         object.__setattr__(self, "_inner", inner)
@@ -64,9 +70,19 @@ class FrozenManifest:
 
     def __getattr__(self, name):
         try:
-            return self._inner[name]
+            value = self._inner[name]
         except KeyError as e:
             raise AttributeError(name) from e
+        # deep-freeze containers: return read-only proxies
+        if isinstance(value, list):
+            return tuple(value)
+        if isinstance(value, dict):
+            return types.MappingProxyType(dict(value))
+        return value
+
+    def to_jsonable(self) -> dict:
+        """Plain (JSON-serializable) deep copy of the manifest."""
+        return json.loads(json.dumps(self._inner))
 
     def __setattr__(self, name, value):
         raise AutoresearchError("CampaignManifest is immutable")
@@ -127,14 +143,24 @@ class Autoresearch:
             self.repo_source = None   # empty worktree mode (tests)
 
     # -- persistence -----------------------------------------------------------
-    def create_campaign(self, manifest: FrozenManifest, name: str) -> str:
+    def create_campaign(self, manifest: FrozenManifest, name: str,
+                        goal_id: str | None = None) -> str:
         cid = new_id("campaign")
+        gid = goal_id
+        if not gid:
+            raise AutoresearchError(
+                "campaign requires goal_id — a campaign belongs to ONE goal")
+        exists = self.db.conn.execute(
+            "SELECT 1 FROM goal WHERE id=?", (gid,)).fetchone()
+        if not exists:
+            raise AutoresearchError(f"campaign goal {gid} does not exist")
         with self.db.tx() as conn:
             conn.execute(
-                "INSERT INTO campaign(id, name, manifest_json,"
+                "INSERT INTO campaign(id, goal_id, name, manifest_json,"
                 " manifest_sha256, baseline_ref, primary_metric, budget)"
-                " VALUES (?,?,?,?,?,?,?)",
-                (cid, name, json.dumps(manifest._inner, sort_keys=True),
+                " VALUES (?,?,?,?,?,?,?,?)",
+                (cid, gid, name,
+                 json.dumps(manifest.to_jsonable(), sort_keys=True),
                  manifest.manifest_hash, manifest.baseline_ref,
                  manifest.primary_metric, manifest.budget))
             conn.execute(
@@ -143,11 +169,11 @@ class Autoresearch:
                 " budget_json, seeds_json, primary_metric, status,"
                 " frozen_hashes_json) VALUES (?,?,?,?,?,?,?,?,?, 'proposed', ?)",
                 (cid, cid, f"campaign {name}", manifest.baseline_ref,
-                 "(baseline)", json.dumps(manifest.mutable_scope),
+                 "(baseline)", json.dumps(list(manifest.mutable_scope)),
                  json.dumps({"experiments": manifest.budget}),
-                 json.dumps(manifest.seeds), manifest.primary_metric,
+                 json.dumps(list(manifest.seeds)), manifest.primary_metric,
                  json.dumps({"manifest": manifest.manifest_hash,
-                             "evals": manifest.frozen_eval_hashes,
+                             "evals": dict(manifest.frozen_eval_hashes),
                              "corpus": manifest.corpus_hash})))
         return cid
 
@@ -174,9 +200,9 @@ class Autoresearch:
                 " VALUES (?,?,?,?,?,?,?,?,?,?,?,?, strftime("
                 "'%Y-%m-%dT%H:%M:%fZ','now'), ?)",
                 (eid, campaign_id, hypothesis, baseline_ref, candidate_ref,
-                 json.dumps(mutable_scope), "[]", "", status,
+                 json.dumps(list(mutable_scope)), "[]", "", status,
                  json.dumps(measurements_full), rationale,
-                 json.dumps(frozen_hashes or {}), goal_id))
+                 json.dumps(frozen_hashes or {}, default=dict), goal_id))
         return eid
 
     @staticmethod
@@ -257,14 +283,25 @@ class Autoresearch:
     # -- campaign loop ------------------------------------------------------------
     def run_campaign(self, manifest: FrozenManifest,
                      scenarios: list[dict], dev_eval_fn,
-                     holdout_fn=None) -> list[dict]:
-        """Real pipeline: per scenario create a worktree, invoke apply(worktree),
-        verify scope+frozen from disk, run dev+holdout evals, decide, record.
+                     holdout_fn=None, *, goal_id: str | None = None) -> list[dict]:
+        """Real pipeline (R6): per scenario create a worktree, run the
+        candidate's apply SCRIPT in an ISOLATED SUBPROCESS (cwd=worktree —
+        the host process is never exposed to candidate code), verify scope +
+        frozen hashes from disk, then dev evals + MANDATORY holdout before
+        any KEEP.
 
-        scenarios: [{"hypothesis", "candidate_ref", "apply"(callable|None),
-                     "measurements"? {"dev": value}, "infrastructure_failure"?,
-                     "security_violation"?}]"""
-        campaign_id = self.create_campaign(manifest, "autoresearch")
+        scenarios: [{"hypothesis", "candidate_ref", "apply_cmd"(list argv
+                    executed with cwd=worktree) | "apply"(callable, fake mode),
+                    "measurements"? {"dev": value}, "infrastructure_failure"?,
+                    "security_violation"?}]
+        holdout_fn(worktree, seed) -> {"passed": bool} must be supplied;
+        KEEP requires holdout passed."""
+        if holdout_fn is None:
+            raise AutoresearchError(
+                "run_campaign requires holdout_fn — KEEP without an "
+                "independent holdout evaluation is forbidden (ADR-0008)")
+        campaign_id = self.create_campaign(manifest, "autoresearch",
+                                           goal_id=goal_id)
         results = []
         infra_streak = 0
         spent = 0
@@ -279,35 +316,65 @@ class Autoresearch:
             wt = self._new_worktree()
             before = _tree_hashes(wt)
             apply_called = False
+            infra_fail = bool(sc.get("infrastructure_failure"))
             try:
-                apply_fn = sc.get("apply")
-                if apply_fn is not None:
-                    apply_fn(wt)
+                if sc.get("apply") is not None:
+                    # deterministic/drill path (tests): callable on the copy
+                    sc["apply"](wt)
                     apply_called = True
+                elif sc.get("apply_cmd"):
+                    # R6: candidate code runs in an isolated subprocess whose
+                    # cwd IS the worktree; it cannot touch host paths except
+                    # via what it is given.
+                    proc = subprocess.run(
+                        [*sc["apply_cmd"]], cwd=str(wt),
+                        capture_output=True, text=True,
+                        timeout=manifest.hard_constraints.get("timeout_s", 600))
+                    if proc.returncode != 0:
+                        infra_fail = True
+                        sc["stderr_excerpt"] = (proc.stderr or "")[-300:]
                 scope_ok, violations = self._verify_scope_and_frozen(
                     manifest, wt, before)
-            except Exception as e:  # noqa: BLE001 — apply crash => CRASH
+            except Exception as e:  # noqa: BLE001 — crash => CRASH
+                infra_fail = True
+                sc["stderr_excerpt"] = str(e)[:200]
+                scope_ok, violations = False, [f"apply failed: {e}"]
+            if infra_fail and not violations:
                 infra_streak += 1
                 spent += 1
                 eid = self.record_experiment(
                     campaign_id, sc["hypothesis"], manifest.baseline_ref,
-                    sc["candidate_ref"], manifest.mutable_scope,
-                    {"error": str(e)[:200]}, "CRASH",
-                    "apply() raised", goal_id=None)
+                    sc["candidate_ref"], list(manifest.mutable_scope),
+                    {"error": sc.get("stderr_excerpt", "infra failure")},
+                    "CRASH", "infrastructure/provider failure",
+                    goal_id=goal_id)
                 results.append({"experiment_id": eid, "status": "CRASH",
-                                "rationale": "apply() raised"})
+                                "rationale": "infrastructure failure"})
                 if infra_streak >= 3:
                     stopped = "infra_failures_3"
+                shutil.rmtree(wt, ignore_errors=True)
                 continue
             base_val = dev_eval_fn(None, seed=manifest.seeds[0])
             cand_val = dev_eval_fn(wt, seed=manifest.seeds[0])
+            # MANDATORY independent holdout before any KEEP decision
+            holdout = None
+            try:
+                holdout = holdout_fn(wt, seed=manifest.seeds[0])
+            except Exception as e:  # noqa: BLE001
+                scope_ok = False
+                violations = [*violations, f"holdout raised: {e}"]
+            holdout_passed = bool(holdout and holdout.get("passed"))
             status, rationale = self.decide(
                 base_val, cand_val,
                 noise_floor=sc.get("noise_floor", 0.02),
                 hard_constraints_ok=scope_ok,
                 frozen_ok=scope_ok,
                 security_violation=bool(sc.get("security_violation")))
-            if status == "QUARANTINED" and violations:
+            if status == "KEEP" and not holdout_passed:
+                status = "QUARANTINED"
+                rationale = ("holdout gate failed — KEEP requires an "
+                             "independent holdout pass (ADR-0008)")
+            elif status == "QUARANTINED" and violations:
                 rationale = "; ".join(violations[:3])
             if status == "CRASH":
                 infra_streak += 1
@@ -320,11 +387,11 @@ class Autoresearch:
             spent += 1
             eid = self.record_experiment(
                 campaign_id, sc["hypothesis"], manifest.baseline_ref,
-                sc["candidate_ref"], manifest.mutable_scope,
+                sc["candidate_ref"], list(manifest.mutable_scope),
                 {"baseline_dev": base_val, "candidate_dev": cand_val},
                 status, rationale,
                 frozen_hashes={"manifest": manifest.manifest_hash},
-                worktree_digest=_tree_hashes(wt))
+                worktree_digest=_tree_hashes(wt), goal_id=goal_id)
             shutil.rmtree(wt, ignore_errors=True)
             results.append({"experiment_id": eid, "status": status,
                             "rationale": rationale,
@@ -335,11 +402,13 @@ class Autoresearch:
 
     # -- deterministic fake campaign kept for LLM-free drills --------------------
     def run_fake_campaign(self, manifest: FrozenManifest,
-                          scenarios: list[dict], dev_eval_fn) -> list[dict]:
+                          scenarios: list[dict], dev_eval_fn,
+                          goal_id: str | None = None) -> list[dict]:
         """Scripted variant used by unit tests/drills. Applies real worktree
         verification when `apply` mutates files; measurement values come from
         the scenario."""
-        campaign_id = self.create_campaign(manifest, "fake")
+        campaign_id = self.create_campaign(manifest, "fake",
+                                           goal_id=goal_id)
         results = []
         infra_streak = 0
         spent = 0
@@ -363,7 +432,7 @@ class Autoresearch:
                 spent += 1
                 eid = self.record_experiment(
                     campaign_id, sc["hypothesis"], manifest.baseline_ref,
-                    sc["candidate_ref"], manifest.mutable_scope,
+                    sc["candidate_ref"], list(manifest.mutable_scope),
                     {"error": str(e)[:200]}, "CRASH", "apply() raised")
                 results.append({"experiment_id": eid, "status": "CRASH",
                                 "rationale": "apply() raised"})
@@ -394,7 +463,7 @@ class Autoresearch:
             spent += 1
             eid = self.record_experiment(
                 campaign_id, sc["hypothesis"], manifest.baseline_ref,
-                sc["candidate_ref"], manifest.mutable_scope,
+                sc["candidate_ref"], list(manifest.mutable_scope),
                 {"baseline_dev": base_val, "candidate_dev": cand_val},
                 status, rationale,
                 frozen_hashes={"manifest": manifest.manifest_hash})

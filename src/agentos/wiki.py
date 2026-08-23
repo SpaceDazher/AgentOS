@@ -11,6 +11,8 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
+import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -42,12 +44,15 @@ def _fm_escape(value: str) -> str:
 
 
 def _note(rel_path: str, fm: dict, summary: str, body_sections: list[str],
-          generated: bool = True) -> str:
+          generated: bool = True, redact=None) -> str:
+    """Compose a note; EVERY text (frontmatter values, title, summary, body)
+    passes through `redact` so untrusted fields cannot leak into the vault."""
+    _red = redact or (lambda t: t)
     lines = ["---"]
     for k, v in fm.items():
         if v is None:
             continue
-        lines.append(f"{k}: {_fm_escape(v)}")
+        lines.append(f"{k}: {_fm_escape(_red(str(v)))}")
     lines.append("---")
     lines.append("")
     if generated:
@@ -56,11 +61,11 @@ def _note(rel_path: str, fm: dict, summary: str, body_sections: list[str],
         lines.append("> Edits are overwritten by `wiki-build`. Human notes go"
                      " to 10-/20-/90- folders via explicit import.")
         lines.append("")
-    lines.append(f"# {fm.get('title', rel_path)}")
+    lines.append(f"# {_red(str(fm.get('title', rel_path)))}")
     lines.append("")
-    lines.append(summary)
+    lines.append(_red(summary))
     lines.append("")
-    lines.extend(body_sections)
+    lines.extend(_red(s) for s in body_sections)
     return "\n".join(lines) + "\n"
 
 
@@ -77,6 +82,10 @@ class WikiBuilder:
             (self.wiki / d).mkdir(parents=True, exist_ok=True)
         c = self.db.conn
         counts: dict[str, int] = {}
+        # R6: build into a STAGING directory; _generated is atomically
+        # swapped at the end so a mid-build failure cannot leave a mixed
+        # projection.
+        self._staging = Path(tempfile.mkdtemp(prefix='wiki-stage-'))
 
         # Redaction before any content reaches the vault (R5): strip obvious
         # secret assignments and long token-like strings from untrusted text.
@@ -85,6 +94,11 @@ class WikiBuilder:
                           r"\1=[REDACTED]", text)
             text = re.sub(r"\b[A-Za-z0-9_\-]{40,}\b", "[REDACTED-TOKEN]", text)
             return text
+
+        def write_generated(rel_name: str, content: str) -> None:
+            (self._staging / GENERATED_DIR).mkdir(parents=True, exist_ok=True)
+            (self._staging / GENERATED_DIR / rel_name).write_text(
+                content, encoding="utf-8")
 
         goals = c.execute(
             "SELECT id, status, created_at FROM goal ORDER BY created_at"
@@ -113,9 +127,8 @@ class WikiBuilder:
                 *([f"- [[eval-{r['id']}|{r['id']}@{r['v']}]] ({r['stage']},"
                    f" {'required' if r['required'] else 'advisory'})"
                    for r in eval_defs] or ["- (none)"]),
-            ])
-        (self.wiki / GENERATED_DIR / "Home.md").write_text(home,
-                                                           encoding="utf-8")
+            ], redact=redact)
+        write_generated("Home.md", home)
         counts["home"] = 1
 
         # Goals + tasks + runs ----------------------------------------------
@@ -150,8 +163,7 @@ class WikiBuilder:
                           "created_at": g["created_at"],
                           "updated_at": g["created_at"]},
                          f"Goal {gid} — {g['status']}.", body)
-            (self.wiki / GENERATED_DIR / f"goal-{gid}.md").write_text(
-                note, encoding="utf-8")
+            write_generated(f"goal-{gid}.md", note)
             counts["goals"] = counts.get("goals", 0) + 1
 
             # task + run notes (targets of the goal's links)
@@ -163,8 +175,7 @@ class WikiBuilder:
                             "created_at": "", "updated_at": ""},
                            f"Task {t['id']} — {t['status']}.",
                            [f"Backlinks: [[goal-{gid}]]"])
-                (self.wiki / GENERATED_DIR /
-                 f"task-{t['id']}.md").write_text(tn, encoding="utf-8")
+                write_generated(f"task-{t['id']}.md", tn)
                 counts["tasks"] = counts.get("tasks", 0) + 1
             for r in runs:
                 rn = _note(f"_generated/run-{r['id']}.md",
@@ -175,8 +186,7 @@ class WikiBuilder:
                            f"Run {r['id']} — {r['status']}.",
                            [f"Terminal: {(r['terminal_reason'] or '')[:200]}",
                             f"Backlinks: [[goal-{gid}]]"])
-                (self.wiki / GENERATED_DIR /
-                 f"run-{r['id']}.md").write_text(rn, encoding="utf-8")
+                write_generated(f"run-{r['id']}.md", rn)
                 counts["runs"] = counts.get("runs", 0) + 1
 
         # Eval definitions ---------------------------------------------------
@@ -191,9 +201,8 @@ class WikiBuilder:
                 f" stage **{r['stage']}**, metric `{r['metric']}`.",
                 [f"- latest version: {r['v']}",
                  "- authority: deterministic checks block; llm_judge is"
-                 " advisory only (ADR-0006)"])
-            (self.wiki / GENERATED_DIR /
-             f"eval-{r['id']}.md").write_text(note, encoding="utf-8")
+                 " advisory only (ADR-0006)"], redact=redact)
+            write_generated(f"eval-{r['id']}.md", note)
             counts["evals"] = counts.get("evals", 0) + 1
 
         # Experiments ---------------------------------------------------------
@@ -209,9 +218,8 @@ class WikiBuilder:
                  "",
                  "## Decision rationale",
                  redact(e["decision_rationale"] or "(pending)"),
-                 "", "Decision policy: ADR-0008."])
-            (self.wiki / GENERATED_DIR /
-             f"experiment-{e['id']}.md").write_text(note, encoding="utf-8")
+                 "", "Decision policy: ADR-0008."], redact=redact)
+            write_generated(f"experiment-{e['id']}.md", note)
             counts["experiments"] = counts.get("experiments", 0) + 1
 
         # Stage-gates -> decisions folder ------------------------------------
@@ -224,9 +232,8 @@ class WikiBuilder:
                  f"stage gate {sg['stage']}", "decision": sg["decision"],
                  "status": "final", "created_at": "", "updated_at": ""},
                 f"Stage gate **{sg['stage']}** → {sg['decision']}.",
-                ["## Rationale", redact(sg["rationale"])])
-            (self.wiki / GENERATED_DIR /
-             f"stagegate-{sg['id']}.md").write_text(note, encoding="utf-8")
+                ["## Rationale", redact(sg["rationale"])], redact=redact)
+            write_generated(f"stagegate-{sg['id']}.md", note)
             counts["stage_gates"] = counts.get("stage_gates", 0) + 1
 
         # R5: staging + atomic swap — remove stale generated notes so a note
@@ -253,8 +260,25 @@ class WikiBuilder:
         removed = 0
         for p in sorted(gen.glob("*.md")):
             if p.name not in canonical_names:
-                p.unlink()
+                p.unlink()          # stale generated note from an old record
                 removed += 1
+        # R6 atomic swap: move freshly staged notes over _generated as one
+        # directory replacement — a mid-build failure leaves the OLD complete
+        # projection intact.
+        staged_gen = self._staging / GENERATED_DIR
+        backup = gen.with_suffix(".bak")
+        if backup.exists():
+            shutil.rmtree(backup, ignore_errors=True)
+        gen.rename(backup)
+        try:
+            shutil.copytree(staged_gen, gen)
+        except Exception:
+            if backup.exists() and not gen.exists():
+                backup.rename(gen)   # roll back on failure
+            raise
+        finally:
+            shutil.rmtree(backup, ignore_errors=True)
+            shutil.rmtree(self._staging, ignore_errors=True)
         return {"notes_written": sum(counts.values()), "counts": counts,
                 "stale_removed": removed}
 

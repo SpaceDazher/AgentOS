@@ -21,7 +21,7 @@ risk / next step. Items closed by recent work are listed at the bottom.
 | Hermes plugin | **installed & enabled** (`%LOCALAPPDATA%\hermes\plugins\agentos-harness`); 4 tools live in chat, verified end-to-end | bootstrap pins repo path via AGENTOS_REPO default | pip packaging removes the path pin |
 | DAG at scale | sequential demos; scheduler untested beyond linear/2-node DAGs | no parallel execution | property tests + bounded-parallel executor behind leases |
 | CI | GitHub Actions matrix (3.11/3.12 × win/ubuntu): tests + SHA pin + demo smoke + plugin import check | runs only when a GitHub remote exists | add remote and push |
-| Eval evidence | **executed**: harness drills pass⁵=1.0; end-to-end N=20×5: pass¹=0.93 [0.863–0.966], pass⁵=0.75 [0.531–0.888]; pre-registered threshold NOT met (см. eval/E2_RESULTS.md); recording contract частично нарушен (packs не строились per-episode — runner исправлен) | human gold-set для false-completion; near-miss FPR/FNR; frame expansion | protocol §Compliance items |
+| Eval evidence | **executed**: harness drills pass⁵=1.0; E2 N=20×5: pass¹=0.93, pass⁵=0.75 (порог не взят); stage gates интегрированы в release Gate (6 этапов, latest-wins); eval_run привязан к goal+case+artifact-chain+corpus | human gold-set для false-completion; LLM-judge FPR/FNR | protocol §Compliance items |
 
 ## Closed gaps (history)
 

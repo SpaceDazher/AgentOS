@@ -132,6 +132,11 @@ class StageEvals:
                 raise StageEvalError(
                     "judge prompt/rubric version does not match definition"
                     f" {def_id}@{d['version']}")
+        # R6: real binding columns — chain and corpus are REQUIRED, a run is
+        # only ever valid against the artifact chain it actually evaluated.
+        if not artifact_chain_hash:
+            raise StageEvalError(
+                "eval_run requires artifact_chain_hash (what did it evaluate?)")
         t0 = time.perf_counter()
         try:
             ok, detail = check_fn(case)
@@ -146,33 +151,36 @@ class StageEvals:
             conn.execute(
                 "INSERT INTO eval_run(id, goal_id, definition_id,"
                 " definition_version, env_json, seed, metrics_json, outcome,"
-                " logs_sha256, duration_ms, failure_class, judge_json)"
-                " VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                " logs_sha256, duration_ms, failure_class, judge_json,"
+                " case_id, corpus_version, artifact_chain_hash)"
+                " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (run_id, goal_id, def_id, d["version"],
-                 json.dumps({"env": env or {}, "case_id": case_id,
-                             "artifact_chain_hash": chain,
-                             "corpus_version": corpus}, sort_keys=True),
+                 json.dumps(env or {}, sort_keys=True),
                  seed, json.dumps(metrics), outcome,
                  sha256_text(json.dumps(detail, sort_keys=True)),
                  round((time.perf_counter() - t0) * 1000), failure_class,
-                 json.dumps(judge) if judge else None))
+                 json.dumps(judge) if judge else None,
+                 case_id, corpus, artifact_chain_hash))
         return {"eval_run_id": run_id, "outcome": outcome, "ok": ok,
                 "detail": detail, "case_id": case_id,
                 "definition": f"{def_id}@{d['version']}"}
 
     # -- stage gates ----------------------------------------------------------
     def stage_gate(self, stage: str, required_eval_ids: list[str],
-                   goal_id: str, artifact_chain_hash: str | None = None,
+                   goal_id: str, artifact_chain_hash: str,
                    corpus_version: str | None = None) -> dict:
         """Decide a stage gate from persisted eval_run outcomes.
 
-        Fail-closed rules (R5): empty required list => FAIL; every required
-        definition needs >=1 run for THIS goal (cross-goal reuse impossible);
-        a definition with zero runs for this goal fails the gate."""
+        Fail-closed rules (R6): empty required list => FAIL; every required
+        definition needs >=1 run for THIS goal evaluated against THIS
+        artifact chain and corpus version (stale/cross-goal reuse
+        impossible); a definition with zero matching runs fails."""
         if not required_eval_ids:
             return self._record_gate(stage, [], "fail", goal_id,
                                      ["no required evals configured — "
                                       "fail-closed"])
+        corpus = corpus_version or self.latest(required_eval_ids[0])[
+            "corpus_version"]
         reasons: list[str] = []
         decision = "pass"
         for def_id in required_eval_ids:
@@ -184,16 +192,18 @@ class StageEvals:
                 reasons.append(f"{def_id}: belongs to stage {d['stage']},"
                                f" not {stage}")
                 continue
-            env_like = f'"goal_id": "{goal_id}"'
             rows = self.db.conn.execute(
                 "SELECT outcome FROM eval_run"
                 " WHERE definition_id=? AND definition_version=?"
-                " AND goal_id=? ORDER BY created_at DESC",
-                (def_id, d["version"], goal_id)).fetchall()
-            _ = env_like  # documentation only
+                " AND goal_id=? AND artifact_chain_hash=?"
+                " AND corpus_version=? ORDER BY created_at DESC",
+                (def_id, d["version"], goal_id, artifact_chain_hash,
+                 corpus)).fetchall()
             if not rows:
                 decision = "fail"
-                reasons.append(f"{def_id}: no eval runs recorded for this goal")
+                reasons.append(
+                    f"{def_id}: no eval runs recorded for this goal against"
+                    f" the current artifact chain / corpus")
                 continue
             bad = [r["outcome"] for r in rows if r["outcome"] != "pass"]
             if bad and d["required"]:

@@ -176,7 +176,8 @@ sequenceDiagram
     G-->>A1: result + provenance + audit id
 ```
 
-Gateway обязателен для control messages, policy, quotas, attribution и revocation. Большие immutable artifacts могут передаваться напрямую по short-lived signed URL после отдельной проверки. A2A несёт task/message/artifact lifecycle; MCP соединяет агент с tools/resources и требует OAuth resource indicators и scope minimization ([MCP Authorization 2025-11-25](https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization) <!--ref:mcp-auth-2025--><!--anchor:section:Resource%20Parameter%20Implementation-->). MCP Tasks дополнительно требуют привязки task к authorization context, иначе угадавший task ID может получить состояние или результат ([MCP Tasks](https://modelcontextprotocol.io/specification/2025-11-25/basic/utilities/tasks) <!--ref:mcp-tasks-2025--><!--anchor:section:Task%20Isolation%20and%20Access%20Control-->).
+Gateway обязателен для control messages, policy, quotas, attribution и revocation. Большие immutable artifacts могут передаваться на
+прямую по short-lived signed URL после отдельной проверки. A2A несёт task/message/artifact lifecycle; MCP соединяет агент с tools/resources и требует OAuth resource indicators и scope minimization ([MCP Authorization 2025-11-25](https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization) <!--ref:mcp-auth-2025--><!--anchor:section:Resource%20Parameter%20Implementation-->). MCP Tasks дополнительно требуют привязки task к authorization context, иначе угадавший task ID может получить состояние или результат ([MCP Tasks](https://modelcontextprotocol.io/specification/2025-11-25/basic/utilities/tasks) <!--ref:mcp-tasks-2025--><!--anchor:section:Task%20Isolation%20and%20Access%20Control-->).
 
 A2A и MCP не определяют local concepts `owner`, `private workspace`, `shared agent`, `platform agent`, `knowledge promotion` и `budget`. Эти сущности остаются контрактом хаба.
 
