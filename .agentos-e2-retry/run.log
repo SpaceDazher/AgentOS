@@ -1,0 +1,121 @@
+=== greet-basic r1 — spawning hermes session…
+[PASS] greet-basic r1 gate=pass (25361ms) note=greet(name)->str returning 'hello, <name>' declared in greet.py with pytest test
+=== add-int r1 — spawning hermes session…
+[PASS] add-int r1 gate=pass (16029ms) note=calc.py exposes add(a,b)->int (coerces numeric inputs via int()); tests in test_
+=== reverse-str r1 — spawning hermes session…
+[PASS] reverse-str r1 gate=pass (14566ms) note=strutil.py with reverse(s)->str (type-checked) plus pytest suite covering basic,
+=== max-of-list r1 — spawning hermes session…
+[PASS] max-of-list r1 gate=pass (16537ms) note=lists.py exposes maximum(xs) raising ValueError on empty; tests cover ints, floa
+=== flaky-recover r1 — spawning hermes session…
+[PASS] flaky-recover r1 gate=pass (46516ms) note=counter.py exposes bump(n)->n+1; test_counter.py covers zero/positive/negative/l
+=== mul-int r1 — spawning hermes session…
+[FAIL] mul-int r1 gate=fail (13252ms) note=calc2.py with multiply(a,b)->int plus pytest suite in test_calc2.py
+=== sub-int r1 — spawning hermes session…
+[PASS] sub-int r1 gate=pass (13976ms) note=calc3.py with subtract(a,b)->int plus pytest suite (basic, negative, zero, negat
+=== upper-str r1 — spawning hermes session…
+[PASS] upper-str r1 gate=pass (14663ms) note=strutil2.to_upper implemented (str-only, TypeError otherwise); unittest suite co
+=== min-of-list r1 — spawning hermes session…
+[PASS] min-of-list r1 gate=pass (12028ms) note=lists2.py exposes minimum(xs) raising ValueError on empty; test_lists2.py covers
+=== sum-list r1 — spawning hermes session…
+[PASS] sum-list r1 gate=pass (19404ms) note=lists3.total via sum(); empty -> 0; unittest suite with 5 tests included
+=== is-palindrome r1 — spawning hermes session…
+[PASS] is-palindrome r1 gate=pass (41060ms) note=palindrome.py exposes is_palindrome(s)->bool with case-insensitive comparison (s
+=== count-vowels r1 — spawning hermes session…
+[PASS] count-vowels r1 gate=pass (17978ms) note=vowels.py exposes count_vowels(s)->int (case-insensitive aeiou, TypeError on non
+=== fib-list r1 — spawning hermes session…
+[FAIL] fib-list r1 gate=fail (16917ms) note=fib.py declared: fib(n)->list of first n Fibonacci numbers; fib(0)==[], fib(1)==
+=== dict-merge r1 — spawning hermes session…
+[PASS] dict-merge r1 gate=pass (26548ms) note=dictutil.py exposes merge(a,b)->dict as a pure deep merge (no input mutation, de
+=== flatten-once r1 — spawning hermes session…
+[PASS] flatten-once r1 gate=pass (20684ms) note=flatten.py exposes flatten_once(xss)->list; [[1,2],[3]] -> [1,2,3]. Tests in tes
+=== unique-sorted r1 — spawning hermes session…
+[PASS] unique-sorted r1 gate=pass (9863ms) note=uniq.py exposes unique_sorted(xs)->list (sorted(set(xs))) plus pytest suite test
+=== word-count r1 — spawning hermes session…
+[PASS] word-count r1 gate=pass (17184ms) note=wc.py exposes word_count(s)->int; empty/whitespace-only -> 0; tests in test_wc.p
+=== slugify r1 — spawning hermes session…
+[FAIL] slugify r1 gate=fail (17707ms) note=slug.py with NFKD/ASCII-normalizing slugify + pytest suite covering basic case, 
+=== divmod-check r1 — spawning hermes session…
+[PASS] divmod-check r1 gate=pass (20577ms) note=divmod2.py exposes div_check(a,b)->list [q,r] matching Python floor-division sem
+{
+  "episodes_total": 19,
+  "pass_1": 0.842,
+  "by_task": {
+    "greet-basic": {
+      "successes": 1,
+      "episodes": 1
+    },
+    "add-int": {
+      "successes": 1,
+      "episodes": 1
+    },
+    "reverse-str": {
+      "successes": 1,
+      "episodes": 1
+    },
+    "max-of-list": {
+      "successes": 1,
+      "episodes": 1
+    },
+    "flaky-recover": {
+      "successes": 1,
+      "episodes": 1
+    },
+    "mul-int": {
+      "successes": 0,
+      "episodes": 1
+    },
+    "sub-int": {
+      "successes": 1,
+      "episodes": 1
+    },
+    "upper-str": {
+      "successes": 1,
+      "episodes": 1
+    },
+    "min-of-list": {
+      "successes": 1,
+      "episodes": 1
+    },
+    "sum-list": {
+      "successes": 1,
+      "episodes": 1
+    },
+    "is-palindrome": {
+      "successes": 1,
+      "episodes": 1
+    },
+    "count-vowels": {
+      "successes": 1,
+      "episodes": 1
+    },
+    "fib-list": {
+      "successes": 0,
+      "episodes": 1
+    },
+    "dict-merge": {
+      "successes": 1,
+      "episodes": 1
+    },
+    "flatten-once": {
+      "successes": 1,
+      "episodes": 1
+    },
+    "unique-sorted": {
+      "successes": 1,
+      "episodes": 1
+    },
+    "word-count": {
+      "successes": 1,
+      "episodes": 1
+    },
+    "slugify": {
+      "successes": 0,
+      "episodes": 1
+    },
+    "divmod-check": {
+      "successes": 1,
+      "episodes": 1
+    }
+  }
+}
+results: .agentos-e2-retry\results.json

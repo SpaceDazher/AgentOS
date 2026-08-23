@@ -1,0 +1,1 @@
+{"files":{"calc2.py":"def multiply(a, b) -> int:\n    \"\"\"Return the integer product of a and b.\"\"\"\n    return int(a * b)"}}

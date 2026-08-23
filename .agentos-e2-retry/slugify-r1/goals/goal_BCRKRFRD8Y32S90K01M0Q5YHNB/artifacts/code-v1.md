@@ -1,0 +1,1 @@
+{"files":{"slug.py":"import re\nimport unicodedata\n\n\ndef slugify(s: str) -> str:\n    \"\"\"Return a URL-safe slug: lowercase ASCII, hyphen-separated.\"\"\"\n    s = unicodedata.normalize(\"NFKD\", s)\n    s = s.encode(\"ascii\", \"ignore\").decode(\"ascii\")\n    s = re.sub(r\"[^a-z0-9]+\", \"-\", s.lower()).strip(\"-\")\n    return s"}}

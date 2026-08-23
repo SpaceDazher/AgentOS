@@ -1,0 +1,1 @@
+Text utility: slugify(s) -> lowercase words joined by hyphens.
