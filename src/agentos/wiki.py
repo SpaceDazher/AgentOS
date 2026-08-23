@@ -40,6 +40,19 @@ class CheckIssue:
         return {"kind": self.kind, "note": self.note, "detail": self.detail}
 
 
+def leak_scan(text: str) -> list[str]:
+    """Lines that still look like unredacted secret assignments (module-level:
+    used by wiki-check to verify the projection)."""
+    hits = []
+    for line in text.splitlines():
+        m = re.match(
+            r"(?i).*\b(api\s*[-_]?\s*key|apikey|secret|token|password)"
+            r"\s*[=:]\s*(\S+)", line)
+        if m and "REDACTED" not in m.group(2):
+            hits.append(line.strip()[:80])
+    return hits
+
+
 def _fm_escape(value: str) -> str:
     return str(value).replace('"', "'")
 
@@ -86,13 +99,17 @@ class WikiBuilder:
         # R6: build into a STAGING directory; _generated is atomically
         # swapped at the end so a mid-build failure cannot leave a mixed
         # projection.
-        self._staging = Path(tempfile.mkdtemp(prefix='wiki-stage-'))
+        # R7: staging MUST live beside the vault — rename() across volumes
+        # (C: temp -> D: vault) fails with OSError EXDEV.
+        self._staging = Path(tempfile.mkdtemp(prefix=".wiki-stage-",
+                                              dir=str(self.wiki)))
 
-        # Redaction before any content reaches the vault (R5): strip obvious
-        # secret assignments and long token-like strings from untrusted text.
+        # Redaction before any content reaches the vault (R5/R7): applied to
+        # EVERY untrusted text field via the _note writer itself, so no field
+        # can bypass it. Matches spaced forms too ('api key = v').
         def redact(text: str) -> str:
-            text = re.sub(r"(?i)\b(api[_-]?key|secret|token|password)\s*[=:]\s*\S+",
-                          r"\1=[REDACTED]", text)
+            text = re.sub(r"(?i)(api\s*[-_]?\s*key|apikey|secret|token|password)"
+                          r"(\s*[=:]\s*)(\S+)", r"\1\2[REDACTED]", text)
             text = re.sub(r"\b[A-Za-z0-9_\-]{40,}\b", "[REDACTED-TOKEN]", text)
             return text
 
@@ -227,13 +244,14 @@ class WikiBuilder:
 
         # Stage-gates -> decisions folder ------------------------------------
         for sg in c.execute(
-                "SELECT id, stage, decision, rationale FROM stage_gate"
+                "SELECT id, stage, decision, rationale, goal_id FROM stage_gate"
                 " ORDER BY created_at DESC LIMIT 100").fetchall():
             note = _note(
                 f"_generated/stagegate-{sg['id']}.md",
                 {"id": sg["id"], "type": "decision", "title":
                  f"stage gate {sg['stage']}", "decision": sg["decision"],
-                 "status": "final", "created_at": "", "updated_at": ""},
+                 "status": "final", "created_at": "", "updated_at": "",
+                 "goal_id": sg["goal_id"] or ""},
                 f"Stage gate **{sg['stage']}** → {sg['decision']}.",
                 ["## Rationale", redact(sg["rationale"])], redact=redact)
             write_generated(f"stagegate-{sg['id']}.md", note)
@@ -358,10 +376,12 @@ class WikiBuilder:
                     issues.append(CheckIssue(
                         "dangling_ref", rel,
                         f"{key}={idm.group(1)} not in canonical DB"))
-            hit = secret_re.search(text)
-            if hit:
+            # R7: leak detection uses the SAME spaced-name-aware pattern as
+            # build-redaction (leak_scan), so a redaction gap cannot pass.
+            for hit_line in leak_scan(text):
                 issues.append(CheckIssue(
-                    "secret_leak", rel, f"unredacted secret near {hit.group(0)[:30]}"))
+                    "secret_leak", rel,
+                    f"unredacted secret: {hit_line}"))
 
         return {"files": len(md_files), "links_checked": len(links),
                 "issues": [i.as_dict() for i in issues],

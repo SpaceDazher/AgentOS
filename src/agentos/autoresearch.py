@@ -178,14 +178,16 @@ class Autoresearch:
                 "INSERT INTO experiment(id, campaign_id, hypothesis,"
                 " baseline_ref, candidate_ref, mutable_scope_json,"
                 " budget_json, seeds_json, primary_metric, status,"
-                " frozen_hashes_json) VALUES (?,?,?,?,?,?,?,?,?, 'proposed', ?)",
+                " frozen_hashes_json, goal_id)"
+                " VALUES (?,?,?,?,?,?,?,?,?, 'proposed', ?, ?)",
                 (cid, cid, f"campaign {name}", manifest.baseline_ref,
                  "(baseline)", json.dumps(list(manifest.mutable_scope)),
                  json.dumps({"experiments": manifest.budget}),
                  json.dumps(list(manifest.seeds)), manifest.primary_metric,
                  json.dumps({"manifest": manifest.manifest_hash,
                              "evals": dict(manifest.frozen_eval_hashes),
-                             "corpus": manifest.corpus_hash})))
+                             "corpus": manifest.corpus_hash}),
+                 gid))
         return cid
 
     def record_experiment(self, campaign_id: str, hypothesis: str,

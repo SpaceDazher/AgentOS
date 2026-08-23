@@ -266,7 +266,8 @@ class Gates:
             latest_by_stage = {}
             for row in self.db.conn.execute(
                     "SELECT id, stage, decision, rationale, created_at,"
-                    " artifact_chain_hash, corpus_version"
+                    " artifact_chain_hash, corpus_version,"
+                    " required_eval_ids_json"
                     " FROM stage_gate WHERE goal_id=? ORDER BY created_at, id",
                     (goal_id,)).fetchall():
                 latest_by_stage[row["stage"]] = row   # later rows overwrite
@@ -281,16 +282,41 @@ class Gates:
                         f"stage gate {stage} is stale: bound to chain"
                         f" '{row['artifact_chain_hash'][:16]}', current is"
                         f" '{chain_hash[:16]}'")
-                elif not self.db.conn.execute(
-                        "SELECT COUNT(*) FROM eval_run er JOIN eval_definition"
-                        " ed ON ed.id=er.definition_id AND"
-                        " ed.version=er.definition_version"
-                        " WHERE er.goal_id=? AND ed.stage=? AND ed.kind="
-                        "'deterministic' AND er.artifact_chain_hash=?",
-                        (goal_id, stage, chain_hash)).fetchone()[0]:
+                    continue
+                # R8: exact backing — the gate is authorized ONLY by passing
+                # eval runs of REQUIRED DETERMINISTIC definitions listed in
+                # this gate's required_eval_ids_json, against the same chain
+                # AND corpus. Advisory judges and failed runs never count.
+                gate_corpus = row["corpus_version"] or ""
+                if not gate_corpus:
                     reasons.append(
-                        f"stage gate {stage} has no deterministic eval run"
-                        f" against the current chain")
+                        f"stage gate {stage} has no corpus binding (stale)")
+                    continue
+                try:
+                    req_ids = json.loads(row["required_eval_ids_json"]
+                                         or "[]")
+                except ValueError:
+                    req_ids = []
+                if not req_ids:
+                    reasons.append(
+                        f"stage gate {stage} lists no required evals")
+                    continue
+                ph = ",".join("?" * len(req_ids))
+                backed = self.db.conn.execute(
+                    "SELECT COUNT(DISTINCT er.definition_id) FROM eval_run er"
+                    " JOIN eval_definition ed ON ed.id=er.definition_id AND"
+                    " ed.version=er.definition_version"
+                    " WHERE er.goal_id=? AND ed.stage=? AND ed.kind='deterministic'"
+                    " AND ed.required=1 AND er.outcome='pass'"
+                    " AND er.artifact_chain_hash=? AND er.corpus_version=?"
+                    f" AND er.definition_id IN ({ph})",
+                    (goal_id, stage, chain_hash, gate_corpus,
+                     *req_ids)).fetchone()[0]
+                if backed < len(set(req_ids)):
+                    reasons.append(
+                        f"stage gate {stage} lacks passing deterministic"
+                        f" backing: {backed}/{len(set(req_ids))} required"
+                        f" definitions have a pass run on current chain+corpus")
                 elif row["decision"] != "pass":
                     reasons.append(
                         f"latest stage gate {stage} = {row['decision']}: "

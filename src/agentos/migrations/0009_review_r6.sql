@@ -36,8 +36,15 @@ BEGIN SELECT RAISE(ABORT, 'eval_run is append-only'); END;
 CREATE INDEX idx_eval_run_def ON eval_run(definition_id, definition_version);
 CREATE INDEX idx_eval_run_goal ON eval_run(goal_id);
 
-DROP TABLE campaign;
-CREATE TABLE campaign (
+-- Preserve campaign history: rebind pre-goal-binding campaigns to an
+-- explicit migration goal instead of destroying them. (Status must satisfy
+-- the goal status CHECK; CANCELLED marks it non-executable.)
+INSERT OR IGNORE INTO goal(id, concept_text, status)
+VALUES ('goal_MIGRATED',
+        'campaigns migrated from pre-goal-binding schema (0009)',
+        'CANCELLED');
+
+CREATE TABLE campaign_migrated (
   id TEXT PRIMARY KEY,
   goal_id TEXT NOT NULL REFERENCES goal(id),
   name TEXT NOT NULL,
@@ -48,6 +55,13 @@ CREATE TABLE campaign (
   budget INTEGER NOT NULL,
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
 );
+INSERT INTO campaign_migrated(id, goal_id, name, manifest_json,
+                              manifest_sha256, baseline_ref,
+                              primary_metric, budget, created_at)
+SELECT id, 'goal_MIGRATED', name, manifest_json, manifest_sha256,
+       baseline_ref, primary_metric, budget, created_at FROM campaign;
+DROP TABLE campaign;
+ALTER TABLE campaign_migrated RENAME TO campaign;
 CREATE TRIGGER campaign_no_update BEFORE UPDATE ON campaign
 BEGIN SELECT RAISE(ABORT, 'campaign is immutable'); END;
 CREATE TRIGGER campaign_no_delete BEFORE DELETE ON campaign

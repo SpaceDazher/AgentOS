@@ -91,10 +91,16 @@ def build(db, root_dir: str | Path, goal_id: str) -> dict:
                 text = p.read_text(encoding="utf-8")
             except OSError:
                 continue
-            m = re.search(r"^goal_id:\s*(\S+)\s*$", text, re.MULTILINE)
-            note_goal = m.group(1) if m else None
+            gm = re.search(r"^goal_id:\s*(\S+)\s*$", text, re.MULTILINE)
+            tm = re.search(r"^type:\s*(\S+)\s*$", text, re.MULTILINE)
+            note_goal = (gm.group(1) or "").strip("'\"") if gm else ""
+            note_type = tm.group(1) if tm else ""
+            # R7/R8: a note enters a goal's pack only when it belongs to that
+            # goal; neutral index notes (Home) are the sole exception.
             if note_goal and note_goal != goal_id:
-                continue   # another goal's note never enters this pack
+                continue
+            if not note_goal and note_type != "index":
+                continue   # untagged non-index note -> never cross-goal leak
             wiki_refs[p.stem] = {
                 "path": f"wiki/_generated/{p.name}",
                 "sha256": _sha_bytes(p.read_bytes()),

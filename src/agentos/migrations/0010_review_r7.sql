@@ -32,7 +32,10 @@ CREATE TRIGGER stage_gate_no_delete BEFORE DELETE ON stage_gate
 BEGIN SELECT RAISE(ABORT, 'stage_gate decisions are append-only'); END;
 CREATE INDEX idx_stage_gate_goal ON stage_gate(goal_id);
 
--- Recover campaigns dropped by 0009 is impossible retroactively; going
--- forward 0010 guarantees preservation. Mark unbound campaigns explicitly.
-UPDATE experiment SET goal_id = COALESCE(goal_id, 'goal_ORPHANED')
- WHERE goal_id IS NULL;
+-- R7: DB-enforced campaign/experiment goal scoping — a raw SQL INSERT can
+-- no longer attach an experiment to a foreign goal (Python checks alone
+-- were bypassable). Campaigns migrated by 0009 are owned by goal_MIGRATED,
+-- so every experiment row resolves to an owner.
+CREATE TRIGGER experiment_goal_owner BEFORE INSERT ON experiment
+WHEN NEW.goal_id IS NOT NULL AND NEW.goal_id != (SELECT goal_id FROM campaign WHERE id = NEW.campaign_id)
+BEGIN SELECT RAISE(ABORT, 'experiment goal must match campaign owner'); END;
