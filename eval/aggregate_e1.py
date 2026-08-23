@@ -19,14 +19,9 @@ def wilson_ci(successes: int, n: int, z: float = 1.96) -> tuple[float, float]:
     return (round(max(0.0, center - half), 3), round(min(1.0, center + half), 3))
 
 
-def main() -> int:
-    if len(sys.argv) < 2:
-        print("usage: aggregate_e1 <results.json> [k]")
-        return 2
-    data = json.load(open(sys.argv[1], encoding="utf-8"))
-    k = int(sys.argv[2]) if len(sys.argv) > 2 else None
-    episodes = data["episodes"]
-
+def aggregate(episodes: list[dict], repeats: int | None = None,
+              k: int | None = None) -> dict:
+    """Pure aggregation over episode records (unit-testable, R4)."""
     tasks = sorted({e["task"] for e in episodes})
     by_task = {t: [e for e in episodes if e["task"] == t] for t in tasks}
 
@@ -41,23 +36,49 @@ def main() -> int:
 
     out: dict = {"schema": "agentos.e1-aggregate/v0", "pass_1": pass1}
 
-    # pass^k per protocol (all first-k repeats must pass, per task)
+    # pass^k per protocol (all first-k repeats must pass, per task).
+    # R4: a task counts ONLY if every repeat passed (strict AND) — verified
+    # by the regression test against a hand-computed example.
     max_avail = min(len(by_task[t]) for t in tasks)
     k_eff = k or max_avail
     task_all_pass = []
+    passing_task_names = []
     for t in tasks:
         eps = sorted(by_task[t], key=lambda e: e["repeat"])[:k_eff]
-        task_all_pass.append(all(e["episode_success"] for e in eps))
+        ok = bool(eps) and all(e["episode_success"] for e in eps)
+        task_all_pass.append(ok)
+        if ok:
+            passing_task_names.append(t)
     sk = sum(task_all_pass)
     klo, khi = wilson_ci(sk, len(tasks))
     out[f"pass_{k_eff}"] = {
         "definition": f"all first-{k_eff} repeats pass, per task",
         "tasks_passing": sk, "n_tasks": len(tasks),
+        "passing_tasks": passing_task_names,
         "rate": round(sk / max(len(tasks), 1), 3),
         "wilson95": [klo, khi],
         "note": ("task-clustered; CI over tasks is coarse at n=5 — "
                  "protocol calls for N=20 before external claims"),
     }
+
+    # R4: worker failure attribution (provider vs evaluator-rejected omissions)
+    fail_modes = {"provider_no_result": 0, "evaluator_reject": 0,
+                  "other_worker": 0}
+    for e in episodes:
+        if e["episode_success"]:
+            continue
+        fc = e.get("worker_fail_class")
+        note = e.get("worker_note") or ""
+        if not e.get("worker_ok") and (
+                fc in ("deadline", "worker_unavailable")
+                or "no AGENTOS_RESULT" in note
+                or "timeout" in note.lower()):
+            fail_modes["provider_no_result"] += 1
+        elif e.get("worker_ok"):
+            fail_modes["evaluator_reject"] += 1
+        else:
+            fail_modes["other_worker"] += 1
+    out["failure_attribution"] = fail_modes
 
     # cost / latency
     durs_ok = [e["duration_ms"] for e in episodes if e["episode_success"]]
@@ -87,6 +108,16 @@ def main() -> int:
                                   / max(len(eps), 1)),
     } for t, eps in by_task.items()}
 
+    return out
+
+
+def main() -> int:
+    if len(sys.argv) < 2:
+        print("usage: aggregate_e1 <results.json> [k]")
+        return 2
+    data = json.load(open(sys.argv[1], encoding="utf-8"))
+    k = int(sys.argv[2]) if len(sys.argv) > 2 else None
+    out = aggregate(data["episodes"], k=k)
     print(json.dumps(out, indent=2))
     return 0
 

@@ -66,6 +66,11 @@ def run_episode(root: Path, task: dict, repeat: int,
     worker = HermesAgentWorker(timeout_s=timeout_s)
     step = 0
     worker_ok = False
+    worker_failed = False
+    worker_fail_class = None
+    worker_trace_digest = None
+    worker_trace_ref = None
+    worker_trace_excerpt = None
     note = ""
     while step < 3:
         from agentos.workers import StepRequest
@@ -79,6 +84,21 @@ def run_episode(root: Path, task: dict, repeat: int,
         res = worker.step(req)
         note = res.note
         if not res.ok:
+            # R4: worker failure must leave the run in a FAILED terminal state
+            # (never COMPLETED) with the fail class and a sanitised trace
+            # digest recorded, so packs document the true cause.
+            worker_failed = True
+            worker_fail_class = res.fail_class or "worker"
+            raw = Path(res.raw_output_ref) if res.raw_output_ref else None
+            if raw and raw.exists():
+                import hashlib as _hl
+                worker_trace_digest = _hl.sha256(
+                    raw.read_bytes()).hexdigest()
+                worker_trace_excerpt = (raw.read_text(
+                    encoding="utf-8", errors="replace")[:400])
+                worker_trace_ref = str(raw)
+            eng.fail_run(run_id, goal_id,
+                         res.fail_class or "worker", note[:200])
             break
         worker_ok = True
         # replay declared effects through the gateway (trusted path)
@@ -92,7 +112,8 @@ def run_episode(root: Path, task: dict, repeat: int,
             break
         step += 1
 
-    eng.complete_live_run(ctx)   # artifacts re-derived from gateway effects
+    if not worker_failed:
+        eng.complete_live_run(ctx)   # artifacts re-derived from gateway effects
 
     eval_results = {}
     for c in task["criteria"]:
@@ -113,8 +134,8 @@ def run_episode(root: Path, task: dict, repeat: int,
         gate_result, reasons = "submit-refused", [str(e)]
 
     # Recording contract (protocol §Recording contract): build the evidence
-    # pack for every episode and record path + sha256. E2 post-run audit found
-    # this was missing (0 packs across 100 episode dirs); patched.
+    # pack for every episode and record path + sha256. Paths are recorded
+    # repo-relative so results stay valid after cloning elsewhere (R4).
     pack_path = None
     pack_sha256 = None
     try:
@@ -125,20 +146,41 @@ def run_episode(root: Path, task: dict, repeat: int,
     except Exception as e:  # noqa: BLE001 — pack failure must not mask episode
         pack_path = f"<pack-build-failed: {e}>"
 
+    def _rel(p: str | None) -> str | None:
+        if not p:
+            return p
+        try:
+            return str(Path(p).resolve().relative_to(Path.cwd()))
+        except ValueError:
+            return p
+
+    run_row = db.conn.execute(
+        "SELECT status, terminal_reason FROM run WHERE id=?",
+        (run_id,)).fetchone()
     return {
         "task": task["key"], "repeat": repeat, "worker": "hermes",
         "episode_success": episode_ok,
         "gate_result": gate_result, "gate_reasons": reasons,
         "evaluation_results": eval_results,
         "worker_ok": worker_ok, "worker_note": note[:200],
+        "worker_fail_class": worker_fail_class,
+        "worker_trace_digest": worker_trace_digest,
+        "worker_trace_ref": _rel(worker_trace_ref),
+        "worker_trace_excerpt": worker_trace_excerpt,
+        "run_status": run_row["status"] if run_row else None,
+        "run_terminal_reason": (run_row["terminal_reason"]
+                                if run_row else None),
         "duration_ms": round((time.perf_counter() - t0) * 1000),
         "goal_id": goal_id,
-        "evidence_pack_path": pack_path,
+        "evidence_pack_path": _rel(pack_path),
         "evidence_pack_sha256": pack_sha256,
         "env": {
             "python": sys.version.split()[0],
-            "hermes_bin": worker.bin,
+            "hermes_bin_name": Path(worker.bin).name if worker.bin else None,
             "platform": sys.platform,
+            # provider/model identity is not exposed by the hermes CLI in a
+            # stable machine-readable form; recorded as the CLI version below.
+            "harness_version": "agentos-harness/0.1",
         },
     }
 
