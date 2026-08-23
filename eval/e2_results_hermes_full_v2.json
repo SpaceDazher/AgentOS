@@ -1,0 +1,2530 @@
+{
+  "schema": "agentos.e1-results/v0",
+  "mode": "end-to-end-hermes-pilot",
+  "summary": {
+    "episodes_total": 100,
+    "pass_1": 0.51,
+    "by_task": {
+      "greet-basic": {
+        "successes": 4,
+        "episodes": 5
+      },
+      "add-int": {
+        "successes": 2,
+        "episodes": 5
+      },
+      "reverse-str": {
+        "successes": 1,
+        "episodes": 5
+      },
+      "max-of-list": {
+        "successes": 4,
+        "episodes": 5
+      },
+      "flaky-recover": {
+        "successes": 3,
+        "episodes": 5
+      },
+      "mul-int": {
+        "successes": 2,
+        "episodes": 5
+      },
+      "sub-int": {
+        "successes": 4,
+        "episodes": 5
+      },
+      "upper-str": {
+        "successes": 3,
+        "episodes": 5
+      },
+      "min-of-list": {
+        "successes": 4,
+        "episodes": 5
+      },
+      "sum-list": {
+        "successes": 3,
+        "episodes": 5
+      },
+      "is-palindrome": {
+        "successes": 3,
+        "episodes": 5
+      },
+      "count-vowels": {
+        "successes": 3,
+        "episodes": 5
+      },
+      "fib-list": {
+        "successes": 1,
+        "episodes": 5
+      },
+      "dict-merge": {
+        "successes": 2,
+        "episodes": 5
+      },
+      "flatten-once": {
+        "successes": 3,
+        "episodes": 5
+      },
+      "clamp-num": {
+        "successes": 5,
+        "episodes": 5
+      },
+      "unique-sorted": {
+        "successes": 2,
+        "episodes": 5
+      },
+      "word-count": {
+        "successes": 0,
+        "episodes": 5
+      },
+      "slugify": {
+        "successes": 2,
+        "episodes": 5
+      },
+      "divmod-check": {
+        "successes": 0,
+        "episodes": 5
+      }
+    }
+  },
+  "episodes": [
+    {
+      "task": "greet-basic",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "greet.py with greet(name)->str returning 'hello, <name>', plus pytest tests in test_greet.py",
+      "duration_ms": 36428,
+      "goal_id": "goal_S8S12P71XFYG1J9K01M0PYM7T2",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\greet-basic-r1\\goals\\goal_S8S12P71XFYG1J9K01M0PYM7T2\\evidence-pack.json",
+      "evidence_pack_sha256": "c65c14ac18a46966c750e9e8f2d510e8d7f92e31f84b0114c85b9ee338ae5879",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "greet-basic",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "greet.py with greet(name)->str returning 'hello, <name>' plus pytest suite in test_greet.py declared as effects.",
+      "duration_ms": 14647,
+      "goal_id": "goal_67NJTHWS7F0NXKA901M0PYNBCK",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\greet-basic-r2\\goals\\goal_67NJTHWS7F0NXKA901M0PYNBCK\\evidence-pack.json",
+      "evidence_pack_sha256": "bd7d5fca055e6c576577b9206597ca80b6b215ca949ade1737695cef1e91d7ca",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "greet-basic",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "greet.py exposes greet(name)->str returning 'hello, <name>'; test_greet.py covers basic cases, type, and empty name.",
+      "duration_ms": 18466,
+      "goal_id": "goal_PYMBXEKV7ESYRQJW01M0PYNSP8",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\greet-basic-r3\\goals\\goal_PYMBXEKV7ESYRQJW01M0PYNSP8\\evidence-pack.json",
+      "evidence_pack_sha256": "26c5096770706eacf90739fdf174ef746275cca78de9c42100a635bf721ff393",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "greet-basic",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 70586,
+      "goal_id": "goal_PC3THRHCRX5NGED201M0PYPBQC",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\greet-basic-r4\\goals\\goal_PC3THRHCRX5NGED201M0PYPBQC\\evidence-pack.json",
+      "evidence_pack_sha256": "ab3d0a05e6107677a48b9b07d7e6957346217442b41eb8308f7843a119d51f9d",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "greet-basic",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "greet(name)->str implemented per spec; pytest tests cover basic greeting, custom name, and return type.",
+      "duration_ms": 26459,
+      "goal_id": "goal_87K9Q50PXJ9GS95H01M0PYRGND",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\greet-basic-r5\\goals\\goal_87K9Q50PXJ9GS95H01M0PYRGND\\evidence-pack.json",
+      "evidence_pack_sha256": "3605de853a1855eb7e2003703f71ac97bb777ac062aa583cdb00426abc6c67c9",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "add-int",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 65243,
+      "goal_id": "goal_P864W30K1AC49VDV01M0PYSAG1",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\add-int-r1\\goals\\goal_P864W30K1AC49VDV01M0PYSAG1\\evidence-pack.json",
+      "evidence_pack_sha256": "ef2e843d04907a5ab9534e09a737327ced02532c1cbe312a0ac9980bae372d99",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "add-int",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 66665,
+      "goal_id": "goal_ESY7QSJKBX0G37PA01M0PYVA75",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\add-int-r2\\goals\\goal_ESY7QSJKBX0G37PA01M0PYVA75\\evidence-pack.json",
+      "evidence_pack_sha256": "af52bfdaa5042c5c072a38553bc3ef2118fedaee1205d5a58e10dc2dbbb6643b",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "add-int",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "calc.py exposes add(a,b)->int (strict int typing); test_calc.py covers positive, negative, zero, large, and type-error cases.",
+      "duration_ms": 42591,
+      "goal_id": "goal_S3QS5QBKZAAVDXNW01M0PYXBBC",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\add-int-r3\\goals\\goal_S3QS5QBKZAAVDXNW01M0PYXBBC\\evidence-pack.json",
+      "evidence_pack_sha256": "076914a8fffb14dfdb9207336f95fe82367595cde4d0da28b15101be1324a493",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "add-int",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 56829,
+      "goal_id": "goal_PZSAP4ENY4KS3WYM01M0PYYMXK",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\add-int-r4\\goals\\goal_PZSAP4ENY4KS3WYM01M0PYYMXK\\evidence-pack.json",
+      "evidence_pack_sha256": "1b4374f0a7b1333ed1fa4cf25a80c96c0548ba87e130bb12c031c2c514028079",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "add-int",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "calc.py exposes add(a,b)->int with type validation; test_calc.py covers positive, negative, mixed, zero, large values, and TypeError for non-int input.",
+      "duration_ms": 7538,
+      "goal_id": "goal_4JA6DE7FDN1H9HTC01M0PZ0CDG",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\add-int-r5\\goals\\goal_4JA6DE7FDN1H9HTC01M0PZ0CDG\\evidence-pack.json",
+      "evidence_pack_sha256": "66bee83e1ea273ed19d26638184a782544648e21cb37902ed801520a21387fe3",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "reverse-str",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 67737,
+      "goal_id": "goal_5E4CC01YFQNXHNTQ01M0PZ0KS4",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\reverse-str-r1\\goals\\goal_5E4CC01YFQNXHNTQ01M0PZ0KS4\\evidence-pack.json",
+      "evidence_pack_sha256": "a9b8dbfeeeb2e22a4cfb8ea3ccb6bb9ba756df7b086c7f8059c2bf0ec65c6d08",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "reverse-str",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 57067,
+      "goal_id": "goal_ASK4PH3GDF3KTH0J01M0PZ2NY5",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\reverse-str-r2\\goals\\goal_ASK4PH3GDF3KTH0J01M0PZ2NY5\\evidence-pack.json",
+      "evidence_pack_sha256": "c6fcf5aabb4850a2c4c796168c0d7b5f2233880d94bf0a1e9fae59df332b273a",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "reverse-str",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 54211,
+      "goal_id": "goal_RV611PSAVVZB5MA801M0PZ4DNR",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\reverse-str-r3\\goals\\goal_RV611PSAVVZB5MA801M0PZ4DNR\\evidence-pack.json",
+      "evidence_pack_sha256": "f61adf496c4c07754418c703f0841fd86cb0e4d156fe0a3f8249e04c4220f3d3",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "reverse-str",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "strutil.py with reverse(s)->str plus pytest tests (basic, empty, palindrome, unicode) declared as effects.",
+      "duration_ms": 12843,
+      "goal_id": "goal_D0VGD06M6T2ESJTQ01M0PZ62KZ",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\reverse-str-r4\\goals\\goal_D0VGD06M6T2ESJTQ01M0PZ62KZ\\evidence-pack.json",
+      "evidence_pack_sha256": "4dd333e8536e8584cb8ef2501f6323693ba874d7449938b8c3c78d9aa38d9855",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "reverse-str",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 72416,
+      "goal_id": "goal_SSA51ZXWZ8HZ4A2F01M0PZ6F53",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\reverse-str-r5\\goals\\goal_SSA51ZXWZ8HZ4A2F01M0PZ6F53\\evidence-pack.json",
+      "evidence_pack_sha256": "f00b83125ec41e57dd11c1386470f5a08a9ad89149c4a12caf12d9943110b763",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "max-of-list",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 71899,
+      "goal_id": "goal_T1WMVSASNVXCWTCC01M0PZ8NWT",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\max-of-list-r1\\goals\\goal_T1WMVSASNVXCWTCC01M0PZ8NWT\\evidence-pack.json",
+      "evidence_pack_sha256": "89a941685668ac16909c48e55d9ab74f09778aa344b2c6eadbd6b0c19b5b9129",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "max-of-list",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "lists.py with maximum(xs) (ValueError on empty) plus pytest suite covering ints, floats, negatives, single element, duplicates, tuples, empty, NaN.",
+      "duration_ms": 19666,
+      "goal_id": "goal_FYS03WZ3DZCWR3BT01M0PZAW3C",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\max-of-list-r2\\goals\\goal_FYS03WZ3DZCWR3BT01M0PZAW3C\\evidence-pack.json",
+      "evidence_pack_sha256": "40a8f58b841b4318c1a107dca2b3e6ee9c41fbd89425a26caeb35553bf3f42dc",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "max-of-list",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "lists.py exposes maximum(xs)->number raising ValueError on empty; unittest suite covers basic, negatives, single element, duplicates/floats, and empty-sequence errors.",
+      "duration_ms": 19696,
+      "goal_id": "goal_JNHBEPYKFTXVTGSX01M0PZBF9J",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\max-of-list-r3\\goals\\goal_JNHBEPYKFTXVTGSX01M0PZBF9J\\evidence-pack.json",
+      "evidence_pack_sha256": "65c8c9cbb5231bcb12d41ec8e270b5d353637713e373a48156b42311afbe43d4",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "max-of-list",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "lists.py exposes maximum(xs) raising ValueError on empty; tests cover typical, negative, mixed-type, single-element, iterable-input and empty cases.",
+      "duration_ms": 18664,
+      "goal_id": "goal_JJM3XSJZR8JEMYV101M0PZC2H4",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\max-of-list-r4\\goals\\goal_JJM3XSJZR8JEMYV101M0PZC2H4\\evidence-pack.json",
+      "evidence_pack_sha256": "173edbfc21dabf1bb99e93b0ecc4e25e16bdc9c5f81463cca63542a2da3094cb",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "max-of-list",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "lists.py with maximum(xs) (ValueError on empty) plus unittest suite test_lists.py covering basic, floats, negatives, empty, and large inputs.",
+      "duration_ms": 14935,
+      "goal_id": "goal_BVWXKWCZV16Z512J01M0PZCMRE",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\max-of-list-r5\\goals\\goal_BVWXKWCZV16Z512J01M0PZCMRE\\evidence-pack.json",
+      "evidence_pack_sha256": "ca1ceda9ac2d21c37e80d643f26b9efc191469be811f74dbf1e81e8b425d3fcd",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "flaky-recover",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "no_bad_rows": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "counter.py exposes bump(n)->n+1; tests cover basic, negative, and large integers.",
+      "duration_ms": 33057,
+      "goal_id": "goal_AS44EVVBXRM278XD01M0PZD3B4",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\flaky-recover-r1\\goals\\goal_AS44EVVBXRM278XD01M0PZD3B4\\evidence-pack.json",
+      "evidence_pack_sha256": "130eb1dd390075dc76e25d03c16de9b12d43ef951a516cf6b1d637d246dd889d",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "flaky-recover",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "no_bad_rows": "pass"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 57388,
+      "goal_id": "goal_2X3PWE7HMCRE36H801M0PZE3M6",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\flaky-recover-r2\\goals\\goal_2X3PWE7HMCRE36H801M0PZE3M6\\evidence-pack.json",
+      "evidence_pack_sha256": "14b78f1c132cbb20f4b464cdf88ffa19564fb22b3157d30a70bbabcc70f6c248",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "flaky-recover",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "no_bad_rows": "pass"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 60809,
+      "goal_id": "goal_HFN0AWV3MT2PW5X001M0PZFVP0",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\flaky-recover-r3\\goals\\goal_HFN0AWV3MT2PW5X001M0PZFVP0\\evidence-pack.json",
+      "evidence_pack_sha256": "05df01cdd03b14871d97fd8ff867cc0058e858bbb23d30fcb72154f3efae62d9",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "flaky-recover",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "no_bad_rows": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "counter.py with bump(n)->n+1 and parametrized pytest suite (test_counter.py) declared as effects; no direct writes performed.",
+      "duration_ms": 14705,
+      "goal_id": "goal_R9C3BE0C0YNSFCWR01M0PZHQ26",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\flaky-recover-r4\\goals\\goal_R9C3BE0C0YNSFCWR01M0PZHQ26\\evidence-pack.json",
+      "evidence_pack_sha256": "e2a2a1e2e9531500da78f9ba430484d3437ab91743e1ac82cd187e28245cb49c",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "flaky-recover",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "no_bad_rows": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "counter.py exposes bump(n)->n+1; tests in test_counter.py cover zero, positive, negative, large ints and parametrized cases.",
+      "duration_ms": 15368,
+      "goal_id": "goal_BTD280MXD1GCZ75E01M0PZJ5DS",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\flaky-recover-r5\\goals\\goal_BTD280MXD1GCZ75E01M0PZJ5DS\\evidence-pack.json",
+      "evidence_pack_sha256": "64277d63991870bb78f2f1aaa020d050a040451bddc9894658e215a8a6f4b891",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "mul-int",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 59859,
+      "goal_id": "goal_R9WS4CZV2FNCDV6601M0PZJMEC",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\mul-int-r1\\goals\\goal_R9WS4CZV2FNCDV6601M0PZJMEC\\evidence-pack.json",
+      "evidence_pack_sha256": "f0bbd2337016cfb5fbb96fc484cebcb63590858c47ecc0dda978bcd7a4e44aa9",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "mul-int",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 95696,
+      "goal_id": "goal_DA2E46RFMHP6GQYE01M0PZMEWJ",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\mul-int-r2\\goals\\goal_DA2E46RFMHP6GQYE01M0PZMEWJ\\evidence-pack.json",
+      "evidence_pack_sha256": "021d3a17228b02dbb6843519b9dd2eaadfb38a108c9ae89624000b9b7cb78fd2",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "mul-int",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 64104,
+      "goal_id": "goal_RKRPXTEDSP0PDZ3B01M0PZQCBJ",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\mul-int-r3\\goals\\goal_RKRPXTEDSP0PDZ3B01M0PZQCBJ\\evidence-pack.json",
+      "evidence_pack_sha256": "96501570cab95f16ae5e4d1228f27a4edb5756ed289299bd57958879e33c99b2",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "mul-int",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "calc2.py with multiply(a,b)->int plus parametrized pytest suite in test_calc2.py",
+      "duration_ms": 15700,
+      "goal_id": "goal_94GM71KNNP2RQC7X01M0PZSB05",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\mul-int-r4\\goals\\goal_94GM71KNNP2RQC7X01M0PZSB05\\evidence-pack.json",
+      "evidence_pack_sha256": "e95b02710bc1f4f495938577abc63fa02726002d11a7ee54189c208872a7441c",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "mul-int",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "calc2.py exposes multiply(a,b)->int; test_calc2.py covers positive, negative, zero, and int return type.",
+      "duration_ms": 52211,
+      "goal_id": "goal_PSNS522CJ84TN9ZD01M0PZST98",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\mul-int-r5\\goals\\goal_PSNS522CJ84TN9ZD01M0PZST98\\evidence-pack.json",
+      "evidence_pack_sha256": "1f67d6f413952a710b5c090ff7f6b968540ec51e99742fb919c957e49665292e",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "sub-int",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 70044,
+      "goal_id": "goal_A5N11E802WZXRZEN01M0PZVD96",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\sub-int-r1\\goals\\goal_A5N11E802WZXRZEN01M0PZVD96\\evidence-pack.json",
+      "evidence_pack_sha256": "4af7e8ec40d9da7cc05993c6387aaec12f0cbbdea0e16cc414f183741083463b",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "sub-int",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "calc3.py with subtract(a,b)->int plus pytest suite in test_calc3.py declared as effects",
+      "duration_ms": 22751,
+      "goal_id": "goal_09W4Y7SVYZFF4TJP01M0PZXHPM",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\sub-int-r2\\goals\\goal_09W4Y7SVYZFF4TJP01M0PZXHPM\\evidence-pack.json",
+      "evidence_pack_sha256": "24de1d1ed8ed8c26b4fbef397c0c4bbb1caf095f3c55b4827b45a5a8b3ca1710",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "sub-int",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "calc3.py with subtract(a,b)->int plus pytest tests covering positive/negative/zero cases, return type, and float coercion.",
+      "duration_ms": 19719,
+      "goal_id": "goal_JYPT17DADTDDME9501M0PZY7WZ",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\sub-int-r3\\goals\\goal_JYPT17DADTDDME9501M0PZY7WZ\\evidence-pack.json",
+      "evidence_pack_sha256": "fe0702a56385d880a968507096a6ae57735aee71a290205819855f224e4d018b",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "sub-int",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "calc3.py exposes subtract(a,b)->int; tests cover positive/negative/zero cases, parametrized cases, and int return type.",
+      "duration_ms": 25564,
+      "goal_id": "goal_037HCDQ4NM6YYB2101M0PZYV5W",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\sub-int-r4\\goals\\goal_037HCDQ4NM6YYB2101M0PZYV5W\\evidence-pack.json",
+      "evidence_pack_sha256": "62b9c0ccc311cb1f617cb1d25f399122d0bb6cab5fc99ce02420965cedd43d75",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "sub-int",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "calc3.py exposes subtract(a,b)->int (coerces to int); tests in test_calc3.py cover basic/negative/zero/float-coercion cases plus type check.",
+      "duration_ms": 20752,
+      "goal_id": "goal_DVM06X14W8ZJ2D2K01M0PZZM41",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\sub-int-r5\\goals\\goal_DVM06X14W8ZJ2D2K01M0PZZM41\\evidence-pack.json",
+      "evidence_pack_sha256": "2e61c55cc511d9d74335f3d6264a147d769e7621e5f769fe381d62996acef9cd",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "upper-str",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "strutil2.py with to_upper(s)->str (TypeError on non-str) plus unittest suite test_strutil2.py (basic, mixed, empty, unicode, error cases).",
+      "duration_ms": 55364,
+      "goal_id": "goal_87PZ24VQ764GP3MY01M0Q008CF",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\upper-str-r1\\goals\\goal_87PZ24VQ764GP3MY01M0Q008CF\\evidence-pack.json",
+      "evidence_pack_sha256": "529fdbb4e55454a89e1b817dd4ea07dd4f9129581c81f77674dd2df99f444325",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "upper-str",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "strutil2.py exposes to_upper(s)->str (with TypeError on non-str); tests in test_strutil2.py cover basic, empty, already-upper, mixed/digits, unicode, and type-error cases.",
+      "duration_ms": 15575,
+      "goal_id": "goal_K78PSGV4W2ZZX1YZ01M0Q01YER",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\upper-str-r2\\goals\\goal_K78PSGV4W2ZZX1YZ01M0Q01YER\\evidence-pack.json",
+      "evidence_pack_sha256": "32948da0c11c6c9fa56a8de02ef16c7ad0f4ab88fb002e97ac9e84fb01eb7e94",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "upper-str",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "Implemented to_upper(s)->str in strutil2.py; tests in test_strutil2.py (5 cases incl. empty, unicode).",
+      "duration_ms": 16489,
+      "goal_id": "goal_NWB5M8ZJ4DHDZ5QC01M0Q02DNZ",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\upper-str-r3\\goals\\goal_NWB5M8ZJ4DHDZ5QC01M0Q02DNZ\\evidence-pack.json",
+      "evidence_pack_sha256": "ff223e136e0a7a7e3574590ba9a9e979069941d8c73f95f9835f82a0b701219e",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "upper-str",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 102975,
+      "goal_id": "goal_6FWKDGMB4R63QD4V01M0Q02XRS",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\upper-str-r4\\goals\\goal_6FWKDGMB4R63QD4V01M0Q02XRS\\evidence-pack.json",
+      "evidence_pack_sha256": "08683f438b470c1f1c5d78c3cbfee4f90342da9c58c506c582133c5e49ec1a9d",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "upper-str",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 50529,
+      "goal_id": "goal_KZ3TRWJ09VVYQBY201M0Q062B3",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\upper-str-r5\\goals\\goal_KZ3TRWJ09VVYQBY201M0Q062B3\\evidence-pack.json",
+      "evidence_pack_sha256": "2dc40b155ffb9c601c1b7567724013737d5a9353e39f4a70082a0307358dffe5",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "min-of-list",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "lists2.py exposes minimum(xs) raising ValueError on empty input; tests in test_lists2.py cover ints, floats, negatives, single element, tuple, non-mutation, and empty-input error.",
+      "duration_ms": 24650,
+      "goal_id": "goal_VV14E3BPP65SQ1R001M0Q07KP0",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\min-of-list-r1\\goals\\goal_VV14E3BPP65SQ1R001M0Q07KP0\\evidence-pack.json",
+      "evidence_pack_sha256": "8f46c63452b6ee2dc60cdc1b3b5d3bcb647efd43c298e7230d91f9e4fc441ecb",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "min-of-list",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "lists2.py with minimum(xs) (ValueError on empty) plus 6 tests in test_lists2.py declared as effects.",
+      "duration_ms": 15285,
+      "goal_id": "goal_ZQPPYF1AY1R384MA01M0Q08BRJ",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\min-of-list-r2\\goals\\goal_ZQPPYF1AY1R384MA01M0Q08BRJ\\evidence-pack.json",
+      "evidence_pack_sha256": "5b91cc1563d0722e00c609d4ec6053d68f97546f2c6c7327d0b3e625a337ba62",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "min-of-list",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 64505,
+      "goal_id": "goal_Y3RTP8W0WF7V07JJ01M0Q08TP4",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\min-of-list-r3\\goals\\goal_Y3RTP8W0WF7V07JJ01M0Q08TP4\\evidence-pack.json",
+      "evidence_pack_sha256": "6b527176c989d41546def0ba1e61eb5d45f8ecbd0c701ffac5ded400d9a15b5a",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "min-of-list",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "lists2.py exposes minimum(xs)->number (ValueError on empty); tests cover ints, floats, negatives, single element, empty, mixed types, element identity, and randomized comparison against builtin min.",
+      "duration_ms": 18251,
+      "goal_id": "goal_6SKRBY7904PNCJRQ01M0Q0ASP4",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\min-of-list-r4\\goals\\goal_6SKRBY7904PNCJRQ01M0Q0ASP4\\evidence-pack.json",
+      "evidence_pack_sha256": "2baab7ef127b2a24703bc86cce957d8a98da84c011ddb0d2cbd5fe6e27314d46",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "min-of-list",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "lists2.py with minimum(xs) (ValueError on empty) plus pytest suite test_lists2.py (6 tests incl. empty-raises)",
+      "duration_ms": 14651,
+      "goal_id": "goal_22VM9P1Y48HMEZ6701M0Q0BBGK",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\min-of-list-r5\\goals\\goal_22VM9P1Y48HMEZ6701M0Q0BBGK\\evidence-pack.json",
+      "evidence_pack_sha256": "497e9101e9d180c1f3ea51e3b8304a01fa098b95fcaf2b2cb21a6e70763a027a",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "sum-list",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "lists3.py exposes total(xs) (empty -> 0); unittest tests cover empty, single, mixed, float/negative, and large ranges.",
+      "duration_ms": 20993,
+      "goal_id": "goal_KVKHRMA21GV6JMK401M0Q0BSTE",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\sum-list-r1\\goals\\goal_KVKHRMA21GV6JMK401M0Q0BSTE\\evidence-pack.json",
+      "evidence_pack_sha256": "70baa1f48e99b067d39cd824c0e982096d38e9f5b8e8baf1c87c9541a41d239d",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "sum-list",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "lists3.py with total(xs) (empty->0) plus unittest suite covering empty, single, positive, mixed-sign, float, and generator inputs; declared as effects for replay.",
+      "duration_ms": 17072,
+      "goal_id": "goal_GQ0WXYRHG04HD02S01M0Q0CEA2",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\sum-list-r2\\goals\\goal_GQ0WXYRHG04HD02S01M0Q0CEA2\\evidence-pack.json",
+      "evidence_pack_sha256": "c44f99c32183047e7ce34c7ec75d4e94cb1cd230feecea9827d6794ebdaca92f",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "sum-list",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "lists3.py with total(xs)=sum(xs) (empty -> 0) plus pytest suite covering empty/single/positive/negative/mixed/iterable cases.",
+      "duration_ms": 19276,
+      "goal_id": "goal_4QST4RCVFTQB7S0C01M0Q0CYZP",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\sum-list-r3\\goals\\goal_4QST4RCVFTQB7S0C01M0Q0CYZP\\evidence-pack.json",
+      "evidence_pack_sha256": "8911bba3ff22ad08bc862a37680288dac3c0dc75c6c4c7b203a401768f7ffd98",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "sum-list",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 56219,
+      "goal_id": "goal_B9CT5AQV9WXY8T5501M0Q0DHSZ",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\sum-list-r4\\goals\\goal_B9CT5AQV9WXY8T5501M0Q0DHSZ\\evidence-pack.json",
+      "evidence_pack_sha256": "c42e94341205c8e341e80353a485b069cd3078b3aef66a4d059215a07391332a",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "sum-list",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 50912,
+      "goal_id": "goal_VXN5BSTW00Z7395X01M0Q0F8Q8",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\sum-list-r5\\goals\\goal_VXN5BSTW00Z7395X01M0Q0F8Q8\\evidence-pack.json",
+      "evidence_pack_sha256": "18330bc914fa9c36ec65831d9dd997f314d0988843b9e36c961c6ce12bd0b6cb",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "is-palindrome",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "palindrome.py implements case-insensitive is_palindrome(s)->bool; test_palindrome.py covers edge cases (empty, single char, mixed case, non-palindromes, TypeError).",
+      "duration_ms": 13257,
+      "goal_id": "goal_VA8F86R9Y8RJEWHN01M0Q0GTE0",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\is-palindrome-r1\\goals\\goal_VA8F86R9Y8RJEWHN01M0Q0GTE0\\evidence-pack.json",
+      "evidence_pack_sha256": "f695cc6d7b0b586548ccbb772f88191b6c1a5a7c4e2e12cb7bd701c48227e281",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "is-palindrome",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 66351,
+      "goal_id": "goal_0KTZZNZ0HXYKAJPD01M0Q0H7C9",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\is-palindrome-r2\\goals\\goal_0KTZZNZ0HXYKAJPD01M0Q0H7C9\\evidence-pack.json",
+      "evidence_pack_sha256": "73677c76822a7f53e33cb580c2f60165aea342ed5fe470ae765427a570f8a219",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "is-palindrome",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "palindrome.py exposes is_palindrome(s)->bool with case-insensitive comparison (lowercase both sides before reverse compare); test_palindrome.py covers basic, case-insensitivity, non-palindromes, empty",
+      "duration_ms": 11478,
+      "goal_id": "goal_RCK7REMNV7CR77PK01M0Q0K865",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\is-palindrome-r3\\goals\\goal_RCK7REMNV7CR77PK01M0Q0K865\\evidence-pack.json",
+      "evidence_pack_sha256": "580fef61ef80bd8928c80e8aed1cd35d7561620ec4e29044abccfcfb429d7210",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "is-palindrome",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "palindrome.py with case-insensitive is_palindrome + pytest tests (simple, negative, case-insensitivity, empty/single)",
+      "duration_ms": 27755,
+      "goal_id": "goal_XS0EPG94P5J9BRVG01M0Q0KKCN",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\is-palindrome-r4\\goals\\goal_XS0EPG94P5J9BRVG01M0Q0KKCN\\evidence-pack.json",
+      "evidence_pack_sha256": "8e9ac18e3dd7fda0cf104d79c08b366863f568f209bd01b3438dee2e43e6f99a",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "is-palindrome",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 56431,
+      "goal_id": "goal_G301RN0V1K454W4V01M0Q0MEG5",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\is-palindrome-r5\\goals\\goal_G301RN0V1K454W4V01M0Q0MEG5\\evidence-pack.json",
+      "evidence_pack_sha256": "923724e75f5a028c4632a0e31141b7eaa3c616eddc783868ff1899d96d946bb8",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "count-vowels",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "vowels.py exposes count_vowels(s)->int (case-insensitive ASCII vowels); tests cover empty, mixed case, no-vowel, punctuation, and type cases.",
+      "duration_ms": 20280,
+      "goal_id": "goal_KGBRE5CT4394PH1N01M0Q0P5KM",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\count-vowels-r1\\goals\\goal_KGBRE5CT4394PH1N01M0Q0P5KM\\evidence-pack.json",
+      "evidence_pack_sha256": "6d7f59148aa5cd0610737f9ff3f293cbbb3a39b6831a764be216000b3489b45f",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "count-vowels",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "vowels.py exposes count_vowels(s)->int (case-insensitive aeiou, TypeError on non-string); tests cover empty, no-vowels, mixed case, repeats, punctuation/digits, non-Latin chars, and type error.",
+      "duration_ms": 41182,
+      "goal_id": "goal_5VXN12RPPV95JK3D01M0Q0PSDB",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\count-vowels-r2\\goals\\goal_5VXN12RPPV95JK3D01M0Q0PSDB\\evidence-pack.json",
+      "evidence_pack_sha256": "4cf351ad8fb82ca90fcb8fa0f4742831c509fc41c668e7dc78e94c5cfe4ee3b0",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "count-vowels",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 56516,
+      "goal_id": "goal_Z64AXBW0KWBXWKFZ01M0Q0R1MG",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\count-vowels-r3\\goals\\goal_Z64AXBW0KWBXWKFZ01M0Q0R1MG\\evidence-pack.json",
+      "evidence_pack_sha256": "0f75f6872a435df60d8de6a519030244b93305b5e132fe3dd378952bcd2e180b",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "count-vowels",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 58465,
+      "goal_id": "goal_GKBHR7C4YVYCMK0F01M0Q0SRTV",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\count-vowels-r4\\goals\\goal_GKBHR7C4YVYCMK0F01M0Q0SRTV\\evidence-pack.json",
+      "evidence_pack_sha256": "d30fec7145028bba09e88b565c4035c70104c9c8a061344e5940268adb3f612e",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "count-vowels",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "vowels.py exposes count_vowels(s)->int (case-insensitive aeiou); test_vowels.py covers empty/no-vowel/all-vowel/mixed-case/punctuation/type-error cases",
+      "duration_ms": 86418,
+      "goal_id": "goal_FKF6M8KEHW2WGY0201M0Q0VHXW",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\count-vowels-r5\\goals\\goal_FKF6M8KEHW2WGY0201M0Q0VHXW\\evidence-pack.json",
+      "evidence_pack_sha256": "d5eceab747e83bcb404243a178b9270d26f123b6f01325b15b1116f4ef3b135a",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "fib-list",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 68495,
+      "goal_id": "goal_C1TVSGWH60EV9M9B01M0Q0Y6A7",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\fib-list-r1\\goals\\goal_C1TVSGWH60EV9M9B01M0Q0Y6A7\\evidence-pack.json",
+      "evidence_pack_sha256": "a4ad02c5d5df6fc7f15cf4ad8708a579886696e116e1665da5afea14d611c9ab",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "fib-list",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "fib.py declared: fib(n) returns list of first n Fibonacci numbers; fib(0)==[], fib(1)==[0]; built-in asserts cover 0,1,2,5,10 and negative-n ValueError.",
+      "duration_ms": 11648,
+      "goal_id": "goal_XVRVTFK7NAFB2PGJ01M0Q10971",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\fib-list-r2\\goals\\goal_XVRVTFK7NAFB2PGJ01M0Q10971\\evidence-pack.json",
+      "evidence_pack_sha256": "78754990ffdd782f199a703f49487f2ed0ec0cdab383b72bf560f395293fa8ac",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "fib-list",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "fib.py implemented: fib(n)->list, fib(0)==[], fib(1)==[0], with type/negative-input validation and an embedded test suite covering n=0,1,2,5,10 plus invalid inputs.",
+      "duration_ms": 113708,
+      "goal_id": "goal_C6SAYJTJ1GQ5KPZK01M0Q10MMY",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\fib-list-r3\\goals\\goal_C6SAYJTJ1GQ5KPZK01M0Q10MMY\\evidence-pack.json",
+      "evidence_pack_sha256": "c0dc27e8aa7785aa72f14c73e53837d0f507bfbcdf6509f8ed09378654e46a94",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "fib-list",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "fib.py implements fib(n)->list (fib(0)==[], fib(1)==[0]); test_fib.py covers 0,1,2,10, negative and type errors.",
+      "duration_ms": 88068,
+      "goal_id": "goal_4WR74NNVMV2H8Q4Z01M0Q143M9",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\fib-list-r4\\goals\\goal_4WR74NNVMV2H8Q4Z01M0Q143M9\\evidence-pack.json",
+      "evidence_pack_sha256": "1ba6d8440bb6ab96a30b28d053cc57a6b6d1e9e1928a69044a35f3bfddddeef7",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "fib-list",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 89303,
+      "goal_id": "goal_P61AZBGWVK6GHD2V01M0Q16SMP",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\fib-list-r5\\goals\\goal_P61AZBGWVK6GHD2V01M0Q16SMP\\evidence-pack.json",
+      "evidence_pack_sha256": "f9461e9307a6a2527a7b0c1360506d5292aa009fa984d92afd151a9e9a9a71ce",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "dict-merge",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 52623,
+      "goal_id": "goal_C3K3NV2YZG3ND77G01M0Q19GVH",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\dict-merge-r1\\goals\\goal_C3K3NV2YZG3ND77G01M0Q19GVH\\evidence-pack.json",
+      "evidence_pack_sha256": "e32a3fd15597d864b605c2636d5f94988b830f73074c2693a806d65aa849f51e",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "dict-merge",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "dictutil.py exposes pure merge(a,b)->dict (no input mutation, TypeError on non-dicts); test_dictutil.py covers merge semantics, override precedence, non-mutation of both inputs, and type validation.",
+      "duration_ms": 26363,
+      "goal_id": "goal_2477VGHA6TY05T2W01M0Q1B47T",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\dict-merge-r2\\goals\\goal_2477VGHA6TY05T2W01M0Q1B47T\\evidence-pack.json",
+      "evidence_pack_sha256": "01b82223151e6dbe0b1d8176d27d04487fbdcc4c3bf9ec062ffb7c3ef3125281",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "dict-merge",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 69246,
+      "goal_id": "goal_FNRT6N745C2SAT1F01M0Q1BXZQ",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\dict-merge-r3\\goals\\goal_FNRT6N745C2SAT1F01M0Q1BXZQ\\evidence-pack.json",
+      "evidence_pack_sha256": "18bbd90a37cc0913e2b27a4f384896a30c82c56e10d54cfa9c72a24c4454ec8c",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "dict-merge",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "dictutil.py implements merge(a,b)->dict with recursive nested merge and no input mutation; embedded tests cover override, collision, nesting, immutability of inputs, and empty cases.",
+      "duration_ms": 184274,
+      "goal_id": "goal_5CN1SD69TBDBG00H01M0Q1E1KR",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\dict-merge-r4\\goals\\goal_5CN1SD69TBDBG00H01M0Q1E1KR\\evidence-pack.json",
+      "evidence_pack_sha256": "7453616dd177ce99eba7777cc393e797b92393444431fbe0698fa0474f302ede",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "dict-merge",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "dictutil.py exposes merge(a,b)->dict with recursive deep merge; inputs never mutated (result built from copies). Tests cover flat merge, override, deep merge, non-mutation, non-dict replacement, empty",
+      "duration_ms": 202225,
+      "goal_id": "goal_908EBZ3FF65YRAGN01M0Q1KNJH",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\dict-merge-r5\\goals\\goal_908EBZ3FF65YRAGN01M0Q1KNJH\\evidence-pack.json",
+      "evidence_pack_sha256": "6a85e68f90fcf3f0460ceaf15dd8cf5159e73e42bf9275237a02a7f354a6b0f3",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "flatten-once",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "flatten.py with flatten_once(xss) one-level flatten; test_flatten.py covers basic [[1,2],[3]]->[1,2,3], empty inputs, depth-1-only semantics, non-mutation, strings.",
+      "duration_ms": 12343,
+      "goal_id": "goal_QYT64TA5FJ727ES301M0Q1SV23",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\flatten-once-r1\\goals\\goal_QYT64TA5FJ727ES301M0Q1SV23\\evidence-pack.json",
+      "evidence_pack_sha256": "83b8bab18a2cfa57d9dabf033c0d3941bfdf10e4ffcfbd72017a44fed25c60e5",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "flatten-once",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "flatten.py with flatten_once (one-level list comprehension) + pytest suite covering basic case, empty outer/inner lists, depth-1-only semantics, string rows, and non-aliasing.",
+      "duration_ms": 144034,
+      "goal_id": "goal_N4KVXVK77RX73W1501M0Q1T73W",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\flatten-once-r2\\goals\\goal_N4KVXVK77RX73W1501M0Q1T73W\\evidence-pack.json",
+      "evidence_pack_sha256": "e0123f3954b4a6e84f6e7ecc2da9968371c1b07808bdc40d3f99e919a74350ea",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "flatten-once",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "flatten.py exposes flatten_once; tests cover basic case [[1,2],[3]]->[1,2,3] plus edge cases",
+      "duration_ms": 33733,
+      "goal_id": "goal_8MNWZ7AJRJQPFAFX01M0Q1YKRZ",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\flatten-once-r3\\goals\\goal_8MNWZ7AJRJQPFAFX01M0Q1YKRZ\\evidence-pack.json",
+      "evidence_pack_sha256": "9bd4da6a464611b5af12fb35abb2cc4befc67cf5c2e43d9d3abe65afa8fd16fc",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "flatten-once",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 65000,
+      "goal_id": "goal_9Y8KN620W80CJ5NJ01M0Q1ZMPY",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\flatten-once-r4\\goals\\goal_9Y8KN620W80CJ5NJ01M0Q1ZMPY\\evidence-pack.json",
+      "evidence_pack_sha256": "a5ca9d1a53ebeab0d1ca8968c86f947a7814f258623fc77611bf9b25792233d3",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "flatten-once",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "flatten.py declares flatten_once(xss)->list; handles nested lists/tuples one level, treats strings as atoms; embedded self-tests cover [[1,2],[3]]->[1,2,3] and edge cases.",
+      "duration_ms": 26037,
+      "goal_id": "goal_FXMZE4XXS87VMD7W01M0Q21M6P",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\flatten-once-r5\\goals\\goal_FXMZE4XXS87VMD7W01M0Q21M6P\\evidence-pack.json",
+      "evidence_pack_sha256": "069e3966615242cf05cb23b8b9e041ad4dec2e0dd727fffebbc9a234e9f1af9b",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "clamp-num",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "clamp.py exposes clamp(v,lo,hi); test_clamp.py provides 6 pytest tests incl. bounds and invalid-bounds case.",
+      "duration_ms": 16277,
+      "goal_id": "goal_KHT7CT7KAF9MRJA701M0Q22DM0",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\clamp-num-r1\\goals\\goal_KHT7CT7KAF9MRJA701M0Q22DM0\\evidence-pack.json",
+      "evidence_pack_sha256": "227c097a9546b7390bcdcd8acfebbb143b7d278410561f742651860b9f9942d1",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "clamp-num",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "clamp.py with clamp(v,lo,hi)=max(lo,min(v,hi)) and test_clamp.py with 6 pytest-style tests (in-range, below-low, above-high, boundaries, floats, inverted range).",
+      "duration_ms": 22874,
+      "goal_id": "goal_CD6BDE1VJFK0DQFD01M0Q22XGY",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\clamp-num-r2\\goals\\goal_CD6BDE1VJFK0DQFD01M0Q22XGY\\evidence-pack.json",
+      "evidence_pack_sha256": "fcbd9ab77fb594bee70f5d5a20a6797f4a3fbf35c01ddb5000427d14f053a32c",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "clamp-num",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "clamp.py with clamp(v,lo,hi) plus pytest-style test_clamp.py covering middle, both bounds, boundaries, floats, and inverted-range ValueError.",
+      "duration_ms": 71943,
+      "goal_id": "goal_N2XZNVGCQG8CKGBD01M0Q23KVG",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\clamp-num-r3\\goals\\goal_N2XZNVGCQG8CKGBD01M0Q23KVG\\evidence-pack.json",
+      "evidence_pack_sha256": "79dbcbad1e64b7ab4a7ca556adcec134310da2e673ec307d2a5a38fcff001fa1",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "clamp-num",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "clamp.py exposes clamp(v, lo, hi) with inverted-range ValueError; test_clamp.py provides 7 pytest tests covering inside-range, bounds, floats, negatives, and error case.",
+      "duration_ms": 39366,
+      "goal_id": "goal_TR8DVSWRMZAGMAQJ01M0Q25T3P",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\clamp-num-r4\\goals\\goal_TR8DVSWRMZAGMAQJ01M0Q25T3P\\evidence-pack.json",
+      "evidence_pack_sha256": "710f3084f30f01b876fc70b713628511cf82b3b783df4b38beaf938de87b5ffb",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "clamp-num",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "clamp.py with clamp(v,lo,hi)->number plus pytest-style test_clamp.py (7 tests incl. boundaries and error case).",
+      "duration_ms": 18031,
+      "goal_id": "goal_MGN56MKR58YSXKSB01M0Q270HV",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\clamp-num-r5\\goals\\goal_MGN56MKR58YSXKSB01M0Q270HV\\evidence-pack.json",
+      "evidence_pack_sha256": "8b76c7857b436d2aa76e889ec83743395fc77336c4ac56b5a30186049252d4fa",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "unique-sorted",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 72630,
+      "goal_id": "goal_T2M0EXG6XY5KS0BY01M0Q27J5N",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\unique-sorted-r1\\goals\\goal_T2M0EXG6XY5KS0BY01M0Q27J5N\\evidence-pack.json",
+      "evidence_pack_sha256": "4fb80eb294b3be38725ff04a874abcda585fe9d228abe7b8ad338fc219e2ef52",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "unique-sorted",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "uniq.py implements unique_sorted(xs)->list via sorted(set(xs)); test_uniq.py covers empty, dedup, order, strings, tuple input.",
+      "duration_ms": 13621,
+      "goal_id": "goal_Y119PJ4TSTZ3JDRW01M0Q29S5X",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\unique-sorted-r2\\goals\\goal_Y119PJ4TSTZ3JDRW01M0Q29S5X\\evidence-pack.json",
+      "evidence_pack_sha256": "2766967377f673b891161138d331b4ab8f5d167e32a5ade751941fcd8e370fc8",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "unique-sorted",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "uniq.py implements unique_sorted(xs) -> list via sorted(set(xs)); test_uniq.py covers ints, strings, negatives, empty input.",
+      "duration_ms": 16370,
+      "goal_id": "goal_H1TKD3TZ11W2CW8N01M0Q2A6CW",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\unique-sorted-r3\\goals\\goal_H1TKD3TZ11W2CW8N01M0Q2A6CW\\evidence-pack.json",
+      "evidence_pack_sha256": "a621beef3293085a3bf927ec090fc3634dfb940dbe15536fa37f05678ece3bcd",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "unique-sorted",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 56790,
+      "goal_id": "goal_80Y0D3Q7H0Z90MWT01M0Q2APCD",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\unique-sorted-r4\\goals\\goal_80Y0D3Q7H0Z90MWT01M0Q2APCD\\evidence-pack.json",
+      "evidence_pack_sha256": "7b461bd1ebf98157ee303da8a980a23083c1bbac6462467e580b3a311c5e1b8b",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "unique-sorted",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 55195,
+      "goal_id": "goal_87DS74606HKH2XZE01M0Q2CDV0",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\unique-sorted-r5\\goals\\goal_87DS74606HKH2XZE01M0Q2CDV0\\evidence-pack.json",
+      "evidence_pack_sha256": "e382dd4e5835de0b6ba421233cb3dca1179c3e4391f4dfb0b039dfea89da097a",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "word-count",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "wc.py implements word_count(s)->int; empty/whitespace-only -> 0; split-based tokenization; embedded self-tests cover empty, single, multiple, extra whitespace cases.",
+      "duration_ms": 20061,
+      "goal_id": "goal_C40NJFQVVF9CATAN01M0Q2E3RA",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\word-count-r1\\goals\\goal_C40NJFQVVF9CATAN01M0Q2E3RA\\evidence-pack.json",
+      "evidence_pack_sha256": "5c284fbbcb662a01fa1792d46f9ab4354fa13548a415c6ba91e6a8d913bdcc95",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "word-count",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 74741,
+      "goal_id": "goal_AZCKNTXG3W0CZM7J01M0Q2EQAS",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\word-count-r2\\goals\\goal_AZCKNTXG3W0CZM7J01M0Q2EQAS\\evidence-pack.json",
+      "evidence_pack_sha256": "24887ddcf9298b8bc34a07434ba3af8b2c2aa90c89a9f00e1beac43b715dca97",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "word-count",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 69692,
+      "goal_id": "goal_D98VWTZMV6H7RJRZ01M0Q2H0AP",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\word-count-r3\\goals\\goal_D98VWTZMV6H7RJRZ01M0Q2H0AP\\evidence-pack.json",
+      "evidence_pack_sha256": "b4ae1858bfed7004977af7b3151a23e8d05db63f3f2880bb44338c8eea45d8e7",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "word-count",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "wc.py implements word_count(s)->int via str.split() (empty/whitespace-only/None -> 0), includes inline tests covering empty, single, multiple, and extra-whitespace cases.",
+      "duration_ms": 19962,
+      "goal_id": "goal_W85QZ67SB8S70V1301M0Q2K4CG",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\word-count-r4\\goals\\goal_W85QZ67SB8S70V1301M0Q2K4CG\\evidence-pack.json",
+      "evidence_pack_sha256": "3e80ae904325d45c814c0963330df042165c1295cda7892cf9e4b28b0ad9a106",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "word-count",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 57616,
+      "goal_id": "goal_95S2ZGNFWSQW5XMQ01M0Q2KQW6",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\word-count-r5\\goals\\goal_95S2ZGNFWSQW5XMQ01M0Q2KQW6\\evidence-pack.json",
+      "evidence_pack_sha256": "f888131fd1065131970eebb50fcf38fae4e598c84908a472b839267a982ebdbc",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "slugify",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 56461,
+      "goal_id": "goal_S6HMGYSZ7QAJR0BC01M0Q2NG59",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\slugify-r1\\goals\\goal_S6HMGYSZ7QAJR0BC01M0Q2NG59\\evidence-pack.json",
+      "evidence_pack_sha256": "9c911d18aebf4c6836c37c748b536e33bb1328de2791c0cd99f1a41b505c07ae",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "slugify",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "slug.py implements slugify(s)->str with unicode/accents normalization; 'Hello World' -> 'hello-world'. test_slug.py covers basic, punctuation, numbers, empty, accents, single word.",
+      "duration_ms": 18894,
+      "goal_id": "goal_7J5Y7MF5CSSXWNHF01M0Q2Q79F",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\slugify-r2\\goals\\goal_7J5Y7MF5CSSXWNHF01M0Q2Q79F\\evidence-pack.json",
+      "evidence_pack_sha256": "877d266c769164511c37caf914a026dd815c1721553592870344fb618684f986",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "slugify",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "slug.py exposes slugify(s)->str; NFKD-normalizes, lowercases, collapses non-alphanumerics to hyphens, trims edges. 'Hello World' -> 'hello-world' verified by test_slug.py (5 tests).",
+      "duration_ms": 19413,
+      "goal_id": "goal_89FS0VY43N6RDDQE01M0Q2QSQY",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\slugify-r3\\goals\\goal_89FS0VY43N6RDDQE01M0Q2QSQY\\evidence-pack.json",
+      "evidence_pack_sha256": "e4555f53746f4491803c9a22be00de2c4da46c9288b8cd3555c3debc53712675",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "slugify",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 60254,
+      "goal_id": "goal_WCPSYBD4289622AQ01M0Q2RCPK",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\slugify-r4\\goals\\goal_WCPSYBD4289622AQ01M0Q2RCPK\\evidence-pack.json",
+      "evidence_pack_sha256": "be87eab8f2f7430cd130dd3bd7fc1c4980c3579c42160bfd42ee64e0129f60b9",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "slugify",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 65206,
+      "goal_id": "goal_6H9AM2MS4S87PK2101M0Q2T7HG",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\slugify-r5\\goals\\goal_6H9AM2MS4S87PK2101M0Q2T7HG\\evidence-pack.json",
+      "evidence_pack_sha256": "5d7971b908628948025d1009dafc6c479c97540aa373a8ee7854e7b14d264ccf",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "divmod-check",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 67457,
+      "goal_id": "goal_YJMH6A8G6DZ6QYED01M0Q2W77C",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\divmod-check-r1\\goals\\goal_YJMH6A8G6DZ6QYED01M0Q2W77C\\evidence-pack.json",
+      "evidence_pack_sha256": "68694c2e303a796f1ac8409965c75ad994fbe05578449c4c161968269a911a8c",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "divmod-check",
+      "repeat": 2,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 62440,
+      "goal_id": "goal_QER13GJXHGB1KG9H01M0Q2Y930",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\divmod-check-r2\\goals\\goal_QER13GJXHGB1KG9H01M0Q2Y930\\evidence-pack.json",
+      "evidence_pack_sha256": "e124b527a87a371bfc00d6294a17080c04cb95b0d0f58384e7b8e452c53ab48f",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "divmod-check",
+      "repeat": 3,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 69730,
+      "goal_id": "goal_QHY2AAVA5WZ1GPZK01M0Q30631",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\divmod-check-r3\\goals\\goal_QHY2AAVA5WZ1GPZK01M0Q30631\\evidence-pack.json",
+      "evidence_pack_sha256": "0f272050306af92b7af33099e08285508745aa92f64cb1b38a07b9157d21d5e1",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "divmod-check",
+      "repeat": 4,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain",
+        "criterion runs (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "fail"
+      },
+      "worker_ok": false,
+      "worker_note": "no AGENTOS_RESULT line",
+      "duration_ms": 67272,
+      "goal_id": "goal_003M9SJR2GTH9HZC01M0Q32A5V",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\divmod-check-r4\\goals\\goal_003M9SJR2GTH9HZC01M0Q32A5V\\evidence-pack.json",
+      "evidence_pack_sha256": "09ec9d8e3d8eb1d91a29f31884f0f8a6a0360c1d353c9d511f32abff9b7f026b",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    },
+    {
+      "task": "divmod-check",
+      "repeat": 5,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "divmod2.py implements div_check(a,b)->[q,r] via divmod; includes self-tests covering positive/negative/zero operands, ZeroDivisionError, and the invariant a==q*b+r with 0<=r<abs(b).",
+      "duration_ms": 19150,
+      "goal_id": "goal_SF9J3G94XGVJHKE001M0Q34BW8",
+      "evidence_pack_path": "D:\\Project\\AgentOS\\.agentos-e2-full-v2\\divmod-check-r5\\goals\\goal_SF9J3G94XGVJHKE001M0Q34BW8\\evidence-pack.json",
+      "evidence_pack_sha256": "d9535549dbdf3196b47c77af1c5a744d8056bdca278039e8f04220567cff8fb9",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin": "C:\\Users\\Daniil\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.EXE",
+        "platform": "win32"
+      }
+    }
+  ]
+}

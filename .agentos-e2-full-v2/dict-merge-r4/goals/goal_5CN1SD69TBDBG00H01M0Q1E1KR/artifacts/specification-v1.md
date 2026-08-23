@@ -1,0 +1,1 @@
+Module dictutil.py exposes merge(a,b)->dict without mutating inputs.

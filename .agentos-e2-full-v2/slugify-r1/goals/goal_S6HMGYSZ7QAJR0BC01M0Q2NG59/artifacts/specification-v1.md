@@ -1,0 +1,1 @@
+Module slug.py exposes slugify(s)->str; 'Hello World' -> 'hello-world'.

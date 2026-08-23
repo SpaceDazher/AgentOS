@@ -1,0 +1,1 @@
+Module wc.py exposes word_count(s)->int (empty -> 0).

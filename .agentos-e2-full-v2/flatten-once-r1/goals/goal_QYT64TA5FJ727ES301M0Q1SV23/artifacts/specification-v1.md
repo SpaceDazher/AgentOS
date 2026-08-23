@@ -1,0 +1,1 @@
+Module flatten.py exposes flatten_once(xss)->list; [[1,2],[3]] -> [1,2,3].

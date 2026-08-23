@@ -1,0 +1,1 @@
+List utility: minimum(xs) -> smallest element, with tests.

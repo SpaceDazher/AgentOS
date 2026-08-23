@@ -1,0 +1,1 @@
+{"files":{"counter.py":"def bump(n):\n    return n + 1","test_counter.py":"import counter\n\n\ndef test_bump_basic():\n    assert counter.bump(0) == 1\n    assert counter.bump(41) == 42\n    assert counter.bump(-5) == -4\n\n\ndef test_bump_large():\n    assert counter.bump(10**18) == 10**18 + 1"}}

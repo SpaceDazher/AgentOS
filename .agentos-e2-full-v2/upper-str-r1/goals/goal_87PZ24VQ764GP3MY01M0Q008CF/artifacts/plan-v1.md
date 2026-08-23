@@ -1,0 +1,1 @@
+{"tasks":[{"depends_on":[],"id":"task_TEVF486X5KCY12ZF01M0Q008CR","title":"Implement to_upper with tests"}]}

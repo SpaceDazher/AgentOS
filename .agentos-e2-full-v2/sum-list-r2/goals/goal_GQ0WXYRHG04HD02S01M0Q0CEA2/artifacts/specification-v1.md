@@ -1,0 +1,1 @@
+Module lists3.py exposes total(xs)->number (empty -> 0). Include tests.

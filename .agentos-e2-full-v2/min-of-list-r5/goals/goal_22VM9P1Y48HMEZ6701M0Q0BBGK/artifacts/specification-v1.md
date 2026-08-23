@@ -1,0 +1,1 @@
+Module lists2.py exposes minimum(xs)->number (raises ValueError on empty). Include tests.

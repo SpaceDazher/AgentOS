@@ -1,0 +1,1 @@
+Module clamp.py exposes clamp(v,lo,hi)->number. Include a separate pytest-style test file test_clamp.py with test_* functions (doctests alone do not satisfy acceptance).

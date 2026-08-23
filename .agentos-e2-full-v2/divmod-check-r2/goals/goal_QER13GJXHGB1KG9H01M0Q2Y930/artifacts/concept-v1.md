@@ -1,0 +1,1 @@
+Integer division helper: div_check(a, b) -> [a // b, a % b]; ZeroDivisionError on b=0.
