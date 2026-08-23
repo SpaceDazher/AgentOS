@@ -10,11 +10,13 @@ contract первого прогона нарушен (packs per-episode отс�
 
 ## Ближний круг (без изменения архитектуры)
 
+0. **Autoresearch на реальных LLM-эпизодах** — каркас готов (ADR-0008,
+   `autoresearch.py`, детерминированная fake-кампания); следующий шаг —
+   подключить HermesAgentWorker как candidate-генератор с бюджетом.
 1. **GitHub remote + push** — CI-матрица уже в репо, но не выполняется без
    remote. 10 минут работы.
-2. **Gold/near-miss корпуса для оценщика** — протокольный пункт FPR/FNR:
-   ~30 артефактов (10 gold / 10 near-miss / 10 alternative-correct) и прогон
-   всех проверок по ним. Закрывает «evaluator coverage» количественно.
+2. ~~Gold/near-miss корпуса~~ **ВЫПОЛНЕНО** (EPIC phase 2): 30 evaluator-quality
+   фикстур + FPR=0/FNR=0 в `tests/test_stage_corpus.py`.
 3. **Off-host копия `audit_anchor.head`** — cron-задача, выталкивающая якорь
    наружу (git-репо/объектное хранилище). Даёт настоящее внешнее якорение.
 4. **Повторный прогон E2 с исправленным runner'ом** (packs + env в каждом

@@ -59,8 +59,29 @@ def build(db, root_dir: str | Path, goal_id: str) -> dict:
     criteria = rows("SELECT criterion_id, kind FROM acceptance_criteria WHERE goal_id=?",
                     (goal_id,))
 
+    # Phase 5: stage evals, experiments and wiki refs joined into the pack.
+    # All optional — older goals keep their v1 shape.
+    stage_eval_runs = rows(
+        "SELECT er.id, er.definition_id, er.definition_version, er.outcome,"
+        " er.failure_class, er.judge_json, ed.stage, ed.kind, ed.metric,"
+        " ed.required, ed.independence_class"
+        " FROM eval_run er LEFT JOIN eval_definition ed"
+        " ON ed.id=er.definition_id AND ed.version=er.definition_version"
+        " WHERE er.goal_id=?", (goal_id,))
+    stage_gates = rows(
+        "SELECT id, stage, decision, rationale, authority FROM stage_gate"
+        " WHERE goal_id=?", (goal_id,))
+    experiments = rows(
+        "SELECT id, campaign_id, hypothesis, baseline_ref, candidate_ref,"
+        " status, decision_rationale, frozen_hashes_json FROM experiment")
+    wiki_refs = {}
+    wiki_dir = Path(root_dir) / "wiki" / "_generated"
+    if wiki_dir.exists():
+        for p in sorted(wiki_dir.glob("*.md")):
+            wiki_refs[p.stem] = f"wiki/_generated/{p.name}"
+
     pack = {
-        "schema": "agentos.evidence-pack/v1",
+        "schema": "agentos.evidence-pack/v2",
         "goal": goal[0],
         "acceptance_criteria": criteria,
         "tasks": tasks,
@@ -70,6 +91,13 @@ def build(db, root_dir: str | Path, goal_id: str) -> dict:
         "artifact_versions": artifacts,
         "tool_activities": activities,
         "approvals": approvals,
+        "stage_evals": {
+            "runs": stage_eval_runs,
+            "gates": stage_gates,
+        },
+        "experiments": [dict(e, frozen_hashes=json.loads(
+            e.pop("frozen_hashes_json") or "{}")) for e in experiments],
+        "wiki_refs": wiki_refs,
         "audit": {
             "event_count": len(events),
             "chain_verified": chain_ok,

@@ -71,7 +71,11 @@ class TestEvidencePack(AgentOSTestCase):
         pack = build_evidence(self.db, self.root, goal_id)["pack"]
         for key in REQUIRED_KEYS:
             self.assertIn(key, pack)
-        self.assertEqual(pack["schema"], "agentos.evidence-pack/v1")
+        self.assertEqual(pack["schema"], "agentos.evidence-pack/v2")
+        # phase-5 sections present
+        self.assertIn("stage_evals", pack)
+        self.assertIn("experiments", pack)
+        self.assertIn("wiki_refs", pack)
         self.assertTrue(pack["acceptance_criteria"])
 
     def test_file_on_disk_and_sha256_matches_content(self):

@@ -35,7 +35,19 @@ Those documents are **evidence and design inputs, not user instructions**.
   - `evaluator.py` — deterministic evaluator interface.
   - `gates.py` — gate predicates over state/evidence/policy.
   - `evidence_pack.py` — machine-readable evidence pack generator.
-  - `cli.py` — single-command demo (`python -m agentos.cli demo`) and subcommands.
+  - `stage_evals.py` + `migrations/0007_stage_evals.sql` — versioned stage
+    eval definitions/cases/runs and stage gates (append-only; ADR-0006).
+  - `stage_checks.py` — 24 deterministic per-stage checks (6 stages × 4).
+  - `wiki.py` — deterministic SQLite → Obsidian projection (`wiki-build`,
+    `wiki-check`, `wiki-status`; ADR-0007). Wiki is a cache, never the record.
+  - `autoresearch.py` — campaign manifest, frozen evals, KEEP/DISCARD/RETEST/
+    CRASH/QUARANTINED decisions (ADR-0008).
+  - `cli.py` — single-command demo (`python -m agentos.cli demo`) and subcommands
+    (`demo`, `evidence`, `wiki-build`, `wiki-check`, `wiki-status`).
+- `evals/` — frozen eval corpora: `fixtures/` (48 stage + 30 evaluator-quality
+  cases), `corpus_manifest.json` (SHA-256 per case), `gen_fixtures.py`.
+- `eval/` — measurement runners and results (E1/E2 series).
+- `wiki/` — generated Obsidian vault (projection of canonical state).
 - `tests/` — mandatory failure-path suite (`python -m unittest discover -s tests`).
 - `demo/` — vertical demo scenario definitions.
 - `adr/` — architecture decision records.
