@@ -30,16 +30,18 @@ Key properties:
 - **Transactional journal** — every guarded state transition commits its row
   change and its audit event in *one* SQLite transaction (`journal.py`). Audit
   rows form a SHA-256 hash chain; `journal.full_chain_check()` detects tampering.
-- **SQLite via migrations** — schema is created by running
-  `src/agentos/migrations/*.sql` from a clean database; no manual DDL.
+- **SQLite via atomic migrations** — schema is created by running
+  `src/agentos/migrations/*.sql`; each migration and its marker commit or roll
+  back together, and the historical interrupted-0010 rebuild is recoverable.
 - **Gates are the sole authority** — no worker/model can move a Goal to
   `ACCEPTED` or `REJECTED`; only a gate evaluation over evaluator records can
   (`src/agentos/gates.py`, enforced again by the state machine's actor checks).
 - **Deterministic evaluator** — built-in check kinds `tests_present`,
   `invariant` (read-only SQL against expect_rows), and `command_exit_0`
-  (simulated in MVP) produce recorded `Evaluation` rows.
+  (real subprocess execution) produce recorded `Evaluation` rows.
 - **Evidence pack** — every accepted/rejected goal gets a machine-readable
-  JSON pack (schema `agentos.evidence-pack/v1`) at `<db-root>/goals/<goal_id>/evidence-pack.json`.
+  JSON pack (schema `agentos.evidence-pack/v2`) at
+  `<db-root>/goals/<goal_id>/evidence-pack.json`.
 
 ## Quickstart
 
@@ -137,11 +139,13 @@ Acceptance criteria are declared per goal (`tests_present`, `invariant`,
 `command_exit_0` today). The evaluator records pass/fail rows deterministically;
 `Gates.evaluate_release(goal_id)` then checks — all tasks DONE, passing
 evaluation per criterion, no unresolved `UNKNOWN_OUTCOME` activities, intact
-audit chain, consumed release approval for sensitive goals — and is the only
-actor permitted to transition `GATE_PENDING → ACCEPTED/REJECTED`. The resulting
-evidence pack bundles goal, criteria, tasks, runs, evaluations, gate decisions,
-artifact versions, tool activities, approvals, and audit-chain verification into
-one SHA-256-stamped JSON file.
+audit chain, consumed release approval for sensitive goals, and (when stage
+evals are active) all six latest stage gates backed by passing required
+deterministic `id@version` runs on the current artifact chain and corpus — and
+is the only actor permitted to transition `GATE_PENDING → ACCEPTED/REJECTED`.
+The resulting evidence pack bundles goal, criteria, tasks, runs, evaluations,
+gate decisions, artifact versions, tool activities, approvals, exact-goal wiki
+references, and audit-chain verification into one SHA-256-stamped JSON file.
 
 ## Non-negotiable invariants
 

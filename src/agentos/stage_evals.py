@@ -179,25 +179,55 @@ class StageEvals:
             return self._record_gate(stage, [], "fail", goal_id,
                                      ["no required evals configured — "
                                       "fail-closed"])
-        corpus = corpus_version or self.latest(required_eval_ids[0])[
-            "corpus_version"]
+        # Gate rows persist an immutable, version-pinned reference.  Bare IDs
+        # are accepted at this API boundary for compatibility, but are
+        # immediately resolved to id@version so release can never silently
+        # switch to a newer definition.
+        pinned: list[tuple[str, int, dict]] = []
+        for raw in required_eval_ids:
+            if not isinstance(raw, str) or not raw:
+                raise StageEvalError("required eval reference must be a string")
+            if "@" in raw:
+                def_id, version_text = raw.rsplit("@", 1)
+                try:
+                    version = int(version_text)
+                except ValueError as e:
+                    raise StageEvalError(
+                        f"invalid pinned eval reference {raw}") from e
+                row = self.db.conn.execute(
+                    "SELECT * FROM eval_definition WHERE id=? AND version=?",
+                    (def_id, version)).fetchone()
+                d = dict(row) if row else None
+            else:
+                d = self.latest(raw)
+                version = d["version"] if d else 0
+                def_id = raw
+            if not d:
+                raise StageEvalError(f"unknown eval definition {raw}")
+            pinned.append((def_id, version, d))
+
+        corpus = corpus_version or pinned[0][2]["corpus_version"]
         reasons: list[str] = []
         decision = "pass"
-        for def_id in required_eval_ids:
-            d = self.latest(def_id)
-            if not d:
-                raise StageEvalError(f"unknown eval definition {def_id}")
+        pinned_refs = [f"{def_id}@{version}" for def_id, version, _ in pinned]
+        for def_id, version, d in pinned:
             if d["stage"] != stage:
                 decision = "fail"
                 reasons.append(f"{def_id}: belongs to stage {d['stage']},"
                                f" not {stage}")
+                continue
+            if d["corpus_version"] != corpus:
+                decision = "fail"
+                reasons.append(
+                    f"{def_id}@{version}: definition corpus"
+                    f" {d['corpus_version']} != gate corpus {corpus}")
                 continue
             rows = self.db.conn.execute(
                 "SELECT outcome FROM eval_run"
                 " WHERE definition_id=? AND definition_version=?"
                 " AND goal_id=? AND artifact_chain_hash=?"
                 " AND corpus_version=? ORDER BY created_at DESC",
-                (def_id, d["version"], goal_id, artifact_chain_hash,
+                (def_id, version, goal_id, artifact_chain_hash,
                  corpus)).fetchall()
             if not rows:
                 decision = "fail"
@@ -209,12 +239,12 @@ class StageEvals:
             if bad and d["required"]:
                 decision = "fail"
                 reasons.append(
-                    f"{def_id}@{d['version']}: {len(bad)}/{len(rows)} runs"
+                    f"{def_id}@{version}: {len(bad)}/{len(rows)} runs"
                     f" failed ({','.join(sorted(set(bad)))})")
             elif bad:
                 reasons.append(
                     f"{def_id}@{d['version']}: advisory failures {len(bad)}")
-        return self._record_gate(stage, required_eval_ids, decision,
+        return self._record_gate(stage, pinned_refs, decision,
                                  goal_id, reasons,
                                  artifact_chain_hash=artifact_chain_hash,
                                  corpus_version=corpus)

@@ -1,6 +1,6 @@
 # AgentOS GAP Register
 
-Status: 2026-08-22 (updated after E1/E2 measurement series). Reference
+Status: 2026-08-23 (updated after R9 stabilization). Reference
 implementation — **not production-ready**. Each gap: area / current state /
 risk / next step. Items closed by recent work are listed at the bottom.
 
@@ -35,6 +35,14 @@ risk / next step. Items closed by recent work are listed at the bottom.
   invoke() re-resolves contracts (forged objects inert).
 - Evidence pack global chain (F10): full-chain verify + fail-loudly on broken
   chain or inconsistent ACCEPTED.
+- Migration stability (R9): migration body + marker are atomic; campaign and
+  experiment history survives supported 0008/0009/0010 upgrades; interrupted
+  0010 gate rebuilds are recovered conservatively with stale bindings.
+- Stage-gate authority (R9): gate requirements persist exact `id@version` pins;
+  bare/malformed/stale/advisory refs and failed or wrong-corpus runs fail closed.
+- Wiki/evidence scoping (R9): frontmatter values are quoted, duplicate keys are
+  rejected, the projection is not history-truncated, and packs reference only
+  notes with the exact canonical goal binding.
 
 Known code/spec drift: AGENTS.md lists `demo/` scenario definitions which live
 in `cli.py` (and now `eval/`); tracked rather than silently ignored.

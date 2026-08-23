@@ -355,11 +355,16 @@ Versioned entities (append-only; UPDATE/DELETE refused by triggers — migration
 - `eval_run(...)` — outcome, metrics, env, seed, logs hash, failure class;
   `llm_judge` runs are inadmissible without model_id + prompt_version +
   rubric_version.
-- `stage_gate(stage, required_eval_ids, decision, rationale, authority)`.
+- `stage_gate(stage, required_eval_ids_json, decision, rationale, authority,
+  goal_id, artifact_chain_hash, corpus_version)`. Required refs are persisted
+  as immutable `id@version` pins.
 
 Authority (ADR-0006): deterministic checks may block a stage gate; llm_judge
 results are advisory and never satisfy a required criterion. A required
-definition with zero recorded runs FAILS the gate (no silent skips).
+definition with zero recorded runs FAILS the gate (no silent skips). Release
+requires every pinned definition to remain latest and to have a passing run for
+the same goal, current artifact chain and bound corpus; bare, stale, malformed,
+wrong-stage, advisory and wrong-corpus references fail closed.
 
 Six stages covered by 24 deterministic checks (`stage_checks.CHECKS`):
 concept ×4, specification ×4, plan ×4, execution ×4, verification ×4,
@@ -373,18 +378,23 @@ stage: 2 gold / 2 incomplete / 2 near_miss / 1 alternative_correct /
 
 `wiki/` is a deterministic projection of canonical SQLite state:
 `wiki-build` regenerates `_generated/` notes (byte-identical on unchanged
-state); `wiki-check` validates broken links, duplicate ids, frontmatter
-shape, canonical dangling refs and unexpected orphans; `wiki-status`
+state, without history caps, using a same-volume staged swap with rollback);
+`wiki-check` validates broken links, duplicate ids/keys, frontmatter shape,
+canonical dangling refs and unexpected orphans; `wiki-status`
 reports projection vs canonical counts. The wiki is never authoritative;
 human-authored notes live in human-owned folders and are imported explicitly
 with provenance; secrets/raw provider transcripts never enter the vault.
+Goal evidence packs include only note hashes whose frontmatter has the exact
+same canonical `goal_id`; the global Home index is never a goal-pack reference.
 
 ### 9.3 Harness Autoresearch (module `autoresearch.py`; ADR-0008)
 
 Campaign = immutable `CampaignManifest` (baseline ref, frozen eval/corpus
 hashes, mutable scope, budget, seeds, primary metric, hard constraints).
 Per experiment: one hypothesis → candidate in an isolated worktree →
-identical dev evals at fixed seeds → separate holdout/security gate →
+candidate apply command in a stripped-environment subprocess (in-process
+callbacks are drill-only) → identical dev evals at fixed seeds → separate
+holdout/security gate →
 decision KEEP / DISCARD / RETEST / CRASH / QUARANTINED recorded durably in
 `experiment` (+ evidence pack + wiki note). KEEP requires improvement above
 the noise floor, no hard regression, unchanged frozen hashes, constraints
@@ -392,6 +402,9 @@ intact; complexity penalty breaks statistical ties toward DISCARD. Stop
 rules: budget exhausted, 3 consecutive CRASHes, any QUARANTINED (frozen-hash
 change or security violation), ambiguous measurement. Provider failures are
 CRASH-classed and never counted as capability signal.
+
+The stripped environment and isolated worktree are not a filesystem/network
+sandbox. Kernel-level confinement remains an explicit open GAP_REGISTER item.
 
 ## 10. Consistency log
 

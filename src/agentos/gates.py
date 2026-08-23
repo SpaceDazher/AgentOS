@@ -283,40 +283,79 @@ class Gates:
                         f" '{row['artifact_chain_hash'][:16]}', current is"
                         f" '{chain_hash[:16]}'")
                     continue
-                # R8: exact backing — the gate is authorized ONLY by passing
-                # eval runs of REQUIRED DETERMINISTIC definitions listed in
-                # this gate's required_eval_ids_json, against the same chain
-                # AND corpus. Advisory judges and failed runs never count.
+                # Exact authority: a gate is authorized ONLY by passing runs
+                # for every version-pinned id@version stored in its JSON.  A
+                # legacy bare id, malformed JSON, stale definition version,
+                # advisory definition, failed run, unrelated stage, or corpus
+                # mismatch is fail-closed.
                 gate_corpus = row["corpus_version"] or ""
                 if not gate_corpus:
                     reasons.append(
                         f"stage gate {stage} has no corpus binding (stale)")
                     continue
                 try:
-                    req_ids = json.loads(row["required_eval_ids_json"]
-                                         or "[]")
-                except ValueError:
-                    req_ids = []
-                if not req_ids:
+                    req_refs = json.loads(row["required_eval_ids_json"] or "[]")
+                except (TypeError, json.JSONDecodeError):
+                    req_refs = None
+                if not isinstance(req_refs, list) or not req_refs:
                     reasons.append(
-                        f"stage gate {stage} lists no required evals")
+                        f"stage gate {stage} has malformed/empty required eval refs")
                     continue
-                ph = ",".join("?" * len(req_ids))
-                backed = self.db.conn.execute(
-                    "SELECT COUNT(DISTINCT er.definition_id) FROM eval_run er"
-                    " JOIN eval_definition ed ON ed.id=er.definition_id AND"
-                    " ed.version=er.definition_version"
-                    " WHERE er.goal_id=? AND ed.stage=? AND ed.kind='deterministic'"
-                    " AND ed.required=1 AND er.outcome='pass'"
-                    " AND er.artifact_chain_hash=? AND er.corpus_version=?"
-                    f" AND er.definition_id IN ({ph})",
-                    (goal_id, stage, chain_hash, gate_corpus,
-                     *req_ids)).fetchone()[0]
-                if backed < len(set(req_ids)):
+                bad_refs = []
+                backed = 0
+                seen_refs: set[str] = set()
+                for ref in req_refs:
+                    if not isinstance(ref, str) or "@" not in ref:
+                        bad_refs.append(f"{ref!r} is not a pinned id@version")
+                        continue
+                    def_id, version_text = ref.rsplit("@", 1)
+                    try:
+                        version = int(version_text)
+                    except (TypeError, ValueError):
+                        bad_refs.append(f"{ref!r} has invalid version")
+                        continue
+                    if ref in seen_refs:
+                        continue
+                    seen_refs.add(ref)
+                    ed = self.db.conn.execute(
+                        "SELECT id, version, stage, kind, required, corpus_version"
+                        " FROM eval_definition WHERE id=? AND version=?",
+                        (def_id, version)).fetchone()
+                    if not ed:
+                        bad_refs.append(f"{ref} definition is unknown")
+                        continue
+                    latest_v = self.db.conn.execute(
+                        "SELECT MAX(version) FROM eval_definition WHERE id=?",
+                        (def_id,)).fetchone()[0]
+                    if latest_v != version:
+                        bad_refs.append(f"{ref} is stale; latest is {def_id}@{latest_v}")
+                        continue
+                    if ed["stage"] != stage:
+                        bad_refs.append(f"{ref} belongs to stage {ed['stage']}")
+                        continue
+                    if ed["kind"] != "deterministic" or not ed["required"]:
+                        bad_refs.append(f"{ref} is not a required deterministic definition")
+                        continue
+                    if ed["corpus_version"] != gate_corpus:
+                        bad_refs.append(
+                            f"{ref} corpus {ed['corpus_version']} != {gate_corpus}")
+                        continue
+                    if self.db.conn.execute(
+                            "SELECT 1 FROM eval_run"
+                            " WHERE goal_id=? AND definition_id=?"
+                            " AND definition_version=? AND outcome='pass'"
+                            " AND artifact_chain_hash=? AND corpus_version=?"
+                            " LIMIT 1",
+                            (goal_id, def_id, version, chain_hash,
+                             gate_corpus)).fetchone():
+                        backed += 1
+                if bad_refs or backed < len(seen_refs):
+                    detail = "; ".join(bad_refs[:3])
                     reasons.append(
                         f"stage gate {stage} lacks passing deterministic"
-                        f" backing: {backed}/{len(set(req_ids))} required"
-                        f" definitions have a pass run on current chain+corpus")
+                        f" backing: {backed}/{len(seen_refs)} required"
+                        f" definitions have a pass run on current chain+corpus"
+                        + (f" ({detail})" if detail else ""))
                 elif row["decision"] != "pass":
                     reasons.append(
                         f"latest stage gate {stage} = {row['decision']}: "

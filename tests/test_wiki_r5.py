@@ -18,6 +18,11 @@ class WikiR5(unittest.TestCase):
         self.db.conn.execute(
             "INSERT INTO goal(id, concept_text, status) VALUES (?,?,?)",
             ("goal_R5", "probe", "ACTIVE"))
+        self.db.conn.execute(
+            "INSERT INTO campaign(id, goal_id, name, manifest_json,"
+            " manifest_sha256, baseline_ref, primary_metric, budget)"
+            " VALUES (?,?,?,?,?,?,?,?)",
+            ("camp", "goal_R5", "wiki", "{}", "hash", "b", "m", 1))
         self.wb = WikiBuilder(self.db, self.root)
 
     def tearDown(self):
@@ -68,11 +73,20 @@ class WikiR5(unittest.TestCase):
         self.wb.build()
         p = self.wb.wiki / "_generated" / "goal-goal_R5.md"
         text = p.read_text(encoding="utf-8").replace(
-            "---\n", "---\ngoal_id: goal_MISSING\n", 1)
+            'goal_id: "goal_R5"', 'goal_id: "goal_MISSING"', 1)
         p.write_text(text, encoding="utf-8")
         res = self.wb.check()
         kinds = {i["kind"] for i in res["issues"]}
         self.assertIn("dangling_ref", kinds)
+
+    def test_duplicate_frontmatter_key_is_invalid(self):
+        self.wb.build()
+        p = self.wb.wiki / "_generated" / "goal-goal_R5.md"
+        text = p.read_text(encoding="utf-8").replace(
+            "---\n", '---\ngoal_id: "goal_MISSING"\n', 1)
+        p.write_text(text, encoding="utf-8")
+        kinds = {i["kind"] for i in self.wb.check()["issues"]}
+        self.assertIn("invalid_frontmatter", kinds)
 
 
 if __name__ == "__main__":

@@ -137,9 +137,14 @@ def CampaignManifest(**kw) -> FrozenManifest:  # noqa: N802
 
 
 class Autoresearch:
-    """Campaign runner. Candidate changes are applied by the caller-supplied
-    `apply(worktree)` callable inside an ISOLATED WORKTREE; scope and frozen
-    integrity are verified from disk by this class afterwards."""
+    """Campaign runner.
+
+    Production candidates use ``apply_cmd`` in a stripped-environment
+    subprocess rooted at an isolated worktree. Direct ``apply(worktree)``
+    callbacks are available only in explicit drill mode. Scope and frozen
+    integrity are verified from disk by the host afterwards; this is not a
+    kernel filesystem/network sandbox.
+    """
 
     def __init__(self, db, root_dir: str | Path, stage_evals,
                  repo_source: str | Path | None = None):
@@ -307,7 +312,8 @@ class Autoresearch:
     # -- campaign loop ------------------------------------------------------------
     def run_campaign(self, manifest: FrozenManifest,
                      scenarios: list[dict], dev_eval_fn,
-                     holdout_fn=None, *, goal_id: str | None = None) -> list[dict]:
+                     holdout_fn=None, *, goal_id: str | None = None,
+                     drill_mode: bool = False) -> list[dict]:
         """Real pipeline (R6): per scenario create a worktree, run the
         candidate's apply SCRIPT in an ISOLATED SUBPROCESS (cwd=worktree —
         the host process is never exposed to candidate code), verify scope +
@@ -315,7 +321,7 @@ class Autoresearch:
         any KEEP.
 
         scenarios: [{"hypothesis", "candidate_ref", "apply_cmd"(list argv
-                    executed with cwd=worktree) | "apply"(callable, fake mode),
+                     executed with cwd=worktree) | "apply"(callable, drill mode),
                     "measurements"? {"dev": value}, "infrastructure_failure"?,
                     "security_violation"?}]
         holdout_fn(worktree, seed) -> {"passed": bool} must be supplied;
@@ -324,6 +330,10 @@ class Autoresearch:
             raise AutoresearchError(
                 "run_campaign requires holdout_fn — KEEP without an "
                 "independent holdout evaluation is forbidden (ADR-0008)")
+        if any(sc.get("apply") is not None for sc in scenarios) and not drill_mode:
+            raise AutoresearchError(
+                "in-process apply callbacks are drill-only; use apply_cmd"
+                " for production campaigns")
         campaign_id = self.create_campaign(manifest, "autoresearch",
                                            goal_id=goal_id)
         results = []
@@ -343,7 +353,9 @@ class Autoresearch:
             infra_fail = bool(sc.get("infrastructure_failure"))
             try:
                 if sc.get("apply") is not None:
-                    # deterministic/drill path (tests): callable on the copy
+                    # Explicitly opt-in drill path.  Production campaigns
+                    # must use apply_cmd so candidate code never executes in
+                    # the host interpreter.
                     sc["apply"](wt)
                     apply_called = True
                 elif sc.get("apply_cmd"):

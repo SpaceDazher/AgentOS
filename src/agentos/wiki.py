@@ -13,7 +13,7 @@ import json
 import re
 import shutil
 import tempfile
-import time
+import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -27,8 +27,6 @@ HUMAN_DIRS = ("10-Architecture", "20-Specifications", "90-Glossary")
 
 FRONTMATTER_KEYS = ["id", "type", "title", "status", "created_at",
                     "updated_at"]
-
-
 @dataclass
 class CheckIssue:
     kind: str        # broken_link | duplicate_id | invalid_frontmatter |
@@ -54,7 +52,43 @@ def leak_scan(text: str) -> list[str]:
 
 
 def _fm_escape(value: str) -> str:
-    return str(value).replace('"', "'")
+    # JSON string quoting is a YAML-compatible scalar and, importantly,
+    # escapes newlines so untrusted text cannot inject a second frontmatter
+    # key or terminate the document header.
+    return json.dumps(str(value), ensure_ascii=False)
+
+
+def parse_frontmatter(text: str) -> dict[str, str]:
+    """Parse the small scalar frontmatter dialect emitted by ``_note``.
+
+    This intentionally reads only the header block; regexes over the whole
+    Markdown body can mistake arbitrary prose for canonical references.
+    """
+    m = re.match(r"\A---\n(.*?)\n---\n", text, re.DOTALL)
+    if not m:
+        return {}
+    out: dict[str, str] = {}
+    for line in m.group(1).splitlines():
+        if ":" not in line:
+            continue
+        key, raw = line.split(":", 1)
+        key = key.strip()
+        raw = raw.strip()
+        if not key:
+            continue
+        if key in out:
+            # Ambiguous canonical bindings are inadmissible.  Returning an
+            # empty mapping makes evidence-pack inclusion fail closed; the
+            # checker independently reports the duplicate key.
+            return {}
+        if len(raw) >= 2 and raw[0] == raw[-1] == '"':
+            try:
+                out[key] = str(json.loads(raw))
+                continue
+            except json.JSONDecodeError:
+                pass
+        out[key] = raw.strip("'")
+    return out
 
 
 def _note(rel_path: str, fm: dict, summary: str, body_sections: list[str],
@@ -120,10 +154,12 @@ class WikiBuilder:
 
         goals = c.execute(
             "SELECT id, status, created_at FROM goal ORDER BY created_at"
-            " DESC LIMIT 50").fetchall()
+            " DESC").fetchall()
         experiments = c.execute(
-            "SELECT id, goal_id, hypothesis, status, decision_rationale"
-            " FROM experiment ORDER BY created_at DESC LIMIT 50").fetchall()
+            "SELECT e.id, COALESCE(e.goal_id, c.goal_id) AS goal_id,"
+            " e.hypothesis, e.status, e.decision_rationale"
+            " FROM experiment e JOIN campaign c ON c.id=e.campaign_id"
+            " ORDER BY e.created_at DESC").fetchall()
         eval_defs = c.execute(
             "SELECT id, MAX(version) AS v, stage, metric, required"
             " FROM eval_definition GROUP BY id ORDER BY stage").fetchall()
@@ -245,7 +281,7 @@ class WikiBuilder:
         # Stage-gates -> decisions folder ------------------------------------
         for sg in c.execute(
                 "SELECT id, stage, decision, rationale, goal_id FROM stage_gate"
-                " ORDER BY created_at DESC LIMIT 100").fetchall():
+                " ORDER BY created_at DESC").fetchall():
             note = _note(
                 f"_generated/stagegate-{sg['id']}.md",
                 {"id": sg["id"], "type": "decision", "title":
@@ -275,7 +311,7 @@ class WikiBuilder:
             canonical_names.add(f"eval-{r['id']}.md")
         for e in experiments:
             canonical_names.add(f"experiment-{e['id']}.md")
-        for sg in c.execute("SELECT id FROM stage_gate LIMIT 100").fetchall():
+        for sg in c.execute("SELECT id FROM stage_gate").fetchall():
             canonical_names.add(f"stagegate-{sg['id']}.md")
 
         # R7 TRUE atomic swap: the staging dir IS fully built, so replacing
@@ -287,18 +323,24 @@ class WikiBuilder:
             if p.name not in canonical_names:
                 p.unlink()
         removed = 0
-        backup = gen.parent / (gen.name + ".old-" + str(int(time.time())))
+        backup = gen.parent / (gen.name + ".old-" + uuid.uuid4().hex)
+        swap_ok = False
         if gen.exists():
             gen.rename(backup)          # move OLD away (atomic)
             removed = len(list(backup.glob("*.md")))
         try:
             staged_gen.rename(gen)      # move NEW in (atomic)
+            swap_ok = True
         except Exception:
             if backup.exists() and not gen.exists():
                 backup.rename(gen)      # roll back: old projection restored
             raise
         finally:
-            shutil.rmtree(backup, ignore_errors=True)
+            # Keep the old tree available if swapping failed before rollback;
+            # successful swaps can safely retire it.  The random suffix avoids
+            # collisions between concurrent/restarted builders.
+            if swap_ok:
+                shutil.rmtree(backup, ignore_errors=True)
             shutil.rmtree(self._staging, ignore_errors=True)
         return {"notes_written": sum(counts.values()), "counts": counts,
                 "stale_removed": removed}
@@ -319,15 +361,22 @@ class WikiBuilder:
                 issues.append(CheckIssue(
                     "invalid_frontmatter", rel, "no frontmatter block"))
                 continue
+            fm = parse_frontmatter(text)
             fm_lines = m.group(1).splitlines()
-            fm_ids = [ln.split(":", 1)[0] for ln in fm_lines if ":" in ln]
+            fm_ids = [ln.split(":", 1)[0].strip()
+                      for ln in fm_lines if ":" in ln]
             missing = [k for k in FRONTMATTER_KEYS if k not in fm_ids]
             if missing:
                 issues.append(CheckIssue(
                     "invalid_frontmatter", rel,
                     f"missing keys: {missing}"))
-            idm = re.search(r"^id:\s*(.+)$", m.group(1), re.MULTILINE)
-            nid = idm.group(1).strip() if idm else None
+            duplicates = sorted({key for key in fm_ids
+                                 if fm_ids.count(key) > 1})
+            if duplicates:
+                issues.append(CheckIssue(
+                    "invalid_frontmatter", rel,
+                    f"duplicate keys: {duplicates}"))
+            nid = fm.get("id")
             if nid:
                 if nid in ids:
                     issues.append(CheckIssue(
@@ -362,22 +411,17 @@ class WikiBuilder:
             "experiment_id": {r["id"] for r in
                               c.execute("SELECT id FROM experiment")},
         }
-        secret_re = re.compile(
-            r"(?i)\b(api[_-]?key|secret|token|password)\s*[=:]\s*(?!"
-            r"\[REDACTED\])\S+")
         for p in md_files:
             rel = str(p.relative_to(self.wiki))
             text = p.read_text(encoding="utf-8", errors="replace")
-            m = re.match(r"\A---\n(.*?)\n---\n", text, re.DOTALL)
-            fm = m.group(1) if m else ""
+            fm = parse_frontmatter(text)
             for key, valid_ids in canonical.items():
-                idm = re.search(rf"^{key}:\s*(\S+)\s*$", fm, re.MULTILINE)
-                if idm and idm.group(1) not in valid_ids:
+                ref = fm.get(key)
+                if ref and ref not in valid_ids:
                     issues.append(CheckIssue(
                         "dangling_ref", rel,
-                        f"{key}={idm.group(1)} not in canonical DB"))
-            # R7: leak detection uses the SAME spaced-name-aware pattern as
-            # build-redaction (leak_scan), so a redaction gap cannot pass.
+                        f"{key}={ref} not in canonical DB"))
+            # Use the same spaced-name-aware scanner as build redaction.
             for hit_line in leak_scan(text):
                 issues.append(CheckIssue(
                     "secret_leak", rel,

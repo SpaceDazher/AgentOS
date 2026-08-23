@@ -183,9 +183,21 @@ class TestRealWorktreeCampaign(unittest.TestCase):
               "apply": apply, "measurements": {}}],
             goal_id="goal_AR",
             dev_eval_fn=lambda wt, seed: 0.4 if wt else 0.5,
-            holdout_fn=lambda wt, seed: {"passed": True})
+            holdout_fn=lambda wt, seed: {"passed": True}, drill_mode=True)
         self.assertTrue(calls, "apply(worktree) was never invoked")
         self.assertEqual(results[0]["status"], "KEEP")
+
+    def test_in_process_apply_callback_is_rejected_outside_drill_mode(self):
+        from agentos.autoresearch import AutoresearchError
+        with self.assertRaises(AutoresearchError) as cm:
+            self.ar.run_campaign(
+                self._manifest(),
+                [{"hypothesis": "host callback", "candidate_ref": "cb",
+                  "apply": lambda worktree: None}],
+                goal_id="goal_AR",
+                dev_eval_fn=lambda wt, seed: 0.4,
+                holdout_fn=lambda wt, seed: {"passed": True})
+        self.assertIn("drill-only", str(cm.exception))
 
     def test_out_of_scope_change_quarantines_campaign(self):
         def apply(wt: Path):
@@ -199,9 +211,9 @@ class TestRealWorktreeCampaign(unittest.TestCase):
             [{"hypothesis": "evil", "candidate_ref": "evil-1",
               "apply": apply},
              {"hypothesis": "innocent", "candidate_ref": "ok"}],
-            dev_eval_fn=lambda wt, seed: 0.3 if wt else 0.5,
-            holdout_fn=lambda wt, seed: {"passed": True},
-            goal_id="goal_AR")
+             dev_eval_fn=lambda wt, seed: 0.3 if wt else 0.5,
+             holdout_fn=lambda wt, seed: {"passed": True},
+             goal_id="goal_AR", drill_mode=True)
         self.assertEqual(results[0]["status"], "QUARANTINED")
         self.assertIn("FROZEN file modified",
                       results[0]["rationale"])
@@ -215,10 +227,10 @@ class TestRealWorktreeCampaign(unittest.TestCase):
         results = self.ar.run_campaign(
             self._manifest(),
             [{"hypothesis": "scope creep", "candidate_ref": "sc",
-              "apply": apply}],
-            dev_eval_fn=lambda wt, seed: 0.3 if wt else 0.5,
-            holdout_fn=lambda wt, seed: {"passed": True},
-            goal_id="goal_AR")
+             "apply": apply}],
+             dev_eval_fn=lambda wt, seed: 0.3 if wt else 0.5,
+             holdout_fn=lambda wt, seed: {"passed": True},
+             goal_id="goal_AR", drill_mode=True)
         self.assertIn(results[0]["status"],
                       ("QUARANTINED", "DISCARD"))
 
