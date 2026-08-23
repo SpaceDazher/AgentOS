@@ -1,0 +1,41 @@
+{
+  "payload": {
+    "requirement_ids": [
+      "R1",
+      "R2"
+    ],
+    "tasks": [
+      {
+        "covers": [
+          "R1"
+        ],
+        "depends_on": [],
+        "key": "t1",
+        "rollback": "drop",
+        "verification": "unit"
+      },
+      {
+        "covers": [
+          "R2"
+        ],
+        "depends_on": [
+          "t1"
+        ],
+        "key": "t2",
+        "rollback": "supersede",
+        "verification": "gate"
+      },
+      {
+        "covers": [
+          "R1"
+        ],
+        "depends_on": [
+          "nope"
+        ],
+        "key": "t3",
+        "rollback": "r",
+        "verification": "v"
+      }
+    ]
+  }
+}
