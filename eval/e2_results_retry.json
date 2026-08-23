@@ -1,0 +1,664 @@
+{
+  "schema": "agentos.e1-results/v0",
+  "mode": "end-to-end-hermes-pilot",
+  "summary": {
+    "episodes_total": 19,
+    "pass_1": 0.842,
+    "by_task": {
+      "greet-basic": {
+        "successes": 1,
+        "episodes": 1
+      },
+      "add-int": {
+        "successes": 1,
+        "episodes": 1
+      },
+      "reverse-str": {
+        "successes": 1,
+        "episodes": 1
+      },
+      "max-of-list": {
+        "successes": 1,
+        "episodes": 1
+      },
+      "flaky-recover": {
+        "successes": 1,
+        "episodes": 1
+      },
+      "mul-int": {
+        "successes": 0,
+        "episodes": 1
+      },
+      "sub-int": {
+        "successes": 1,
+        "episodes": 1
+      },
+      "upper-str": {
+        "successes": 1,
+        "episodes": 1
+      },
+      "min-of-list": {
+        "successes": 1,
+        "episodes": 1
+      },
+      "sum-list": {
+        "successes": 1,
+        "episodes": 1
+      },
+      "is-palindrome": {
+        "successes": 1,
+        "episodes": 1
+      },
+      "count-vowels": {
+        "successes": 1,
+        "episodes": 1
+      },
+      "fib-list": {
+        "successes": 0,
+        "episodes": 1
+      },
+      "dict-merge": {
+        "successes": 1,
+        "episodes": 1
+      },
+      "flatten-once": {
+        "successes": 1,
+        "episodes": 1
+      },
+      "unique-sorted": {
+        "successes": 1,
+        "episodes": 1
+      },
+      "word-count": {
+        "successes": 1,
+        "episodes": 1
+      },
+      "slugify": {
+        "successes": 0,
+        "episodes": 1
+      },
+      "divmod-check": {
+        "successes": 1,
+        "episodes": 1
+      }
+    }
+  },
+  "episodes": [
+    {
+      "task": "greet-basic",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "greet(name)->str returning 'hello, <name>' declared in greet.py with pytest tests in test_greet.py (basic, name, return-type cases).",
+      "worker_fail_class": null,
+      "worker_trace_digest": null,
+      "worker_trace_ref": null,
+      "worker_trace_excerpt": null,
+      "run_status": "COMPLETED",
+      "run_terminal_reason": "success",
+      "duration_ms": 25361,
+      "goal_id": "goal_BPC0Y411YJH3HSD101M0Q5M33N",
+      "evidence_pack_path": ".agentos-e2-retry\\greet-basic-r1\\goals\\goal_BPC0Y411YJH3HSD101M0Q5M33N\\evidence-pack.json",
+      "evidence_pack_sha256": "229d9f69eed716f44a4962c9c8de7c1318167595c2b9b86158ede77b93b65ef5",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin_name": "hermes.EXE",
+        "platform": "win32",
+        "harness_version": "agentos-harness/0.1"
+      }
+    },
+    {
+      "task": "add-int",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "calc.py exposes add(a,b)->int (coerces numeric inputs via int()); tests in test_calc.py cover positive, negative, zero, mixed-sign, and string-coercion cases.",
+      "worker_fail_class": null,
+      "worker_trace_digest": null,
+      "worker_trace_ref": null,
+      "worker_trace_excerpt": null,
+      "run_status": "COMPLETED",
+      "run_terminal_reason": "success",
+      "duration_ms": 16029,
+      "goal_id": "goal_WVSNEF28NVEHX91R01M0Q5MVWC",
+      "evidence_pack_path": ".agentos-e2-retry\\add-int-r1\\goals\\goal_WVSNEF28NVEHX91R01M0Q5MVWC\\evidence-pack.json",
+      "evidence_pack_sha256": "f1117f27fab3050367adb59e41e999613244bcbfccda6befdd0262bd4bc8f34f",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin_name": "hermes.EXE",
+        "platform": "win32",
+        "harness_version": "agentos-harness/0.1"
+      }
+    },
+    {
+      "task": "reverse-str",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "strutil.py with reverse(s)->str (type-checked) plus pytest suite covering basic, empty, single-char, palindrome, unicode, and non-string input; declared as effects for gateway replay.",
+      "worker_fail_class": null,
+      "worker_trace_digest": null,
+      "worker_trace_ref": null,
+      "worker_trace_excerpt": null,
+      "run_status": "COMPLETED",
+      "run_terminal_reason": "success",
+      "duration_ms": 14566,
+      "goal_id": "goal_PB3GHW71T4Q7CNXK01M0Q5NBH0",
+      "evidence_pack_path": ".agentos-e2-retry\\reverse-str-r1\\goals\\goal_PB3GHW71T4Q7CNXK01M0Q5NBH0\\evidence-pack.json",
+      "evidence_pack_sha256": "64c19e2b04ea7d8b899dd78d5a631fe12b8480d480f5d8edbce6e6b1b135a5a3",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin_name": "hermes.EXE",
+        "platform": "win32",
+        "harness_version": "agentos-harness/0.1"
+      }
+    },
+    {
+      "task": "max-of-list",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "lists.py exposes maximum(xs) raising ValueError on empty; tests cover ints, floats, negatives, single element, duplicates, empty.",
+      "worker_fail_class": null,
+      "worker_trace_digest": null,
+      "worker_trace_ref": null,
+      "worker_trace_excerpt": null,
+      "run_status": "COMPLETED",
+      "run_terminal_reason": "success",
+      "duration_ms": 16537,
+      "goal_id": "goal_BVQB962TJBSXDJ0501M0Q5NSRC",
+      "evidence_pack_path": ".agentos-e2-retry\\max-of-list-r1\\goals\\goal_BVQB962TJBSXDJ0501M0Q5NSRC\\evidence-pack.json",
+      "evidence_pack_sha256": "c60a9d2a40e44b1bcddbcb91ab5fefbc04c2968c56e64d7e108792a67397b271",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin_name": "hermes.EXE",
+        "platform": "win32",
+        "harness_version": "agentos-harness/0.1"
+      }
+    },
+    {
+      "task": "flaky-recover",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "no_bad_rows": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "counter.py exposes bump(n)->n+1; test_counter.py covers zero/positive/negative/large ints and TypeError on non-int input.",
+      "worker_fail_class": null,
+      "worker_trace_digest": null,
+      "worker_trace_ref": null,
+      "worker_trace_excerpt": null,
+      "run_status": "COMPLETED",
+      "run_terminal_reason": "success",
+      "duration_ms": 46516,
+      "goal_id": "goal_1HQATN7PV6T2R22R01M0Q5P9XG",
+      "evidence_pack_path": ".agentos-e2-retry\\flaky-recover-r1\\goals\\goal_1HQATN7PV6T2R22R01M0Q5P9XG\\evidence-pack.json",
+      "evidence_pack_sha256": "10b8e0aa9e1e160897dc371f5003250750f0298c0910d0cde1bf7bfdf4e45f9e",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin_name": "hermes.EXE",
+        "platform": "win32",
+        "harness_version": "agentos-harness/0.1"
+      }
+    },
+    {
+      "task": "mul-int",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "calc2.py with multiply(a,b)->int plus pytest suite in test_calc2.py",
+      "worker_fail_class": null,
+      "worker_trace_digest": null,
+      "worker_trace_ref": null,
+      "worker_trace_excerpt": null,
+      "run_status": "COMPLETED",
+      "run_terminal_reason": "success",
+      "duration_ms": 13252,
+      "goal_id": "goal_SKMCEP1SNQ0DCRD001M0Q5QQB1",
+      "evidence_pack_path": ".agentos-e2-retry\\mul-int-r1\\goals\\goal_SKMCEP1SNQ0DCRD001M0Q5QQB1\\evidence-pack.json",
+      "evidence_pack_sha256": "5b498f44e9a57b27323e361c76bd4cc753be2b6e98bbcdaee42b89deff06f7c3",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin_name": "hermes.EXE",
+        "platform": "win32",
+        "harness_version": "agentos-harness/0.1"
+      }
+    },
+    {
+      "task": "sub-int",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "calc3.py with subtract(a,b)->int plus pytest suite (basic, negative, zero, negatives, type check) declared as effects.",
+      "worker_fail_class": null,
+      "worker_trace_digest": null,
+      "worker_trace_ref": null,
+      "worker_trace_excerpt": null,
+      "run_status": "COMPLETED",
+      "run_terminal_reason": "success",
+      "duration_ms": 13976,
+      "goal_id": "goal_R1JF409VR6JTJMX601M0Q5R48Z",
+      "evidence_pack_path": ".agentos-e2-retry\\sub-int-r1\\goals\\goal_R1JF409VR6JTJMX601M0Q5R48Z\\evidence-pack.json",
+      "evidence_pack_sha256": "e1c145390c0c1bd7f3c40fb47ed84f4f82c1fc289189be81f897dd1058d982e9",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin_name": "hermes.EXE",
+        "platform": "win32",
+        "harness_version": "agentos-harness/0.1"
+      }
+    },
+    {
+      "task": "upper-str",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "strutil2.to_upper implemented (str-only, TypeError otherwise); unittest suite covers basic, already-upper, empty, mixed+symbols, unicode, non-string inputs.",
+      "worker_fail_class": null,
+      "worker_trace_digest": null,
+      "worker_trace_ref": null,
+      "worker_trace_excerpt": null,
+      "run_status": "COMPLETED",
+      "run_terminal_reason": "success",
+      "duration_ms": 14663,
+      "goal_id": "goal_19DXP5JDK54GRJMZ01M0Q5RHXS",
+      "evidence_pack_path": ".agentos-e2-retry\\upper-str-r1\\goals\\goal_19DXP5JDK54GRJMZ01M0Q5RHXS\\evidence-pack.json",
+      "evidence_pack_sha256": "40066d202b4de79cd8e0d35028f5ef136d5650cf9e79a7635276c23853eb732b",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin_name": "hermes.EXE",
+        "platform": "win32",
+        "harness_version": "agentos-harness/0.1"
+      }
+    },
+    {
+      "task": "min-of-list",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "lists2.py exposes minimum(xs) raising ValueError on empty; test_lists2.py covers basic, single, negatives, floats, empty, return type.",
+      "worker_fail_class": null,
+      "worker_trace_digest": null,
+      "worker_trace_ref": null,
+      "worker_trace_excerpt": null,
+      "run_status": "COMPLETED",
+      "run_terminal_reason": "success",
+      "duration_ms": 12028,
+      "goal_id": "goal_GZM6WXR7PQHHHH5Z01M0Q5S082",
+      "evidence_pack_path": ".agentos-e2-retry\\min-of-list-r1\\goals\\goal_GZM6WXR7PQHHHH5Z01M0Q5S082\\evidence-pack.json",
+      "evidence_pack_sha256": "163f628e74705396d8058fb7ba5c24aa99443762718b6551cafb9f66a2c2bd35",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin_name": "hermes.EXE",
+        "platform": "win32",
+        "harness_version": "agentos-harness/0.1"
+      }
+    },
+    {
+      "task": "sum-list",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "lists3.total via sum(); empty -> 0; unittest suite with 5 tests included",
+      "worker_fail_class": null,
+      "worker_trace_digest": null,
+      "worker_trace_ref": null,
+      "worker_trace_excerpt": null,
+      "run_status": "COMPLETED",
+      "run_terminal_reason": "success",
+      "duration_ms": 19404,
+      "goal_id": "goal_9T8DCFRX8WGC6Q1Q01M0Q5SC0B",
+      "evidence_pack_path": ".agentos-e2-retry\\sum-list-r1\\goals\\goal_9T8DCFRX8WGC6Q1Q01M0Q5SC0B\\evidence-pack.json",
+      "evidence_pack_sha256": "c851cce59c2c69333bd81f0973b5b2de4a7189f7f6d7867192fd857bb553b59f",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin_name": "hermes.EXE",
+        "platform": "win32",
+        "harness_version": "agentos-harness/0.1"
+      }
+    },
+    {
+      "task": "is-palindrome",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "palindrome.py exposes is_palindrome(s)->bool with case-insensitive comparison (s.lower() vs reversed); TypeError on non-string. test_palindrome.py covers empty string, single char, even/odd palindrome",
+      "worker_fail_class": null,
+      "worker_trace_digest": null,
+      "worker_trace_ref": null,
+      "worker_trace_excerpt": null,
+      "run_status": "COMPLETED",
+      "run_terminal_reason": "success",
+      "duration_ms": 41060,
+      "goal_id": "goal_FPD17CQ53B7HFECM01M0Q5SYYQ",
+      "evidence_pack_path": ".agentos-e2-retry\\is-palindrome-r1\\goals\\goal_FPD17CQ53B7HFECM01M0Q5SYYQ\\evidence-pack.json",
+      "evidence_pack_sha256": "e5f65cf8fbaa45687eaa2bcafddb5642f9a3c760c35396a9ed6ea9ab071cc36e",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin_name": "hermes.EXE",
+        "platform": "win32",
+        "harness_version": "agentos-harness/0.1"
+      }
+    },
+    {
+      "task": "count-vowels",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "vowels.py exposes count_vowels(s)->int (case-insensitive aeiou, TypeError on non-str); tests cover empty/mixed/upper/no-vowel/y/non-string cases.",
+      "worker_fail_class": null,
+      "worker_trace_digest": null,
+      "worker_trace_ref": null,
+      "worker_trace_excerpt": null,
+      "run_status": "COMPLETED",
+      "run_terminal_reason": "success",
+      "duration_ms": 17978,
+      "goal_id": "goal_G6QAS3VWEGA39KFC01M0Q5V71E",
+      "evidence_pack_path": ".agentos-e2-retry\\count-vowels-r1\\goals\\goal_G6QAS3VWEGA39KFC01M0Q5V71E\\evidence-pack.json",
+      "evidence_pack_sha256": "2094dc7bd4558a43fe0bcfd51bfb0f2672c2ae8d4d1f695a137d4d8059c61f9a",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin_name": "hermes.EXE",
+        "platform": "win32",
+        "harness_version": "agentos-harness/0.1"
+      }
+    },
+    {
+      "task": "fib-list",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "fib.py declared: fib(n)->list of first n Fibonacci numbers; fib(0)==[], fib(1)==[0]; includes self-test asserts covering DoD and edge cases.",
+      "worker_fail_class": null,
+      "worker_trace_digest": null,
+      "worker_trace_ref": null,
+      "worker_trace_excerpt": null,
+      "run_status": "COMPLETED",
+      "run_terminal_reason": "success",
+      "duration_ms": 16917,
+      "goal_id": "goal_Z7HKDF0QJKA5V61401M0Q5VRKG",
+      "evidence_pack_path": ".agentos-e2-retry\\fib-list-r1\\goals\\goal_Z7HKDF0QJKA5V61401M0Q5VRKG\\evidence-pack.json",
+      "evidence_pack_sha256": "9bf3649c5398430da066a852c543ef4b828f7f6202f3d043238652b94e39367d",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin_name": "hermes.EXE",
+        "platform": "win32",
+        "harness_version": "agentos-harness/0.1"
+      }
+    },
+    {
+      "task": "dict-merge",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "dictutil.py exposes merge(a,b)->dict as a pure deep merge (no input mutation, defensive copies); unittest suite covers flat/nested merge, immutability, type replacement, and errors.",
+      "worker_fail_class": null,
+      "worker_trace_digest": null,
+      "worker_trace_ref": null,
+      "worker_trace_excerpt": null,
+      "run_status": "COMPLETED",
+      "run_terminal_reason": "success",
+      "duration_ms": 26548,
+      "goal_id": "goal_N4DH3Z73C4J2RZ6301M0Q5W945",
+      "evidence_pack_path": ".agentos-e2-retry\\dict-merge-r1\\goals\\goal_N4DH3Z73C4J2RZ6301M0Q5W945\\evidence-pack.json",
+      "evidence_pack_sha256": "55ca397eeb656ada398057d830942307612026d82ce752b6f56ef2abb2e63195",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin_name": "hermes.EXE",
+        "platform": "win32",
+        "harness_version": "agentos-harness/0.1"
+      }
+    },
+    {
+      "task": "flatten-once",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "flatten.py exposes flatten_once(xss)->list; [[1,2],[3]] -> [1,2,3]. Tests in test_flatten.py cover basic case, empties, no deep flattening, non-mutation, and arbitrary iterables.",
+      "worker_fail_class": null,
+      "worker_trace_digest": null,
+      "worker_trace_ref": null,
+      "worker_trace_excerpt": null,
+      "run_status": "COMPLETED",
+      "run_terminal_reason": "success",
+      "duration_ms": 20684,
+      "goal_id": "goal_WRY45383M0NSWV7B01M0Q5X31J",
+      "evidence_pack_path": ".agentos-e2-retry\\flatten-once-r1\\goals\\goal_WRY45383M0NSWV7B01M0Q5X31J\\evidence-pack.json",
+      "evidence_pack_sha256": "25532cb96412b59803a3c55bc098e9420127830dfaca957cc0100e0094981b22",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin_name": "hermes.EXE",
+        "platform": "win32",
+        "harness_version": "agentos-harness/0.1"
+      }
+    },
+    {
+      "task": "unique-sorted",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "uniq.py exposes unique_sorted(xs)->list (sorted(set(xs))) plus pytest suite test_uniq.py covering ints, duplicates, empty, negatives, strings, and list return type.",
+      "worker_fail_class": null,
+      "worker_trace_digest": null,
+      "worker_trace_ref": null,
+      "worker_trace_excerpt": null,
+      "run_status": "COMPLETED",
+      "run_terminal_reason": "success",
+      "duration_ms": 9863,
+      "goal_id": "goal_97VDRS7D579N56B101M0Q5XQ7Z",
+      "evidence_pack_path": ".agentos-e2-retry\\unique-sorted-r1\\goals\\goal_97VDRS7D579N56B101M0Q5XQ7Z\\evidence-pack.json",
+      "evidence_pack_sha256": "8152d61844a10a9f84acd7951ae7dcc3a740f6df7516b3f57cd829fabf890ada",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin_name": "hermes.EXE",
+        "platform": "win32",
+        "harness_version": "agentos-harness/0.1"
+      }
+    },
+    {
+      "task": "word-count",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "wc.py exposes word_count(s)->int; empty/whitespace-only -> 0; tests in test_wc.py cover empty, single, multi-word, irregular whitespace.",
+      "worker_fail_class": null,
+      "worker_trace_digest": null,
+      "worker_trace_ref": null,
+      "worker_trace_excerpt": null,
+      "run_status": "COMPLETED",
+      "run_terminal_reason": "success",
+      "duration_ms": 17184,
+      "goal_id": "goal_GE9PEBGDX5R47SCT01M0Q5Y0W4",
+      "evidence_pack_path": ".agentos-e2-retry\\word-count-r1\\goals\\goal_GE9PEBGDX5R47SCT01M0Q5Y0W4\\evidence-pack.json",
+      "evidence_pack_sha256": "81b744680200f1e19bf8913cb8245aa146def92c3fac3e0a812a8ecc5702eb33",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin_name": "hermes.EXE",
+        "platform": "win32",
+        "harness_version": "agentos-harness/0.1"
+      }
+    },
+    {
+      "task": "slugify",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": false,
+      "gate_result": "fail",
+      "gate_reasons": [
+        "criterion has_code (v1) has no passing evaluation against the current artifact chain"
+      ],
+      "evaluation_results": {
+        "has_code": "fail",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "slug.py with NFKD/ASCII-normalizing slugify + pytest suite covering basic case, punctuation, accents, empty input; verified 'Hello World' -> 'hello-world' by trace through re.sub logic.",
+      "worker_fail_class": null,
+      "worker_trace_digest": null,
+      "worker_trace_ref": null,
+      "worker_trace_excerpt": null,
+      "run_status": "COMPLETED",
+      "run_terminal_reason": "success",
+      "duration_ms": 17707,
+      "goal_id": "goal_BCRKRFRD8Y32S90K01M0Q5YHNB",
+      "evidence_pack_path": ".agentos-e2-retry\\slugify-r1\\goals\\goal_BCRKRFRD8Y32S90K01M0Q5YHNB\\evidence-pack.json",
+      "evidence_pack_sha256": "dd5a6b386d72df51ef6fdf1be2132dee6b351afc74e57743c72de14f933be74e",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin_name": "hermes.EXE",
+        "platform": "win32",
+        "harness_version": "agentos-harness/0.1"
+      }
+    },
+    {
+      "task": "divmod-check",
+      "repeat": 1,
+      "worker": "hermes",
+      "episode_success": true,
+      "gate_result": "pass",
+      "gate_reasons": [],
+      "evaluation_results": {
+        "has_code": "pass",
+        "runs": "pass"
+      },
+      "worker_ok": true,
+      "worker_note": "divmod2.py exposes div_check(a,b)->list [q,r] matching Python floor-division semantics incl. negatives and floats; raises ZeroDivisionError on b==0. Tests cover exact division, remainders, sign combin",
+      "worker_fail_class": null,
+      "worker_trace_digest": null,
+      "worker_trace_ref": null,
+      "worker_trace_excerpt": null,
+      "run_status": "COMPLETED",
+      "run_terminal_reason": "success",
+      "duration_ms": 20577,
+      "goal_id": "goal_J79HEA41NGR5J2RJ01M0Q5Z2YG",
+      "evidence_pack_path": ".agentos-e2-retry\\divmod-check-r1\\goals\\goal_J79HEA41NGR5J2RJ01M0Q5Z2YG\\evidence-pack.json",
+      "evidence_pack_sha256": "152060833eaa59b0ddd2921219a9c2ffadc3d1c88719c63ad49b8f79328b068d",
+      "env": {
+        "python": "3.11.15",
+        "hermes_bin_name": "hermes.EXE",
+        "platform": "win32",
+        "harness_version": "agentos-harness/0.1"
+      }
+    }
+  ]
+}
