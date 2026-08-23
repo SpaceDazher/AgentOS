@@ -324,7 +324,42 @@ def main(argv: list[str] | None = None) -> int:
     e = sub.add_parser("evidence")
     e.add_argument("--goal", required=True)
     e.add_argument("--db", default=None)
+    for verb in ("wiki-build", "wiki-check", "wiki-status"):
+        w = sub.add_parser(verb)
+        w.add_argument("--db", default=None,
+                       help="repo root containing agentos.db and wiki/")
     a = ap.parse_args(argv)
+
+    if a.cmd == "wiki-build":
+        from .wiki import WikiBuilder
+        root = Path(a.db or ".").resolve()
+        db = open_db(root / "agentos.db")
+        result = _call_quietly(WikiBuilder(db, root).build)
+        _emit_json(result)
+        return 0
+    if a.cmd == "wiki-check":
+        from .wiki import WikiBuilder
+        root = Path(a.db or ".").resolve()
+        db = open_db(root / "agentos.db")
+        result = _call_quietly(WikiBuilder(db, root).check)
+        _emit_json(result)
+        return 0 if result["ok"] else 1
+    if a.cmd == "wiki-status":
+        from .wiki import WikiBuilder
+        root = Path(a.db or ".").resolve()
+        wiki = root / "wiki"
+        db = open_db(root / "agentos.db")
+        notes = len(list(wiki.rglob("*.md"))) if wiki.exists() else 0
+        goals = db.conn.execute("SELECT COUNT(*) FROM goal").fetchone()[0]
+        evals = db.conn.execute(
+            "SELECT COUNT(DISTINCT id) FROM eval_definition").fetchone()[0]
+        exps = db.conn.execute(
+            "SELECT COUNT(*) FROM experiment").fetchone()[0]
+        _emit_json({"repo_root": str(root), "notes": notes,
+                    "canonical": {"goals": goals, "eval_definitions": evals,
+                                  "experiments": exps},
+                    "projection_of_record": "sqlite+audit-journal"})
+        return 0
 
     if a.cmd == "demo":
         try:
