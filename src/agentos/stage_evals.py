@@ -215,17 +215,25 @@ class StageEvals:
                 reasons.append(
                     f"{def_id}@{d['version']}: advisory failures {len(bad)}")
         return self._record_gate(stage, required_eval_ids, decision,
-                                 goal_id, reasons)
+                                 goal_id, reasons,
+                                 artifact_chain_hash=artifact_chain_hash,
+                                 corpus_version=corpus)
 
     def _record_gate(self, stage: str, required_eval_ids: list[str],
-                     decision: str, goal_id: str, reasons: list[str]) -> dict:
+                     decision: str, goal_id: str, reasons: list[str],
+                     artifact_chain_hash: str = "",
+                     corpus_version: str = "") -> dict:
+        """Persist the decision WITH its chain/corpus binding so release can
+        verify the gate is still fresh against the current artifact state."""
         gate_id = new_id("stagegate")
         with self.db.tx() as conn:
             conn.execute(
                 "INSERT INTO stage_gate(id, stage, required_eval_ids_json,"
-                " decision, rationale, authority, goal_id) VALUES (?,?,?,?,?,?,?)",
+                " decision, rationale, authority, goal_id,"
+                " artifact_chain_hash, corpus_version)"
+                " VALUES (?,?,?,?,?,?,?,?,?)",
                 (gate_id, stage, json.dumps(required_eval_ids), decision,
                  "; ".join(reasons) or "all required evals passed",
-                 "GateAuthority", goal_id))
+                 "GateAuthority", goal_id, artifact_chain_hash, corpus_version))
         return {"stage_gate_id": gate_id, "stage": stage,
                 "decision": decision, "reasons": reasons}

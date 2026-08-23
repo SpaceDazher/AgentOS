@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from pathlib import Path
 
 from .ids import canonical_json, new_id, sha256_text
@@ -64,8 +65,9 @@ def build(db, root_dir: str | Path, goal_id: str) -> dict:
     criteria = rows("SELECT criterion_id, kind FROM acceptance_criteria WHERE goal_id=?",
                     (goal_id,))
 
-    # Phase 5 + R5: stage evals are goal-scoped; experiments are filtered by
-    # campaign rows that reference this goal; wiki refs carry content hashes.
+    # Phase 5 + R7: stage evals are goal-scoped; experiments come ONLY via
+    # campaigns owned by this goal; wiki refs carry hashes and only include
+    # notes whose frontmatter goal matches.
     stage_eval_runs = rows(
         "SELECT er.id, er.definition_id, er.definition_version, er.outcome,"
         " er.failure_class, er.judge_json, ed.stage, ed.kind, ed.metric,"
@@ -79,14 +81,20 @@ def build(db, root_dir: str | Path, goal_id: str) -> dict:
     experiments = rows(
         "SELECT DISTINCT e.id, e.campaign_id, e.hypothesis, e.baseline_ref,"
         " e.candidate_ref, e.status, e.decision_rationale,"
-        " e.frozen_hashes_json FROM experiment e"
-        " WHERE e.goal_id=? OR e.campaign_id IN"
-        " (SELECT campaign_id FROM experiment WHERE goal_id=?)",
-        (goal_id, goal_id))
+        " e.frozen_hashes_json FROM experiment e JOIN campaign c"
+        " ON c.id = e.campaign_id WHERE c.goal_id=?", (goal_id,))
     wiki_refs = {}
     wiki_dir = Path(root_dir) / "wiki" / "_generated"
     if wiki_dir.exists():
         for p in sorted(wiki_dir.glob("*.md")):
+            try:
+                text = p.read_text(encoding="utf-8")
+            except OSError:
+                continue
+            m = re.search(r"^goal_id:\s*(\S+)\s*$", text, re.MULTILINE)
+            note_goal = m.group(1) if m else None
+            if note_goal and note_goal != goal_id:
+                continue   # another goal's note never enters this pack
             wiki_refs[p.stem] = {
                 "path": f"wiki/_generated/{p.name}",
                 "sha256": _sha_bytes(p.read_bytes()),

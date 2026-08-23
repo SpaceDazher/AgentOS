@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -60,29 +61,36 @@ def _tree_hashes(root: Path) -> dict:
 
 
 class FrozenManifest:
-    """Deeply frozen wrapper: attribute writes raise AND returned containers
-    are immutable copies, so `manifest.mutable_scope.append(...)` cannot
-    mutate the manifest without changing its hash."""
+    """Deeply frozen manifest: attribute writes raise; returned containers are
+    read-only views; the stored representation is a PRIVATE serialized copy
+    and the digest is RE-VERIFIED against it on every access."""
 
     def __init__(self, inner: dict, hash_value: str):
-        object.__setattr__(self, "_inner", inner)
+        stored = json.loads(json.dumps(inner))   # private deep copy
+        if _sha(json.dumps(stored, sort_keys=True)) != hash_value:
+            raise AutoresearchError(
+                "manifest digest mismatch at construction")
+        object.__setattr__(self, "_stored",
+                           json.dumps(stored, sort_keys=True))
         object.__setattr__(self, "_hash", hash_value)
+
+    def _load(self) -> dict:
+        """Re-parse from the frozen string and RE-VERIFY the digest."""
+        stored = json.loads(self._stored)
+        if _sha(json.dumps(stored, sort_keys=True)) != self._hash:
+            raise AutoresearchError("manifest digest mismatch detected")
+        return stored
 
     def __getattr__(self, name):
         try:
-            value = self._inner[name]
+            value = self._load()[name]
         except KeyError as e:
             raise AttributeError(name) from e
-        # deep-freeze containers: return read-only proxies
         if isinstance(value, list):
             return tuple(value)
         if isinstance(value, dict):
             return types.MappingProxyType(dict(value))
         return value
-
-    def to_jsonable(self) -> dict:
-        """Plain (JSON-serializable) deep copy of the manifest."""
-        return json.loads(json.dumps(self._inner))
 
     def __setattr__(self, name, value):
         raise AutoresearchError("CampaignManifest is immutable")
@@ -90,6 +98,9 @@ class FrozenManifest:
     @property
     def manifest_hash(self) -> str:
         return self._hash
+
+    def to_jsonable(self) -> dict:
+        return self._load()
 
 
 def make_manifest(*, baseline_ref: str, primary_metric: str,
@@ -187,6 +198,17 @@ class Autoresearch:
         if status not in ("proposed", "running", "KEEP", "DISCARD", "RETEST",
                           "CRASH", "QUARANTINED"):
             raise AutoresearchError(f"invalid experiment status {status}")
+        # R7: DB-enforced scoping — the goal must match the campaign's owner.
+        crow = self.db.conn.execute(
+            "SELECT goal_id FROM campaign WHERE id=?", (campaign_id,)
+        ).fetchone()
+        if not crow:
+            raise AutoresearchError(f"unknown campaign {campaign_id}")
+        owner_goal = crow["goal_id"]
+        if goal_id is not None and goal_id != owner_goal:
+            raise AutoresearchError(
+                f"experiment goal {goal_id} does not match campaign owner"
+                f" {owner_goal} — cross-goal insertion refused")
         eid = new_id("exp")
         measurements_full = dict(measurements)
         if worktree_digest:
@@ -202,7 +224,7 @@ class Autoresearch:
                 (eid, campaign_id, hypothesis, baseline_ref, candidate_ref,
                  json.dumps(list(mutable_scope)), "[]", "", status,
                  json.dumps(measurements_full), rationale,
-                 json.dumps(frozen_hashes or {}, default=dict), goal_id))
+                 json.dumps(frozen_hashes or {}, default=dict), owner_goal))
         return eid
 
     @staticmethod
@@ -323,11 +345,18 @@ class Autoresearch:
                     sc["apply"](wt)
                     apply_called = True
                 elif sc.get("apply_cmd"):
-                    # R6: candidate code runs in an isolated subprocess whose
-                    # cwd IS the worktree; it cannot touch host paths except
-                    # via what it is given.
+                    # R7: candidate code runs in an isolated SUBPROCESS whose
+                    # cwd IS the worktree and whose environment is reduced to
+                    # the worktree itself — no host env, no host paths. The
+                    # host never imports or calls candidate code.
+                    clean_env = {
+                        "PATH": "", "SYSTEMROOT": os.environ.get(
+                            "SYSTEMROOT", ""),
+                        "AGENTOS_WORKTREE": str(wt),
+                        "PYTHONPATH": str(wt),
+                    }
                     proc = subprocess.run(
-                        [*sc["apply_cmd"]], cwd=str(wt),
+                        [*sc["apply_cmd"]], cwd=str(wt), env=clean_env,
                         capture_output=True, text=True,
                         timeout=manifest.hard_constraints.get("timeout_s", 600))
                     if proc.returncode != 0:

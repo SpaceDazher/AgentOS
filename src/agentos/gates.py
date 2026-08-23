@@ -250,19 +250,23 @@ class Gates:
         if unknown:
             reasons.append(f"{unknown} unresolved/reconciled-failed activities")
 
-        # R5+R6: stage gates participate in release WHEN the goal has any
-        # stage-eval activity (definitions defined + runs or gates recorded).
-        # Goals evaluated purely by legacy acceptance_criteria are exempt:
-        # requiring six gates would break every pre-EPIC flow.
+        # R5+R6+R7: stage gates participate in release WHEN the goal has any
+        # stage-eval activity. EVERY stage must have a gate; only the LATEST
+        # gate per stage counts; the gate must be bound to the CURRENT
+        # artifact chain + corpus (stale/fabricated bindings are stale) and
+        # must be backed by at least one deterministic eval_run against that
+        # same chain (advisory llm_judge runs can never authorize a gate).
         has_stage_activity = self.db.conn.execute(
             "SELECT COUNT(*) FROM eval_run WHERE goal_id=?", (goal_id,)
         ).fetchone()[0] > 0
         if has_stage_activity:
+            chain_hash = _artifact_chain_hash(self.db, goal_id)
             expected_stages = {"concept", "specification", "plan", "execution",
                                "verification", "post_episode"}
             latest_by_stage = {}
             for row in self.db.conn.execute(
-                    "SELECT id, stage, decision, rationale, created_at"
+                    "SELECT id, stage, decision, rationale, created_at,"
+                    " artifact_chain_hash, corpus_version"
                     " FROM stage_gate WHERE goal_id=? ORDER BY created_at, id",
                     (goal_id,)).fetchall():
                 latest_by_stage[row["stage"]] = row   # later rows overwrite
@@ -272,7 +276,22 @@ class Gates:
                                + ", ".join(missing))
             for stage in sorted(expected_stages & set(latest_by_stage)):
                 row = latest_by_stage[stage]
-                if row["decision"] != "pass":
+                if row["artifact_chain_hash"] != chain_hash:
+                    reasons.append(
+                        f"stage gate {stage} is stale: bound to chain"
+                        f" '{row['artifact_chain_hash'][:16]}', current is"
+                        f" '{chain_hash[:16]}'")
+                elif not self.db.conn.execute(
+                        "SELECT COUNT(*) FROM eval_run er JOIN eval_definition"
+                        " ed ON ed.id=er.definition_id AND"
+                        " ed.version=er.definition_version"
+                        " WHERE er.goal_id=? AND ed.stage=? AND ed.kind="
+                        "'deterministic' AND er.artifact_chain_hash=?",
+                        (goal_id, stage, chain_hash)).fetchone()[0]:
+                    reasons.append(
+                        f"stage gate {stage} has no deterministic eval run"
+                        f" against the current chain")
+                elif row["decision"] != "pass":
                     reasons.append(
                         f"latest stage gate {stage} = {row['decision']}: "
                         f"{(row['rationale'] or '')[:120]}")

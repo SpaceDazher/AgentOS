@@ -13,6 +13,7 @@ import json
 import re
 import shutil
 import tempfile
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -162,11 +163,13 @@ class WikiBuilder:
                           "status": g["status"], "goal_id": gid,
                           "created_at": g["created_at"],
                           "updated_at": g["created_at"]},
-                         f"Goal {gid} — {g['status']}.", body)
+                         f"Goal {gid} — {g['status']}.", body,
+                         redact=redact)
             write_generated(f"goal-{gid}.md", note)
             counts["goals"] = counts.get("goals", 0) + 1
 
-            # task + run notes (targets of the goal's links)
+            # task + run notes (targets of the goal's links); task titles and
+            # terminal reasons are UNTRUSTED text -> redacted by _note
             for t in tasks:
                 tn = _note(f"_generated/task-{t['id']}.md",
                            {"id": t["id"], "type": "task",
@@ -174,7 +177,7 @@ class WikiBuilder:
                             "task_id": t["id"], "goal_id": gid,
                             "created_at": "", "updated_at": ""},
                            f"Task {t['id']} — {t['status']}.",
-                           [f"Backlinks: [[goal-{gid}]]"])
+                           [f"Backlinks: [[goal-{gid}]]"], redact=redact)
                 write_generated(f"task-{t['id']}.md", tn)
                 counts["tasks"] = counts.get("tasks", 0) + 1
             for r in runs:
@@ -185,7 +188,7 @@ class WikiBuilder:
                             "created_at": "", "updated_at": ""},
                            f"Run {r['id']} — {r['status']}.",
                            [f"Terminal: {(r['terminal_reason'] or '')[:200]}",
-                            f"Backlinks: [[goal-{gid}]]"])
+                            f"Backlinks: [[goal-{gid}]]"], redact=redact)
                 write_generated(f"run-{r['id']}.md", rn)
                 counts["runs"] = counts.get("runs", 0) + 1
 
@@ -239,7 +242,6 @@ class WikiBuilder:
         # R5: staging + atomic swap — remove stale generated notes so a note
         # whose canonical record vanished does not survive a rebuild.
         gen = self.wiki / GENERATED_DIR
-        expected = set(counts.keys())  # marker only; real check below
         canonical_names = set()
         for g in goals:
             gid = g["id"]
@@ -257,24 +259,25 @@ class WikiBuilder:
             canonical_names.add(f"experiment-{e['id']}.md")
         for sg in c.execute("SELECT id FROM stage_gate LIMIT 100").fetchall():
             canonical_names.add(f"stagegate-{sg['id']}.md")
-        removed = 0
-        for p in sorted(gen.glob("*.md")):
-            if p.name not in canonical_names:
-                p.unlink()          # stale generated note from an old record
-                removed += 1
-        # R6 atomic swap: move freshly staged notes over _generated as one
-        # directory replacement — a mid-build failure leaves the OLD complete
-        # projection intact.
+
+        # R7 TRUE atomic swap: the staging dir IS fully built, so replacing
+        # the live _generated is a single rename — no incremental copytree
+        # that can leave a partial projection. Old notes (stale records) are
+        # dropped by construction: only canonical names exist in staging.
         staged_gen = self._staging / GENERATED_DIR
-        backup = gen.with_suffix(".bak")
-        if backup.exists():
-            shutil.rmtree(backup, ignore_errors=True)
-        gen.rename(backup)
+        for p in sorted(staged_gen.glob("*.md")):
+            if p.name not in canonical_names:
+                p.unlink()
+        removed = 0
+        backup = gen.parent / (gen.name + ".old-" + str(int(time.time())))
+        if gen.exists():
+            gen.rename(backup)          # move OLD away (atomic)
+            removed = len(list(backup.glob("*.md")))
         try:
-            shutil.copytree(staged_gen, gen)
+            staged_gen.rename(gen)      # move NEW in (atomic)
         except Exception:
             if backup.exists() and not gen.exists():
-                backup.rename(gen)   # roll back on failure
+                backup.rename(gen)      # roll back: old projection restored
             raise
         finally:
             shutil.rmtree(backup, ignore_errors=True)

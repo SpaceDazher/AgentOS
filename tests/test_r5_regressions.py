@@ -91,19 +91,44 @@ class TestImmutableDecisions(R5Case):
 
     def test_stage_gate_and_experiment_are_append_only(self):
         did, _ = self._defn()
-        gate = self.se.stage_gate("concept", [did], goal_id="goal_A", artifact_chain_hash="chain-A")
+        gate = self.se.stage_gate("concept", [did], goal_id="goal_A",
+                                  artifact_chain_hash="chain-A")
         with self.assertRaises(Exception):
             self.db.conn.execute(
                 "UPDATE stage_gate SET decision='pass' WHERE id=?",
                 (gate["stage_gate_id"],))
-        from agentos.autoresearch import Autoresearch
+        from agentos.autoresearch import Autoresearch, make_manifest
         ar = Autoresearch(self.db, self.root, self.se)
-        eid = ar.record_experiment("camp1", "hyp", "base", "cand",
-                                   ["src/x.py"], {}, "KEEP", "why")
+        cid = ar.create_campaign(
+            make_manifest(baseline_ref="b", primary_metric="m",
+                          mutable_scope=["src/x.py"],
+                          frozen_eval_hashes={"e": "h"},
+                          corpus_hash="c", budget=2),
+            "probe", goal_id="goal_A")
+        eid = ar.record_experiment(cid, "hyp", "base", "cand",
+                                   ["src/x.py"], {}, "KEEP", "why",
+                                   goal_id="goal_A")
         with self.assertRaises(Exception):
             self.db.conn.execute(
                 "UPDATE experiment SET status='QUARANTINED' WHERE id=?",
                 (eid,))
+
+    def test_experiment_goal_must_match_campaign_owner(self):
+        """R7: an experiment whose goal differs from the campaign owner is
+        refused — cross-goal insertion is impossible."""
+        from agentos.autoresearch import Autoresearch, AutoresearchError
+        from agentos.autoresearch import (
+            Autoresearch, AutoresearchError, make_manifest)
+        ar = Autoresearch(self.db, self.root, self.se)
+        cid = ar.create_campaign(
+            make_manifest(baseline_ref="b", primary_metric="m",
+                          mutable_scope=["src/x.py"],
+                          frozen_eval_hashes={"e": "h"},
+                          corpus_hash="c", budget=2),
+            "probe", goal_id="goal_A")
+        with self.assertRaises(AutoresearchError):
+            ar.record_experiment(cid, "hyp", "base", "cand", ["src/x.py"],
+                                 {}, "KEEP", "why", goal_id="goal_B")
 
 
 class TestRealWorktreeCampaign(unittest.TestCase):
