@@ -1,10 +1,10 @@
 ---
-id: task_ZB3P87XVTTTDEGRP01M0Q972PY
+id: task_G26KT4EBWZ6GZM2Y01M0QCWP5K
 type: task
 title: Implement greet() with tests
 status: DONE
-task_id: task_ZB3P87XVTTTDEGRP01M0Q972PY
-goal_id: goal_ZNB6G1Y22JJ4CMAR01M0Q972PQ
+task_id: task_G26KT4EBWZ6GZM2Y01M0QCWP5K
+goal_id: goal_ZG139JQB2NWMV9S301M0QCWP5B
 created_at: 
 updated_at: 
 ---
@@ -15,6 +15,6 @@ updated_at:
 
 # Implement greet() with tests
 
-Task task_ZB3P87XVTTTDEGRP01M0Q972PY — DONE.
+Task task_G26KT4EBWZ6GZM2Y01M0QCWP5K — DONE.
 
-Backlinks: [[goal-goal_ZNB6G1Y22JJ4CMAR01M0Q972PQ]]
+Backlinks: [[goal-goal_ZG139JQB2NWMV9S301M0QCWP5B]]

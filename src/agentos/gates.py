@@ -250,6 +250,17 @@ class Gates:
         if unknown:
             reasons.append(f"{unknown} unresolved/reconciled-failed activities")
 
+        # R5: stage gates participate in release. Every stage gate recorded
+        # for this goal must be 'pass' — a failed stage gate blocks release.
+        sg = self.db.conn.execute(
+            "SELECT stage, decision, rationale FROM stage_gate"
+            " WHERE goal_id=? ORDER BY created_at", (goal_id,)).fetchall()
+        for row in sg:
+            if row["decision"] != "pass":
+                reasons.append(
+                    f"stage gate {row['stage']} = {row['decision']}: "
+                    f"{(row['rationale'] or '')[:120]}")
+
         chain_ok, bad_seq = self.j.full_chain_check()
         if not chain_ok:
             reasons.append(f"audit chain broken at seq {bad_seq}")

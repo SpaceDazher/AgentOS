@@ -19,7 +19,9 @@ rather than retro-edited into the frozen text.
 - **Cost/latency:** unconditional and conditional-on-success; cost per accepted
   success.
 - **Evaluator quality:** FPR and FNR on gold / near-miss / alternative-correct sets.
-  **Not yet measured** — corpora not built.
+  Corpus-level: measured on the frozen 30-case corpus (`evals/fixtures/eq/`,
+  `tests/test_stage_corpus.py`) — FPR=0, FNR=0 for the deterministic checks.
+  Episode-level (LLM) FPR/FNR with a human-labelled gold set: still not measured.
 
 ## Task frame
 

@@ -16,7 +16,7 @@ updated_at:
 Deterministic projection of AgentOS canonical state.
 
 ## Goals
-- [[goal-goal_ZNB6G1Y22JJ4CMAR01M0Q972PQ|goal_ZNB6G1Y22JJ4CMAR01M0Q972PQ]] — ACCEPTED
+- [[goal-goal_ZG139JQB2NWMV9S301M0QCWP5B|goal_ZG139JQB2NWMV9S301M0QCWP5B]] — ACCEPTED
 
 ## Experiments
 - (none)

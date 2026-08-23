@@ -275,20 +275,53 @@ def build_corpus() -> list[tuple[dict, dict]]:
             }
             cases.append((rec, {"payload": payload}))
     # evaluator-quality corpus (verification-shaped)
+    # evaluator-quality corpus (verification-shaped): 10 DISTINCT templates
+    # per class, not one repeated template (R5-P2)
+    def _eq_doc(i: int, sc: str, good: bool) -> dict:
+        """Ten distinct artifact shapes; near-miss variants each carry a
+        different realistic gap."""
+        main = {"id": cid + "-main", "conforms_to_spec": True}
+        gaps = [
+            {"id": cid + "-gap", "conforms_to_spec": False,
+             "accepted": True},                                   # wrong impl accepted
+            {"id": cid + "-gap", "conforms_to_spec": True,
+             "known_gap": "no edge-case tests", "accepted": True},  # thin tests
+            {"id": cid + "-gap", "conforms_to_spec": True,
+             "known_gap": "tests never executed", "accepted": True},
+            {"id": cid + "-gap", "conforms_to_spec": True,
+             "known_gap": "accepts invalid input", "accepted": True},
+            {"id": cid + "-gap", "conforms_to_spec": True,
+             "known_gap": "wrong return type", "accepted": True},
+            {"id": cid + "-gap", "conforms_to_spec": True,
+             "known_gap": "swallowed exception", "accepted": True},
+            {"id": cid + "-gap", "conforms_to_spec": True,
+             "known_gap": "off-by-one on empty input", "accepted": True},
+            {"id": cid + "-gap", "conforms_to_spec": True,
+             "known_gap": "ignores unicode", "accepted": True},
+            {"id": cid + "-gap", "conforms_to_spec": True,
+             "known_gap": "no rollback path", "accepted": True},
+            {"id": cid + "-gap", "conforms_to_spec": True,
+             "known_gap": "checkpoint hash absent", "accepted": True},
+        ]
+        arts = [dict(main)]
+        if not good:
+            arts.append(gaps[i % len(gaps)])
+        # alternative-correct adds a properly REJECTED nonconforming artifact
+        if good and sc == "alternative_correct":
+            arts.append({"id": cid + "-rejected",
+                         "conforms_to_spec": False, "accepted": False})
+        return {"payload": {
+            "artifacts": arts,
+            "audit": {"chain_verified": i % 2 == 0 or good,
+                      "anchor_matches": True}}}
+
     eq_specs = ([("eq-gold-%d" % i, "gold", True) for i in range(10)] +
                 [("eq-near-miss-%d" % i, "near_miss", False)
                  for i in range(10)] +
                 [("eq-alt-%d" % i, "alternative_correct", True)
                  for i in range(10)])
     for cid, sc, good in eq_specs:
-        arts = [{"id": cid + "-main", "conforms_to_spec": True}]
-        if not good:
-            # near-miss: accepted artifact with a known gap -> must FAIL
-            arts[0]["known_gap"] = True
-            arts[0]["accepted"] = True
-        doc = {"payload": {"artifacts": arts,
-                           "audit": {"chain_verified": True,
-                                     "anchor_matches": True}}}
+        doc = _eq_doc(int(cid.rsplit("-", 1)[1]), sc, good)
         rec = {
             "id": cid, "corpus_version": "eq-v1", "stage": "verification",
             "label": f"evaluator quality {sc}", "set_class": sc,

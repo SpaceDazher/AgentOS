@@ -216,8 +216,10 @@ on acceptance, and the evidence pack flows back into the chat that asked.
   (20 tasks × 5 repeats, real Hermes worker) measured pass¹ = 0.93
   [Wilson 0.863–0.966] and pass⁵ = 0.75 [0.531–0.888] — below the
   pre-registered "harness-reliable" threshold (pass⁵ ≥ 0.8, CI LB ≥ 0.7).
-  False-completion rate and evaluator FPR/FNR are **not measured** (no human
-  gold set). Details and failure analysis:
+  False-completion rate on LLM episodes and end-to-end FPR/FNR are **not yet
+  measured** (no human gold set); the deterministic evaluator-quality corpus
+  (30 cases) measures FPR=0/FNR=0 of the checks themselves, which is a
+  corpus-level result, not an episode-level one. Details:
   [`eval/E2_RESULTS.md`](eval/E2_RESULTS.md); method:
   [`docs/EVALUATION_PROTOCOL.md`](docs/EVALUATION_PROTOCOL.md). Load, soak,
   chaos, and multi-process concurrency results still do not exist.
