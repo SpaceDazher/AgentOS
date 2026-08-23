@@ -130,9 +130,13 @@ class TestFakeCampaign(ARCase):
     def test_budget_stops_campaign(self):
         good = {"hypothesis": "h", "candidate_ref": "c",
                 "measurements": {"dev": 0.3}}
-        self.manifest.budget = 2
+        tight = CampaignManifest(
+            baseline_ref="base", primary_metric="pass^1",
+            mutable_scope=["src/agentos/prompts.py"],
+            frozen_eval_hashes={"eval.x": "h1"}, corpus_hash="chash",
+            budget=2)
         results = self.ar.run_fake_campaign(
-            self.manifest, [dict(good) for _ in range(5)],
+            tight, [dict(good) for _ in range(5)],
             dev_eval_fn=lambda wt, seed: 0.5)
         self.assertEqual(results[-1]["status"], "CAMPAIGN_STOPPED")
         self.assertEqual(results[-1]["reason"], "budget_exhausted")

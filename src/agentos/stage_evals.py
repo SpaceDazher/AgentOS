@@ -1,10 +1,12 @@
 """Stage Evaluation Framework (Phase 1+2). See ADR-0006 and SPEC §9.
 
-Versioned eval definitions (append-only), eval cases, eval runs and stage
-gates. Deterministic checks are blocking; llm_judge checks are advisory-only
-(a judge result can never satisfy a required criterion alone). Every judge
-record must carry model id + prompt version + rubric version or it is
-inadmissible.
+R5 corrective round:
+- llm_judge definitions are ALWAYS advisory (required=True refused at define);
+- a judge run must carry model_id AND prompt_version AND rubric_version
+  matching the definition, else inadmissible;
+- eval runs bind goal_id + case_id + artifact_chain_hash + corpus_version;
+- stage_gate is fail-closed: empty required set => fail; runs are matched to
+  the same goal_id; cross-goal reuse impossible; unknown definition => error.
 """
 from __future__ import annotations
 
@@ -40,11 +42,16 @@ class StageEvals:
                def_id: str | None = None) -> tuple[str, int]:
         if stage not in STAGES:
             raise StageEvalError(f"unknown stage {stage}")
-        if kind == "llm_judge" and not (prompt_version and rubric_version):
-            raise StageEvalError(
-                "llm_judge definitions need prompt_version and rubric_version")
         if kind not in ("deterministic", "llm_judge"):
             raise StageEvalError(f"unknown kind {kind}")
+        if kind == "llm_judge":
+            # ADR-0006: a model judge can never be a blocking criterion.
+            if required:
+                raise StageEvalError(
+                    "llm_judge cannot be required (advisory-only by policy)")
+            if not (prompt_version and rubric_version):
+                raise StageEvalError(
+                    "llm_judge definitions need prompt_version and rubric_version")
         def_id = def_id or f"eval.{stage}.{metric}"
         row = self.db.conn.execute(
             "SELECT MAX(version) AS v FROM eval_definition WHERE id=?",
@@ -96,17 +103,35 @@ class StageEvals:
 
     # -- running -------------------------------------------------------------
     def run_case(self, def_id: str, case: dict, check_fn, *,
-                 goal_id: str | None = None, seed: int | None = None,
-                 env: dict | None = None, judge: dict | None = None) -> dict:
-        """Run one definition against one case with the given deterministic
-        check function: check_fn(case) -> (bool, detail)."""
+                 goal_id: str, seed: int | None = None,
+                 env: dict | None = None, judge: dict | None = None,
+                 artifact_chain_hash: str | None = None,
+                 corpus_version: str | None = None) -> dict:
+        """Run one definition against one case. The run is durably bound to
+        the goal, the case id and the artifact-chain hash so gates can never
+        reuse another goal's results."""
         d = self.latest(def_id)
         if not d:
             raise StageEvalError(f"unknown eval definition {def_id}")
+        if not goal_id:
+            raise StageEvalError("eval_run requires goal_id")
+        case_id = case.get("id")
+        if not case_id:
+            raise StageEvalError("eval_run requires a case with an id")
+        chain = artifact_chain_hash or "no-artifact-chain"
+        corpus = corpus_version or d["corpus_version"]
         if d["kind"] == "llm_judge":
-            if not judge or not judge.get("model_id"):
+            missing = [k for k in ("model_id", "prompt_version",
+                                   "rubric_version")
+                       if not (judge or {}).get(k)]
+            if missing:
                 raise StageEvalError(
-                    "llm_judge run without model_id is inadmissible")
+                    f"llm_judge run inadmissible, missing provenance: {missing}")
+            if (judge["prompt_version"] != d["prompt_version"]
+                    or judge["rubric_version"] != d["rubric_version"]):
+                raise StageEvalError(
+                    "judge prompt/rubric version does not match definition"
+                    f" {def_id}@{d['version']}")
         t0 = time.perf_counter()
         try:
             ok, detail = check_fn(case)
@@ -124,47 +149,66 @@ class StageEvals:
                 " logs_sha256, duration_ms, failure_class, judge_json)"
                 " VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
                 (run_id, goal_id, def_id, d["version"],
-                 json.dumps(env or {}), seed, json.dumps(metrics), outcome,
+                 json.dumps({"env": env or {}, "case_id": case_id,
+                             "artifact_chain_hash": chain,
+                             "corpus_version": corpus}, sort_keys=True),
+                 seed, json.dumps(metrics), outcome,
                  sha256_text(json.dumps(detail, sort_keys=True)),
                  round((time.perf_counter() - t0) * 1000), failure_class,
                  json.dumps(judge) if judge else None))
         return {"eval_run_id": run_id, "outcome": outcome, "ok": ok,
-                "detail": detail, "case_id": case["id"],
+                "detail": detail, "case_id": case_id,
                 "definition": f"{def_id}@{d['version']}"}
 
     # -- stage gates ----------------------------------------------------------
     def stage_gate(self, stage: str, required_eval_ids: list[str],
-                   goal_id: str | None = None) -> dict:
+                   goal_id: str, artifact_chain_hash: str | None = None,
+                   corpus_version: str | None = None) -> dict:
         """Decide a stage gate from persisted eval_run outcomes.
 
-        Advisory (required=0) failures add rationale but never fail the gate.
-        A required definition with no runs fails the gate (no silent skip)."""
+        Fail-closed rules (R5): empty required list => FAIL; every required
+        definition needs >=1 run for THIS goal (cross-goal reuse impossible);
+        a definition with zero runs for this goal fails the gate."""
+        if not required_eval_ids:
+            return self._record_gate(stage, [], "fail", goal_id,
+                                     ["no required evals configured — "
+                                      "fail-closed"])
         reasons: list[str] = []
         decision = "pass"
         for def_id in required_eval_ids:
             d = self.latest(def_id)
             if not d:
                 raise StageEvalError(f"unknown eval definition {def_id}")
-            runs = self.db.conn.execute(
-                "SELECT outcome, failure_class FROM eval_run"
-                " WHERE definition_id=? AND definition_version=?"
-                " ORDER BY created_at DESC", (def_id, d["version"])).fetchall()
-            if not runs:
-                if d["required"]:
-                    decision = "fail"
-                    reasons.append(f"{def_id}: no eval runs recorded")
-                else:
-                    reasons.append(f"{def_id}: advisory, no runs")
+            if d["stage"] != stage:
+                decision = "fail"
+                reasons.append(f"{def_id}: belongs to stage {d['stage']},"
+                               f" not {stage}")
                 continue
-            bad = [r["outcome"] for r in runs if r["outcome"] != "pass"]
+            env_like = f'"goal_id": "{goal_id}"'
+            rows = self.db.conn.execute(
+                "SELECT outcome FROM eval_run"
+                " WHERE definition_id=? AND definition_version=?"
+                " AND goal_id=? ORDER BY created_at DESC",
+                (def_id, d["version"], goal_id)).fetchall()
+            _ = env_like  # documentation only
+            if not rows:
+                decision = "fail"
+                reasons.append(f"{def_id}: no eval runs recorded for this goal")
+                continue
+            bad = [r["outcome"] for r in rows if r["outcome"] != "pass"]
             if bad and d["required"]:
                 decision = "fail"
                 reasons.append(
-                    f"{def_id}@{d['version']}: {len(bad)}/{len(runs)} runs"
+                    f"{def_id}@{d['version']}: {len(bad)}/{len(rows)} runs"
                     f" failed ({','.join(sorted(set(bad)))})")
             elif bad:
                 reasons.append(
                     f"{def_id}@{d['version']}: advisory failures {len(bad)}")
+        return self._record_gate(stage, required_eval_ids, decision,
+                                 goal_id, reasons)
+
+    def _record_gate(self, stage: str, required_eval_ids: list[str],
+                     decision: str, goal_id: str, reasons: list[str]) -> dict:
         gate_id = new_id("stagegate")
         with self.db.tx() as conn:
             conn.execute(

@@ -1,10 +1,15 @@
 """Machine-readable evidence pack generator. See spec/SPEC.md §8."""
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
 from .ids import canonical_json, new_id, sha256_text
+
+
+def _sha_bytes(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
 
 
 def build(db, root_dir: str | Path, goal_id: str) -> dict:
@@ -59,8 +64,8 @@ def build(db, root_dir: str | Path, goal_id: str) -> dict:
     criteria = rows("SELECT criterion_id, kind FROM acceptance_criteria WHERE goal_id=?",
                     (goal_id,))
 
-    # Phase 5: stage evals, experiments and wiki refs joined into the pack.
-    # All optional — older goals keep their v1 shape.
+    # Phase 5 + R5: stage evals are goal-scoped; experiments are filtered by
+    # campaign rows that reference this goal; wiki refs carry content hashes.
     stage_eval_runs = rows(
         "SELECT er.id, er.definition_id, er.definition_version, er.outcome,"
         " er.failure_class, er.judge_json, ed.stage, ed.kind, ed.metric,"
@@ -72,13 +77,20 @@ def build(db, root_dir: str | Path, goal_id: str) -> dict:
         "SELECT id, stage, decision, rationale, authority FROM stage_gate"
         " WHERE goal_id=?", (goal_id,))
     experiments = rows(
-        "SELECT id, campaign_id, hypothesis, baseline_ref, candidate_ref,"
-        " status, decision_rationale, frozen_hashes_json FROM experiment")
+        "SELECT DISTINCT e.id, e.campaign_id, e.hypothesis, e.baseline_ref,"
+        " e.candidate_ref, e.status, e.decision_rationale,"
+        " e.frozen_hashes_json FROM experiment e"
+        " WHERE e.goal_id=? OR e.campaign_id IN"
+        " (SELECT campaign_id FROM experiment WHERE goal_id=?)",
+        (goal_id, goal_id))
     wiki_refs = {}
     wiki_dir = Path(root_dir) / "wiki" / "_generated"
     if wiki_dir.exists():
         for p in sorted(wiki_dir.glob("*.md")):
-            wiki_refs[p.stem] = f"wiki/_generated/{p.name}"
+            wiki_refs[p.stem] = {
+                "path": f"wiki/_generated/{p.name}",
+                "sha256": _sha_bytes(p.read_bytes()),
+            }
 
     pack = {
         "schema": "agentos.evidence-pack/v2",

@@ -80,6 +80,13 @@ class TestCases(StageEvalsCase):
 
 
 class TestRunsAndGates(StageEvalsCase):
+    def setUp(self):
+        super().setUp()
+        for gid in ("goal_A", "goal_B"):
+            self.db.conn.execute(
+                "INSERT INTO goal(id, concept_text, status) VALUES (?,?,?)",
+                (gid, "probe", "ACTIVE"))
+
     def _defn(self, required=True, kind="deterministic", metric="traceability"):
         return self.se.define(stage="specification", kind=kind,
                               metric=metric, threshold=0.9,
@@ -90,8 +97,10 @@ class TestRunsAndGates(StageEvalsCase):
     def test_run_case_records_pass_and_fail(self):
         did, _ = self._defn()
         case = {"id": "c1", "label": "x"}
-        r1 = self.se.run_case(did, case, lambda c: (True, {}))
-        r2 = self.se.run_case(did, case, lambda c: (False, {"why": "gap"}))
+        r1 = self.se.run_case(did, case, lambda c: (True, {}),
+                              goal_id="goal_A")
+        r2 = self.se.run_case(did, case, lambda c: (False, {"why": "gap"}),
+                              goal_id="goal_A")
         self.assertEqual(r1["outcome"], "pass")
         self.assertEqual(r2["outcome"], "fail")
 
@@ -99,32 +108,35 @@ class TestRunsAndGates(StageEvalsCase):
         req_id, _ = self._defn(required=True)
         adv_id, _ = self._defn(required=False, metric="polish")
         bad = {"id": "c"}
-        # both fail once
-        self.se.run_case(req_id, bad, lambda c: (False, {}))
-        self.se.run_case(adv_id, bad, lambda c: (False, {}))
-        gate = self.se.stage_gate("specification", [req_id, adv_id])
+        # both fail once (same goal)
+        self.se.run_case(req_id, bad, lambda c: (False, {}), goal_id="goal_A")
+        self.se.run_case(adv_id, bad, lambda c: (False, {}), goal_id="goal_A")
+        gate = self.se.stage_gate("specification", [req_id, adv_id],
+                                  goal_id="goal_A")
         self.assertEqual(gate["decision"], "fail")
         self.assertTrue(any("eval.specification.traceability" in r
                             for r in gate["reasons"]))
         # advisory failure alone must not fail the gate
-        gate2 = self.se.stage_gate("specification", [adv_id])
+        gate2 = self.se.stage_gate("specification", [adv_id],
+                                   goal_id="goal_A")
         self.assertEqual(gate2["decision"], "pass")
         self.assertTrue(gate2["reasons"])   # but it is recorded
 
     def test_gate_fails_when_required_eval_has_no_runs(self):
         did, _ = self._defn(required=True)
-        gate = self.se.stage_gate("specification", [did])
+        gate = self.se.stage_gate("specification", [did], goal_id="goal_B")
         self.assertEqual(gate["decision"], "fail")
         self.assertTrue(any("no eval runs" in r for r in gate["reasons"]))
 
     def test_llm_judge_without_model_id_inadmissible(self):
-        did, _ = self._defn(kind="llm_judge")
+        did, _ = self._defn(kind="llm_judge", required=False)
         case = {"id": "c"}
         with self.assertRaises(StageEvalError):
             self.se.run_case(did, case, lambda c: (True, {}),
+                             goal_id="goal_A",
                              judge={"prompt_version": "p1"})  # no model_id
         # with full provenance it runs and the judge block is persisted
-        r = self.se.run_case(did, case, lambda c: (True, {}),
+        r = self.se.run_case(did, case, lambda c: (True, {}), goal_id="goal_A",
                              judge={"model_id": "m", "prompt_version": "p1",
                                     "rubric_version": "r1"})
         self.assertEqual(r["outcome"], "pass")

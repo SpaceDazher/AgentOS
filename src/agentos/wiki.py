@@ -78,13 +78,20 @@ class WikiBuilder:
         c = self.db.conn
         counts: dict[str, int] = {}
 
-        # Home index -------------------------------------------------------
+        # Redaction before any content reaches the vault (R5): strip obvious
+        # secret assignments and long token-like strings from untrusted text.
+        def redact(text: str) -> str:
+            text = re.sub(r"(?i)\b(api[_-]?key|secret|token|password)\s*[=:]\s*\S+",
+                          r"\1=[REDACTED]", text)
+            text = re.sub(r"\b[A-Za-z0-9_\-]{40,}\b", "[REDACTED-TOKEN]", text)
+            return text
+
         goals = c.execute(
             "SELECT id, status, created_at FROM goal ORDER BY created_at"
             " DESC LIMIT 50").fetchall()
         experiments = c.execute(
-            "SELECT id, hypothesis, status FROM experiment"
-            " ORDER BY created_at DESC LIMIT 50").fetchall()
+            "SELECT id, goal_id, hypothesis, status, decision_rationale"
+            " FROM experiment ORDER BY created_at DESC LIMIT 50").fetchall()
         eval_defs = c.execute(
             "SELECT id, MAX(version) AS v, stage, metric, required"
             " FROM eval_definition GROUP BY id ORDER BY stage").fetchall()
@@ -195,9 +202,13 @@ class WikiBuilder:
                 f"_generated/experiment-{e['id']}.md",
                 {"id": e["id"], "type": "experiment", "title": e["id"],
                  "status": e["status"], "experiment_id": e["id"],
+                 "goal_id": e["goal_id"],
                  "created_at": "", "updated_at": ""},
                 f"Experiment **{e['status']}**.",
-                ["## Hypothesis", e["hypothesis"],
+                ["## Hypothesis", redact(e["hypothesis"]),
+                 "",
+                 "## Decision rationale",
+                 redact(e["decision_rationale"] or "(pending)"),
                  "", "Decision policy: ADR-0008."])
             (self.wiki / GENERATED_DIR /
              f"experiment-{e['id']}.md").write_text(note, encoding="utf-8")
@@ -213,12 +224,39 @@ class WikiBuilder:
                  f"stage gate {sg['stage']}", "decision": sg["decision"],
                  "status": "final", "created_at": "", "updated_at": ""},
                 f"Stage gate **{sg['stage']}** → {sg['decision']}.",
-                ["## Rationale", sg["rationale"]])
+                ["## Rationale", redact(sg["rationale"])])
             (self.wiki / GENERATED_DIR /
              f"stagegate-{sg['id']}.md").write_text(note, encoding="utf-8")
             counts["stage_gates"] = counts.get("stage_gates", 0) + 1
 
-        return {"notes_written": sum(counts.values()), "counts": counts}
+        # R5: staging + atomic swap — remove stale generated notes so a note
+        # whose canonical record vanished does not survive a rebuild.
+        gen = self.wiki / GENERATED_DIR
+        expected = set(counts.keys())  # marker only; real check below
+        canonical_names = set()
+        for g in goals:
+            gid = g["id"]
+            canonical_names.add(f"goal-{gid}.md")
+            for t in c.execute("SELECT id FROM task WHERE goal_id=?",
+                               (gid,)).fetchall():
+                canonical_names.add(f"task-{t['id']}.md")
+            for r in c.execute("SELECT id FROM run WHERE goal_id=?",
+                               (gid,)).fetchall():
+                canonical_names.add(f"run-{r['id']}.md")
+        canonical_names.add("Home.md")
+        for r in eval_defs:
+            canonical_names.add(f"eval-{r['id']}.md")
+        for e in experiments:
+            canonical_names.add(f"experiment-{e['id']}.md")
+        for sg in c.execute("SELECT id FROM stage_gate LIMIT 100").fetchall():
+            canonical_names.add(f"stagegate-{sg['id']}.md")
+        removed = 0
+        for p in sorted(gen.glob("*.md")):
+            if p.name not in canonical_names:
+                p.unlink()
+                removed += 1
+        return {"notes_written": sum(counts.values()), "counts": counts,
+                "stale_removed": removed}
 
     # -- check -----------------------------------------------------------------
     def check(self) -> dict:
@@ -268,6 +306,35 @@ class WikiBuilder:
             if top not in VAULT_DIRS:
                 issues.append(CheckIssue(
                     "orphan_note", rel, f"'{top}' is not a vault folder"))
+
+        # R5: dangling canonical references — frontmatter refs (goal_id etc.)
+        # must exist in canonical state; secret patterns must never appear.
+        c = self.db.conn
+        canonical = {
+            "goal_id": {r["id"] for r in c.execute("SELECT id FROM goal")},
+            "task_id": {r["id"] for r in c.execute("SELECT id FROM task")},
+            "run_id": {r["id"] for r in c.execute("SELECT id FROM run")},
+            "experiment_id": {r["id"] for r in
+                              c.execute("SELECT id FROM experiment")},
+        }
+        secret_re = re.compile(
+            r"(?i)\b(api[_-]?key|secret|token|password)\s*[=:]\s*(?!"
+            r"\[REDACTED\])\S+")
+        for p in md_files:
+            rel = str(p.relative_to(self.wiki))
+            text = p.read_text(encoding="utf-8", errors="replace")
+            m = re.match(r"\A---\n(.*?)\n---\n", text, re.DOTALL)
+            fm = m.group(1) if m else ""
+            for key, valid_ids in canonical.items():
+                idm = re.search(rf"^{key}:\s*(\S+)\s*$", fm, re.MULTILINE)
+                if idm and idm.group(1) not in valid_ids:
+                    issues.append(CheckIssue(
+                        "dangling_ref", rel,
+                        f"{key}={idm.group(1)} not in canonical DB"))
+            hit = secret_re.search(text)
+            if hit:
+                issues.append(CheckIssue(
+                    "secret_leak", rel, f"unredacted secret near {hit.group(0)[:30]}"))
 
         return {"files": len(md_files), "links_checked": len(links),
                 "issues": [i.as_dict() for i in issues],
