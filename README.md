@@ -212,16 +212,22 @@ on acceptance, and the evidence pack flows back into the chat that asked.
 
 **This is not production software.** Do not rely on it for real workloads.
 
-- **No measured SLOs or reliability evaluations exist yet.** Crash-consistency,
-  retry, and fencing behaviors have unit-level tests only — there are no load,
-  soak, chaos, or multi-process concurrency results behind any claim on this
-  page. The intended measurement plan lives in
-  [`docs/EVALUATION_PROTOCOL.md`](docs/EVALUATION_PROTOCOL.md) and open gaps are
-  tracked in [`docs/GAP_REGISTER.md`](docs/GAP_REGISTER.md); until those are
-  executed and published, treat all reliability language here as design intent.
+- **First reliability measurements exist; the bar is not met yet.** E2
+  (20 tasks × 5 repeats, real Hermes worker) measured pass¹ = 0.93
+  [Wilson 0.863–0.966] and pass⁵ = 0.75 [0.531–0.888] — below the
+  pre-registered "harness-reliable" threshold (pass⁵ ≥ 0.8, CI LB ≥ 0.7).
+  False-completion rate and evaluator FPR/FNR are **not measured** (no human
+  gold set). Details and failure analysis:
+  [`eval/E2_RESULTS.md`](eval/E2_RESULTS.md); method:
+  [`docs/EVALUATION_PROTOCOL.md`](docs/EVALUATION_PROTOCOL.md). Load, soak,
+  chaos, and multi-process concurrency results still do not exist.
 - Single-node SQLite only; Postgres porting is planned but untested.
-- The MVP evaluator's `command_exit_0` check is simulated against recorded
-  outputs (no shell execution).
+- The evaluator's `command_exit_0` check executes generated code in a
+  subprocess with an empty PATH but **no filesystem/network sandbox** — treat
+  evaluated content as untrusted-with-caveats until the confinement work in
+  [`docs/ROADMAP.md`](docs/ROADMAP.md) lands.
+- The Hermes worker process has no filesystem/network confinement either
+  (GAP_REGISTER R2-3).
 - Concurrency control assumes cooperative access to one DB file.
 
 [ADR-0002]: adr/ADR-0002-monolith-journal.md

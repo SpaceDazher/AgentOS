@@ -112,6 +112,19 @@ def run_episode(root: Path, task: dict, repeat: int,
     except RuntimeError as e:
         gate_result, reasons = "submit-refused", [str(e)]
 
+    # Recording contract (protocol §Recording contract): build the evidence
+    # pack for every episode and record path + sha256. E2 post-run audit found
+    # this was missing (0 packs across 100 episode dirs); patched.
+    pack_path = None
+    pack_sha256 = None
+    try:
+        from agentos.evidence_pack import build as _build_pack
+        built = _build_pack(db, ep_root, goal_id)
+        pack_path = built["path"]
+        pack_sha256 = built["sha256"]
+    except Exception as e:  # noqa: BLE001 — pack failure must not mask episode
+        pack_path = f"<pack-build-failed: {e}>"
+
     return {
         "task": task["key"], "repeat": repeat, "worker": "hermes",
         "episode_success": episode_ok,
@@ -120,6 +133,13 @@ def run_episode(root: Path, task: dict, repeat: int,
         "worker_ok": worker_ok, "worker_note": note[:200],
         "duration_ms": round((time.perf_counter() - t0) * 1000),
         "goal_id": goal_id,
+        "evidence_pack_path": pack_path,
+        "evidence_pack_sha256": pack_sha256,
+        "env": {
+            "python": sys.version.split()[0],
+            "hermes_bin": worker.bin,
+            "platform": sys.platform,
+        },
     }
 
 

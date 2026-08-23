@@ -14,14 +14,14 @@ risk / next step. Items closed by recent work are listed at the bottom.
 | Registry immutability | append-only INSERT; fingerprint conflict refused; invoke() re-resolves from registry (forged contracts inert); DB triggers refuse UPDATE/DELETE | — | — |
 | Tamper evidence | SHA-256 chain + in-DB anchor + external mirror `audit_anchor.head`; pack build fails loudly on tamper/inconsistent ACCEPTED | mirror lives on same host | periodic off-host/notarized copy of `audit_anchor.head` |
 | Worker sandbox (R2-3) | Hermes worker returns INTENTS only; effects replayed via gateway; path confinement at parse + handler level; Job Object limits lifetime/memory | Job Object does NOT confine filesystem/network/process access | real sandbox: restricted token / container per run |
-| Evaluator coverage | 4 checks incl. real subprocess execution (`tests_present` AST+content, `command_exit_0` isolated run, `invariant` SELECT); **E2 measured: 0 false accepts / 100 episodes, 7 true-negative rejections** | near-miss/gold suites for systematic FPR/FNR not yet built | gold+near-miss corpora per check type (protocol §evaluator quality) |
+| Evaluator coverage | 3 built-in checks (tests_present AST+content, command_exit_0 isolated subprocess, invariant SELECT); **E2 measured: 0 known false accepts / 100 episodes, 7 true-negative rejections; false-completion rate и FPR/FNR не измерены** (human gold set отсутствует) | evaluator subprocess has no FS/network/child-process confinement; near-miss/gold corpora not built | sandbox for evaluator execution; gold+near-miss corpora per check type (protocol §evaluator quality) |
 | Secrets | none handled | gateway handlers receive raw args; no secret redaction in journal | secret refs + redaction layer before persisting args/events |
 | Observability | unsampled audit log only | no OTel traces/metrics; debugging is manual | OTel exporter keyed by goal/run ids |
 | Packaging | repo layout, PYTHONPATH=src | not pip-installable; plugin install is manual copy | pyproject.toml + console_scripts entry points |
 | Hermes plugin | **installed & enabled** (`%LOCALAPPDATA%\hermes\plugins\agentos-harness`); 4 tools live in chat, verified end-to-end | bootstrap pins repo path via AGENTOS_REPO default | pip packaging removes the path pin |
 | DAG at scale | sequential demos; scheduler untested beyond linear/2-node DAGs | no parallel execution | property tests + bounded-parallel executor behind leases |
 | CI | GitHub Actions matrix (3.11/3.12 × win/ubuntu): tests + SHA pin + demo smoke + plugin import check | runs only when a GitHub remote exists | add remote and push |
-| Eval evidence | **executed**: harness drills pass⁵=1.0; end-to-end N=20×5: pass¹=0.93 [0.863–0.966], pass⁵=0.75 [0.531–0.888]; failure analysis in eval/E2_RESULTS.md | human gold-set for false-completion; near-miss FPR/FNR; N>20 frame for tighter CIs | protocol §evaluator quality + frame expansion |
+| Eval evidence | **executed**: harness drills pass⁵=1.0; end-to-end N=20×5: pass¹=0.93 [0.863–0.966], pass⁵=0.75 [0.531–0.888]; pre-registered threshold NOT met (см. eval/E2_RESULTS.md); recording contract частично нарушен (packs не строились per-episode — runner исправлен) | human gold-set для false-completion; near-miss FPR/FNR; frame expansion | protocol §Compliance items |
 
 ## Closed gaps (history)
 
