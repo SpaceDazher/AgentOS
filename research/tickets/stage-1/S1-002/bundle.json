@@ -1,0 +1,206 @@
+{
+  "config": {
+    "min_source_count": 4,
+    "min_verified_ratio": 1.0,
+    "required_artifacts": [
+      "research_plan",
+      "source_registry",
+      "feature_catalog",
+      "architecture_models",
+      "mental_model",
+      "ontology",
+      "mathematical_model",
+      "synthesis_and_gaps",
+      "independent_audit",
+      "platform_plan",
+      "progress"
+    ]
+  },
+  "sources": [
+    {
+      "id": "S2-LITTLE",
+      "canonical_uri": "https://pubsonline.informs.org/doi/10.1287/opre.9.3.383",
+      "title": "A Proof for the Queuing Formula: L = lambda W",
+      "source_type": "peer-reviewed mathematical paper",
+      "content": "John D. C. Little's 1961 Operations Research paper proves L=lambda W under finite-mean, stationary, and transitivity conditions. The relation uses mean W; a latency percentile cannot be substituted for the mean without a separate derivation.",
+      "verification_status": "verified",
+      "verifier": "codex-primary-source-review-2026-08-24",
+      "verification_method": "live-publisher-metadata-and-abstract-review",
+      "verifier_provenance": {
+        "method": "live-publisher-metadata-and-abstract-review",
+        "verified_at": "2026-08-24",
+        "publisher_id": "informs-operations-research",
+        "independence_group": "little-queueing-proof",
+        "canonical_source_id": "S2-LITTLE"
+      }
+    },
+    {
+      "id": "S2-SQLITE-WAL",
+      "canonical_uri": "https://sqlite.org/wal.html",
+      "title": "Write-Ahead Logging",
+      "source_type": "official runtime documentation",
+      "content": "Official SQLite documentation describes WAL mode, the separate WAL and shared-memory files, automatic and application-initiated checkpoints, and the concurrency boundary. It supports the measured runtime description, not a claim about a multi-host database.",
+      "verification_status": "verified",
+      "verifier": "codex-primary-source-review-2026-08-24",
+      "verification_method": "live-official-documentation-review",
+      "verifier_provenance": {
+        "method": "live-official-documentation-review",
+        "verified_at": "2026-08-24",
+        "publisher_id": "sqlite",
+        "independence_group": "sqlite-runtime",
+        "canonical_source_id": "S2-SQLITE-WAL"
+      }
+    },
+    {
+      "id": "S2-PY-TIME",
+      "canonical_uri": "https://docs.python.org/3/library/time.html",
+      "title": "Python time.perf_counter_ns",
+      "source_type": "official benchmark clock documentation",
+      "content": "The Python documentation defines perf_counter_ns as a high-resolution monotonic performance counter returned as integer nanoseconds; only differences between readings are meaningful. On the measured Windows environment it uses QueryPerformanceCounter.",
+      "verification_status": "verified",
+      "verifier": "codex-primary-source-review-2026-08-24",
+      "verification_method": "live-official-documentation-review",
+      "verifier_provenance": {
+        "method": "live-official-documentation-review",
+        "verified_at": "2026-08-24",
+        "publisher_id": "python-software-foundation",
+        "independence_group": "python-runtime-clock",
+        "canonical_source_id": "S2-PY-TIME"
+      }
+    },
+    {
+      "id": "S2-GOOGLE-SRE",
+      "canonical_uri": "https://sre.google/sre-book/service-level-objectives/",
+      "title": "Service Level Objectives",
+      "source_type": "first-party operations methodology",
+      "content": "Google's SRE chapter distinguishes measured service-level indicators from target SLOs, recommends percentiles over means for tail behavior, and requires the measurement conditions and population to be specified. It also warns against choosing a public target from current performance alone.",
+      "verification_status": "verified",
+      "verifier": "codex-primary-source-review-2026-08-24",
+      "verification_method": "live-first-party-methodology-review",
+      "verifier_provenance": {
+        "method": "live-first-party-methodology-review",
+        "verified_at": "2026-08-24",
+        "publisher_id": "google-sre",
+        "independence_group": "google-sre-methodology",
+        "canonical_source_id": "S2-GOOGLE-SRE"
+      }
+    }
+  ],
+  "claims": [
+    {
+      "id": "claim-benchmark-run",
+      "text": "The timestamped local benchmark completed 1728 paced ToolGateway events across 10, 34, and 100 events/s, with three cold and three warm trials per load and a deterministic seed of 20260824.",
+      "claim_class": "fact",
+      "source_ids": ["S2-PY-TIME", "S2-SQLITE-WAL", "S2-GOOGLE-SRE"]
+    },
+    {
+      "id": "claim-34-result",
+      "text": "At the 34 events/s planning point, cold end-to-end latency was mean 3.436 ms, p95 4.262 ms, p99 5.295 ms, queue depth max 0; warm was mean 4.008 ms, p95 5.221 ms, p99 11.511 ms, queue depth max 0.",
+      "claim_class": "fact",
+      "source_ids": ["S2-PY-TIME", "S2-SQLITE-WAL", "S2-GOOGLE-SRE"]
+    },
+    {
+      "id": "claim-100-result",
+      "text": "At 100 events/s, cold p95/p99 end-to-end latency was 4.272/7.392 ms with max queue depth 1; warm p95/p99 was 4.762/7.533 ms with max queue depth 1 and single-worker mean busy ratio 0.317.",
+      "claim_class": "fact",
+      "source_ids": ["S2-PY-TIME", "S2-SQLITE-WAL", "S2-GOOGLE-SRE"]
+    },
+    {
+      "id": "claim-storage-result",
+      "text": "A separate 2000-invocation storage probe added 4000 persisted rows and 1413120 bytes after WAL checkpoint, measuring 353.28 bytes per persisted row for this schema and payload.",
+      "claim_class": "fact",
+      "source_ids": ["S2-SQLITE-WAL", "S2-PY-TIME"]
+    },
+    {
+      "id": "claim-little-law",
+      "text": "Little's Law relates long-run mean occupancy, arrival rate, and mean time as L=lambda W under its stated conditions; it does not license replacing mean W with p95.",
+      "claim_class": "fact",
+      "source_ids": ["S2-LITTLE", "S2-GOOGLE-SRE"]
+    },
+    {
+      "id": "claim-local-headroom",
+      "text": "The measured single-process SQLite/WAL path has local headroom at 34 and 100 events/s in this bounded workload, but the result does not validate a distributed worker count or production capacity.",
+      "claim_class": "inference",
+      "source_ids": ["S2-SQLITE-WAL", "S2-GOOGLE-SRE", "S2-LITTLE"]
+    },
+    {
+      "id": "claim-planning-profile",
+      "text": "The SRC-06 numeric profile is a planning input whose agents, external-call rate, worker count, revocation, fan-out, and production storage assumptions remain unverified outside the explicitly measured local path.",
+      "claim_class": "assumption"
+    },
+    {
+      "id": "claim-slo-target",
+      "text": "Retain p95 authorization latency below 20 ms as an internal target for later representative benchmarks, not as a production SLO or customer commitment.",
+      "claim_class": "target",
+      "source_ids": ["S2-GOOGLE-SRE"]
+    }
+  ],
+  "artifacts": {
+    "research_plan": {
+      "content": "# Question\nDo the planning values around 34 events/s, a 20 ms p95 target, 100 events/s bursts, worker count, and annual storage survive a reproducible local workload, and what remains unverified?\n\n# Method\nBenchmark the actual read-only AgentOS ToolGateway path: registry resolution, schema validation, 90/10 seeded capability allow/deny, handler, activity persistence, and hash-chained audit event. Use CPython perf_counter_ns, fixed-rate arrivals at 10/34/100 events/s, 2 seconds per trial, three trials per rate, separate zero-warmup cold and 100-event warm modes, and seed 20260824. Record raw event latency, mean, standard deviation, p50/p95/p99/max, queue wait/depth, busy ratio, timestamps, environment, and storage growth.\n\n# Evidence boundary\nRaw record: research/tickets/stage-1/S1-002/raw-results.json, 552600 bytes, SHA-256 8cf8e60290d5992f1a495a700b7bc812ccf2ea725c75822a23104c94918d9d3f. Script: research/tickets/stage-1/S1-002/benchmark.py.\n\n# Non-scope\nNo network/model latency, multi-process or multi-host workers, production traffic, failover, multi-region reliability, or public SLO.\n\n# Stop rule\nStop if timestamps, raw observations, percentiles, queue measures, environment, or workload seed cannot be captured; reject any request to publish these local results as a production SLO.",
+      "claim_refs": ["claim-benchmark-run", "claim-planning-profile", "claim-slo-target"],
+      "producer": "agentos-s1-002-producer"
+    },
+    "source_registry": {
+      "content": "# Evidence classes\n1. Mathematical: Little 1961 for L=lambda W and its mean/stationarity conditions. 2. Runtime architecture: official SQLite WAL documentation. 3. Benchmark method: Python perf_counter_ns and Google SRE percentile/SLO guidance. 4. Empirical: the checked-in timestamped raw-results.json generated by benchmark.py.\n\n# Local empirical record\nPath: research/tickets/stage-1/S1-002/raw-results.json. SHA-256: 8cf8e60290d5992f1a495a700b7bc812ccf2ea725c75822a23104c94918d9d3f. Schema: agentos.s1-002-benchmark/v1. Run: 2026-08-24T17:52:01.458Z through 2026-08-24T17:52:47.550Z. Environment: AgentOS 950cd4d, CPython 3.11.15, SQLite 3.53.1, Windows 10 build 22631, 16 logical CPUs, WAL, QueryPerformanceCounter resolution 1e-7 s.\n\n# Status\nExternal method sources are verified. The empirical file is measured local evidence. It is not elevated to production evidence and is not represented as an externally hosted source.",
+      "claim_refs": ["claim-benchmark-run", "claim-little-law", "claim-storage-result"],
+      "producer": "agentos-s1-002-producer"
+    },
+    "feature_catalog": {
+      "content": "# Capacity evidence feature\nA benchmark run must carry workload rates, arrival model, allowed/denied mix, duration, trials, seed, warmup definition, worker count, environment, start/end timestamps, raw event observations, aggregate distributions, queue metrics, and storage checkpoint policy.\n\n# Downstream use\nS1-004 may consume the arrival/service observations for simulation; S1-005 and S1-006 may use the bounded local headroom only as topology/backend input; S1-008 must independently measure revocation; S1-019 may cite the result only with the single-process/local boundary.\n\n# Labels\nDomain labels map into the harness as measurement=fact, design_inference=inference, planning_assumption or uncertainty=assumption, and SLO_target=target.",
+      "claim_refs": ["claim-benchmark-run", "claim-local-headroom", "claim-slo-target"],
+      "producer": "agentos-s1-002-producer"
+    },
+    "architecture_models": {
+      "content": "# Measured path\nFixed-rate scheduler -> ToolGateway.invoke -> authoritative ToolContract resolve in SQLite -> argument validation -> capability allow/deny -> read handler when allowed -> one activity row -> one hash-chained audit_event row.\n\n# Runtime topology\nOne CPython process, one SQLite connection, WAL mode, one logical workload worker, no network. Each measured gateway invocation adds one activity and one audit row. The 2000-invocation storage probe therefore adds 4000 rows.\n\n# Boundary\nThis validates a local control-plane slice, not engine scheduling, external calls, parallel connections, durable distributed execution, model latency, or multi-region storage. A later backend benchmark must preserve the same event schema and workload seed while adding representative concurrency.",
+      "claim_refs": ["claim-benchmark-run", "claim-storage-result", "claim-local-headroom"],
+      "producer": "agentos-s1-002-producer"
+    },
+    "mental_model": {
+      "content": "# Operator view\nEvery number is shown with a badge: MEASURED, DERIVED, TARGET, or UNVERIFIED. The view must display environment and workload beside latency; p95/p99 and queue depth are primary, while mean is retained for Little's Law.\n\n# Interpretation\n'Observed below 20 ms locally' is not '20 ms production SLO achieved'. At 100 events/s, warm p95 was 4.762 ms and p99 7.533 ms, yet an individual maximum reached 25.260 ms and the run lasted only 2 seconds per trial.\n\n# Decision cue\nUse the result to approve a larger representative benchmark, not to publish capacity. Surface missing dimensions: concurrent processes, network, realistic payloads, external effects, sustained duration, failure injection, revocation, backup/replica overhead, and production hardware variance.",
+      "claim_refs": ["claim-100-result", "claim-local-headroom", "claim-slo-target"],
+      "producer": "agentos-s1-002-producer"
+    },
+    "ontology": {
+      "content": "# Evidence value classes\nMeasuredValue: directly observed in a named run with unit, distribution, timestamp, environment, seed, and raw reference. DerivedValue: computed from measured or explicitly named assumed inputs and formula. TargetValue: desired future threshold with no claim that it is currently guaranteed. UnverifiedValue: planning input not measured in the scoped run.\n\n# Entities\nBenchmarkRun, WorkloadLevel, Trial, RawObservation, AggregateDistribution, EnvironmentSnapshot, QueueMetric, UtilizationMetric, StorageProbe, Projection, SLOTarget, and Limitation.\n\n# Relations\nTrial partOf BenchmarkRun; RawObservation observedIn Trial; AggregateDistribution derivedFrom RawObservation; Projection derivedFrom Measurement or Assumption; SLOTarget evaluatedBy future BenchmarkRun.\n\n# Invariants\nA measured latency includes clock and population. A percentile includes sample count and workload. A projection names every assumption. A production SLO cannot be inferred from a local BenchmarkRun.",
+      "claim_refs": ["claim-benchmark-run", "claim-little-law", "claim-slo-target"],
+      "producer": "agentos-s1-002-producer"
+    },
+    "mathematical_model": {
+      "content": "# Measured workload matrix\n| Mode | Target rate | Events | Mean E2E ms | p95 ms | p99 ms | Max ms | Mean busy | Max queue | Label |\n|---|---:|---:|---:|---:|---:|---:|---:|---:|---|\n| cold | 10/s | 60 | 4.142 | 5.085 | 5.743 | 5.743 | 0.036 | 0 | measured |\n| warm | 10/s | 60 | 4.330 | 5.271 | 5.658 | 5.658 | 0.038 | 0 | measured |\n| cold | 34/s | 204 | 3.436 | 4.262 | 5.295 | 12.618 | 0.100 | 0 | measured |\n| warm | 34/s | 204 | 4.008 | 5.221 | 11.511 | 24.175 | 0.120 | 0 | measured |\n| cold | 100/s | 600 | 3.452 | 4.272 | 7.392 | 22.626 | 0.294 | 1 | measured |\n| warm | 100/s | 600 | 3.705 | 4.762 | 7.533 | 25.260 | 0.317 | 1 | measured |\n\n# Little's Law\nUsing mean end-to-end W only: at 34/s, L_local is derived as 34*0.003436=0.117 cold and 34*0.004008=0.136 warm. At 100/s warm it is 100*0.003705=0.371. These are bounded local occupancy estimates, not worker-pool proof. The historical 0.68 value is derived from the target 34*0.020 and remains a target-based estimate.\n\n# Storage\nMeasured after checkpoint: 2000 gateway invocations -> 2000 activity + 2000 audit rows; delta 1413120 bytes; 706.56 bytes/invocation and 353.28 bytes/persisted row. Derived projection at 36.5M rows is 12.009 GiB for this exact local payload/schema. The historical 1 KiB/row projection is derived as 34.809 GiB. Neither includes future indexes, backups, replicas, artifacts, or filesystem allocation.\n\n# SRC-06 section 8 disposition\n| Numeric item | Value | Disposition |\n|---|---|---|\n| agents/principals | 205 agents / 225 principals | unverified planning input |\n| all-pairs/workspace edges | 41820 vs <=1680 for n=205,k=30,Mw=8 | derived from unverified inputs |\n| authorization rate | 34 events/s | target workload point; locally measured at 33.93-33.96/s |\n| L_auth | 0.68 at 20 ms | derived from target, not measured occupancy |\n| workers | c_min=2 and chosen c=4 at assumed mu=100/s | derived design target; distributed pool unverified |\n| external calls | <=82/min | unverified target; not in workload |\n| events/storage | 36.5M rows/year and about 36.5 GB decimal raw | derived planning projection; local measured alternative above |\n| revocation | <=5 s | target and unverified here |\n| promotion | P(theta>0.9)>=0.95 and n_independent>=2 | target outside this benchmark |\n| fan-out | F_max<=10 and kappa_run<=3 | target and unverified here |",
+      "claim_refs": ["claim-34-result", "claim-100-result", "claim-storage-result", "claim-little-law", "claim-planning-profile"],
+      "producer": "agentos-s1-002-producer"
+    },
+    "synthesis_and_gaps": {
+      "content": "# Result\nThe 34/s planning point and 100/s burst were both sustained by the bounded local path in all six aggregate scenarios. Warm 34/s p95 was 5.221 ms with queue max 0; warm 100/s p95/p99 was 4.762/7.533 ms with queue max 1 and mean busy ratio 0.317. This supports local implementation headroom and preserves the 20 ms value only as a future internal target.\n\n# Storage result\nThe measured schema/payload used 353.28 bytes per added activity/audit row after checkpoint, yielding a derived 12.009 GiB at 36.5M rows versus the planning 34.809 GiB at 1 KiB/row. The lower local value is not a production forecast.\n\n# Gaps\nTrials were short (2 seconds), fixed-rate and single-process; the workload used a tiny read handler, one SQLite connection, no network/model/external call, no failure injection, and no representative artifact/index/backup overhead. M/M/c assumptions and c=4 are not validated. Revocation, fan-out, and sustained burst behavior remain open.\n\n# Recommendation\nCarry the measured distributions into S1-004 simulation and use them as a baseline for S1-005/S1-006. Before any production SLO, run longer randomized and bursty arrivals with multiple processes/connections, representative payloads, external dependencies, failure injection, hardware controls, and confidence intervals.",
+      "claim_refs": ["claim-34-result", "claim-100-result", "claim-storage-result", "claim-local-headroom", "claim-slo-target"],
+      "producer": "agentos-s1-002-producer"
+    },
+    "independent_audit": {
+      "content": "# Integrity review\nThe verifier recomputed the raw-results SHA-256 as 8cf8e60290d5992f1a495a700b7bc812ccf2ea725c75822a23104c94918d9d3f and checked 18 timestamped trials: 3 rates * 2 modes * 3 trials, totaling 1728 paced observations. The 2000-event storage probe is separate.\n\n# Probe 1: assumption-only report\nA synthetic report containing only '34 events/s' with no timestamp, raw record, seed, environment, or distribution is classified TARGET/UNVERIFIED and cannot support capacity. PASS: this bundle instead includes all required provenance and raw observations.\n\n# Probe 2: mean-only burst\nA synthetic 100/s report containing only mean latency is rejected. PASS: cold and warm results include p95, p99, max, queue wait/depth, utilization, achieved rate, and raw events.\n\n# Adversarial findings\nThe local 20 ms observation cannot be generalized to production. Maximum latency exceeded 20 ms in the 34/s warm and 100/s cold/warm aggregates even though p95 stayed below target. Little's Law calculations use mean W, not p95. The lower storage result excludes major production overhead.\n\n# Verdict\nPASS_WITH_LIMITS. The measured claims and both probes pass for the local baseline. Limits: short single-process runs, deterministic arrivals, non-representative handler/payload, no external independent human/model auditor, and no production SLO authority.",
+      "claim_refs": ["claim-benchmark-run", "claim-34-result", "claim-100-result", "claim-local-headroom", "claim-slo-target"],
+      "producer": "agentos-s1-002-independent-verifier"
+    },
+    "platform_plan": {
+      "content": "# Scope\nPreserve this run as the local control-plane baseline and build the next benchmark layer; do not change production architecture or publish an SLO from S1-002 alone.\n\n# Architecture\nKeep a versioned benchmark runner beside each ticket bundle, raw JSON with environment/seed/timestamps, immutable SHA binding in FLOW artifacts, and a common result schema. Add adapters for multiple processes/connections and external dependency stubs without changing the canonical gateway contract.\n\n# Workstreams\n1. Add sustained and bursty arrival profiles. 2. Add representative payload size classes and allow/deny/approval paths. 3. Add multi-process SQLite and candidate durable-backend comparisons. 4. Add network/external-call stubs with controlled latency/failure distributions. 5. Measure checkpoint, backup, index, and artifact storage. 6. Feed distributions into S1-004 and backend choices into S1-005/S1-006.\n\n# Milestones\nM1 preserves the current reproducible baseline. M2 runs 15-minute sustained profiles with confidence intervals. M3 adds burst/failure and multi-process matrices. M4 compares candidate execution backends under identical seeds. M5 proposes an internal SLO with workload and hardware boundaries for review.\n\n# Verification\nRequire at least three loads including 34/s and 100/s, cold/warm separation, p95/p99/max, achieved rate, queue wait/depth, utilization, timestamps, seed, raw hashes, environment, storage checkpoint method, and near-miss probes. Compare repeated runs and fail on missing tail or queue data.\n\n# Risks\nTimer/scheduler noise, short samples, cache state, WAL checkpoint behavior, payload drift, a single connection masking contention, hardware variance, coordinated omission, and treating local headroom as production evidence.\n\n# Open decisions\nChoose sustained duration and confidence method; define realistic arrival distributions and payload corpus; select concurrency levels; decide whether SQLite or a durable backend is the comparison target after S1-005; name the independent auditor and deployment envelope required before an SLO proposal.",
+      "claim_refs": ["claim-local-headroom", "claim-planning-profile", "claim-slo-target", "claim-storage-result"],
+      "producer": "agentos-s1-002-producer"
+    },
+    "progress": {
+      "content": "# 2026-08-24\nS1-002 benchmark runner authored and executed twice. The first pass exposed the need for mean W; the final pass added mean and population standard deviation while preserving p50/p95/p99/max. Final raw run: 2026-08-24T17:52:01.458Z to 2026-08-24T17:52:47.550Z, 1728 paced events plus 2000 storage-probe events, seed 20260824.\n\nFinal raw path: research/tickets/stage-1/S1-002/raw-results.json; bytes 552600; SHA-256 8cf8e60290d5992f1a495a700b7bc812ccf2ea725c75822a23104c94918d9d3f. All six load/mode aggregates include p95/p99 and queue depth.\n\nCurrent research decision: PASS_WITH_LIMITS pending canonical research-plan persistence and wiki check. No production SLO, distributed worker count, revocation bound, or annual production storage claim is closed by this run.",
+      "claim_refs": ["claim-benchmark-run", "claim-storage-result", "claim-slo-target"],
+      "producer": "agentos-s1-002-producer"
+    }
+  },
+  "audit": {
+    "subject_producer": "agentos-s1-002-producer",
+    "auditor": "agentos-s1-002-independent-verifier",
+    "verdict": "pass_with_limits",
+    "limitations": [
+      "The benchmark is a short single-process local SQLite/WAL baseline with deterministic arrivals and a small read handler, not production traffic.",
+      "Distributed worker count, external calls, revocation, fan-out, failover, and multi-region behavior remain unverified.",
+      "The auditor role is adversarial and process-separated but not an external human or independently operated model.",
+      "The 20 ms p95 value remains an internal target; no production SLO or customer commitment is authorized."
+    ]
+  }
+}
