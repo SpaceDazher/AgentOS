@@ -91,6 +91,11 @@ PYTHONPATH=src python -m agentos.cli demo --worker hermes   # requires `hermes` 
 
 ### Research-to-platform-plan contract
 
+The platform's first research phase is decomposed into executable,
+evidence-backed tickets in [Stage 1 research tickets](docs/RESEARCH_STAGE_1_TICKETS.md).
+Each active ticket has its own FLOW-11 bundle contract, dependency edge,
+adversarial probes, stop condition, and exact `research-plan` command.
+
 `research-plan` accepts a structured JSON bundle containing `sources`,
 explicitly classified `claims`, the eleven named artifacts
 (`research_plan` → `progress`), and an `audit` record.  The bundle is treated
