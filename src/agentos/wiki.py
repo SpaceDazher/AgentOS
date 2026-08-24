@@ -17,6 +17,8 @@ import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from .ids import canonical_json
+
 VAULT_DIRS = [
     "10-Architecture", "20-Specifications", "30-Evaluations",
     "40-Experiments", "50-Episodes", "60-Decisions", "70-Incidents",
@@ -142,9 +144,28 @@ class WikiBuilder:
         # EVERY untrusted text field via the _note writer itself, so no field
         # can bypass it. Matches spaced forms too ('api key = v').
         def redact(text: str) -> str:
+            # Generated wikilinks are canonical bindings, not retrieved
+            # content.  Protect their targets while redacting surrounding
+            # untrusted prose; otherwise a long but valid research id would be
+            # mistaken for a token and turn a link into a dangling reference.
+            links: list[str] = []
+
+            def hold(match: re.Match[str]) -> str:
+                target = match.group(1)
+                label = match.group(2)
+                links.append(target)
+                placeholder = f"__AGENTOS_LINK_{len(links) - 1}__"
+                # Keep a human/untrusted display label in the redaction pass;
+                # protect only the canonical target binding.
+                return f"[[{placeholder}|{label}]]" if label is not None \
+                    else f"[[{placeholder}]]"
+
+            text = re.sub(r"\[\[([^|\]]+)(?:\|([^\]]*))?\]\]", hold, str(text))
             text = re.sub(r"(?i)(api\s*[-_]?\s*key|apikey|secret|token|password)"
                           r"(\s*[=:]\s*)(\S+)", r"\1\2[REDACTED]", text)
             text = re.sub(r"\b[A-Za-z0-9_\-]{40,}\b", "[REDACTED-TOKEN]", text)
+            for index, link in enumerate(links):
+                text = text.replace(f"__AGENTOS_LINK_{index}__", link)
             return text
 
         def write_generated(rel_name: str, content: str) -> None:
@@ -163,6 +184,13 @@ class WikiBuilder:
         eval_defs = c.execute(
             "SELECT id, MAX(version) AS v, stage, metric, required"
             " FROM eval_definition GROUP BY id ORDER BY stage").fetchall()
+        has_research_schema = c.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='research_campaign'"
+        ).fetchone()
+        research_campaigns = c.execute(
+            "SELECT id, goal_id, topic, thresholds_json, manifest_sha256,"
+            " created_at FROM research_campaign ORDER BY created_at, id"
+        ).fetchall() if has_research_schema else []
         home = _note(
             "_generated/Home.md",
             {"id": "home", "type": "index", "title": "AgentOS Vault",
@@ -181,6 +209,11 @@ class WikiBuilder:
                 *([f"- [[eval-{r['id']}|{r['id']}@{r['v']}]] ({r['stage']},"
                    f" {'required' if r['required'] else 'advisory'})"
                    for r in eval_defs] or ["- (none)"]),
+                "",
+                "## Research campaigns",
+                *([f"- [[research-campaign-{r['id']}|{r['id']}]] —"
+                   f" {r['topic']} (goal {r['goal_id']})"
+                   for r in research_campaigns] or ["- (none)"]),
             ], redact=redact)
         write_generated("Home.md", home)
         counts["home"] = 1
@@ -211,6 +244,14 @@ class WikiBuilder:
                 f"- {gate['result'] if gate else 'n/a'}: "
                 f"{(gate['rationale'] if gate else '')[:200]}",
             ]
+            goal_research = [r for r in research_campaigns
+                             if r["goal_id"] == gid]
+            body.extend([
+                "",
+                "## Research",
+                *([f"- [[research-campaign-{r['id']}|{r['id']}]] — {r['topic']}"
+                   for r in goal_research] or ["- (none)"]),
+            ])
             note = _note(f"_generated/goal-{gid}.md",
                          {"id": gid, "type": "goal", "title": gid,
                           "status": g["status"], "goal_id": gid,
@@ -244,6 +285,155 @@ class WikiBuilder:
                             f"Backlinks: [[goal-{gid}]]"], redact=redact)
                 write_generated(f"run-{r['id']}.md", rn)
                 counts["runs"] = counts.get("runs", 0) + 1
+
+        # Research projection ------------------------------------------------
+        # Only metadata, hashes, and canonical links are projected.  The
+        # source table intentionally has no raw body column, and artifact
+        # content is never read here.  Every generated research note carries
+        # the exact owning goal in frontmatter.
+        for campaign in research_campaigns:
+            cid = campaign["id"]
+            gid = campaign["goal_id"]
+            sources = c.execute(
+                "SELECT id, canonical_uri, title, source_type, content_sha256,"
+                " verification_status, verifier, verification_method"
+                " FROM research_source WHERE campaign_id=? AND goal_id=?"
+                " ORDER BY id", (cid, gid)).fetchall()
+            claims = c.execute(
+                "SELECT id, text, claim_class FROM research_claim"
+                " WHERE campaign_id=? AND goal_id=? ORDER BY id", (cid, gid)).fetchall()
+            artifacts = c.execute(
+                "SELECT id, kind, version, content_sha256, producer"
+                " FROM research_artifact WHERE campaign_id=? AND goal_id=?"
+                " ORDER BY kind, version, id", (cid, gid)).fetchall()
+            evaluations = c.execute(
+                "SELECT id, evaluation_version, result, artifact_chain_hash,"
+                " reasons_json, limitations_json FROM research_evaluation"
+                " WHERE campaign_id=? AND goal_id=? ORDER BY evaluation_version, id",
+                (cid, gid)).fetchall()
+            try:
+                thresholds = json.loads(campaign["thresholds_json"] or "{}")
+            except json.JSONDecodeError:
+                thresholds = {}
+            campaign_note = _note(
+                f"_generated/research-campaign-{cid}.md",
+                {"id": cid, "type": "research_campaign", "title": cid,
+                 "status": "current", "goal_id": gid,
+                 "created_at": campaign["created_at"], "updated_at": campaign["created_at"]},
+                "Research campaign metadata; no retrieved source body is projected.",
+                [f"Backlink: [[goal-{gid}]]",
+                 f"Topic: {campaign['topic']}",
+                 f"Manifest SHA-256: {campaign['manifest_sha256']}",
+                 f"Thresholds: {canonical_json(thresholds)}",
+                 "",
+                 "## Sources",
+                 *([f"- [[research-source-{s['id']}|{s['id']}]]"
+                    for s in sources] or ["- (none)"]),
+                 "",
+                 "## Claims",
+                 *([f"- [[research-claim-{cl['id']}|{cl['id']}]] — {cl['claim_class']}"
+                    for cl in claims] or ["- (none)"]),
+                 "",
+                 "## Artifacts",
+                 *([f"- [[research-artifact-{a['id']}|{a['kind']} v{a['version']}]]"
+                    for a in artifacts] or ["- (none)"]),
+                 "",
+                 "## Evaluations",
+                 *([f"- [[research-evaluation-{e['id']}|{e['result']} v{e['evaluation_version']}]]"
+                    for e in evaluations] or ["- (none)"])],
+                redact=redact)
+            write_generated(f"research-campaign-{cid}.md", campaign_note)
+            counts["research_campaigns"] = counts.get("research_campaigns", 0) + 1
+
+            for source in sources:
+                source_note = _note(
+                    f"_generated/research-source-{source['id']}.md",
+                    {"id": source["id"], "type": "research_source",
+                     "title": source["title"], "status": source["verification_status"],
+                     "source_id": source["id"], "goal_id": gid,
+                     "created_at": "", "updated_at": ""},
+                    "Source metadata only; raw retrieved content is excluded.",
+                    [f"Backlink: [[research-campaign-{cid}]]",
+                     f"Canonical URI: {source['canonical_uri']}",
+                     f"Source type: {source['source_type']}",
+                     f"Content SHA-256: {source['content_sha256']}",
+                     f"Verification: {source['verification_status']}",
+                     f"Verifier: {source['verifier'] or '(none)'}",
+                     f"Method: {source['verification_method'] or '(none)'}"],
+                    redact=redact)
+                write_generated(f"research-source-{source['id']}.md", source_note)
+                counts["research_sources"] = counts.get("research_sources", 0) + 1
+
+            for claim in claims:
+                links = c.execute(
+                    "SELECT source_id FROM research_claim_source"
+                    " WHERE claim_id=? AND goal_id=? ORDER BY source_id",
+                    (claim["id"], gid)).fetchall()
+                claim_note = _note(
+                    f"_generated/research-claim-{claim['id']}.md",
+                    {"id": claim["id"], "type": "research_claim",
+                     "title": claim["id"], "status": "asserted",
+                     "claim_id": claim["id"], "goal_id": gid,
+                     "created_at": "", "updated_at": ""},
+                    "Claim text is untrusted bundle data and is redacted before projection.",
+                    [f"Backlink: [[research-campaign-{cid}]]",
+                     f"Class: {claim['claim_class']}",
+                     "",
+                     "## Claim",
+                     claim["text"],
+                     "",
+                     "## Sources",
+                     *([f"- [[research-source-{s['source_id']}|{s['source_id']}]]"
+                        for s in links] or ["- (none)"])],
+                    redact=redact)
+                write_generated(f"research-claim-{claim['id']}.md", claim_note)
+                counts["research_claims"] = counts.get("research_claims", 0) + 1
+
+            for artifact in artifacts:
+                artifact_note = _note(
+                    f"_generated/research-artifact-{artifact['id']}.md",
+                    {"id": artifact["id"], "type": "research_artifact",
+                     "title": f"{artifact['kind']} v{artifact['version']}",
+                     "status": "current", "artifact_id": artifact["id"],
+                     "goal_id": gid, "created_at": "", "updated_at": ""},
+                    "Versioned artifact metadata only; artifact body is excluded.",
+                    [f"Backlink: [[research-campaign-{cid}]]",
+                     f"Kind: {artifact['kind']}",
+                     f"Version: {artifact['version']}",
+                     f"Content SHA-256: {artifact['content_sha256']}",
+                     f"Producer: {artifact['producer']}"],
+                    redact=redact)
+                write_generated(f"research-artifact-{artifact['id']}.md", artifact_note)
+                counts["research_artifacts"] = counts.get("research_artifacts", 0) + 1
+
+            for evaluation in evaluations:
+                try:
+                    reasons = json.loads(evaluation["reasons_json"] or "[]")
+                except json.JSONDecodeError:
+                    reasons = []
+                try:
+                    limitations = json.loads(evaluation["limitations_json"] or "[]")
+                except json.JSONDecodeError:
+                    limitations = []
+                evaluation_note = _note(
+                    f"_generated/research-evaluation-{evaluation['id']}.md",
+                    {"id": evaluation["id"], "type": "research_evaluation",
+                     "title": f"{evaluation['result']} v{evaluation['evaluation_version']}",
+                     "status": evaluation["result"], "evaluation_id": evaluation["id"],
+                     "goal_id": gid, "created_at": "", "updated_at": ""},
+                    "Append-only deterministic research evaluation.",
+                    [f"Backlink: [[research-campaign-{cid}]]",
+                     f"Result: {evaluation['result']}",
+                     f"Artifact chain hash: {evaluation['artifact_chain_hash']}",
+                     "",
+                     "## Reasons",
+                     *([f"- {reason}" for reason in reasons] or ["- none"]),
+                     "",
+                     "## Limitations",
+                     *([f"- {limit}" for limit in limitations] or ["- none"])],
+                    redact=redact)
+                write_generated(f"research-evaluation-{evaluation['id']}.md", evaluation_note)
+                counts["research_evaluations"] = counts.get("research_evaluations", 0) + 1
 
         # Eval definitions ---------------------------------------------------
         for r in eval_defs:
@@ -313,6 +503,25 @@ class WikiBuilder:
             canonical_names.add(f"experiment-{e['id']}.md")
         for sg in c.execute("SELECT id FROM stage_gate").fetchall():
             canonical_names.add(f"stagegate-{sg['id']}.md")
+        for rc in research_campaigns:
+            canonical_names.add(f"research-campaign-{rc['id']}.md")
+            gid = rc["goal_id"]
+            for rs in c.execute(
+                    "SELECT id FROM research_source WHERE campaign_id=? AND goal_id=?",
+                    (rc["id"], gid)).fetchall():
+                canonical_names.add(f"research-source-{rs['id']}.md")
+            for cl in c.execute(
+                    "SELECT id FROM research_claim WHERE campaign_id=? AND goal_id=?",
+                    (rc["id"], gid)).fetchall():
+                canonical_names.add(f"research-claim-{cl['id']}.md")
+            for ra in c.execute(
+                    "SELECT id FROM research_artifact WHERE campaign_id=? AND goal_id=?",
+                    (rc["id"], gid)).fetchall():
+                canonical_names.add(f"research-artifact-{ra['id']}.md")
+            for reval in c.execute(
+                    "SELECT id FROM research_evaluation WHERE campaign_id=? AND goal_id=?",
+                    (rc["id"], gid)).fetchall():
+                canonical_names.add(f"research-evaluation-{reval['id']}.md")
 
         # R7 TRUE atomic swap: the staging dir IS fully built, so replacing
         # the live _generated is a single rename — no incremental copytree
@@ -411,16 +620,73 @@ class WikiBuilder:
             "experiment_id": {r["id"] for r in
                               c.execute("SELECT id FROM experiment")},
         }
+        if c.execute(
+                "SELECT 1 FROM sqlite_master WHERE type='table' AND name='research_campaign'"
+        ).fetchone():
+            # IDs are globally unique, but that is not sufficient for a
+            # projection check: a note can still claim another goal in its
+            # frontmatter.  Keep explicit ownership maps for every research
+            # object type and validate them below.
+            research_object_owners = {
+                "research_campaign": {r["id"]: r["goal_id"] for r in
+                                       c.execute("SELECT id, goal_id FROM research_campaign")},
+                "research_source": {r["id"]: r["goal_id"] for r in
+                                    c.execute("SELECT id, goal_id FROM research_source")},
+                "research_claim": {r["id"]: r["goal_id"] for r in
+                                   c.execute("SELECT id, goal_id FROM research_claim")},
+                "research_artifact": {r["id"]: r["goal_id"] for r in
+                                      c.execute("SELECT id, goal_id FROM research_artifact")},
+                "research_evaluation": {r["id"]: r["goal_id"] for r in
+                                         c.execute("SELECT id, goal_id FROM research_evaluation")},
+            }
+            canonical.update({
+                "research_campaign_id": {r["id"] for r in
+                                          c.execute("SELECT id FROM research_campaign")},
+                "source_id": {r["id"] for r in
+                               c.execute("SELECT id FROM research_source")},
+                "claim_id": {r["id"] for r in
+                              c.execute("SELECT id FROM research_claim")},
+                "artifact_id": {r["id"] for r in
+                                 c.execute("SELECT id FROM research_artifact")},
+                "evaluation_id": {r["id"] for r in
+                                   c.execute("SELECT id FROM research_evaluation")},
+            })
+        else:
+            research_object_owners = {}
         for p in md_files:
             rel = str(p.relative_to(self.wiki))
             text = p.read_text(encoding="utf-8", errors="replace")
             fm = parse_frontmatter(text)
+            object_type = fm.get("type", "")
+            object_id = fm.get("id", "")
+            object_owner = research_object_owners.get(object_type, {}).get(object_id)
+            note_goal = fm.get("goal_id", "")
+            if object_owner is not None and note_goal != object_owner:
+                issues.append(CheckIssue(
+                    "ownership_mismatch", rel,
+                    f"{object_type} {object_id} belongs to goal {object_owner}, "
+                    f"not frontmatter goal {note_goal or '(none)'}"))
             for key, valid_ids in canonical.items():
                 ref = fm.get(key)
                 if ref and ref not in valid_ids:
                     issues.append(CheckIssue(
                         "dangling_ref", rel,
                         f"{key}={ref} not in canonical DB"))
+                if ref and key.endswith("_id"):
+                    type_for_ref = {
+                        "research_campaign_id": "research_campaign",
+                        "source_id": "research_source",
+                        "claim_id": "research_claim",
+                        "artifact_id": "research_artifact",
+                        "evaluation_id": "research_evaluation",
+                    }.get(key)
+                    owner = (research_object_owners.get(type_for_ref, {}).get(ref)
+                             if type_for_ref else None)
+                    if owner is not None and note_goal != owner:
+                        issues.append(CheckIssue(
+                            "ownership_mismatch", rel,
+                            f"{key}={ref} belongs to goal {owner}, "
+                            f"not frontmatter goal {note_goal or '(none)'}"))
             # Use the same spaced-name-aware scanner as build redaction.
             for hit_line in leak_scan(text):
                 issues.append(CheckIssue(

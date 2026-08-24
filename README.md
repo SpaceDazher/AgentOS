@@ -40,7 +40,7 @@ Key properties:
   `invariant` (read-only SQL against expect_rows), and `command_exit_0`
   (real subprocess execution) produce recorded `Evaluation` rows.
 - **Evidence pack** — every accepted/rejected goal gets a machine-readable
-  JSON pack (schema `agentos.evidence-pack/v2`) at
+  JSON pack (schema `agentos.evidence-pack/v2`; research goals use v3) at
   `<db-root>/goals/<goal_id>/evidence-pack.json`.
 
 ## Quickstart
@@ -55,6 +55,10 @@ PYTHONPATH=src python -m agentos.cli demo [--flaky] [--db DIR]
 
 # Rebuild the evidence pack for a goal:
 PYTHONPATH=src python -m agentos.cli evidence --goal ID --db DIR
+
+# Bounded offline research → platform-plan workflow (one JSON document):
+PYTHONPATH=src python -m agentos.cli research-plan \
+  --topic "a platform question" --bundle research-bundle.json --db DIR
 
 # Failure-path test suite:
 python -m unittest discover -s tests
@@ -84,6 +88,42 @@ To drive tasks with a real agent instead of the fake worker:
 ```bash
 PYTHONPATH=src python -m agentos.cli demo --worker hermes   # requires `hermes` on PATH
 ```
+
+### Research-to-platform-plan contract
+
+`research-plan` accepts a structured JSON bundle containing `sources`,
+explicitly classified `claims`, the eleven named artifacts
+(`research_plan` → `progress`), and an `audit` record.  The bundle is treated
+as untrusted data: AgentOS never retrieves a URI or executes bundle text,
+computes artifact hashes (and source hashes when source bodies are supplied)
+on the host, and stores artifacts only under
+`<db-root>/goals/<goal_id>/research/`.  The deterministic result has
+`status: "pass"`, `"pass_with_limits"`, `"fail"`, or `"needs_input"`; exit 0
+is reserved for `pass` and `pass_with_limits`, while evaluated/validation
+failures (including a missing bundle) exit 1 and usage errors exit 2.  A
+`pass_with_limits` result is research-evaluation success with recorded limits,
+not an AgentOS release and never sets the Goal to `ACCEPTED` (`goal_status`
+and `release_accepted` make that boundary explicit).  A missing bundle may
+create a clearly incomplete scaffold, but never a completion evaluation.
+For every persisted evaluation, the same command atomically rebuilds the
+redacted Obsidian projection and emits the goal-scoped v3 evidence pack;
+their paths, hashes, freshness, and wiki-check result are returned in the
+single JSON response.  Projection or evidence emission failures fail closed.
+
+Use `agentos.research.run_research_plan` or
+`agentos.research.research_plan` when embedding the workflow without the CLI.
+`agentos.research.fixture_bundle()` is an explicitly offline deterministic
+drill helper for tests only; it is not live research and carries no provider
+guarantee.
+When a bundle intentionally omits a source body, its supplied digest remains
+an assertion tied to verifier/method provenance; the offline harness cannot
+independently re-derive that digest without a retrieval adapter.
+
+The input boundary is bounded: bundle files and mappings are limited to 20 MiB,
+with at most 1,000 sources and 5,000 claims; source/artifact bodies are at
+most 5 MiB, URIs at most 2,048 characters, and source/claim text has explicit
+length limits.  Claim-source links are typed as `supports`, `contradicts`, or
+`context`; only `supports` links can satisfy factual traceability.
 
 ## Architecture — three logical planes, one runtime
 

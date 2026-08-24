@@ -406,6 +406,51 @@ CRASH-classed and never counted as capability signal.
 The stripped environment and isolated worktree are not a filesystem/network
 sandbox. Kernel-level confinement remains an explicit open GAP_REGISTER item.
 
+### 9.4 Bounded research-to-platform-plan workflow
+
+`research.py` is a provider-neutral, offline-first workflow.  A research
+campaign is bound to exactly one Goal and has immutable topic/configuration,
+thresholds, and manifest SHA-256.  Sources are canonical URI metadata plus a
+content hash; the host recomputes it when body bytes are supplied, otherwise
+the digest remains an asserted value bound to verifier/method provenance.
+`verified` always requires that provenance.  Claims must declare exactly one class: `fact`, `inference`,
+`assumption`, or `target`.  Claim/source links are typed `supports`,
+`contradicts`, or `context`; only `supports` links can satisfy factual
+traceability.  Claim/source and artifact/claim links are composite
+goal-scoped foreign keys and append-only rows.
+
+The structured bundle is data, never instructions: AgentOS does not retrieve
+or execute its content.  The planner creates the deterministic DAG
+`research_plan`, `source_registry`, `feature_catalog`, `architecture_models`,
+`mental_model`, `ontology`, `mathematical_model`, `synthesis_and_gaps`,
+`independent_audit`, `platform_plan`, `progress`, then writes versioned files
+only below `goals/<goal_id>/research/`.  Host hashes and a recomputed research
+chain hash bind every append-only deterministic evaluation.
+
+Completion requires the host-authoritative full v1 artifact flow, non-empty
+claims including a fact, source-count and verified-ratio thresholds, an
+exclusively verified same-goal citation for every fact, explicit claim classes
+and same-goal artifact references, an independent auditor bound to distinct
+platform-plan and audit-artifact producers, and substantive `platform_plan`
+sections: Scope, Architecture, Workstreams, Milestones, Verification, Risks,
+and Open decisions.  A `pass_with_limits` result is a successful bounded
+research evaluation with explicit limitations; it is not a release decision
+and never moves the AgentOS Goal to `ACCEPTED`.  Research evidence packs use
+schema v3 and contain metadata/hashes only; wiki notes are redacted
+deterministic projections with exact goal bindings.  Each persisted research
+evaluation rebuilds and checks the wiki projection before emitting its v3
+evidence pack; either emission failure makes the one-command result fail
+closed.  This contract does not
+imply live retrieval, a kernel sandbox, provider capability, or a production
+guarantee.
+
+The input boundary is bounded by implementation constants: bundle files and
+mappings are at most 20 MiB; there are at most 1,000 sources and 5,000 claims;
+each source or artifact body is at most 5 MiB; URIs are at most 2,048
+characters; and source titles/types and claim text have explicit bounded
+lengths.  These limits apply before persistence for both file and mapping
+inputs.
+
 ## 10. Consistency log
 
 2026-08-22 — spec/code sync (sections not renumbered; claims verified against

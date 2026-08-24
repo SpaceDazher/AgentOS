@@ -22,6 +22,7 @@ risk / next step. Items closed by recent work are listed at the bottom.
 | DAG at scale | sequential demos; scheduler untested beyond linear/2-node DAGs | no parallel execution | property tests + bounded-parallel executor behind leases |
 | CI | GitHub Actions matrix (3.11/3.12 × win/ubuntu): tests + SHA pin + demo smoke + plugin import check | runs only when a GitHub remote exists | add remote and push |
 | Eval evidence | **executed**: harness drills pass⁵=1.0; E2 N=20×5: pass¹=0.93, pass⁵=0.75 (порог не взят); stage gates интегрированы в release Gate (6 этапов, latest-wins); eval_run привязан к goal+case+artifact-chain+corpus | human gold-set для false-completion; LLM-judge FPR/FNR | protocol §Compliance items |
+| Research-to-plan | bounded offline bundle workflow with immutable goal-scoped campaign/source/claim/artifact/evaluation rows, deterministic checks, v3 metadata evidence, and redacted wiki projection | no built-in live retrieval/provider guarantee; no kernel sandbox; no production claim; corpus-level FPR/FNR for this workflow has not been measured | add separately audited retrieval adapters, confinement, and a preregistered research-quality corpus |
 
 ## Closed gaps (history)
 

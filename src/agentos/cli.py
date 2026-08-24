@@ -2,6 +2,7 @@
 
     python -m agentos.cli demo [--worker fake|hermes] [--flaky] [--db PATH]
     python -m agentos.cli evidence --goal GOAL_ID
+    python -m agentos.cli research-plan --topic TOPIC --bundle PATH --db ROOT
 
 stdout carries exactly one JSON document; any warnings/diagnostics emitted by
 library code during execution are re-routed to stderr. Exit codes: 0 success,
@@ -25,6 +26,7 @@ from .evidence_pack import build as build_evidence
 from .gates import Evaluator, Gates
 from .gateway import ApprovalRequired, RunContext, ToolContract, ToolGateway
 from .journal import Journal
+from .research import run_research_plan
 from .workers import FakeWorker, StepRequest
 
 DEMO_CONCEPT = """Build a tiny greeting library:
@@ -324,6 +326,12 @@ def main(argv: list[str] | None = None) -> int:
     e = sub.add_parser("evidence")
     e.add_argument("--goal", required=True)
     e.add_argument("--db", default=None)
+    rp = sub.add_parser("research-plan")
+    rp.add_argument("--topic", required=True)
+    rp.add_argument("--bundle", required=True,
+                    help="structured offline research bundle JSON")
+    rp.add_argument("--db", required=True,
+                    help="root directory containing agentos.db and goals/")
     for verb in ("wiki-build", "wiki-check", "wiki-status"):
         w = sub.add_parser(verb)
         w.add_argument("--db", default=None,
@@ -360,6 +368,23 @@ def main(argv: list[str] | None = None) -> int:
                                   "experiments": exps},
                     "projection_of_record": "sqlite+audit-journal"})
         return 0
+
+    if a.cmd == "research-plan":
+        try:
+            root = Path(a.db).resolve()
+            db = open_db(root / "agentos.db")
+            result = _call_quietly(run_research_plan, db, root, a.topic,
+                                   a.bundle)
+        except Exception as exc:
+            _emit_json({"status": "fail", "summary": "research-plan error",
+                        "next_actions": [f"{type(exc).__name__}: {exc}"],
+                        "artifacts": []})
+            return 1
+        _emit_json(result)
+        # A deterministic research pass with explicit limits is a successful
+        # research evaluation, but it never transitions an AgentOS goal to
+        # release ACCEPTED.
+        return 0 if result.get("status") in {"pass", "pass_with_limits"} else 1
 
     if a.cmd == "demo":
         try:

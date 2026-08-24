@@ -65,6 +65,101 @@ def build(db, root_dir: str | Path, goal_id: str) -> dict:
     criteria = rows("SELECT criterion_id, kind FROM acceptance_criteria WHERE goal_id=?",
                     (goal_id,))
 
+    # Research campaigns are a separate canonical evidence surface.  Project
+    # metadata and hashes only: source bodies are intentionally never copied
+    # into an evidence pack.  Every query is bound to the requested goal so a
+    # pack cannot become a cross-goal research export.
+    has_research_schema = c.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name='research_campaign'"
+    ).fetchone()
+    research_campaign = c.execute(
+        "SELECT id, goal_id, topic, config_json, thresholds_json,"
+        " manifest_sha256, created_at FROM research_campaign WHERE goal_id=?",
+        (goal_id,)).fetchone() if has_research_schema else None
+    research = None
+    if research_campaign:
+        campaign = dict(research_campaign)
+        for key in ("config_json", "thresholds_json"):
+            raw = campaign.pop(key, "{}") or "{}"
+            try:
+                campaign[key[:-5]] = json.loads(raw)
+            except json.JSONDecodeError:
+                campaign[key[:-5]] = {}
+        research_sources = rows(
+            "SELECT id, campaign_id, goal_id, canonical_uri, title, source_type,"
+            " content_sha256, verification_status, verifier, verification_method,"
+            " verifier_provenance_json, created_at FROM research_source"
+            " WHERE goal_id=? ORDER BY id", (goal_id,))
+        for source in research_sources:
+            try:
+                source["verifier_provenance"] = json.loads(
+                    source.pop("verifier_provenance_json") or "{}")
+            except json.JSONDecodeError:
+                source["verifier_provenance"] = {}
+        research_claims = rows(
+            "SELECT id, campaign_id, goal_id, text, claim_class, created_at"
+            " FROM research_claim WHERE goal_id=? ORDER BY id", (goal_id,))
+        research_links = rows(
+            "SELECT claim_id, source_id, goal_id, relation, created_at"
+            " FROM research_claim_source WHERE goal_id=? ORDER BY claim_id, source_id",
+            (goal_id,))
+        research_artifacts = rows(
+            "SELECT id, campaign_id, goal_id, kind, artifact_name, version,"
+            " content_sha256, storage_path, claim_refs_json, producer, created_at"
+            " FROM research_artifact WHERE goal_id=? ORDER BY kind, version, id",
+            (goal_id,))
+        for artifact in research_artifacts:
+            try:
+                artifact["claim_refs"] = json.loads(
+                    artifact.pop("claim_refs_json") or "[]")
+            except json.JSONDecodeError:
+                artifact["claim_refs"] = []
+        research_artifact_claims = rows(
+            "SELECT artifact_id, claim_id, goal_id, created_at"
+            " FROM research_artifact_claim WHERE goal_id=?"
+            " ORDER BY artifact_id, claim_id", (goal_id,))
+        research_evaluations = rows(
+            "SELECT id, campaign_id, goal_id, evaluation_version, result,"
+            " artifact_chain_hash, reasons_json, limitations_json, details_json,"
+            " method, created_at FROM research_evaluation WHERE goal_id=?"
+            " ORDER BY evaluation_version, id", (goal_id,))
+        for evaluation in research_evaluations:
+            for key in ("reasons_json", "limitations_json", "details_json"):
+                raw = evaluation.pop(key, "[]" if key != "details_json" else "{}") or (
+                    "[]" if key != "details_json" else "{}")
+                try:
+                    evaluation[key[:-5]] = json.loads(raw)
+                except json.JSONDecodeError:
+                    evaluation[key[:-5]] = [] if key != "details_json" else {}
+        research = {
+            "campaign": campaign,
+            "sources": research_sources,
+            "claims": research_claims,
+            "claim_sources": research_links,
+            "artifacts": research_artifacts,
+            "artifact_claims": research_artifact_claims,
+            "evaluations": research_evaluations,
+            "latest_chain_hash": research_evaluations[-1]["artifact_chain_hash"]
+            if research_evaluations else None,
+            "raw_source_bodies": "excluded",
+        }
+        # Recompute the chain against current host artifact file state.  A
+        # stored PASS is not fresh evidence after an artifact is tampered with
+        # or deleted, so expose an explicit fail-closed validity bit.
+        from .research import research_chain_hash
+        current_chain_hash = research_chain_hash(db, goal_id)
+        stored_chain_hash = research["latest_chain_hash"]
+        latest_result = (research_evaluations[-1]["result"]
+                         if research_evaluations else None)
+        chain_fresh = bool(
+            stored_chain_hash and stored_chain_hash == current_chain_hash)
+        research.update({
+            "current_chain_hash": current_chain_hash,
+            "chain_fresh": chain_fresh,
+            "latest_evaluation_valid": bool(
+                chain_fresh and latest_result in {"pass", "pass_with_limits"}),
+        })
+
     # Phase 5 + R7: stage evals are goal-scoped; experiments come ONLY via
     # campaigns owned by this goal; wiki refs carry hashes and only include
     # notes whose frontmatter goal matches.
@@ -104,7 +199,8 @@ def build(db, root_dir: str | Path, goal_id: str) -> dict:
             }
 
     pack = {
-        "schema": "agentos.evidence-pack/v2",
+        "schema": "agentos.evidence-pack/v3" if research else
+                   "agentos.evidence-pack/v2",
         "goal": goal[0],
         "acceptance_criteria": criteria,
         "tasks": tasks,
@@ -129,6 +225,8 @@ def build(db, root_dir: str | Path, goal_id: str) -> dict:
         },
         "accepted": goal[0]["status"] == "ACCEPTED",
     }
+    if research is not None:
+        pack["research"] = research
     digest = sha256_text(canonical_json(pack))
     out_dir = Path(root_dir) / "goals" / goal_id
     out_dir.mkdir(parents=True, exist_ok=True)
