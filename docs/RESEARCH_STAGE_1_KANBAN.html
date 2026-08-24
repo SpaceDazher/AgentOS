@@ -1,0 +1,1430 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self' data: blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; style-src 'self' 'sha256-KoIEmE+lM3aOGd8wNcVKbcZA6wundXXt8bn//kt4nns='; script-src 'self' 'sha256-d8/plzHt3LcfimmR4OYXMIOr49C2PrwpGDFPOF6j0bw='; img-src 'self' data:; font-src 'self'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="color-scheme" content="light">
+  <title>AgentOS · Stage 1 Research Kanban</title>
+  <style>
+    :root {
+      --paper: #f2f0e9;
+      --paper-strong: #fffdf7;
+      --ink: #17262d;
+      --muted: #637078;
+      --line: #d8d5ca;
+      --line-strong: #b9b5a9;
+      --navy: #173f4f;
+      --navy-deep: #102f3c;
+      --coral: #d85d42;
+      --green: #267463;
+      --amber: #a86916;
+      --red: #a64236;
+      --blue: #3c668f;
+      --purple: #735c8d;
+      --shadow: 0 12px 32px rgba(23, 38, 45, .08);
+      --radius-lg: 22px;
+      --radius-md: 14px;
+      --radius-sm: 9px;
+      --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-mono: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      overflow-x: hidden;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 1px 1px, rgba(23, 63, 79, .08) 1px, transparent 0) 0 0 / 24px 24px,
+        var(--paper);
+      font-family: var(--font-sans);
+      line-height: 1.45;
+    }
+
+    button, input, select { font: inherit; }
+
+    button, select, input, a {
+      min-height: 38px;
+    }
+
+    button, select { cursor: pointer; }
+
+    a { color: var(--navy); }
+
+    a:hover { color: var(--coral); }
+
+    :focus-visible {
+      outline: 3px solid #fff;
+      outline-offset: 3px;
+      box-shadow: 0 0 0 6px #005f78;
+    }
+
+    .skip-link {
+      position: fixed;
+      z-index: 100;
+      top: 10px;
+      left: 10px;
+      padding: 10px 14px;
+      color: white;
+      background: var(--navy-deep);
+      border-radius: var(--radius-sm);
+      transform: translateY(-150%);
+    }
+
+    .skip-link:focus { transform: translateY(0); }
+
+    .shell {
+      width: min(1800px, 100%);
+      margin: 0 auto;
+      padding: 26px clamp(16px, 3vw, 44px) 44px;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: clamp(24px, 4vw, 52px);
+      color: #f8f4e9;
+      background: var(--navy-deep);
+      border: 1px solid rgba(255, 255, 255, .12);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 380px;
+      height: 380px;
+      right: -110px;
+      top: -180px;
+      border: 72px solid rgba(255, 255, 255, .055);
+      border-radius: 50%;
+    }
+
+    .eyebrow {
+      margin: 0 0 14px;
+      color: #a9d0c7;
+      font-family: var(--font-mono);
+      font-size: .78rem;
+      font-weight: 700;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 900px;
+      margin: 0;
+      font-size: clamp(2rem, 5vw, 4.8rem);
+      line-height: .98;
+      letter-spacing: -.055em;
+    }
+
+    .hero-copy {
+      max-width: 780px;
+      margin: 22px 0 0;
+      color: #c8d8d7;
+      font-size: clamp(1rem, 1.5vw, 1.18rem);
+    }
+
+    .hero-links {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 26px;
+    }
+
+    .hero-links a {
+      display: inline-flex;
+      align-items: center;
+      padding: 9px 13px;
+      color: #f8f4e9;
+      text-decoration: none;
+      border: 1px solid rgba(255, 255, 255, .25);
+      border-radius: 999px;
+    }
+
+    .hero-links a:hover {
+      color: #fff;
+      border-color: #fff;
+      background: rgba(255, 255, 255, .09);
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(130px, 1fr));
+      gap: 12px;
+      margin: 16px 0;
+    }
+
+    .metric {
+      min-width: 0;
+      min-height: 116px;
+      padding: 18px;
+      background: rgba(255, 253, 247, .92);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      box-shadow: 0 5px 20px rgba(23, 38, 45, .04);
+    }
+
+    .metric-label {
+      display: block;
+      color: var(--muted);
+      font-size: .78rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .metric-value {
+      display: block;
+      margin-top: 8px;
+      font-family: var(--font-mono);
+      font-size: 2rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .metric-note {
+      display: block;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: .78rem;
+    }
+
+    .control-deck {
+      display: grid;
+      grid-template-columns: minmax(240px, 2fr) repeat(3, minmax(150px, 1fr)) auto;
+      gap: 12px;
+      align-items: end;
+      padding: 18px;
+      background: var(--paper-strong);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+    }
+
+    .field {
+      display: grid;
+      min-width: 0;
+      gap: 6px;
+    }
+
+    .field label {
+      color: var(--muted);
+      font-size: .76rem;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 9px 11px;
+      color: var(--ink);
+      background: #fff;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-sm);
+    }
+
+    input:focus, select:focus { border-color: var(--navy); }
+
+    .control-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 9px 13px;
+      color: var(--ink);
+      background: transparent;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-sm);
+      font-weight: 750;
+    }
+
+    .button:hover { background: #eeeae0; }
+
+    .button-primary {
+      color: white;
+      background: var(--navy);
+      border-color: var(--navy);
+    }
+
+    .button-primary:hover { background: var(--navy-deep); }
+
+    .button-danger:hover {
+      color: white;
+      background: var(--red);
+      border-color: var(--red);
+    }
+
+    .assurance {
+      display: grid;
+      grid-template-columns: minmax(220px, 1.4fr) repeat(5, minmax(130px, 1fr));
+      gap: 1px;
+      margin: 16px 0 0;
+      overflow: hidden;
+      background: var(--line);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+    }
+
+    .assurance > * {
+      min-width: 0;
+      min-height: 74px;
+      padding: 13px 15px;
+      background: rgba(255, 253, 247, .96);
+    }
+
+    .assurance-title {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .assurance-title strong { font-size: .95rem; }
+    .assurance-title span { color: var(--muted); font-size: .78rem; }
+
+    .gate {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--navy);
+      font-size: .78rem;
+      font-weight: 750;
+    }
+
+    .gate::before {
+      content: "";
+      flex: 0 0 9px;
+      width: 9px;
+      height: 9px;
+      background: var(--green);
+      border: 3px solid #c6dfd8;
+      border-radius: 50%;
+    }
+
+    .board-heading {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 20px;
+      margin: 34px 0 13px;
+    }
+
+    .board-heading h2 {
+      margin: 0;
+      font-size: clamp(1.45rem, 2vw, 2rem);
+      letter-spacing: -.03em;
+    }
+
+    .board-heading p {
+      max-width: 700px;
+      margin: 0;
+      color: var(--muted);
+      font-size: .88rem;
+      text-align: right;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(290px, 1fr));
+      gap: 14px;
+      align-items: start;
+      overflow-x: auto;
+      padding: 4px 3px 24px;
+      scrollbar-color: var(--navy) transparent;
+    }
+
+    .column {
+      min-width: 0;
+      min-height: 420px;
+      padding: 10px;
+      background: rgba(255, 253, 247, .58);
+      border: 1px solid var(--line);
+      border-top: 5px solid var(--column-color);
+      border-radius: var(--radius-md);
+    }
+
+    .column-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 5px 4px 12px;
+    }
+
+    .column-header h3 {
+      margin: 0;
+      font-size: .95rem;
+      letter-spacing: -.01em;
+    }
+
+    .count {
+      min-width: 28px;
+      padding: 3px 7px;
+      text-align: center;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-family: var(--font-mono);
+      font-size: .75rem;
+      font-weight: 800;
+    }
+
+    .card-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .ticket-card {
+      position: relative;
+      overflow: hidden;
+      padding: 14px;
+      background: var(--paper-strong);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      box-shadow: 0 5px 14px rgba(23, 38, 45, .055);
+    }
+
+    .ticket-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 4px;
+      background: var(--priority-color);
+    }
+
+    .card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .ticket-id {
+      color: var(--navy);
+      font-family: var(--font-mono);
+      font-size: .78rem;
+      font-weight: 900;
+      letter-spacing: .04em;
+    }
+
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 5px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 3px 7px;
+      color: var(--muted);
+      background: #ece9df;
+      border-radius: 999px;
+      font-family: var(--font-mono);
+      font-size: .68rem;
+      font-weight: 800;
+    }
+
+    .badge-priority {
+      color: #fff;
+      background: var(--priority-color);
+    }
+
+    .ticket-title {
+      margin: 11px 0 7px;
+      font-size: 1rem;
+      line-height: 1.28;
+      letter-spacing: -.015em;
+    }
+
+    .ticket-focus {
+      display: -webkit-box;
+      overflow: hidden;
+      margin: 0;
+      color: var(--muted);
+      font-size: .79rem;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+    }
+
+    .deps {
+      margin: 12px 0 0;
+      padding-top: 10px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: .72rem;
+    }
+
+    .deps strong { color: var(--ink); }
+
+    .card-actions {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .card-actions select {
+      min-width: 0;
+      font-size: .76rem;
+    }
+
+    .icon-button {
+      width: 40px;
+      min-width: 40px;
+      padding: 0;
+      color: var(--navy);
+      background: #edf1ef;
+      border: 1px solid #cbd8d4;
+      border-radius: var(--radius-sm);
+      font-weight: 900;
+    }
+
+    .icon-button:hover { background: #dfeae6; }
+
+    .column-empty {
+      padding: 28px 12px;
+      color: var(--muted);
+      text-align: center;
+      border: 1px dashed var(--line-strong);
+      border-radius: var(--radius-sm);
+      font-size: .78rem;
+    }
+
+    .no-results {
+      display: none;
+      margin: 14px 0;
+      padding: 28px;
+      text-align: center;
+      background: var(--paper-strong);
+      border: 1px dashed var(--line-strong);
+      border-radius: var(--radius-md);
+    }
+
+    dialog {
+      width: min(760px, calc(100% - 30px));
+      max-height: min(850px, calc(100vh - 30px));
+      padding: 0;
+      color: var(--ink);
+      background: var(--paper-strong);
+      border: 0;
+      border-radius: var(--radius-lg);
+      box-shadow: 0 28px 90px rgba(9, 24, 31, .32);
+    }
+
+    dialog::backdrop {
+      background: rgba(10, 27, 34, .68);
+      backdrop-filter: blur(4px);
+    }
+
+    .dialog-head {
+      position: sticky;
+      z-index: 2;
+      top: 0;
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 22px 24px;
+      color: white;
+      background: var(--navy-deep);
+    }
+
+    .dialog-head p {
+      margin: 0 0 6px;
+      color: #a9d0c7;
+      font-family: var(--font-mono);
+      font-size: .76rem;
+      font-weight: 800;
+    }
+
+    .dialog-head h2 {
+      margin: 0;
+      font-size: clamp(1.2rem, 3vw, 1.8rem);
+      line-height: 1.15;
+    }
+
+    .dialog-close {
+      flex: 0 0 42px;
+      width: 42px;
+      padding: 0;
+      color: white;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, .35);
+      border-radius: 50%;
+      font-size: 1.3rem;
+    }
+
+    .dialog-close:hover { background: rgba(255, 255, 255, .12); }
+
+    .dialog-body {
+      display: grid;
+      gap: 18px;
+      padding: 24px;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .detail-cell {
+      padding: 10px;
+      background: #efede5;
+      border-radius: var(--radius-sm);
+    }
+
+    .detail-cell span {
+      display: block;
+      color: var(--muted);
+      font-size: .67rem;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .detail-cell strong {
+      display: block;
+      margin-top: 3px;
+      font-family: var(--font-mono);
+      font-size: .82rem;
+    }
+
+    .detail-section h3 {
+      margin: 0 0 6px;
+      color: var(--navy);
+      font-size: .78rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .detail-section p { margin: 0; }
+
+    .stop-box {
+      padding: 14px;
+      background: #fff0e9;
+      border-left: 4px solid var(--coral);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    }
+
+    .command-box {
+      position: relative;
+      overflow: auto;
+      padding: 16px 52px 16px 16px;
+      color: #e5f1ee;
+      background: #132c36;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      font-size: .78rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 36px;
+      min-width: 36px;
+      min-height: 36px;
+      padding: 0;
+      color: #fff;
+      background: rgba(255, 255, 255, .09);
+      border: 1px solid rgba(255, 255, 255, .28);
+      border-radius: 7px;
+    }
+
+    .dialog-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .local-note {
+      margin: 0;
+      padding: 12px 14px;
+      color: #57451f;
+      background: #fff3cf;
+      border: 1px solid #e5cd87;
+      border-radius: var(--radius-sm);
+      font-size: .8rem;
+    }
+
+    .toast {
+      position: fixed;
+      z-index: 120;
+      right: 20px;
+      bottom: 20px;
+      max-width: min(420px, calc(100% - 40px));
+      padding: 12px 16px;
+      color: white;
+      background: var(--navy-deep);
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow);
+      opacity: 0;
+      transform: translateY(16px);
+      pointer-events: none;
+      transition: opacity .18s ease, transform .18s ease;
+    }
+
+    .toast.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      margin-top: 24px;
+      padding-top: 18px;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+      font-size: .78rem;
+    }
+
+    @media (max-width: 1180px) {
+      .metric-grid { grid-template-columns: repeat(3, 1fr); }
+      .control-deck { grid-template-columns: repeat(2, 1fr); }
+      .control-actions { grid-column: 1 / -1; }
+      .assurance { grid-template-columns: repeat(3, 1fr); }
+      .assurance-title { grid-column: 1 / -1; }
+    }
+
+    @media (max-width: 760px) {
+      .shell { padding-inline: 12px; }
+      .hero { padding: 28px 20px; }
+      h1 {
+        overflow-wrap: anywhere;
+        font-size: clamp(1.9rem, 6vw, 2.6rem);
+      }
+      .metric-grid { grid-template-columns: 1fr; }
+      .control-deck { grid-template-columns: 1fr; }
+      .control-actions { flex-wrap: wrap; }
+      .assurance { grid-template-columns: 1fr; }
+      .board-heading { align-items: start; flex-direction: column; }
+      .board-heading p { text-align: left; }
+      .board {
+        grid-template-columns: 1fr;
+        overflow-x: visible;
+      }
+      .column { min-height: auto; }
+      .detail-grid { grid-template-columns: repeat(2, 1fr); }
+      .footer { flex-direction: column; }
+    }
+
+    @media (max-width: 430px) {
+      .detail-grid { grid-template-columns: 1fr; }
+      .hero { padding: 24px 20px; }
+      h1 { font-size: 2.3rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#kanban">Перейти к доске</a>
+  <div class="shell">
+    <header class="hero">
+      <p class="eyebrow">AgentOS · Research control room · Stage 1</p>
+      <h1>Платформа: от вопросов к доказательствам</h1>
+      <p class="hero-copy">
+        Интерактивная Kanban-проекция 20 исследовательских тикетов. Доска помогает
+        выбрать следующий шаг, но не заменяет каноническую БД, Evidence Pack v3
+        или независимый audit gate.
+      </p>
+      <nav class="hero-links" aria-label="Связанные документы">
+        <a href="RESEARCH_STAGE_1_TICKETS.md">Канонические тикеты</a>
+        <a href="EVALUATION_PROTOCOL.md">Evaluation protocol</a>
+        <a href="GAP_REGISTER.md">Gap register</a>
+        <a href="../README.md">README</a>
+      </nav>
+    </header>
+
+    <section class="metric-grid" aria-label="Сводка портфеля">
+      <article class="metric">
+        <span class="metric-label">Активные тикеты</span>
+        <strong class="metric-value" id="metric-active">20</strong>
+        <span class="metric-note">контракты FLOW-11</span>
+      </article>
+      <article class="metric">
+        <span class="metric-label">Готовы к старту</span>
+        <strong class="metric-value" id="metric-ready">3</strong>
+        <span class="metric-note">зависимости закрыты</span>
+      </article>
+      <article class="metric">
+        <span class="metric-label">P0 критические</span>
+        <strong class="metric-value" id="metric-p0">11</strong>
+        <span class="metric-note">нельзя обходить</span>
+      </article>
+      <article class="metric">
+        <span class="metric-label">Закрыто локально</span>
+        <strong class="metric-value" id="metric-closed">0</strong>
+        <span class="metric-note">не равно Goal ACCEPTED</span>
+      </article>
+      <article class="metric">
+        <span class="metric-label">Parked</span>
+        <strong class="metric-value" id="metric-parked">4</strong>
+        <span class="metric-note">с условиями возврата</span>
+      </article>
+    </section>
+
+    <section class="control-deck" aria-label="Фильтры доски">
+      <div class="field">
+        <label for="search">Поиск по ID, названию и решению</label>
+        <input id="search" type="search" placeholder="Например: revocation, S1-008, privacy">
+      </div>
+      <div class="field">
+        <label for="priority-filter">Приоритет</label>
+        <select id="priority-filter">
+          <option value="">Все приоритеты</option>
+          <option value="P0">P0 · критический</option>
+          <option value="P1">P1 · важный</option>
+          <option value="P2">P2 · исследовательский</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="owner-filter">Владелец</label>
+        <select id="owner-filter">
+          <option value="">Все владельцы</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="wave-filter">Волна</label>
+        <select id="wave-filter">
+          <option value="">Все волны</option>
+          <option value="W0">W0 · основы</option>
+          <option value="W1">W1 · формальные решения</option>
+          <option value="W2">W2 · backend и isolation</option>
+          <option value="W3">W3 · security и pilot</option>
+          <option value="W4">W4 · UX и privacy</option>
+          <option value="W5">W5 · synthesis</option>
+          <option value="W6">W6 · audit</option>
+        </select>
+      </div>
+      <div class="control-actions">
+        <button class="button" id="export-button" type="button">Экспорт JSON</button>
+        <button class="button button-danger" id="reset-button" type="button">Сбросить</button>
+      </div>
+    </section>
+
+    <section class="assurance" aria-label="Общий gate закрытия тикета">
+      <div class="assurance-title">
+        <strong>Common closure gate</strong>
+        <span>Все пять сигналов обязательны; цвет не является единственным индикатором.</span>
+      </div>
+      <div class="gate">agentos.evidence-pack/v3</div>
+      <div class="gate">chain_fresh = true</div>
+      <div class="gate">evaluation valid</div>
+      <div class="gate">wiki-check OK</div>
+      <div class="gate">independent audit</div>
+    </section>
+
+    <main id="kanban" tabindex="-1">
+      <div class="board-heading">
+        <h2>Исследовательский поток</h2>
+        <p>
+          Статусы сохраняются только в localStorage этого браузера. Меняйте их
+          через выпадающий список на карточке; это доступная альтернатива drag-and-drop.
+        </p>
+      </div>
+      <div class="board" id="board" aria-label="Kanban-доска тикетов"></div>
+      <div class="no-results" id="no-results" role="status">
+        По текущим фильтрам тикетов не найдено.
+      </div>
+    </main>
+
+    <footer class="footer">
+      <span>Planning projection · 2026-08-24 · AgentOS Stage 1</span>
+      <span>PASS исследования не означает Goal ACCEPTED или production readiness.</span>
+    </footer>
+  </div>
+
+  <dialog id="ticket-dialog" aria-labelledby="dialog-title">
+    <div class="dialog-head">
+      <div>
+        <p id="dialog-kicker"></p>
+        <h2 id="dialog-title"></h2>
+      </div>
+      <button class="dialog-close" id="dialog-close" type="button" aria-label="Закрыть карточку">×</button>
+    </div>
+    <div class="dialog-body" id="dialog-body"></div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <noscript>
+    <p class="shell">Для интерактивной доски нужен JavaScript. Полный список доступен в
+      <a href="RESEARCH_STAGE_1_TICKETS.md">канонической Markdown-странице</a>.
+    </p>
+  </noscript>
+
+  <script>
+    "use strict";
+
+    const ACTIVE_TICKETS = [
+      {"id":"S1-001","title":"Targeted source promotion and verification policy","priority":"P0","wave":"W0","owner":"sources","deps":[],"question":"What targeted verification and promotion policy is sufficient to move only decision-critical u sources toward v/c, while preserving provenance for the 176 unverified entries and the Z/SV tails?","focus":"Approve a repeatable promotion queue, independence rules, and tail-handling policy for claims used by later tickets; explicitly decide what remains u.","stop":"Stop and escalate to BLOCKED if a promoted claim has no two independent canonical groups, if a source identity cannot be disambiguated, or if the work would require mass verification outside the targeted queue.","topic":"S1-001 targeted source promotion and verification policy"},
+      {"id":"S1-002","title":"Benchmark, capacity, storage, and SLO assumptions","priority":"P0","wave":"W0","owner":"capacity","deps":[],"question":"Do the planning assumptions around 34 events/s, p95 authorization latency, queueing, concurrency, and annual storage survive a reproducible workload envelope, and which values can be carried forward as targets rather than measurements?","focus":"Set the benchmark envelope, capacity model, and evidence labels for the later topology/backend and P0 decisions.","stop":"Escalate if the harness cannot capture reproducible timestamps, if queueing parameters are unidentifiable, or if a stakeholder asks to publish a production SLO from planning numbers alone.","topic":"S1-002 benchmark capacity storage and SLO assumptions"},
+      {"id":"S1-003","title":"Executable SHACL and ontology validation","priority":"P0","wave":"W0","owner":"formal","deps":[],"question":"Can the ontology lifecycle and open SHACL shapes be executed against valid, invalid, proposed, promoted, rejected, superseded, and revoked fixtures without rejecting intended inheritance or allowing an orphan promotion?","focus":"Decide whether the SHACL/ontology contract is ready for downstream formal, isolation, lineage, and knowledge-gate work, and record which checks remain structural-only.","stop":"Escalate if a required runtime dependency is unavailable, a fixture needs closed-world semantics not in the contract, or a shape change would alter an invariant consumed by S1-004/S1-011.","topic":"S1-003 executable SHACL and ontology validation"},
+      {"id":"S1-004","title":"Alloy/TLA+ and seeded deterministic invariant simulation","priority":"P0","wave":"W1","owner":"formal","deps":["S1-002","S1-003"],"question":"Can bounded Alloy/TLA+ models and a seeded scheduler exercise INV1–INV6, outbox delivery, fencing, effect receipts, reconciliation, and crash recovery without a safety violation?","focus":"Decide whether the invariant set and deterministic simulation envelope are sufficient acceptance evidence for the platform design, and which liveness claims remain design obligations.","stop":"Escalate if a counterexample cannot be reduced to a deterministic trace, if a property depends on an unbounded state space, or if the model and implementation contract disagree on ownership/budget.","topic":"S1-004 Alloy TLA plus seeded deterministic invariant simulation"},
+      {"id":"S1-005","title":"QA1 runtime topology: modular monolith versus containers","priority":"P1","wave":"W1","owner":"architecture","deps":["S1-002"],"question":"For the MVP, does a modular monolith with hard internal contracts provide a better safety, determinism, and operability boundary than splitting the runtime into containers?","focus":"Resolve QA1 and record the chosen topology plus the conditions that would justify a later split.","stop":"Escalate if the choice requires unmeasured production SLOs, a new trust boundary not covered by S1-003/S1-004, or a container platform decision outside Stage 1 research scope.","topic":"S1-005 QA1 runtime topology modular monolith versus containers"},
+      {"id":"S1-006","title":"QA2 execution backend: in-process versus durable engine","priority":"P1","wave":"W2","owner":"architecture","deps":["S1-002","S1-005"],"question":"Which execution backend best preserves task/run durability, checkpoint/resume, deterministic testing, and acceptable latency: the in-process scheduler or a durable-execution engine?","focus":"Resolve QA2 and set a backend boundary, migration trigger, and evidence requirements for the Coordinator.","stop":"Escalate if the durable option requires provider-specific semantics not represented in the evidence, or if no test can distinguish duplicate effects from reconciled unknown outcomes.","topic":"S1-006 QA2 execution backend in process versus durable engine"},
+      {"id":"S1-007","title":"QA3 retrieval and index isolation","priority":"P0","wave":"W2","owner":"security","deps":["S1-003","S1-005"],"question":"Is per-scope indexing safer and sufficiently useful than a shared index with row-level retrieval filtering, and can either design prove no cross-scope reads or leakage?","focus":"Resolve QA3 and choose the retrieval isolation contract for each profile, including the threat model and test boundary.","stop":"Escalate on any cross-scope disclosure, unverifiable cache invalidation, or requirement for admin-blind indexing that conflicts with the documented profile-C boundary.","topic":"S1-007 QA3 retrieval and index isolation per scope versus shared RLS"},
+      {"id":"S1-008","title":"Revocation latency validation (≤5 seconds)","priority":"P0","wave":"W2","owner":"security","deps":["S1-002","S1-004"],"question":"Can the platform enforce the contract that new authorization decisions observe revocation within ≤5 seconds across gateway, retrieval, delegation, and cached projections?","focus":"Decide whether the ≤5-second value remains a bounded research target, needs a profile-specific limit, or must be withdrawn.","stop":"Escalate immediately on any unauthorized allow after the bound, missing timestamp provenance, or a component that cannot participate in revocation.","topic":"S1-008 revocation latency validation at most 5 seconds"},
+      {"id":"S1-009","title":"MCP/A2A delegation and knowledge semantics roadmap","priority":"P1","wave":"W2","owner":"architecture","deps":["S1-001","S1-005"],"question":"Which delegation, ownership, knowledge-promotion, and budget semantics are absent from current MCP/A2A surfaces, and what adapter contract keeps the canonical hub envelope provider-neutral?","focus":"Resolve G-02/H9 with an adapter roadmap and boundary between protocol transport/task/tool features and hub governance semantics.","stop":"Escalate if a protocol revision is unavailable, if a translation changes authorization meaning, or if the roadmap requires protocol changes outside the hub control.","topic":"S1-009 MCP A2A delegation and knowledge semantics adapter roadmap"},
+      {"id":"S1-010","title":"Tool-poisoning detection evaluation","priority":"P0","wave":"W3","owner":"security","deps":["S1-001","S1-009"],"question":"Which layered controls detect malicious or misleading tool manifests and outputs, and when must the gateway quarantine or require human approval rather than trust a scanner?","focus":"Resolve G-07 with a detection/evidence contract for EP-06, including false-positive/false-negative reporting and quarantine.","stop":"Escalate on any critical poison that reaches an effect-capable path, on unavailable case provenance, or on a request to claim universal detection from a small corpus.","topic":"S1-010 tool poisoning detection evaluation"},
+      {"id":"S1-011","title":"Minimal knowledge gate: promote/challenge versus argumentation/TMS","priority":"P0","wave":"W1","owner":"knowledge","deps":["S1-001","S1-003"],"question":"Is a minimal two-status promote/challenge gate safer and more operable for the first knowledge layer than a full argumentation or truth-maintenance system, while preserving retraction and provenance?","focus":"Resolve G-06 and choose the MVP knowledge-gate state machine, deferring or accepting richer argumentation with explicit evidence.","stop":"Escalate if no design can preserve immutable provenance and retraction, if operator work is unbounded, or if a proposal would let external content change policy/capabilities.","topic":"S1-011 minimal knowledge gate promote challenge versus argumentation TMS"},
+      {"id":"S1-012","title":"Evidence granularity, independence, and Beta/Sybil calibration","priority":"P0","wave":"W2","owner":"knowledge","deps":["S1-001","S1-003","S1-011"],"question":"What evidence unit (document, span, or digest) and provenance/independence rule gives a defensible promotion gate, and how should Beta/reputation parameters be calibrated against Sybil and collusion cases?","focus":"Resolve ontology Q3 and G-05; choose evidence granularity, correlation caps, and whether Beta/EigenTrust is recommendation only rather than enforcement.","stop":"Escalate if independence cannot be established, if numeric calibration depends on a missing corpus, or if anyone proposes reputation as a substitute for policy authorization.","topic":"S1-012 evidence granularity independence and Beta reputation Sybil collusion calibration"},
+      {"id":"S1-013","title":"15–20-person comprehension and approval-fatigue pilot","priority":"P1","wave":"W3","owner":"hci","deps":["S1-011","S1-012"],"question":"Can 15–20 representative participants understand delegation, scope, provenance, and stop controls, and what approval volume causes fatigue by role (QM2, G-01, G-09)?","focus":"Calibrate the comprehension thresholds, approval packaging, N_prompts/hour hypotheses, and pilot evidence needed for UX gates.","stop":"Stop if consent/role framing is inadequate, sample size falls outside 15–20, a participant-risk issue appears, or a stakeholder asks for a legal/high-risk classification (re-enter PARK-01).","topic":"S1-013 15 to 20 person comprehension and approval fatigue pilot"},
+      {"id":"S1-014","title":"Claim-dispute visualization: card versus graph","priority":"P1","wave":"W4","owner":"hci","deps":["S1-011","S1-013"],"question":"Do users resolve claim disputes more accurately and with less overload using a compact evidence card or an argumentation graph (QM1)?","focus":"Select the default dispute visualization and progressive disclosure pattern, or retain a justified split by task complexity.","stop":"Escalate if variants are not task-equivalent, provenance is hidden by either design, or a request exceeds the pilot consent/scope boundary.","topic":"S1-014 claim dispute visualization card versus graph"},
+      {"id":"S1-015","title":"Petname principal naming study","priority":"P2","wave":"W4","owner":"hci","deps":["S1-013"],"question":"Can personal petnames make canonical principal IDs easier to recognize without creating ambiguity, spoofing, or an authorization path that bypasses canonical identity (QM3)?","focus":"Decide whether petnames are a display-only aid, which disambiguation cues are required, and when the feature should be deferred.","stop":"Escalate on any identity ambiguity, approval spoofing, or requirement to use petnames as canonical identifiers.","topic":"S1-015 petname principal naming study"},
+      {"id":"S1-016","title":"Workspace lineage: flat scope versus PROV-Dictionary","priority":"P1","wave":"W3","owner":"formal","deps":["S1-003","S1-007"],"question":"Should workspace lineage use a flat scope field in runtime and reserve PROV-Dictionary-style insertion/deletion lineage for export, or is a richer runtime representation justified (ontology Q1)?","focus":"Resolve ontology Q1 without weakening scope isolation, immutable provenance, or audit reconstruction.","stop":"Escalate if a lineage representation requires mutable historical artifacts, permits multiple runtime scopes, or cannot round-trip a move/copy without ambiguity.","topic":"S1-016 workspace lineage flat scope versus PROV Dictionary"},
+      {"id":"S1-017","title":"STIT/ATL responsibility analytics placement","priority":"P2","wave":"W4","owner":"formal","deps":["S1-004","S1-016"],"question":"Can STIT/ATL annotations explain responsibility and available alternatives in audit analytics, and where must they remain offline rather than enter runtime authorization (ontology Q2)?","focus":"Resolve Q2 by placing responsibility analytics in an offline/export layer or documenting a tightly bounded runtime annotation.","stop":"Escalate if annotations can alter policy, responsibility is underdetermined by available audit data, or a required logic tool is unavailable without a bounded fallback.","topic":"S1-017 STIT ATL responsibility analytics placement"},
+      {"id":"S1-018","title":"Profile-C MLS + TEE attested-indexer PoC research","priority":"P1","wave":"W4","owner":"privacy","deps":["S1-007","S1-008","S1-009"],"question":"What evidence is needed to decide whether profile C can combine MLS confidentiality with a TEE/attested indexer without leaking scope, keys, or unverifiable trust assumptions?","focus":"Resolve G-04 with a research-scoped PoC decision and a conditional adapter/rollout roadmap, not a production approval.","stop":"Stop on plaintext leakage, unverifiable attestation, missing MLS key lifecycle evidence, or a request to roll out profile C; re-enter PARK-04 for rollout.","topic":"S1-018 profile C MLS TEE attested indexer PoC research"},
+      {"id":"S1-019","title":"P0 platform architecture decision synthesis and prototype evidence","priority":"P0","wave":"W5","owner":"synthesis","deps":["S1-004","S1-005","S1-006","S1-007","S1-008","S1-009","S1-010","S1-011","S1-012","S1-013","S1-014","S1-015","S1-016","S1-017","S1-018"],"question":"Given the completed Stage 1 evidence, what P0 architecture decisions and bounded prototype evidence are justified for EP-01–EP-05 and EP-08, and what remains explicitly non-production?","focus":"Produce a single research-scoped decision synthesis, including architecture boundaries, evidence-backed assumptions, and a prototype/evidence backlog without silently converting research into build authorization.","stop":"Escalate if an upstream result is missing, contradictory, unaudited, or if synthesis requires a production build or deployment-specific legal/high-risk determination (PARK-01).","topic":"S1-019 P0 platform architecture decision synthesis and prototype evidence"},
+      {"id":"S1-020","title":"Independent phase audit and closure decision","priority":"P0","wave":"W6","owner":"audit","deps":["S1-001","S1-002","S1-003","S1-004","S1-005","S1-006","S1-007","S1-008","S1-009","S1-010","S1-011","S1-012","S1-013","S1-014","S1-015","S1-016","S1-017","S1-018","S1-019"],"question":"Does the complete active portfolio meet the common evidence/closure gate with a genuinely independent auditor, and which items must remain PASS_WITH_LIMITS, BLOCKED, or parked?","focus":"Make the Stage 1 research closure decision and publish the evidence-calibrated limits and next phase entry conditions.","stop":"Stop at BLOCKED if any common-gate boolean, dependency, ticket probe, or auditor-distinctness check fails; escalate the missing evidence to the owning ticket instead of overriding it.","topic":"S1-020 independent phase audit and closure decision"}
+    ];
+
+    const PARKED_TICKETS = [
+      {"id":"PARK-01","title":"Deployment-specific legal/high-risk classification","reason":"Stage 1 has no named deployment, jurisdiction, counsel, or risk classification.","trigger":"Return when a named deployment, jurisdiction, system role, intended use, and qualified legal review exist."},
+      {"id":"PARK-02","title":"Mass verification of every 176 u source","reason":"Targeted verification is active in S1-001; the registry does not claim full line-by-line verification.","trigger":"Return when a decision requires the full tail and a finite budget, corpus, access, and verifier method are approved."},
+      {"id":"PARK-03","title":"Production SLO claim","reason":"Throughput, latency, storage, and revocation values remain planning targets.","trigger":"Return after S1-002 and S1-008 produce reproducible production-like measurements and an SLO review is named."},
+      {"id":"PARK-04","title":"Production rollout of profile C","reason":"S1-018 is a research PoC only; rollout needs separate threat, privacy, attestation, operations, and deployment review.","trigger":"Return after the PoC and isolation/revocation evidence pass and a separate rollout decision is approved."}
+    ];
+
+    const COLUMNS = [
+      {id:"ready", label:"Готово к старту", color:"#267463"},
+      {id:"planned", label:"Ожидает зависимостей", color:"#a86916"},
+      {id:"research", label:"Исследование", color:"#3c668f"},
+      {id:"review", label:"Проверка", color:"#735c8d"},
+      {id:"blocked", label:"Заблокировано", color:"#a64236"},
+      {id:"closed", label:"Закрыто", color:"#173f4f"},
+      {id:"parked", label:"Parked", color:"#7b7b75"}
+    ];
+
+    const STATUS_LABELS = Object.fromEntries(COLUMNS.map(function (item) {
+      return [item.id, item.label];
+    }));
+    const MOVABLE_STATUSES = COLUMNS.filter(function (item) {
+      return item.id !== "parked";
+    });
+    const STORAGE_KEY = "agentos-stage1-kanban-v1";
+
+    const searchInput = document.getElementById("search");
+    const priorityFilter = document.getElementById("priority-filter");
+    const ownerFilter = document.getElementById("owner-filter");
+    const waveFilter = document.getElementById("wave-filter");
+    const board = document.getElementById("board");
+    const noResults = document.getElementById("no-results");
+    const dialog = document.getElementById("ticket-dialog");
+    const dialogBody = document.getElementById("dialog-body");
+    const dialogTitle = document.getElementById("dialog-title");
+    const dialogKicker = document.getElementById("dialog-kicker");
+    const toast = document.getElementById("toast");
+    let lastDialogTrigger = null;
+    let toastTimer = null;
+
+    function defaultState() {
+      const value = {};
+      ACTIVE_TICKETS.forEach(function (ticket) {
+        value[ticket.id] = ticket.deps.length === 0 ? "ready" : "planned";
+      });
+      return value;
+    }
+
+    function loadState() {
+      const fallback = defaultState();
+      try {
+        const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+        ACTIVE_TICKETS.forEach(function (ticket) {
+          if (MOVABLE_STATUSES.some(function (status) { return status.id === parsed[ticket.id]; })) {
+            fallback[ticket.id] = parsed[ticket.id];
+          }
+        });
+      } catch (error) {
+        showToast("Локальное состояние повреждено; загружено начальное.");
+      }
+      return fallback;
+    }
+
+    let state = loadState();
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (error) {
+        showToast("Браузер запретил localStorage; статус сохранён только до перезагрузки.");
+      }
+    }
+
+    function reconcileDependencies() {
+      let changed = true;
+      while (changed) {
+        changed = false;
+        ACTIVE_TICKETS.forEach(function (ticket) {
+          if (ticket.deps.length === 0) return;
+          const dependenciesClosed = ticket.deps.every(function (id) {
+            return state[id] === "closed";
+          });
+          if (state[ticket.id] === "planned" && dependenciesClosed) {
+            state[ticket.id] = "ready";
+            changed = true;
+          } else if (state[ticket.id] === "ready" && !dependenciesClosed) {
+            state[ticket.id] = "planned";
+            changed = true;
+          }
+        });
+      }
+      saveState();
+    }
+
+    function priorityColor(priority) {
+      if (priority === "P0") return "#a64236";
+      if (priority === "P1") return "#a86916";
+      return "#3c668f";
+    }
+
+    function showToast(message) {
+      clearTimeout(toastTimer);
+      toast.textContent = message;
+      toast.classList.add("visible");
+      toastTimer = setTimeout(function () {
+        toast.classList.remove("visible");
+      }, 2600);
+    }
+
+    function commandFor(ticket) {
+      return '$env:PYTHONPATH = "src"\npython -m agentos.cli research-plan --topic "' +
+        ticket.topic + '" --bundle "research/tickets/stage-1/' + ticket.id +
+        '/bundle.json" --db ".agentos-research/platform-stage-1"';
+    }
+
+    function createBadge(text, className) {
+      const badge = document.createElement("span");
+      badge.className = "badge" + (className ? " " + className : "");
+      badge.textContent = text;
+      return badge;
+    }
+
+    function openTicket(ticket, trigger) {
+      lastDialogTrigger = trigger;
+      dialogKicker.textContent = ticket.id + " · " + ticket.wave + " · " + ticket.priority;
+      dialogTitle.textContent = ticket.title;
+      dialogBody.replaceChildren();
+
+      const detailGrid = document.createElement("div");
+      detailGrid.className = "detail-grid";
+      [
+        ["Статус", STATUS_LABELS[state[ticket.id]]],
+        ["Владелец", ticket.owner],
+        ["Волна", ticket.wave],
+        ["Зависимости", ticket.deps.length ? ticket.deps.join(", ") : "нет"]
+      ].forEach(function (entry) {
+        const cell = document.createElement("div");
+        cell.className = "detail-cell";
+        const label = document.createElement("span");
+        label.textContent = entry[0];
+        const value = document.createElement("strong");
+        value.textContent = entry[1];
+        cell.append(label, value);
+        detailGrid.append(cell);
+      });
+      dialogBody.append(detailGrid);
+
+      [
+        ["Исследовательский вопрос", ticket.question],
+        ["Какое решение разблокирует", ticket.focus]
+      ].forEach(function (entry) {
+        const section = document.createElement("section");
+        section.className = "detail-section";
+        const heading = document.createElement("h3");
+        heading.textContent = entry[0];
+        const paragraph = document.createElement("p");
+        paragraph.textContent = entry[1];
+        section.append(heading, paragraph);
+        dialogBody.append(section);
+      });
+
+      const stopSection = document.createElement("section");
+      stopSection.className = "detail-section stop-box";
+      const stopHeading = document.createElement("h3");
+      stopHeading.textContent = "Stop / escalation";
+      const stopText = document.createElement("p");
+      stopText.textContent = ticket.stop;
+      stopSection.append(stopHeading, stopText);
+      dialogBody.append(stopSection);
+
+      const commandSection = document.createElement("section");
+      commandSection.className = "detail-section";
+      const commandHeading = document.createElement("h3");
+      commandHeading.textContent = "Команда запуска harness";
+      const commandBox = document.createElement("div");
+      commandBox.className = "command-box";
+      commandBox.textContent = commandFor(ticket);
+      const copyButton = document.createElement("button");
+      copyButton.className = "copy-button";
+      copyButton.type = "button";
+      copyButton.textContent = "⧉";
+      copyButton.setAttribute("aria-label", "Копировать команду запуска");
+      copyButton.addEventListener("click", function () {
+        copyText(commandFor(ticket));
+      });
+      commandBox.append(copyButton);
+      commandSection.append(commandHeading, commandBox);
+      dialogBody.append(commandSection);
+
+      const note = document.createElement("p");
+      note.className = "local-note";
+      note.textContent = "Локальный статус доски не изменяет canonical DB, Evidence Pack или ticket contract.";
+      dialogBody.append(note);
+
+      const links = document.createElement("div");
+      links.className = "dialog-links";
+      const canonical = document.createElement("a");
+      canonical.className = "button button-primary";
+      canonical.href = "RESEARCH_STAGE_1_TICKETS.md";
+      canonical.textContent = "Открыть полный контракт";
+      links.append(canonical);
+      dialogBody.append(links);
+      dialog.showModal();
+    }
+
+    function openParked(ticket, trigger) {
+      lastDialogTrigger = trigger;
+      dialogKicker.textContent = ticket.id + " · PARKED";
+      dialogTitle.textContent = ticket.title;
+      dialogBody.replaceChildren();
+      [
+        ["Почему отложено", ticket.reason],
+        ["Условие возврата", ticket.trigger]
+      ].forEach(function (entry, index) {
+        const section = document.createElement("section");
+        section.className = "detail-section" + (index === 1 ? " stop-box" : "");
+        const heading = document.createElement("h3");
+        heading.textContent = entry[0];
+        const text = document.createElement("p");
+        text.textContent = entry[1];
+        section.append(heading, text);
+        dialogBody.append(section);
+      });
+      const note = document.createElement("p");
+      note.className = "local-note";
+      note.textContent = "Parked item не имеет bundle или команды запуска в Stage 1.";
+      dialogBody.append(note);
+      dialog.showModal();
+    }
+
+    async function copyText(value) {
+      try {
+        await navigator.clipboard.writeText(value);
+      } catch (error) {
+        const area = document.createElement("textarea");
+        area.value = value;
+        area.style.position = "fixed";
+        area.style.opacity = "0";
+        document.body.append(area);
+        area.select();
+        document.execCommand("copy");
+        area.remove();
+      }
+      showToast("Команда скопирована.");
+    }
+
+    function ticketMatches(ticket) {
+      const query = searchInput.value.trim().toLowerCase();
+      const haystack = [ticket.id, ticket.title, ticket.focus, ticket.owner, ticket.wave]
+        .join(" ").toLowerCase();
+      return (!query || haystack.includes(query)) &&
+        (!priorityFilter.value || ticket.priority === priorityFilter.value) &&
+        (!ownerFilter.value || ticket.owner === ownerFilter.value) &&
+        (!waveFilter.value || ticket.wave === waveFilter.value);
+    }
+
+    function parkedMatches(ticket) {
+      const query = searchInput.value.trim().toLowerCase();
+      const haystack = [ticket.id, ticket.title, ticket.reason, ticket.trigger].join(" ").toLowerCase();
+      return (!query || haystack.includes(query)) &&
+        !priorityFilter.value && !ownerFilter.value && !waveFilter.value;
+    }
+
+    function createActiveCard(ticket) {
+      const card = document.createElement("article");
+      card.className = "ticket-card";
+      card.style.setProperty("--priority-color", priorityColor(ticket.priority));
+      card.setAttribute("aria-labelledby", "title-" + ticket.id);
+
+      const top = document.createElement("div");
+      top.className = "card-top";
+      const id = document.createElement("span");
+      id.className = "ticket-id";
+      id.textContent = ticket.id;
+      const badges = document.createElement("div");
+      badges.className = "badges";
+      badges.append(createBadge(ticket.priority, "badge-priority"), createBadge(ticket.wave), createBadge(ticket.owner));
+      top.append(id, badges);
+
+      const title = document.createElement("h4");
+      title.className = "ticket-title";
+      title.id = "title-" + ticket.id;
+      title.textContent = ticket.title;
+      const focus = document.createElement("p");
+      focus.className = "ticket-focus";
+      focus.textContent = ticket.focus;
+      const deps = document.createElement("p");
+      deps.className = "deps";
+      const depsLabel = document.createElement("strong");
+      depsLabel.textContent = "Зависимости: ";
+      deps.append(depsLabel, document.createTextNode(ticket.deps.length ? ticket.deps.join(", ") : "нет"));
+
+      const actions = document.createElement("div");
+      actions.className = "card-actions";
+      const label = document.createElement("label");
+      label.className = "sr-only";
+      label.htmlFor = "status-" + ticket.id;
+      label.textContent = "Статус " + ticket.id;
+      const select = document.createElement("select");
+      select.id = "status-" + ticket.id;
+      select.setAttribute("aria-label", "Статус " + ticket.id);
+      MOVABLE_STATUSES.forEach(function (status) {
+        const option = document.createElement("option");
+        option.value = status.id;
+        option.textContent = status.label;
+        option.selected = state[ticket.id] === status.id;
+        select.append(option);
+      });
+      select.addEventListener("change", function () {
+        state[ticket.id] = select.value;
+        reconcileDependencies();
+        render();
+        showToast(ticket.id + ": " + STATUS_LABELS[state[ticket.id]]);
+      });
+      const open = document.createElement("button");
+      open.className = "icon-button";
+      open.type = "button";
+      open.textContent = "→";
+      open.setAttribute("aria-label", "Открыть детали " + ticket.id);
+      open.addEventListener("click", function () { openTicket(ticket, open); });
+      actions.append(label, select, open);
+
+      card.append(top, title, focus, deps, actions);
+      return card;
+    }
+
+    function createParkedCard(ticket) {
+      const card = document.createElement("article");
+      card.className = "ticket-card";
+      card.style.setProperty("--priority-color", "#7b7b75");
+      card.setAttribute("aria-labelledby", "title-" + ticket.id);
+      const top = document.createElement("div");
+      top.className = "card-top";
+      const id = document.createElement("span");
+      id.className = "ticket-id";
+      id.textContent = ticket.id;
+      const badges = document.createElement("div");
+      badges.className = "badges";
+      badges.append(createBadge("PARKED"));
+      top.append(id, badges);
+      const title = document.createElement("h4");
+      title.className = "ticket-title";
+      title.id = "title-" + ticket.id;
+      title.textContent = ticket.title;
+      const reason = document.createElement("p");
+      reason.className = "ticket-focus";
+      reason.textContent = ticket.reason;
+      const actions = document.createElement("div");
+      actions.className = "card-actions";
+      const fixed = document.createElement("select");
+      fixed.disabled = true;
+      fixed.setAttribute("aria-label", "Статус " + ticket.id);
+      const option = document.createElement("option");
+      option.textContent = "Parked";
+      fixed.append(option);
+      const open = document.createElement("button");
+      open.className = "icon-button";
+      open.type = "button";
+      open.textContent = "→";
+      open.setAttribute("aria-label", "Открыть детали " + ticket.id);
+      open.addEventListener("click", function () { openParked(ticket, open); });
+      actions.append(fixed, open);
+      card.append(top, title, reason, actions);
+      return card;
+    }
+
+    function updateMetrics() {
+      document.getElementById("metric-active").textContent = String(ACTIVE_TICKETS.length);
+      document.getElementById("metric-ready").textContent = String(
+        ACTIVE_TICKETS.filter(function (ticket) { return state[ticket.id] === "ready"; }).length
+      );
+      document.getElementById("metric-p0").textContent = String(
+        ACTIVE_TICKETS.filter(function (ticket) { return ticket.priority === "P0"; }).length
+      );
+      document.getElementById("metric-closed").textContent = String(
+        ACTIVE_TICKETS.filter(function (ticket) { return state[ticket.id] === "closed"; }).length
+      );
+      document.getElementById("metric-parked").textContent = String(PARKED_TICKETS.length);
+    }
+
+    function render() {
+      board.replaceChildren();
+      let visible = 0;
+      COLUMNS.forEach(function (column) {
+        const section = document.createElement("section");
+        section.className = "column";
+        section.style.setProperty("--column-color", column.color);
+        section.setAttribute("aria-labelledby", "column-" + column.id);
+        const header = document.createElement("div");
+        header.className = "column-header";
+        const heading = document.createElement("h3");
+        heading.id = "column-" + column.id;
+        heading.textContent = column.label;
+        const count = document.createElement("span");
+        count.className = "count";
+        const list = document.createElement("div");
+        list.className = "card-list";
+
+        let items;
+        if (column.id === "parked") {
+          items = PARKED_TICKETS.filter(parkedMatches);
+          items.forEach(function (ticket) { list.append(createParkedCard(ticket)); });
+        } else {
+          items = ACTIVE_TICKETS.filter(function (ticket) {
+            return state[ticket.id] === column.id && ticketMatches(ticket);
+          });
+          items.sort(function (a, b) {
+            return a.priority.localeCompare(b.priority) || a.wave.localeCompare(b.wave) || a.id.localeCompare(b.id);
+          });
+          items.forEach(function (ticket) { list.append(createActiveCard(ticket)); });
+        }
+        visible += items.length;
+        count.textContent = String(items.length);
+        count.setAttribute("aria-label", items.length + " тикетов");
+        header.append(heading, count);
+        section.append(header);
+        if (items.length === 0) {
+          const empty = document.createElement("div");
+          empty.className = "column-empty";
+          empty.textContent = "Нет тикетов";
+          section.append(empty);
+        } else {
+          section.append(list);
+        }
+        board.append(section);
+      });
+      noResults.style.display = visible === 0 ? "block" : "none";
+      updateMetrics();
+    }
+
+    function populateOwners() {
+      const owners = Array.from(new Set(ACTIVE_TICKETS.map(function (ticket) {
+        return ticket.owner;
+      }))).sort();
+      owners.forEach(function (owner) {
+        const option = document.createElement("option");
+        option.value = owner;
+        option.textContent = owner;
+        ownerFilter.append(option);
+      });
+    }
+
+    function exportState() {
+      const payload = {
+        schema: "agentos.stage1-kanban-local/v1",
+        exported_at: new Date().toISOString(),
+        canonical_source: "docs/RESEARCH_STAGE_1_TICKETS.md",
+        note: "Local planning projection; not canonical AgentOS state.",
+        tickets: ACTIVE_TICKETS.map(function (ticket) {
+          return {
+            id: ticket.id,
+            local_status: state[ticket.id],
+            wave: ticket.wave,
+            priority: ticket.priority,
+            owner: ticket.owner,
+            dependencies: ticket.deps
+          };
+        })
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "agentos-stage1-kanban-state.json";
+      document.body.append(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      showToast("Локальное состояние экспортировано.");
+    }
+
+    [searchInput, priorityFilter, ownerFilter, waveFilter].forEach(function (control) {
+      control.addEventListener(control === searchInput ? "input" : "change", render);
+    });
+
+    document.getElementById("reset-button").addEventListener("click", function () {
+      if (!window.confirm("Сбросить только локальные статусы и фильтры этой доски?")) return;
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch (error) {
+        showToast("Браузер запретил очистку localStorage.");
+      }
+      state = defaultState();
+      searchInput.value = "";
+      priorityFilter.value = "";
+      ownerFilter.value = "";
+      waveFilter.value = "";
+      render();
+      showToast("Локальная доска сброшена.");
+    });
+
+    document.getElementById("export-button").addEventListener("click", exportState);
+    document.getElementById("dialog-close").addEventListener("click", function () {
+      dialog.close();
+    });
+    dialog.addEventListener("click", function (event) {
+      if (event.target === dialog) dialog.close();
+    });
+    dialog.addEventListener("close", function () {
+      if (lastDialogTrigger) lastDialogTrigger.focus();
+    });
+
+    populateOwners();
+    reconcileDependencies();
+    render();
+  </script>
+</body>
+</html>

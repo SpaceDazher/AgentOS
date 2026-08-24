@@ -92,7 +92,8 @@ PYTHONPATH=src python -m agentos.cli demo --worker hermes   # requires `hermes` 
 ### Research-to-platform-plan contract
 
 The platform's first research phase is decomposed into executable,
-evidence-backed tickets in [Stage 1 research tickets](docs/RESEARCH_STAGE_1_TICKETS.md).
+evidence-backed tickets in [Stage 1 research tickets](docs/RESEARCH_STAGE_1_TICKETS.md)
+with a self-contained [interactive Kanban board](docs/RESEARCH_STAGE_1_KANBAN.html).
 Each active ticket has its own FLOW-11 bundle contract, dependency edge,
 adversarial probes, stop condition, and exact `research-plan` command.
 

@@ -40,7 +40,8 @@ evidence_sources:
 > it is never `Goal ACCEPTED`. Only the release gate, over evaluator records,
 > can accept a software goal.
 
-Related project notes: [README](../README.md) ·
+Related project notes: [Interactive Kanban](RESEARCH_STAGE_1_KANBAN.html) ·
+[README](../README.md) ·
 [Evaluation protocol](EVALUATION_PROTOCOL.md) ·
 [Gap register](GAP_REGISTER.md).
 
