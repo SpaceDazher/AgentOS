@@ -9,6 +9,7 @@ Index of ADRs for AgentOS. Statuses as recorded in each file.
 | [ADR-0003](ADR-0003-worker-adapters.md) | Worker abstraction — provider-neutral; Hermes as first real adapter | Accepted |
 | [ADR-0004](ADR-0004-ecc-hermes-relation.md) | Relation to ECC-style harness systems | Accepted |
 | [ADR-0005](ADR-0005-unified-process.md) | Unified process — AgentOS core + Hermes plugin + Hermes worker + ECC-in-worker | Accepted (supersedes the "composition only" framing of ADR-0004; relation unchanged, delivery changed) |
+| [ADR-0009](ADR-0009-pyshacl-optional-runtime.md) | Optional pySHACL/rdflib runtime for S1-003 SHACL engine validation | Accepted |
 
 ## Research integrity
 

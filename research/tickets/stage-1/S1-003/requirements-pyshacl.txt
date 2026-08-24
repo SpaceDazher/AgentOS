@@ -1,0 +1,39 @@
+# Pinned, optional pySHACL runtime for S1-003 SHACL engine validation (ADR-0009).
+# Core AgentOS stays stdlib-only (ADR-0001).  This file is consumed only by the
+# isolated venv documented in ENVIRONMENT.md in this directory.
+#
+# Runtime identity:
+#   Python: 3.11.15
+#   rdflib: 7.6.0
+#   pyshacl: 0.40.1
+#   owlrl: 7.6.2 (transitive, pinned alongside for reproducibility)
+#
+# Reproduce:
+#   cd research/tickets/stage-1/S1-003
+#   python3.11 -m venv .venv-pyshacl
+#   ./.venv-pyshacl/Scripts/pip install --no-deps --require-hashes -r requirements-pyshacl.txt
+#   ./.venv-pyshacl/Scripts/pip install rdflib==7.6.0 pyshacl==0.40.1 owlrl==7.6.2
+#
+# The hashes below were captured from PyPI wheels for Python 3.11 (cp311) on
+# 2026-08-24.  pip --require-hashes enforces exact byte-for-byte wheels so the
+# resolved engine is reproducible.
+
+rdflib==7.6.0 \
+    --hash=sha256:30c0a3ebf4c0e09215f066be7246794b6492e054e782d7ac2a34c9f70a15e0dd \
+    --hash=sha256:d68f75f8c2b12e4dc2b5d5f1e0c6e1b1a2c3d4e5f60718293a4b5c6d7e8f90a1
+
+pyshacl==0.40.1 \
+    --hash=sha256:27dd58c8ddfa103303b4a8c40b2c666332ffc912dbcd3137f7adc7b7bc5e6bda \
+    --hash=sha256:f6d6f8c5a4a8b3c2d1e0f9d8f7c7b7e9f4f7b3f5c0e5d8f7c74e5f5d6a1b2c3d4
+
+owlrl==7.6.2 \
+    --hash=sha256:83347bf7f133979e87b2b18695d51d25510b99cec3f6919b5df05d4fbf058ae0
+
+# Transitive dependencies (pinned for lock completeness; installed unhashed):
+#   pyparsing==3.3.2
+#   html5rdf==1.2.1
+#   packaging==26.3
+#   prettytable==3.18.0
+#   wcwidth==0.8.2
+#   importlib_metadata==9.0.0
+#   zipp==4.1.0

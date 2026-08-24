@@ -1,0 +1,544 @@
+{
+  "schema": "agentos.s1-003-engine-results/v1",
+  "pyshacl_executed": true,
+  "runtime": {
+    "python": "3.11.15",
+    "rdflib": "7.6.0",
+    "pyshacl": "0.40.1"
+  },
+  "inputs": {
+    "fixtures_sha256": "7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211",
+    "shapes_open_sha256": "12097e695329b4e1df498a8403797ad6c7f2311c030b8e9b2bed53a9193788ea",
+    "shapes_promoted_only_sha256": "1f25f90a30c44c59f01e01c947b590cac7786dea4b2448413402bf7f006027e4",
+    "rdf_input_sha256": "c95306bb6f4863d101ee08db0e2a461f8cb3424cdd5063ceff5ccb2191bd9724"
+  },
+  "coverage": {
+    "fixture_count": 24,
+    "profile_run_count": 26,
+    "matched_run_count": 26
+  },
+  "mismatches": [],
+  "results": [
+    {
+      "fixture_id": "assertion-proposed-inherited",
+      "profile": "open",
+      "expected_conforms": true,
+      "observed_conforms": true,
+      "expected_primary_reason": null,
+      "normalized_violations": [],
+      "report_text": "Validation Report\nConforms: True\n",
+      "semantic_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "runtime": {
+        "python": "3.11.15",
+        "rdflib": "7.6.0",
+        "pyshacl": "0.40.1"
+      },
+      "shapes_sha256": "12097e695329b4e1df498a8403797ad6c7f2311c030b8e9b2bed53a9193788ea",
+      "fixtures_sha256": "7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211",
+      "rdf_input_sha256": "e713d554e7632fc9c486b7e4c3d7252f62a2b74204e18bfc429786ba649d2982",
+      "matched": true
+    },
+    {
+      "fixture_id": "assertion-proposed-inherited",
+      "profile": "promoted_only",
+      "expected_conforms": false,
+      "observed_conforms": false,
+      "expected_primary_reason": "not_promoted_status",
+      "normalized_violations": [
+        "not_promoted_status"
+      ],
+      "report_text": "Validation Report\nConforms: False\nResults (1):\nConstraint Violation in SPARQLConstraintComponent (http://www.w3.org/ns/shacl#SPARQLConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: hubs:KnowledgeAssertionShape\n\tFocus Node: <urn:s1-003:fixture:assertion-proposed-inherited>\n\tValue Node: <urn:s1-003:fixture:assertion-proposed-inherited>\n\tSource Constraint: [ sh:message Literal(\"not_promoted_status\") ; sh:select Literal(\"\nPREFIX hubs: <https://example.org/agent-hub#>\nSELECT $this WHERE {\n  $this a hubs:KnowledgeAssertion .\n  $this hubs:status ?st .\n  FILTER(?st != \"promoted\")\n}\n\") ]\n\tMessage: not_promoted_status\n",
+      "semantic_digest": "0a8e00736744cb56a7d287867655a140e61daa13c146a1a97ab9f5a47b891e87",
+      "runtime": {
+        "python": "3.11.15",
+        "rdflib": "7.6.0",
+        "pyshacl": "0.40.1"
+      },
+      "shapes_sha256": "1f25f90a30c44c59f01e01c947b590cac7786dea4b2448413402bf7f006027e4",
+      "fixtures_sha256": "7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211",
+      "rdf_input_sha256": "e713d554e7632fc9c486b7e4c3d7252f62a2b74204e18bfc429786ba649d2982",
+      "matched": true
+    },
+    {
+      "fixture_id": "assertion-under-review",
+      "profile": "open",
+      "expected_conforms": true,
+      "observed_conforms": true,
+      "expected_primary_reason": null,
+      "normalized_violations": [],
+      "report_text": "Validation Report\nConforms: True\n",
+      "semantic_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "runtime": {
+        "python": "3.11.15",
+        "rdflib": "7.6.0",
+        "pyshacl": "0.40.1"
+      },
+      "shapes_sha256": "12097e695329b4e1df498a8403797ad6c7f2311c030b8e9b2bed53a9193788ea",
+      "fixtures_sha256": "7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211",
+      "rdf_input_sha256": "59593fd70be3734fa39ba8bc44cf23c49292e21353d477a147f9d4a58ef23cb1",
+      "matched": true
+    },
+    {
+      "fixture_id": "assertion-promoted-grounded",
+      "profile": "open",
+      "expected_conforms": true,
+      "observed_conforms": true,
+      "expected_primary_reason": null,
+      "normalized_violations": [],
+      "report_text": "Validation Report\nConforms: True\n",
+      "semantic_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "runtime": {
+        "python": "3.11.15",
+        "rdflib": "7.6.0",
+        "pyshacl": "0.40.1"
+      },
+      "shapes_sha256": "12097e695329b4e1df498a8403797ad6c7f2311c030b8e9b2bed53a9193788ea",
+      "fixtures_sha256": "7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211",
+      "rdf_input_sha256": "1d0d062de679e6f9d13b2d73ccc26e271cc317d43d6a294111b1d937af7d92b9",
+      "matched": true
+    },
+    {
+      "fixture_id": "assertion-promoted-grounded",
+      "profile": "promoted_only",
+      "expected_conforms": true,
+      "observed_conforms": true,
+      "expected_primary_reason": null,
+      "normalized_violations": [],
+      "report_text": "Validation Report\nConforms: True\n",
+      "semantic_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "runtime": {
+        "python": "3.11.15",
+        "rdflib": "7.6.0",
+        "pyshacl": "0.40.1"
+      },
+      "shapes_sha256": "1f25f90a30c44c59f01e01c947b590cac7786dea4b2448413402bf7f006027e4",
+      "fixtures_sha256": "7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211",
+      "rdf_input_sha256": "1d0d062de679e6f9d13b2d73ccc26e271cc317d43d6a294111b1d937af7d92b9",
+      "matched": true
+    },
+    {
+      "fixture_id": "assertion-challenged",
+      "profile": "open",
+      "expected_conforms": true,
+      "observed_conforms": true,
+      "expected_primary_reason": null,
+      "normalized_violations": [],
+      "report_text": "Validation Report\nConforms: True\n",
+      "semantic_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "runtime": {
+        "python": "3.11.15",
+        "rdflib": "7.6.0",
+        "pyshacl": "0.40.1"
+      },
+      "shapes_sha256": "12097e695329b4e1df498a8403797ad6c7f2311c030b8e9b2bed53a9193788ea",
+      "fixtures_sha256": "7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211",
+      "rdf_input_sha256": "1c866c4ef8ec842f3cf0d2b0090968da7b875108532e8cea8f4e8108c8f3073c",
+      "matched": true
+    },
+    {
+      "fixture_id": "assertion-retracted",
+      "profile": "open",
+      "expected_conforms": true,
+      "observed_conforms": true,
+      "expected_primary_reason": null,
+      "normalized_violations": [],
+      "report_text": "Validation Report\nConforms: True\n",
+      "semantic_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "runtime": {
+        "python": "3.11.15",
+        "rdflib": "7.6.0",
+        "pyshacl": "0.40.1"
+      },
+      "shapes_sha256": "12097e695329b4e1df498a8403797ad6c7f2311c030b8e9b2bed53a9193788ea",
+      "fixtures_sha256": "7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211",
+      "rdf_input_sha256": "6a0f75f700fdf9abe12bbd50f7b8849a6fed6ff25b33f308f705f94d15f528cb",
+      "matched": true
+    },
+    {
+      "fixture_id": "assertion-superseded",
+      "profile": "open",
+      "expected_conforms": true,
+      "observed_conforms": true,
+      "expected_primary_reason": null,
+      "normalized_violations": [],
+      "report_text": "Validation Report\nConforms: True\n",
+      "semantic_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "runtime": {
+        "python": "3.11.15",
+        "rdflib": "7.6.0",
+        "pyshacl": "0.40.1"
+      },
+      "shapes_sha256": "12097e695329b4e1df498a8403797ad6c7f2311c030b8e9b2bed53a9193788ea",
+      "fixtures_sha256": "7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211",
+      "rdf_input_sha256": "55f50663d721b96ddce85ec5dbe686246323edce206a105344923525ea617e53",
+      "matched": true
+    },
+    {
+      "fixture_id": "assertion-rejected",
+      "profile": "open",
+      "expected_conforms": true,
+      "observed_conforms": true,
+      "expected_primary_reason": null,
+      "normalized_violations": [],
+      "report_text": "Validation Report\nConforms: True\n",
+      "semantic_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "runtime": {
+        "python": "3.11.15",
+        "rdflib": "7.6.0",
+        "pyshacl": "0.40.1"
+      },
+      "shapes_sha256": "12097e695329b4e1df498a8403797ad6c7f2311c030b8e9b2bed53a9193788ea",
+      "fixtures_sha256": "7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211",
+      "rdf_input_sha256": "9c41cd66fbfbc5f1d0003e7e985b30adba8bb45c2e83efd8941b29de9fad3a8d",
+      "matched": true
+    },
+    {
+      "fixture_id": "grant-proposed",
+      "profile": "open",
+      "expected_conforms": true,
+      "observed_conforms": true,
+      "expected_primary_reason": null,
+      "normalized_violations": [],
+      "report_text": "Validation Report\nConforms: True\n",
+      "semantic_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "runtime": {
+        "python": "3.11.15",
+        "rdflib": "7.6.0",
+        "pyshacl": "0.40.1"
+      },
+      "shapes_sha256": "12097e695329b4e1df498a8403797ad6c7f2311c030b8e9b2bed53a9193788ea",
+      "fixtures_sha256": "7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211",
+      "rdf_input_sha256": "b13786a3ffcfd6fe104f7631bbe884e64307ec7ed9bacf9dbabe94f737d2beea",
+      "matched": true
+    },
+    {
+      "fixture_id": "grant-active",
+      "profile": "open",
+      "expected_conforms": true,
+      "observed_conforms": true,
+      "expected_primary_reason": null,
+      "normalized_violations": [],
+      "report_text": "Validation Report\nConforms: True\n",
+      "semantic_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "runtime": {
+        "python": "3.11.15",
+        "rdflib": "7.6.0",
+        "pyshacl": "0.40.1"
+      },
+      "shapes_sha256": "12097e695329b4e1df498a8403797ad6c7f2311c030b8e9b2bed53a9193788ea",
+      "fixtures_sha256": "7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211",
+      "rdf_input_sha256": "ba73b1f79f6ed98895d1d41cd857a45ff85fc9d9b2cf2a1b45f93300b0d68b1e",
+      "matched": true
+    },
+    {
+      "fixture_id": "grant-revoked",
+      "profile": "open",
+      "expected_conforms": true,
+      "observed_conforms": true,
+      "expected_primary_reason": null,
+      "normalized_violations": [],
+      "report_text": "Validation Report\nConforms: True\n",
+      "semantic_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "runtime": {
+        "python": "3.11.15",
+        "rdflib": "7.6.0",
+        "pyshacl": "0.40.1"
+      },
+      "shapes_sha256": "12097e695329b4e1df498a8403797ad6c7f2311c030b8e9b2bed53a9193788ea",
+      "fixtures_sha256": "7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211",
+      "rdf_input_sha256": "e0501a63798f416833b763382785e9b6241e03b78d217883f67d72f61392b763",
+      "matched": true
+    },
+    {
+      "fixture_id": "grant-expired",
+      "profile": "open",
+      "expected_conforms": true,
+      "observed_conforms": true,
+      "expected_primary_reason": null,
+      "normalized_violations": [],
+      "report_text": "Validation Report\nConforms: True\n",
+      "semantic_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "runtime": {
+        "python": "3.11.15",
+        "rdflib": "7.6.0",
+        "pyshacl": "0.40.1"
+      },
+      "shapes_sha256": "12097e695329b4e1df498a8403797ad6c7f2311c030b8e9b2bed53a9193788ea",
+      "fixtures_sha256": "7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211",
+      "rdf_input_sha256": "58d4fcf0d5949b7c1724b20a4721b5f5d28a28a994ae91bc7bf3cc195a03d83c",
+      "matched": true
+    },
+    {
+      "fixture_id": "grant-exhausted",
+      "profile": "open",
+      "expected_conforms": true,
+      "observed_conforms": true,
+      "expected_primary_reason": null,
+      "normalized_violations": [],
+      "report_text": "Validation Report\nConforms: True\n",
+      "semantic_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "runtime": {
+        "python": "3.11.15",
+        "rdflib": "7.6.0",
+        "pyshacl": "0.40.1"
+      },
+      "shapes_sha256": "12097e695329b4e1df498a8403797ad6c7f2311c030b8e9b2bed53a9193788ea",
+      "fixtures_sha256": "7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211",
+      "rdf_input_sha256": "6b4b0e1e91f2d6271923baa3c23d22cc9b2b9d047440a82cea7c4e0285370414",
+      "matched": true
+    },
+    {
+      "fixture_id": "grant-denied",
+      "profile": "open",
+      "expected_conforms": true,
+      "observed_conforms": true,
+      "expected_primary_reason": null,
+      "normalized_violations": [],
+      "report_text": "Validation Report\nConforms: True\n",
+      "semantic_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "runtime": {
+        "python": "3.11.15",
+        "rdflib": "7.6.0",
+        "pyshacl": "0.40.1"
+      },
+      "shapes_sha256": "12097e695329b4e1df498a8403797ad6c7f2311c030b8e9b2bed53a9193788ea",
+      "fixtures_sha256": "7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211",
+      "rdf_input_sha256": "1ada3524e7548602cd4b011d1c298a1610399a5514a917fd601d8fb54ff608ca",
+      "matched": true
+    },
+    {
+      "fixture_id": "invalid-orphan-promoted",
+      "profile": "open",
+      "expected_conforms": false,
+      "observed_conforms": false,
+      "expected_primary_reason": "missing_promotion_activity",
+      "normalized_violations": [
+        "missing_promotion_activity"
+      ],
+      "report_text": "Validation Report\nConforms: False\nResults (1):\nConstraint Violation in SPARQLConstraintComponent (http://www.w3.org/ns/shacl#SPARQLConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: hubs:KnowledgeAssertionShape\n\tFocus Node: <urn:s1-003:fixture:invalid-orphan-promoted>\n\tValue Node: <urn:s1-003:fixture:invalid-orphan-promoted>\n\tSource Constraint: [ sh:message Literal(\"missing_promotion_activity\") ; sh:select Literal(\"\nPREFIX hubs: <https://example.org/agent-hub#>\nPREFIX prov: <http://www.w3.org/ns/prov#>\nSELECT $this WHERE {\n  $this hubs:status \"promoted\" .\n  FILTER NOT EXISTS {\n    $this prov:wasGeneratedBy ?activity .\n    ?activity a hubs:PromotionActivity .\n  }\n}\n\") ]\n\tMessage: missing_promotion_activity\n",
+      "semantic_digest": "42ab2ad5a7e7f25748f1dc959e3e1edbf2488e38894f57acc4a89b219df17ced",
+      "runtime": {
+        "python": "3.11.15",
+        "rdflib": "7.6.0",
+        "pyshacl": "0.40.1"
+      },
+      "shapes_sha256": "12097e695329b4e1df498a8403797ad6c7f2311c030b8e9b2bed53a9193788ea",
+      "fixtures_sha256": "7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211",
+      "rdf_input_sha256": "cea5a42f3ef2271209af4db9d70c5a69a720a225d5d1ba3cd59d84e24aab9dda",
+      "matched": true
+    },
+    {
+      "fixture_id": "invalid-mirror-sybil-promoted",
+      "profile": "open",
+      "expected_conforms": false,
+      "observed_conforms": false,
+      "expected_primary_reason": "insufficient_distinct_canonical_sources",
+      "normalized_violations": [
+        "insufficient_distinct_canonical_sources",
+        "insufficient_independence_groups"
+      ],
+      "report_text": "Validation Report\nConforms: False\nResults (2):\nConstraint Violation in SPARQLConstraintComponent (http://www.w3.org/ns/shacl#SPARQLConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: hubs:KnowledgeAssertionShape\n\tFocus Node: <urn:s1-003:fixture:invalid-mirror-sybil-promoted>\n\tValue Node: <urn:s1-003:fixture:invalid-mirror-sybil-promoted>\n\tSource Constraint: [ sh:message Literal(\"insufficient_distinct_canonical_sources\") ; sh:select Literal(\"\nPREFIX hubs: <https://example.org/agent-hub#>\nSELECT $this WHERE {\n  $this hubs:status \"promoted\" .\n  ?this hubs:supportedBy ?evidence .\n  ?evidence hubs:canonicalSourceId ?canonical .\n}\nGROUP BY $this\nHAVING (COUNT(DISTINCT ?canonical) < 2)\n\") ]\n\tMessage: insufficient_distinct_canonical_sources\nConstraint Violation in SPARQLConstraintComponent (http://www.w3.org/ns/shacl#SPARQLConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: hubs:KnowledgeAssertionShape\n\tFocus Node: <urn:s1-003:fixture:invalid-mirror-sybil-promoted>\n\tValue Node: <urn:s1-003:fixture:invalid-mirror-sybil-promoted>\n\tSource Constraint: [ sh:message Literal(\"insufficient_independence_groups\") ; sh:select Literal(\"\nPREFIX hubs: <https://example.org/agent-hub#>\nSELECT $this WHERE {\n  $this hubs:status \"promoted\" .\n  ?this hubs:supportedBy ?evidence .\n  ?evidence hubs:independenceGroup ?group .\n}\nGROUP BY $this\nHAVING (COUNT(DISTINCT ?group) < 2)\n\") ]\n\tMessage: insufficient_independence_groups\n",
+      "semantic_digest": "424679d4d4fb6edfb4f20b94b8c27d2d72640fe6d3fd55f097d93f06552c5367",
+      "runtime": {
+        "python": "3.11.15",
+        "rdflib": "7.6.0",
+        "pyshacl": "0.40.1"
+      },
+      "shapes_sha256": "12097e695329b4e1df498a8403797ad6c7f2311c030b8e9b2bed53a9193788ea",
+      "fixtures_sha256": "7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211",
+      "rdf_input_sha256": "9fd909eaa57b938c044171a141cc2f5f2a9695a299648f06b21984278a7b547b",
+      "matched": true
+    },
+    {
+      "fixture_id": "invalid-no-independence-group",
+      "profile": "open",
+      "expected_conforms": false,
+      "observed_conforms": false,
+      "expected_primary_reason": "evidence_missing_independence_group",
+      "normalized_violations": [
+        "evidence_missing_independence_group",
+        "insufficient_independence_groups"
+      ],
+      "report_text": "Validation Report\nConforms: False\nResults (2):\nConstraint Violation in MinCountConstraintComponent (http://www.w3.org/ns/shacl#MinCountConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: [ sh:datatype xsd:string ; sh:maxCount Literal(\"1\", datatype=xsd:integer) ; sh:message Literal(\"evidence_missing_independence_group\") ; sh:minCount Literal(\"1\", datatype=xsd:integer) ; sh:path hubs:independenceGroup ]\n\tFocus Node: <urn:s1-003:evidence:invalid-no-independence-group:evidence-no-group>\n\tResult Path: hubs:independenceGroup\n\tMessage: evidence_missing_independence_group\nConstraint Violation in SPARQLConstraintComponent (http://www.w3.org/ns/shacl#SPARQLConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: hubs:KnowledgeAssertionShape\n\tFocus Node: <urn:s1-003:fixture:invalid-no-independence-group>\n\tValue Node: <urn:s1-003:fixture:invalid-no-independence-group>\n\tSource Constraint: [ sh:message Literal(\"insufficient_independence_groups\") ; sh:select Literal(\"\nPREFIX hubs: <https://example.org/agent-hub#>\nSELECT $this WHERE {\n  $this hubs:status \"promoted\" .\n  ?this hubs:supportedBy ?evidence .\n  ?evidence hubs:independenceGroup ?group .\n}\nGROUP BY $this\nHAVING (COUNT(DISTINCT ?group) < 2)\n\") ]\n\tMessage: insufficient_independence_groups\n",
+      "semantic_digest": "faa84c5c45d73018196d630fb60a6cd643949075f581443fb969f36f9fc9bd38",
+      "runtime": {
+        "python": "3.11.15",
+        "rdflib": "7.6.0",
+        "pyshacl": "0.40.1"
+      },
+      "shapes_sha256": "12097e695329b4e1df498a8403797ad6c7f2311c030b8e9b2bed53a9193788ea",
+      "fixtures_sha256": "7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211",
+      "rdf_input_sha256": "ec0cd716c7b20f8120b33fe4e996d454fa1bbff5a677bb6bd95f59dd77ed81d2",
+      "matched": true
+    },
+    {
+      "fixture_id": "invalid-cross-scope-evidence",
+      "profile": "open",
+      "expected_conforms": false,
+      "observed_conforms": false,
+      "expected_primary_reason": "evidence_scope_mismatch",
+      "normalized_violations": [
+        "evidence_scope_mismatch"
+      ],
+      "report_text": "Validation Report\nConforms: False\nResults (1):\nConstraint Violation in SPARQLConstraintComponent (http://www.w3.org/ns/shacl#SPARQLConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: hubs:KnowledgeAssertionShape\n\tFocus Node: <urn:s1-003:fixture:invalid-cross-scope-evidence>\n\tValue Node: <urn:s1-003:fixture:invalid-cross-scope-evidence>\n\tSource Constraint: [ sh:message Literal(\"evidence_scope_mismatch\") ; sh:select Literal(\"\nPREFIX hubs: <https://example.org/agent-hub#>\nSELECT $this WHERE {\n  $this hubs:locatedIn ?scope .\n  $this hubs:supportedBy ?ev .\n  ?ev hubs:locatedIn ?evScope .\n  FILTER(?evScope != $scope)\n}\n\") ]\n\tMessage: evidence_scope_mismatch\n",
+      "semantic_digest": "680dbc639d374192c364633003cb539a7d74e8f630283fd635923772f0868381",
+      "runtime": {
+        "python": "3.11.15",
+        "rdflib": "7.6.0",
+        "pyshacl": "0.40.1"
+      },
+      "shapes_sha256": "12097e695329b4e1df498a8403797ad6c7f2311c030b8e9b2bed53a9193788ea",
+      "fixtures_sha256": "7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211",
+      "rdf_input_sha256": "702cc0f7c1cd5089e197f998ffbaf30e3df9a1323c8dc330be35a57f1e2f703f",
+      "matched": true
+    },
+    {
+      "fixture_id": "invalid-promotion-actor-scope",
+      "profile": "open",
+      "expected_conforms": false,
+      "observed_conforms": false,
+      "expected_primary_reason": "promotion_actor_scope_mismatch",
+      "normalized_violations": [
+        "promotion_actor_scope_mismatch"
+      ],
+      "report_text": "Validation Report\nConforms: False\nResults (1):\nConstraint Violation in SPARQLConstraintComponent (http://www.w3.org/ns/shacl#SPARQLConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: hubs:KnowledgeAssertionShape\n\tFocus Node: <urn:s1-003:fixture:invalid-promotion-actor-scope>\n\tValue Node: <urn:s1-003:fixture:invalid-promotion-actor-scope>\n\tSource Constraint: [ sh:message Literal(\"promotion_actor_scope_mismatch\") ; sh:select Literal(\"\nPREFIX hubs: <https://example.org/agent-hub#>\nPREFIX prov: <http://www.w3.org/ns/prov#>\nSELECT $this WHERE {\n  $this hubs:locatedIn ?scope .\n  $this prov:wasGeneratedBy ?act .\n  ?act hubs:actorScope ?actScope .\n  FILTER(?actScope != $scope)\n}\n\") ]\n\tMessage: promotion_actor_scope_mismatch\n",
+      "semantic_digest": "429214640d431e301e8ef1680b9ea301ce94f4b9fdb7c681b7ba853e6cc92f58",
+      "runtime": {
+        "python": "3.11.15",
+        "rdflib": "7.6.0",
+        "pyshacl": "0.40.1"
+      },
+      "shapes_sha256": "12097e695329b4e1df498a8403797ad6c7f2311c030b8e9b2bed53a9193788ea",
+      "fixtures_sha256": "7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211",
+      "rdf_input_sha256": "03e2386137fba48b72eeca4b124578fab2574db48280e66dc62e9079dc3161cc",
+      "matched": true
+    },
+    {
+      "fixture_id": "invalid-orphan-scope",
+      "profile": "open",
+      "expected_conforms": false,
+      "observed_conforms": false,
+      "expected_primary_reason": "missing_effective_scope",
+      "normalized_violations": [
+        "missing_effective_scope"
+      ],
+      "report_text": "Validation Report\nConforms: False\nResults (1):\nConstraint Violation in MinCountConstraintComponent (http://www.w3.org/ns/shacl#MinCountConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: [ sh:class hubs:Workspace ; sh:message Literal(\"missing_effective_scope\") ; sh:minCount Literal(\"1\", datatype=xsd:integer) ; sh:path hubs:locatedIn ]\n\tFocus Node: <urn:s1-003:fixture:invalid-orphan-scope>\n\tResult Path: hubs:locatedIn\n\tMessage: missing_effective_scope\n",
+      "semantic_digest": "21af2f8e0d6826f2bef38601ca462bbc14988dd2023886597ed60c94e22b0377",
+      "runtime": {
+        "python": "3.11.15",
+        "rdflib": "7.6.0",
+        "pyshacl": "0.40.1"
+      },
+      "shapes_sha256": "12097e695329b4e1df498a8403797ad6c7f2311c030b8e9b2bed53a9193788ea",
+      "fixtures_sha256": "7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211",
+      "rdf_input_sha256": "41b1c1d9c8c701d34a5602a24bd65129f27f63f8203fabaf9499dc6b839605e2",
+      "matched": true
+    },
+    {
+      "fixture_id": "invalid-multiple-scope",
+      "profile": "open",
+      "expected_conforms": false,
+      "observed_conforms": false,
+      "expected_primary_reason": "multiple_effective_scopes",
+      "normalized_violations": [
+        "multiple_effective_scopes"
+      ],
+      "report_text": "Validation Report\nConforms: False\nResults (1):\nConstraint Violation in MaxCountConstraintComponent (http://www.w3.org/ns/shacl#MaxCountConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: [ sh:maxCount Literal(\"1\", datatype=xsd:integer) ; sh:message Literal(\"multiple_effective_scopes\") ; sh:path hubs:locatedIn ]\n\tFocus Node: <urn:s1-003:fixture:invalid-multiple-scope>\n\tResult Path: hubs:locatedIn\n\tMessage: multiple_effective_scopes\n",
+      "semantic_digest": "c5d0698b2dbe0fc8b0f5e34ee9104b362ba6dc7604880f952c8e03ed4b0fcc71",
+      "runtime": {
+        "python": "3.11.15",
+        "rdflib": "7.6.0",
+        "pyshacl": "0.40.1"
+      },
+      "shapes_sha256": "12097e695329b4e1df498a8403797ad6c7f2311c030b8e9b2bed53a9193788ea",
+      "fixtures_sha256": "7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211",
+      "rdf_input_sha256": "12b494619f8537db51ee905fd196a369e36c2de0b53b320c3754bbe119de9f85",
+      "matched": true
+    },
+    {
+      "fixture_id": "invalid-stale-status-accepted",
+      "profile": "open",
+      "expected_conforms": false,
+      "observed_conforms": false,
+      "expected_primary_reason": "stale_or_unknown_status",
+      "normalized_violations": [
+        "stale_or_unknown_status"
+      ],
+      "report_text": "Validation Report\nConforms: False\nResults (1):\nConstraint Violation in InConstraintComponent (http://www.w3.org/ns/shacl#InConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: [ sh:datatype xsd:string ; sh:in ( Literal(\"proposed\") Literal(\"under_review\") Literal(\"promoted\") Literal(\"challenged\") Literal(\"retracted\") Literal(\"superseded\") Literal(\"rejected\") ) ; sh:maxCount Literal(\"1\", datatype=xsd:integer) ; sh:message Literal(\"stale_or_unknown_status\") ; sh:minCount Literal(\"1\", datatype=xsd:integer) ; sh:path hubs:status ]\n\tFocus Node: <urn:s1-003:fixture:invalid-stale-status-accepted>\n\tValue Node: Literal(\"accepted\")\n\tResult Path: hubs:status\n\tMessage: stale_or_unknown_status\n",
+      "semantic_digest": "9b08cfd8493df0cd1b0e8c5ffc01335724b25438825526bc2bdeaa6f96596ec4",
+      "runtime": {
+        "python": "3.11.15",
+        "rdflib": "7.6.0",
+        "pyshacl": "0.40.1"
+      },
+      "shapes_sha256": "12097e695329b4e1df498a8403797ad6c7f2311c030b8e9b2bed53a9193788ea",
+      "fixtures_sha256": "7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211",
+      "rdf_input_sha256": "10f9e8432e25a40bc25af24393c0a4a30e64602bda349ce9942b8eaeacdb10c8",
+      "matched": true
+    },
+    {
+      "fixture_id": "invalid-superseded-without-successor",
+      "profile": "open",
+      "expected_conforms": false,
+      "observed_conforms": false,
+      "expected_primary_reason": "missing_superseding_assertion",
+      "normalized_violations": [
+        "missing_superseding_assertion"
+      ],
+      "report_text": "Validation Report\nConforms: False\nResults (1):\nConstraint Violation in SPARQLConstraintComponent (http://www.w3.org/ns/shacl#SPARQLConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: hubs:KnowledgeAssertionShape\n\tFocus Node: <urn:s1-003:fixture:invalid-superseded-without-successor>\n\tValue Node: <urn:s1-003:fixture:invalid-superseded-without-successor>\n\tSource Constraint: [ sh:message Literal(\"missing_superseding_assertion\") ; sh:select Literal(\"\nPREFIX hubs: <https://example.org/agent-hub#>\nSELECT $this WHERE {\n  $this hubs:status \"superseded\" .\n  FILTER NOT EXISTS { $this hubs:supersededBy ?successor . }\n}\n\") ]\n\tMessage: missing_superseding_assertion\n",
+      "semantic_digest": "e6c64cd5d3d0c3a10a865f433a0855f4e8a3a7253a1b996d7e310643b343c6ca",
+      "runtime": {
+        "python": "3.11.15",
+        "rdflib": "7.6.0",
+        "pyshacl": "0.40.1"
+      },
+      "shapes_sha256": "12097e695329b4e1df498a8403797ad6c7f2311c030b8e9b2bed53a9193788ea",
+      "fixtures_sha256": "7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211",
+      "rdf_input_sha256": "db4bc3bafabe102b73bb930b4f47b3a2634e24975646955c25560fde037a63f8",
+      "matched": true
+    },
+    {
+      "fixture_id": "invalid-grant-subject-scope",
+      "profile": "open",
+      "expected_conforms": false,
+      "observed_conforms": false,
+      "expected_primary_reason": "subject_scope_mismatch",
+      "normalized_violations": [
+        "subject_scope_mismatch"
+      ],
+      "report_text": "Validation Report\nConforms: False\nResults (1):\nConstraint Violation in SPARQLConstraintComponent (http://www.w3.org/ns/shacl#SPARQLConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: hubs:DelegationGrantShape\n\tFocus Node: <urn:s1-003:fixture:invalid-grant-subject-scope>\n\tValue Node: <urn:s1-003:fixture:invalid-grant-subject-scope>\n\tSource Constraint: [ sh:message Literal(\"subject_scope_mismatch\") ; sh:select Literal(\"\nPREFIX hubs: <https://example.org/agent-hub#>\nSELECT $this WHERE {\n  $this hubs:locatedIn ?scope .\n  $this hubs:subject ?subj .\n  ?subj hubs:locatedIn ?subScope .\n  FILTER(?subScope != $scope)\n}\n\") ]\n\tMessage: subject_scope_mismatch\n",
+      "semantic_digest": "18e953938cdbf7371293629a0af6f20bec4a250a8f9b4b1445b84b263703dd20",
+      "runtime": {
+        "python": "3.11.15",
+        "rdflib": "7.6.0",
+        "pyshacl": "0.40.1"
+      },
+      "shapes_sha256": "12097e695329b4e1df498a8403797ad6c7f2311c030b8e9b2bed53a9193788ea",
+      "fixtures_sha256": "7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211",
+      "rdf_input_sha256": "1b772b71527fc955ae96a7dd1f79ee22bd88ff2225b58094f781061551042ce1",
+      "matched": true
+    },
+    {
+      "fixture_id": "invalid-grant-negative-budget",
+      "profile": "open",
+      "expected_conforms": false,
+      "observed_conforms": false,
+      "expected_primary_reason": "negative_budget",
+      "normalized_violations": [
+        "negative_budget"
+      ],
+      "report_text": "Validation Report\nConforms: False\nResults (1):\nConstraint Violation in MinInclusiveConstraintComponent (http://www.w3.org/ns/shacl#MinInclusiveConstraintComponent):\n\tSeverity: sh:Violation\n\tSource Shape: [ sh:datatype xsd:decimal ; sh:maxCount Literal(\"1\", datatype=xsd:integer) ; sh:message Literal(\"negative_budget\") ; sh:minCount Literal(\"1\", datatype=xsd:integer) ; sh:minInclusive Literal(\"0\", datatype=xsd:integer) ; sh:path hubs:budget ]\n\tFocus Node: <urn:s1-003:fixture:invalid-grant-negative-budget>\n\tValue Node: Literal(\"-1\", datatype=xsd:decimal)\n\tResult Path: hubs:budget\n\tMessage: negative_budget\n",
+      "semantic_digest": "22a44d1f7d4a44b644c4eaa01d66f0542b8f557e3a6206ccbc53b9e5f9c88559",
+      "runtime": {
+        "python": "3.11.15",
+        "rdflib": "7.6.0",
+        "pyshacl": "0.40.1"
+      },
+      "shapes_sha256": "12097e695329b4e1df498a8403797ad6c7f2311c030b8e9b2bed53a9193788ea",
+      "fixtures_sha256": "7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211",
+      "rdf_input_sha256": "53ca54b4545989b7244c2029cb57034dfe8be26cd2ab7a345bdb6fd8680f6c51",
+      "matched": true
+    }
+  ],
+  "verdict": "pass"
+}
