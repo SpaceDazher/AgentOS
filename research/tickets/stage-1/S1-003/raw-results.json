@@ -1,0 +1,478 @@
+{
+  "schema": "agentos.s1-003-structural-results/v1",
+  "executed_at": "2026-08-24T18:22:29.853506Z",
+  "execution_path": "bounded-stdlib-structural-validator-v1",
+  "runtime": {
+    "python": "3.11.15",
+    "platform": "Windows-10-10.0.22631-SP0",
+    "rdflib_available": false,
+    "pyshacl_available": false,
+    "pyshacl_executed": false,
+    "limitation": "No RDF parser or pySHACL engine was executed. Turtle syntax, SHACL engine conformance, RDF entailment, and SHACL-SPARQL behavior remain unverified."
+  },
+  "inputs": {
+    "fixtures_path": "D:/Project/AgentOS/research/tickets/stage-1/S1-003/fixtures.json",
+    "fixtures_sha256": "7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211",
+    "shapes_path": "D:/Project/AgentOS/research/tickets/stage-1/S1-003/shapes.ttl",
+    "shapes_sha256": "2025035016d9f0a6b22dcaffc60d37d2882b0c51ab582f31a4afb532c6cf8f1f"
+  },
+  "coverage": {
+    "fixture_count": 24,
+    "profile_run_count": 26,
+    "valid_fixture_count": 13,
+    "invalid_fixture_count": 11,
+    "ownership_scope_failure_count": 5,
+    "expected_lifecycle_state_count": 13,
+    "observed_lifecycle_state_count": 13,
+    "missing_lifecycle_states": {
+      "KnowledgeAssertion": [],
+      "DelegationGrant": []
+    },
+    "lifecycle_coverage_ratio": 1.0
+  },
+  "shape_contract_checks": {
+    "ok": true,
+    "required_token_count": 22,
+    "missing_tokens": [],
+    "forbidden_tokens_present": [],
+    "open_shapes_confirmed": true
+  },
+  "adversarial_probes": {
+    "proposed_open_but_not_promoted": true,
+    "orphan_promotion_rejected": true,
+    "mirror_promotion_rejected": true,
+    "missing_independence_group_rejected": true
+  },
+  "results": [
+    {
+      "fixture_id": "assertion-proposed-inherited",
+      "record_type": "KnowledgeAssertion",
+      "status": "proposed",
+      "profile": "open",
+      "tags": [
+        "valid",
+        "lifecycle",
+        "inheritance",
+        "probe-proposed"
+      ],
+      "expected_conforms": true,
+      "expected_primary_reason": null,
+      "observed_conforms": true,
+      "observed_violations": [],
+      "expectation_matched": true
+    },
+    {
+      "fixture_id": "assertion-proposed-inherited",
+      "record_type": "KnowledgeAssertion",
+      "status": "proposed",
+      "profile": "promoted_only",
+      "tags": [
+        "valid",
+        "lifecycle",
+        "inheritance",
+        "probe-proposed"
+      ],
+      "expected_conforms": false,
+      "expected_primary_reason": "not_promoted_status",
+      "observed_conforms": false,
+      "observed_violations": [
+        "not_promoted_status"
+      ],
+      "expectation_matched": true
+    },
+    {
+      "fixture_id": "assertion-under-review",
+      "record_type": "KnowledgeAssertion",
+      "status": "under_review",
+      "profile": "open",
+      "tags": [
+        "valid",
+        "lifecycle"
+      ],
+      "expected_conforms": true,
+      "expected_primary_reason": null,
+      "observed_conforms": true,
+      "observed_violations": [],
+      "expectation_matched": true
+    },
+    {
+      "fixture_id": "assertion-promoted-grounded",
+      "record_type": "KnowledgeAssertion",
+      "status": "promoted",
+      "profile": "open",
+      "tags": [
+        "valid",
+        "lifecycle",
+        "grounded"
+      ],
+      "expected_conforms": true,
+      "expected_primary_reason": null,
+      "observed_conforms": true,
+      "observed_violations": [],
+      "expectation_matched": true
+    },
+    {
+      "fixture_id": "assertion-promoted-grounded",
+      "record_type": "KnowledgeAssertion",
+      "status": "promoted",
+      "profile": "promoted_only",
+      "tags": [
+        "valid",
+        "lifecycle",
+        "grounded"
+      ],
+      "expected_conforms": true,
+      "expected_primary_reason": null,
+      "observed_conforms": true,
+      "observed_violations": [],
+      "expectation_matched": true
+    },
+    {
+      "fixture_id": "assertion-challenged",
+      "record_type": "KnowledgeAssertion",
+      "status": "challenged",
+      "profile": "open",
+      "tags": [
+        "valid",
+        "lifecycle"
+      ],
+      "expected_conforms": true,
+      "expected_primary_reason": null,
+      "observed_conforms": true,
+      "observed_violations": [],
+      "expectation_matched": true
+    },
+    {
+      "fixture_id": "assertion-retracted",
+      "record_type": "KnowledgeAssertion",
+      "status": "retracted",
+      "profile": "open",
+      "tags": [
+        "valid",
+        "lifecycle"
+      ],
+      "expected_conforms": true,
+      "expected_primary_reason": null,
+      "observed_conforms": true,
+      "observed_violations": [],
+      "expectation_matched": true
+    },
+    {
+      "fixture_id": "assertion-superseded",
+      "record_type": "KnowledgeAssertion",
+      "status": "superseded",
+      "profile": "open",
+      "tags": [
+        "valid",
+        "lifecycle"
+      ],
+      "expected_conforms": true,
+      "expected_primary_reason": null,
+      "observed_conforms": true,
+      "observed_violations": [],
+      "expectation_matched": true
+    },
+    {
+      "fixture_id": "assertion-rejected",
+      "record_type": "KnowledgeAssertion",
+      "status": "rejected",
+      "profile": "open",
+      "tags": [
+        "valid",
+        "lifecycle"
+      ],
+      "expected_conforms": true,
+      "expected_primary_reason": null,
+      "observed_conforms": true,
+      "observed_violations": [],
+      "expectation_matched": true
+    },
+    {
+      "fixture_id": "grant-proposed",
+      "record_type": "DelegationGrant",
+      "status": "proposed",
+      "profile": "open",
+      "tags": [
+        "valid",
+        "lifecycle"
+      ],
+      "expected_conforms": true,
+      "expected_primary_reason": null,
+      "observed_conforms": true,
+      "observed_violations": [],
+      "expectation_matched": true
+    },
+    {
+      "fixture_id": "grant-active",
+      "record_type": "DelegationGrant",
+      "status": "active",
+      "profile": "open",
+      "tags": [
+        "valid",
+        "lifecycle"
+      ],
+      "expected_conforms": true,
+      "expected_primary_reason": null,
+      "observed_conforms": true,
+      "observed_violations": [],
+      "expectation_matched": true
+    },
+    {
+      "fixture_id": "grant-revoked",
+      "record_type": "DelegationGrant",
+      "status": "revoked",
+      "profile": "open",
+      "tags": [
+        "valid",
+        "lifecycle",
+        "revoked"
+      ],
+      "expected_conforms": true,
+      "expected_primary_reason": null,
+      "observed_conforms": true,
+      "observed_violations": [],
+      "expectation_matched": true
+    },
+    {
+      "fixture_id": "grant-expired",
+      "record_type": "DelegationGrant",
+      "status": "expired",
+      "profile": "open",
+      "tags": [
+        "valid",
+        "lifecycle"
+      ],
+      "expected_conforms": true,
+      "expected_primary_reason": null,
+      "observed_conforms": true,
+      "observed_violations": [],
+      "expectation_matched": true
+    },
+    {
+      "fixture_id": "grant-exhausted",
+      "record_type": "DelegationGrant",
+      "status": "exhausted",
+      "profile": "open",
+      "tags": [
+        "valid",
+        "lifecycle"
+      ],
+      "expected_conforms": true,
+      "expected_primary_reason": null,
+      "observed_conforms": true,
+      "observed_violations": [],
+      "expectation_matched": true
+    },
+    {
+      "fixture_id": "grant-denied",
+      "record_type": "DelegationGrant",
+      "status": "denied",
+      "profile": "open",
+      "tags": [
+        "valid",
+        "lifecycle"
+      ],
+      "expected_conforms": true,
+      "expected_primary_reason": null,
+      "observed_conforms": true,
+      "observed_violations": [],
+      "expectation_matched": true
+    },
+    {
+      "fixture_id": "invalid-orphan-promoted",
+      "record_type": "KnowledgeAssertion",
+      "status": "promoted",
+      "profile": "open",
+      "tags": [
+        "invalid",
+        "near-miss",
+        "probe-promotion"
+      ],
+      "expected_conforms": false,
+      "expected_primary_reason": "missing_promotion_activity",
+      "observed_conforms": false,
+      "observed_violations": [
+        "missing_promotion_activity"
+      ],
+      "expectation_matched": true
+    },
+    {
+      "fixture_id": "invalid-mirror-sybil-promoted",
+      "record_type": "KnowledgeAssertion",
+      "status": "promoted",
+      "profile": "open",
+      "tags": [
+        "invalid",
+        "near-miss",
+        "probe-mirror"
+      ],
+      "expected_conforms": false,
+      "expected_primary_reason": "insufficient_distinct_canonical_sources",
+      "observed_conforms": false,
+      "observed_violations": [
+        "insufficient_distinct_canonical_sources",
+        "insufficient_independence_groups"
+      ],
+      "expectation_matched": true
+    },
+    {
+      "fixture_id": "invalid-no-independence-group",
+      "record_type": "KnowledgeAssertion",
+      "status": "promoted",
+      "profile": "open",
+      "tags": [
+        "invalid",
+        "near-miss",
+        "probe-independence"
+      ],
+      "expected_conforms": false,
+      "expected_primary_reason": "evidence_missing_independence_group",
+      "observed_conforms": false,
+      "observed_violations": [
+        "evidence_missing_independence_group",
+        "insufficient_independence_groups"
+      ],
+      "expectation_matched": true
+    },
+    {
+      "fixture_id": "invalid-cross-scope-evidence",
+      "record_type": "KnowledgeAssertion",
+      "status": "promoted",
+      "profile": "open",
+      "tags": [
+        "invalid",
+        "ownership_scope"
+      ],
+      "expected_conforms": false,
+      "expected_primary_reason": "evidence_scope_mismatch",
+      "observed_conforms": false,
+      "observed_violations": [
+        "evidence_scope_mismatch"
+      ],
+      "expectation_matched": true
+    },
+    {
+      "fixture_id": "invalid-promotion-actor-scope",
+      "record_type": "KnowledgeAssertion",
+      "status": "promoted",
+      "profile": "open",
+      "tags": [
+        "invalid",
+        "ownership_scope"
+      ],
+      "expected_conforms": false,
+      "expected_primary_reason": "promotion_actor_scope_mismatch",
+      "observed_conforms": false,
+      "observed_violations": [
+        "promotion_actor_scope_mismatch"
+      ],
+      "expectation_matched": true
+    },
+    {
+      "fixture_id": "invalid-orphan-scope",
+      "record_type": "KnowledgeAssertion",
+      "status": "proposed",
+      "profile": "open",
+      "tags": [
+        "invalid",
+        "ownership_scope"
+      ],
+      "expected_conforms": false,
+      "expected_primary_reason": "missing_effective_scope",
+      "observed_conforms": false,
+      "observed_violations": [
+        "missing_effective_scope"
+      ],
+      "expectation_matched": true
+    },
+    {
+      "fixture_id": "invalid-multiple-scope",
+      "record_type": "KnowledgeAssertion",
+      "status": "proposed",
+      "profile": "open",
+      "tags": [
+        "invalid",
+        "ownership_scope",
+        "near-miss"
+      ],
+      "expected_conforms": false,
+      "expected_primary_reason": "multiple_effective_scopes",
+      "observed_conforms": false,
+      "observed_violations": [
+        "multiple_effective_scopes"
+      ],
+      "expectation_matched": true
+    },
+    {
+      "fixture_id": "invalid-stale-status-accepted",
+      "record_type": "KnowledgeAssertion",
+      "status": "accepted",
+      "profile": "open",
+      "tags": [
+        "invalid",
+        "stale-vocabulary"
+      ],
+      "expected_conforms": false,
+      "expected_primary_reason": "stale_or_unknown_status",
+      "observed_conforms": false,
+      "observed_violations": [
+        "stale_or_unknown_status"
+      ],
+      "expectation_matched": true
+    },
+    {
+      "fixture_id": "invalid-superseded-without-successor",
+      "record_type": "KnowledgeAssertion",
+      "status": "superseded",
+      "profile": "open",
+      "tags": [
+        "invalid",
+        "lifecycle"
+      ],
+      "expected_conforms": false,
+      "expected_primary_reason": "missing_superseding_assertion",
+      "observed_conforms": false,
+      "observed_violations": [
+        "missing_superseding_assertion"
+      ],
+      "expectation_matched": true
+    },
+    {
+      "fixture_id": "invalid-grant-subject-scope",
+      "record_type": "DelegationGrant",
+      "status": "active",
+      "profile": "open",
+      "tags": [
+        "invalid",
+        "ownership_scope"
+      ],
+      "expected_conforms": false,
+      "expected_primary_reason": "subject_scope_mismatch",
+      "observed_conforms": false,
+      "observed_violations": [
+        "subject_scope_mismatch"
+      ],
+      "expectation_matched": true
+    },
+    {
+      "fixture_id": "invalid-grant-negative-budget",
+      "record_type": "DelegationGrant",
+      "status": "active",
+      "profile": "open",
+      "tags": [
+        "invalid",
+        "constraint"
+      ],
+      "expected_conforms": false,
+      "expected_primary_reason": "negative_budget",
+      "observed_conforms": false,
+      "observed_violations": [
+        "negative_budget"
+      ],
+      "expectation_matched": true
+    }
+  ],
+  "all_expectations_matched": true,
+  "structural_matrix_passed": true,
+  "verdict": "pass_with_limits"
+}

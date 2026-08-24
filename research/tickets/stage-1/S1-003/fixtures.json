@@ -1,0 +1,269 @@
+{
+  "schema": "agentos.s1-003-fixtures/v1",
+  "expected_lifecycle_states": {
+    "KnowledgeAssertion": [
+      "proposed",
+      "under_review",
+      "promoted",
+      "challenged",
+      "retracted",
+      "superseded",
+      "rejected"
+    ],
+    "DelegationGrant": [
+      "proposed",
+      "active",
+      "revoked",
+      "expired",
+      "exhausted",
+      "denied"
+    ]
+  },
+  "evidence_catalog": {
+    "evidence-a": {
+      "type": "Evidence",
+      "canonical_source_id": "source-a",
+      "publisher_id": "publisher-a",
+      "independence_group": "group-a",
+      "resolver_version": "resolver-v1",
+      "metadata_frozen_at": "2026-08-24T00:00:00Z",
+      "located_in": "workspace-a"
+    },
+    "evidence-b": {
+      "type": "Evidence",
+      "canonical_source_id": "source-b",
+      "publisher_id": "publisher-b",
+      "independence_group": "group-b",
+      "resolver_version": "resolver-v1",
+      "metadata_frozen_at": "2026-08-24T00:00:00Z",
+      "located_in": "workspace-a"
+    },
+    "mirror-a-1": {
+      "type": "Evidence",
+      "canonical_source_id": "source-a",
+      "publisher_id": "publisher-a",
+      "independence_group": "group-a",
+      "resolver_version": "resolver-v1",
+      "metadata_frozen_at": "2026-08-24T00:00:00Z",
+      "located_in": "workspace-a",
+      "url": "https://mirror-one.invalid/a"
+    },
+    "mirror-a-2": {
+      "type": "Evidence",
+      "canonical_source_id": "source-a",
+      "publisher_id": "publisher-a-mirror",
+      "independence_group": "group-a",
+      "resolver_version": "resolver-v1",
+      "metadata_frozen_at": "2026-08-24T00:00:00Z",
+      "located_in": "workspace-a",
+      "url": "https://mirror-two.invalid/a"
+    },
+    "evidence-no-group": {
+      "type": "Evidence",
+      "canonical_source_id": "source-c",
+      "publisher_id": "publisher-c",
+      "resolver_version": "resolver-v1",
+      "metadata_frozen_at": "2026-08-24T00:00:00Z",
+      "located_in": "workspace-a"
+    },
+    "evidence-cross-scope": {
+      "type": "Evidence",
+      "canonical_source_id": "source-d",
+      "publisher_id": "publisher-d",
+      "independence_group": "group-d",
+      "resolver_version": "resolver-v1",
+      "metadata_frozen_at": "2026-08-24T00:00:00Z",
+      "located_in": "workspace-b"
+    }
+  },
+  "fixtures": [
+    {
+      "id": "assertion-proposed-inherited",
+      "tags": ["valid", "lifecycle", "inheritance", "probe-proposed"],
+      "profile": "open",
+      "expected": {"conforms": true},
+      "additional_expectations": {
+        "promoted_only": {"conforms": false, "primary_reason": "not_promoted_status"}
+      },
+      "data": {
+        "type": "KnowledgeAssertion",
+        "status": "proposed",
+        "located_in": "workspace-a",
+        "inherited_content_object_properties": {"digest": "sha256:fixture", "media_type": "text/plain"}
+      }
+    },
+    {
+      "id": "assertion-under-review",
+      "tags": ["valid", "lifecycle"],
+      "profile": "open",
+      "expected": {"conforms": true},
+      "data": {"type": "KnowledgeAssertion", "status": "under_review", "located_in": "workspace-a"}
+    },
+    {
+      "id": "assertion-promoted-grounded",
+      "tags": ["valid", "lifecycle", "grounded"],
+      "profile": "open",
+      "expected": {"conforms": true},
+      "additional_expectations": {"promoted_only": {"conforms": true}},
+      "data": {
+        "type": "KnowledgeAssertion",
+        "status": "promoted",
+        "located_in": "workspace-a",
+        "supported_by": ["evidence-a", "evidence-b"],
+        "generated_by": {"type": "PromotionActivity", "actor_scope": "workspace-a"}
+      }
+    },
+    {
+      "id": "assertion-challenged",
+      "tags": ["valid", "lifecycle"],
+      "profile": "open",
+      "expected": {"conforms": true},
+      "data": {"type": "KnowledgeAssertion", "status": "challenged", "located_in": "workspace-a"}
+    },
+    {
+      "id": "assertion-retracted",
+      "tags": ["valid", "lifecycle"],
+      "profile": "open",
+      "expected": {"conforms": true},
+      "data": {"type": "KnowledgeAssertion", "status": "retracted", "located_in": "workspace-a"}
+    },
+    {
+      "id": "assertion-superseded",
+      "tags": ["valid", "lifecycle"],
+      "profile": "open",
+      "expected": {"conforms": true},
+      "data": {
+        "type": "KnowledgeAssertion",
+        "status": "superseded",
+        "located_in": "workspace-a",
+        "superseded_by": {"type": "KnowledgeAssertion", "id": "assertion-new"}
+      }
+    },
+    {
+      "id": "assertion-rejected",
+      "tags": ["valid", "lifecycle"],
+      "profile": "open",
+      "expected": {"conforms": true},
+      "data": {"type": "KnowledgeAssertion", "status": "rejected", "located_in": "workspace-a"}
+    },
+    {
+      "id": "grant-proposed",
+      "tags": ["valid", "lifecycle"],
+      "profile": "open",
+      "expected": {"conforms": true},
+      "data": {"type": "DelegationGrant", "status": "proposed", "located_in": "workspace-a", "subject": {"type": "HumanUser", "workspace": "workspace-a"}, "actor": {"type": "AgentInstallation", "workspace": "workspace-a"}, "actions": ["read"], "resources": ["artifact-a"], "jti": "jti-proposed", "ttl": "PT10M", "budget": 1}
+    },
+    {
+      "id": "grant-active",
+      "tags": ["valid", "lifecycle"],
+      "profile": "open",
+      "expected": {"conforms": true},
+      "data": {"type": "DelegationGrant", "status": "active", "located_in": "workspace-a", "subject": {"type": "SharedWorkspace", "workspace": "workspace-a"}, "actor": {"type": "AgentInstallation", "workspace": "workspace-a"}, "actions": ["read"], "resources": ["artifact-a"], "jti": "jti-active", "ttl": "PT15M", "budget": 3}
+    },
+    {
+      "id": "grant-revoked",
+      "tags": ["valid", "lifecycle", "revoked"],
+      "profile": "open",
+      "expected": {"conforms": true},
+      "data": {"type": "DelegationGrant", "status": "revoked", "located_in": "workspace-a", "subject": {"type": "PlatformOpsSubject", "workspace": "workspace-a"}, "actor": {"type": "AgentInstallation", "workspace": "workspace-a"}, "actions": ["operate"], "resources": ["control-plane"], "jti": "jti-revoked", "ttl": "PT5M", "budget": 0}
+    },
+    {
+      "id": "grant-expired",
+      "tags": ["valid", "lifecycle"],
+      "profile": "open",
+      "expected": {"conforms": true},
+      "data": {"type": "DelegationGrant", "status": "expired", "located_in": "workspace-a", "subject": {"type": "HumanUser", "workspace": "workspace-a"}, "actor": {"type": "AgentInstallation", "workspace": "workspace-a"}, "actions": ["read"], "resources": ["artifact-a"], "jti": "jti-expired", "ttl": "PT1M", "budget": 0}
+    },
+    {
+      "id": "grant-exhausted",
+      "tags": ["valid", "lifecycle"],
+      "profile": "open",
+      "expected": {"conforms": true},
+      "data": {"type": "DelegationGrant", "status": "exhausted", "located_in": "workspace-a", "subject": {"type": "HumanUser", "workspace": "workspace-a"}, "actor": {"type": "AgentInstallation", "workspace": "workspace-a"}, "actions": ["read"], "resources": ["artifact-a"], "jti": "jti-exhausted", "ttl": "PT5M", "budget": 0}
+    },
+    {
+      "id": "grant-denied",
+      "tags": ["valid", "lifecycle"],
+      "profile": "open",
+      "expected": {"conforms": true},
+      "data": {"type": "DelegationGrant", "status": "denied", "located_in": "workspace-a", "subject": {"type": "HumanUser", "workspace": "workspace-a"}, "actor": {"type": "AgentInstallation", "workspace": "workspace-a"}, "actions": ["write"], "resources": ["artifact-a"], "jti": "jti-denied", "ttl": "PT5M", "budget": 0}
+    },
+    {
+      "id": "invalid-orphan-promoted",
+      "tags": ["invalid", "near-miss", "probe-promotion"],
+      "profile": "open",
+      "expected": {"conforms": false, "primary_reason": "missing_promotion_activity"},
+      "data": {"type": "KnowledgeAssertion", "status": "promoted", "located_in": "workspace-a", "supported_by": ["evidence-a", "evidence-b"]}
+    },
+    {
+      "id": "invalid-mirror-sybil-promoted",
+      "tags": ["invalid", "near-miss", "probe-mirror"],
+      "profile": "open",
+      "expected": {"conforms": false, "primary_reason": "insufficient_distinct_canonical_sources"},
+      "data": {"type": "KnowledgeAssertion", "status": "promoted", "located_in": "workspace-a", "supported_by": ["mirror-a-1", "mirror-a-2"], "generated_by": {"type": "PromotionActivity", "actor_scope": "workspace-a"}}
+    },
+    {
+      "id": "invalid-no-independence-group",
+      "tags": ["invalid", "near-miss", "probe-independence"],
+      "profile": "open",
+      "expected": {"conforms": false, "primary_reason": "evidence_missing_independence_group"},
+      "data": {"type": "KnowledgeAssertion", "status": "promoted", "located_in": "workspace-a", "supported_by": ["evidence-a", "evidence-no-group"], "generated_by": {"type": "PromotionActivity", "actor_scope": "workspace-a"}}
+    },
+    {
+      "id": "invalid-cross-scope-evidence",
+      "tags": ["invalid", "ownership_scope"],
+      "profile": "open",
+      "expected": {"conforms": false, "primary_reason": "evidence_scope_mismatch"},
+      "data": {"type": "KnowledgeAssertion", "status": "promoted", "located_in": "workspace-a", "supported_by": ["evidence-a", "evidence-cross-scope"], "generated_by": {"type": "PromotionActivity", "actor_scope": "workspace-a"}}
+    },
+    {
+      "id": "invalid-promotion-actor-scope",
+      "tags": ["invalid", "ownership_scope"],
+      "profile": "open",
+      "expected": {"conforms": false, "primary_reason": "promotion_actor_scope_mismatch"},
+      "data": {"type": "KnowledgeAssertion", "status": "promoted", "located_in": "workspace-a", "supported_by": ["evidence-a", "evidence-b"], "generated_by": {"type": "PromotionActivity", "actor_scope": "workspace-b"}}
+    },
+    {
+      "id": "invalid-orphan-scope",
+      "tags": ["invalid", "ownership_scope"],
+      "profile": "open",
+      "expected": {"conforms": false, "primary_reason": "missing_effective_scope"},
+      "data": {"type": "KnowledgeAssertion", "status": "proposed"}
+    },
+    {
+      "id": "invalid-multiple-scope",
+      "tags": ["invalid", "ownership_scope", "near-miss"],
+      "profile": "open",
+      "expected": {"conforms": false, "primary_reason": "multiple_effective_scopes"},
+      "data": {"type": "KnowledgeAssertion", "status": "proposed", "located_in": ["workspace-a", "workspace-b"]}
+    },
+    {
+      "id": "invalid-stale-status-accepted",
+      "tags": ["invalid", "stale-vocabulary"],
+      "profile": "open",
+      "expected": {"conforms": false, "primary_reason": "stale_or_unknown_status"},
+      "data": {"type": "KnowledgeAssertion", "status": "accepted", "located_in": "workspace-a"}
+    },
+    {
+      "id": "invalid-superseded-without-successor",
+      "tags": ["invalid", "lifecycle"],
+      "profile": "open",
+      "expected": {"conforms": false, "primary_reason": "missing_superseding_assertion"},
+      "data": {"type": "KnowledgeAssertion", "status": "superseded", "located_in": "workspace-a"}
+    },
+    {
+      "id": "invalid-grant-subject-scope",
+      "tags": ["invalid", "ownership_scope"],
+      "profile": "open",
+      "expected": {"conforms": false, "primary_reason": "subject_scope_mismatch"},
+      "data": {"type": "DelegationGrant", "status": "active", "located_in": "workspace-a", "subject": {"type": "HumanUser", "workspace": "workspace-b"}, "actor": {"type": "AgentInstallation", "workspace": "workspace-a"}, "actions": ["read"], "resources": ["artifact-a"], "jti": "jti-cross-subject", "ttl": "PT5M", "budget": 1}
+    },
+    {
+      "id": "invalid-grant-negative-budget",
+      "tags": ["invalid", "constraint"],
+      "profile": "open",
+      "expected": {"conforms": false, "primary_reason": "negative_budget"},
+      "data": {"type": "DelegationGrant", "status": "active", "located_in": "workspace-a", "subject": {"type": "HumanUser", "workspace": "workspace-a"}, "actor": {"type": "AgentInstallation", "workspace": "workspace-a"}, "actions": ["read"], "resources": ["artifact-a"], "jti": "jti-negative", "ttl": "PT5M", "budget": -1}
+    }
+  ]
+}

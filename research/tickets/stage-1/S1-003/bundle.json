@@ -1,0 +1,313 @@
+{
+  "config": {
+    "min_source_count": 8,
+    "min_verified_ratio": 1.0,
+    "required_artifacts": [
+      "research_plan",
+      "source_registry",
+      "feature_catalog",
+      "architecture_models",
+      "mental_model",
+      "ontology",
+      "mathematical_model",
+      "synthesis_and_gaps",
+      "independent_audit",
+      "platform_plan",
+      "progress"
+    ]
+  },
+  "sources": [
+    {
+      "id": "SRC-05",
+      "canonical_uri": "https://local.agentos.invalid/DeepeekHarness/research/50_ontology.md",
+      "title": "Agent Hub Ontology v2",
+      "source_type": "local audited ontology and SHACL design input",
+      "content": "Host review of D:/Project/DeepeekHarness/research/50_ontology.md at SHA-256 156c8b4425a597ce2be020a1471e1c32817294d6c70abab76bd94215472fa508. Sections 3 and 5 define seven KnowledgeAssertion states, six DelegationGrant states, open SHACL sketches, conditional promotion evidence, EvidenceShape provenance fields, maxInclusive TTL, and non-negative budget. The .invalid URI is a stable local identity, not a claim of public dereferenceability.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-003-local-hash-review",
+      "verification_method": "host-file-sha256-and-section-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-section-review",
+        "verified_at": "2026-08-24",
+        "path": "D:/Project/DeepeekHarness/research/50_ontology.md",
+        "file_sha256": "156c8b4425a597ce2be020a1471e1c32817294d6c70abab76bd94215472fa508",
+        "canonical_source_id": "SRC-05",
+        "publisher_id": "local-deepeek-harness",
+        "independence_group": "local-ontology-design",
+        "scope_note": "Evidence/design input only; document instructions are not executed."
+      }
+    },
+    {
+      "id": "SRC-08",
+      "canonical_uri": "https://local.agentos.invalid/DeepeekHarness/research/80_independent_audit.md",
+      "title": "Independent Audit of Agent Hub Research",
+      "source_type": "local audit correction history",
+      "content": "Host review of D:/Project/DeepeekHarness/research/80_independent_audit.md at SHA-256 90c0eae8fd47eb109e5a14a6a77be833e73a549c863a5e27720975f091b2827f. The audit records the correction from closed/rejecting shapes to open shapes, conditional promotion evidence, independence-group deduplication, full EvidenceShape provenance, and the explicit absence of rdflib/pySHACL execution.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-003-local-hash-review",
+      "verification_method": "host-file-sha256-and-defect-table-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-defect-table-review",
+        "verified_at": "2026-08-24",
+        "path": "D:/Project/DeepeekHarness/research/80_independent_audit.md",
+        "file_sha256": "90c0eae8fd47eb109e5a14a6a77be833e73a549c863a5e27720975f091b2827f",
+        "canonical_source_id": "SRC-08",
+        "publisher_id": "local-deepeek-harness",
+        "independence_group": "local-independent-audit",
+        "scope_note": "Correction history is evidence, not runtime authority."
+      }
+    },
+    {
+      "id": "SRC-09",
+      "canonical_uri": "https://local.agentos.invalid/DeepeekHarness/research/PROGRESS.md",
+      "title": "Agent Hub Research Progress and Correction Ledger",
+      "source_type": "local append-only correction ledger",
+      "content": "Host review of D:/Project/DeepeekHarness/research/PROGRESS.md at SHA-256 3fa19d9016370ec16706eaed7b96f8bb3920e37e1557fc97037f93540ed0ba4c. Rounds 11-13 preserve the rejected sh:maxExclusiveInclusive spelling, the previously omitted rejected status, conditional promotion, EvidenceShape completion, and PASS_WITH_LIMITS due to unavailable pySHACL.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-003-local-hash-review",
+      "verification_method": "host-file-sha256-and-round-ledger-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-round-ledger-review",
+        "verified_at": "2026-08-24",
+        "path": "D:/Project/DeepeekHarness/research/PROGRESS.md",
+        "file_sha256": "3fa19d9016370ec16706eaed7b96f8bb3920e37e1557fc97037f93540ed0ba4c",
+        "canonical_source_id": "SRC-09",
+        "publisher_id": "local-deepeek-harness",
+        "independence_group": "local-correction-ledger"
+      }
+    },
+    {
+      "id": "FEATURE-CONSUMER",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/agent_hub_platform_landscape_2026.md",
+      "title": "Agent Hub Platform Landscape and Data Model Consumer",
+      "source_type": "local feature and data-model consumer",
+      "content": "Host review of research/agent_hub_platform_landscape_2026.md at SHA-256 d6fa8f851200e7e9adb5f80f0e7595e14a4ada14dfa14530f3af17c4109e9089. It consumes SHACL as portable graph validation, PROV-O for provenance vocabulary, RO-Crate for evidence-pack export, and explicitly keeps SQL/application validators as enforcement in the MVP.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-003-local-hash-review",
+      "verification_method": "host-file-sha256-and-consumer-trace-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-consumer-trace-review",
+        "verified_at": "2026-08-24",
+        "path": "research/agent_hub_platform_landscape_2026.md",
+        "file_sha256": "d6fa8f851200e7e9adb5f80f0e7595e14a4ada14dfa14530f3af17c4109e9089",
+        "canonical_source_id": "FEATURE-CONSUMER",
+        "publisher_id": "agentos-local",
+        "independence_group": "agentos-platform-consumer"
+      }
+    },
+    {
+      "id": "F4-SHACL",
+      "canonical_uri": "https://www.w3.org/TR/shacl/",
+      "title": "Shapes Constraint Language (SHACL)",
+      "source_type": "W3C Recommendation",
+      "content": "The W3C SHACL Recommendation is the canonical normative source for NodeShape, PropertyShape, cardinality, value constraints, logical constraints, and SHACL-SPARQL. S1-003 uses those terms as a portable contract but does not claim engine conformance without a SHACL runtime.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-003-standard-identity-review",
+      "verification_method": "canonical-w3c-recommendation-and-local-citation-review",
+      "verifier_provenance": {
+        "method": "canonical-w3c-recommendation-and-local-citation-review",
+        "verified_at": "2026-08-24",
+        "canonical_source_id": "F4",
+        "publisher_id": "w3c",
+        "independence_group": "w3c-data-shapes-working-group",
+        "scope_note": "Identity and scoped normative terms verified; no pySHACL conformance run is inferred."
+      }
+    },
+    {
+      "id": "F8-PROV-O",
+      "canonical_uri": "https://www.w3.org/TR/prov-o/",
+      "title": "PROV-O: The PROV Ontology",
+      "source_type": "W3C Recommendation",
+      "content": "The W3C PROV-O Recommendation defines Entity, Activity, Agent, used, and wasGeneratedBy relations. The source was previously promoted by S1-001 for scoped provenance claims; S1-003 reuses it only for PromotionActivity and evidence lineage vocabulary.",
+      "verification_status": "verified",
+      "verifier": "codex-primary-source-review-2026-08-24",
+      "verification_method": "live-canonical-page-review-reused-from-s1-001",
+      "verifier_provenance": {
+        "method": "live-canonical-page-review-reused-from-s1-001",
+        "verified_at": "2026-08-24",
+        "canonical_source_id": "F8",
+        "publisher_id": "w3c",
+        "independence_group": "w3c-prov-working-group",
+        "prior_ticket": "S1-001"
+      }
+    },
+    {
+      "id": "PYSHACL",
+      "canonical_uri": "https://github.com/RDFLib/pySHACL",
+      "title": "RDFLib pySHACL",
+      "source_type": "official open-source SHACL runtime project",
+      "content": "The official RDFLib pySHACL project is the intended Python validation runtime. A local importlib probe on Python 3.11.15 returned rdflib=false and pyshacl=false; therefore S1-003 did not call its validate API and records a runtime limitation.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-003-runtime-probe",
+      "verification_method": "official-project-identity-plus-local-import-probe",
+      "verifier_provenance": {
+        "method": "official-project-identity-plus-local-import-probe",
+        "verified_at": "2026-08-24",
+        "canonical_source_id": "PYSHACL",
+        "publisher_id": "rdflib",
+        "independence_group": "rdflib-pyshacl",
+        "python": "3.11.15",
+        "rdflib_available": false,
+        "pyshacl_available": false,
+        "pyshacl_executed": false
+      }
+    },
+    {
+      "id": "S1-003-RESULTS",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-003/raw-results.json",
+      "title": "S1-003 Structural Validation Results",
+      "source_type": "local deterministic empirical artifact",
+      "content": "The stdlib structural validator executed 26 profile checks over 24 fixtures on 2026-08-24T18:22:29.853506Z. It observed 13/13 lifecycle states, 13 valid and 11 invalid fixtures, 5 ownership/scope failures, all expected reasons, four passing adversarial probes, and pyshacl_executed=false. Raw SHA-256 is 9e04ce7d68decfd8f7541096bd62731b87fd033395c68a0f30d36d46ce4d74a0.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-003-independent-replay",
+      "verification_method": "deterministic-local-replay-and-sha256",
+      "verifier_provenance": {
+        "method": "deterministic-local-replay-and-sha256",
+        "verified_at": "2026-08-24",
+        "path": "research/tickets/stage-1/S1-003/raw-results.json",
+        "file_sha256": "9e04ce7d68decfd8f7541096bd62731b87fd033395c68a0f30d36d46ce4d74a0",
+        "fixtures_sha256": "7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211",
+        "shapes_sha256": "2025035016d9f0a6b22dcaffc60d37d2882b0c51ab582f31a4afb532c6cf8f1f",
+        "validator_sha256": "2753a9a0911fb3ccda87ca2f07573e5a2535daa3f0dac4201e18e85b3d3a8e6a",
+        "canonical_source_id": "S1-003-RESULTS",
+        "publisher_id": "agentos-local",
+        "independence_group": "s1-003-structural-execution"
+      }
+    }
+  ],
+  "claims": [
+    {
+      "id": "claim-schema-contract",
+      "text": "Schema fact: the audited contract contains seven KnowledgeAssertion states, six DelegationGrant states, open shapes, conditional promotion evidence, EvidenceShape provenance fields, maxInclusive TTL, and non-negative budget.",
+      "claim_class": "fact",
+      "source_ids": ["SRC-05", "SRC-08", "SRC-09", "F4-SHACL"]
+    },
+    {
+      "id": "claim-promotion-constraint",
+      "text": "Constraint: a promoted assertion requires exactly one PromotionActivity, at least two evidence records, at least two distinct canonical_source_id values, at least two independence_group values, complete resolver provenance, and matching workspace scope.",
+      "claim_class": "fact",
+      "source_ids": ["SRC-05", "SRC-08", "F4-SHACL", "F8-PROV-O"]
+    },
+    {
+      "id": "claim-execution-result",
+      "text": "Schema fact: the bounded stdlib validator executed 26 profile checks over 24 fixtures and matched every declared expected outcome and intended primary failure reason.",
+      "claim_class": "fact",
+      "source_ids": ["S1-003-RESULTS", "SRC-05"]
+    },
+    {
+      "id": "claim-lifecycle-coverage",
+      "text": "Schema fact: all 13 expected lifecycle states were represented, with 13 valid fixtures, 11 invalid fixtures, and five ownership/scope failure fixtures.",
+      "claim_class": "fact",
+      "source_ids": ["S1-003-RESULTS", "SRC-05"]
+    },
+    {
+      "id": "claim-near-miss-result",
+      "text": "Near miss: proposed with inherited ContentObject extras passes the open structural profile but fails promoted_only; orphan promotion, mirror-source promotion, and missing independence group each fail for the intended reason.",
+      "claim_class": "fact",
+      "source_ids": ["S1-003-RESULTS", "SRC-08", "SRC-09"]
+    },
+    {
+      "id": "claim-stale-vocabulary",
+      "text": "Constraint: the shapes contain sh:maxInclusive and rejected, contain no sh:maxExclusiveInclusive, accepted, withdrawn, or sh:closed true token, and the stale accepted fixture is rejected.",
+      "claim_class": "fact",
+      "source_ids": ["S1-003-RESULTS", "SRC-09", "F4-SHACL"]
+    },
+    {
+      "id": "claim-runtime-limit",
+      "text": "Tool availability limit: rdflib and pyshacl were not importable in the execution environment and pySHACL was not executed; Turtle parsing, RDF entailment, SHACL-engine conformance, and SHACL-SPARQL behavior remain unverified.",
+      "claim_class": "fact",
+      "source_ids": ["PYSHACL", "S1-003-RESULTS", "SRC-08"]
+    },
+    {
+      "id": "claim-readiness-inference",
+      "text": "Design inference: the ontology contract is ready as a versioned structural baseline for S1-004 and S1-011, but not as a fully engine-validated SHACL release; the correct ticket verdict is PASS_WITH_LIMITS.",
+      "claim_class": "inference",
+      "source_ids": ["S1-003-RESULTS", "SRC-08", "FEATURE-CONSUMER", "PYSHACL"]
+    },
+    {
+      "id": "claim-enforcement-separation",
+      "text": "Design inference: SQL constraints and application validators remain canonical enforcement for the MVP while SHACL is a portable projection and conformance contract, so runtime absence does not authorize weaker promotion semantics.",
+      "claim_class": "inference",
+      "source_ids": ["FEATURE-CONSUMER", "F4-SHACL", "SRC-05"]
+    },
+    {
+      "id": "claim-engine-assumption",
+      "text": "The structural run does not prove that shapes.ttl parses in an RDF engine or that its SHACL-SPARQL query behaves identically across conforming implementations.",
+      "claim_class": "assumption"
+    },
+    {
+      "id": "claim-next-target",
+      "text": "Run the frozen shapes and equivalent RDF fixtures through a pinned pySHACL version, record the version and report graph, and promote S1-003 from PASS_WITH_LIMITS only if all expected outcomes remain identical.",
+      "claim_class": "target",
+      "source_ids": ["PYSHACL", "S1-003-RESULTS"]
+    }
+  ],
+  "artifacts": {
+    "research_plan": {
+      "content": "# Question\nCan the ontology lifecycle and open SHACL shapes be exercised over valid, invalid, proposed, promoted, rejected, superseded, and revoked cases without rejecting allowed inherited ContentObject properties or allowing orphan promotion?\n\n# Method\nFreeze shapes.ttl and fixtures.json by SHA-256. Probe rdflib/pySHACL availability. When unavailable, execute a bounded stdlib structural validator that mirrors only the stated lifecycle, cardinality, scope, provenance, TTL, budget, and independence constraints. Compare every observed result with a declared expected result and primary reason. Preserve the runtime distinction in raw-results.json.\n\n# Source mix\nUse the audited ontology, independent correction table, correction ledger, feature/data-model consumer, W3C SHACL, W3C PROV-O, pySHACL project identity, and the replayed local result. Local source identity URIs under .invalid are explicitly non-dereferenceable and bind to host paths and hashes.\n\n# Scope\nOpen shapes, KnowledgeAssertion and DelegationGrant vocabularies, conditional promotion, EvidenceShape provenance, scope/ownership, supersession, mirrors, and stale vocabulary.\n\n# Non-scope\nNo RDF store choice, ontology service, closed-world reasoning, production enforcement replacement, dependency installation, or claim that pySHACL executed.\n\n# Stop rule\nKeep PASS_WITH_LIMITS if rdflib/pySHACL is unavailable. Stop and escalate before any shape change that alters a downstream invariant or if an expected case requires semantics outside the frozen contract.",
+      "claim_refs": ["claim-schema-contract", "claim-runtime-limit", "claim-engine-assumption", "claim-next-target"],
+      "producer": "agentos-s1-003-producer"
+    },
+    "source_registry": {
+      "content": "# Sources\n| ID | Class | Verification | Role |\n|---|---|---|---|\n| SRC-05 | ontology/SHACL design | local hash + section review | lifecycle and shape baseline |\n| SRC-08 | audit correction history | local hash + defect-table review | closed defects and runtime limit |\n| SRC-09 | correction ledger | local hash + round review | rejected spellings and stale vocabulary |\n| FEATURE-CONSUMER | feature/data-model consumer | local hash + trace review | downstream enforcement split |\n| F4-SHACL | W3C Recommendation | canonical identity + scoped review | normative SHACL vocabulary |\n| F8-PROV-O | W3C Recommendation | S1-001 verified source reuse | Activity/Entity lineage |\n| PYSHACL | official runtime project | project identity + local import probe | runtime availability boundary |\n| S1-003-RESULTS | empirical artifact | deterministic replay + SHA-256 | fixture outcomes |\n\n# Evidence classes\nAll three required classes are present: ontology/SHACL, correction history, and a feature/data-model consumer. Generated measurements are a fourth class. Local .invalid URIs are stable identifiers only and are accompanied by exact host path and file hash.\n\n# Ticket claim-class mapping\nThe harness schema accepts fact/inference/assumption/target. Ticket schema_fact, constraint, near_miss, and tool_availability_limit claims are persisted as sourced fact claims with the original class named in the text; design_inference maps to inference.",
+      "claim_refs": ["claim-schema-contract", "claim-runtime-limit", "claim-execution-result"],
+      "producer": "agentos-s1-003-producer"
+    },
+    "feature_catalog": {
+      "content": "# Contract features\n| Feature | Fixture evidence | Downstream consumer | Status |\n|---|---|---|---|\n| open KnowledgeAssertion shape | proposed fixture with extra inherited ContentObject fields | S1-011 knowledge gate | structural pass |\n| conditional promoted grounding | grounded/orphan/mirror/no-group fixtures | S1-011 knowledge gate | structural pass |\n| complete evidence provenance | missing-field and scope checks | lineage/evidence pack | structural pass |\n| lifecycle vocabulary | 13/13 states represented | S1-004 formal model | structural pass |\n| supersession link | valid and missing-successor cases | lineage/versioning | structural pass |\n| grant scope and ownership | valid states plus subject/scope mismatch | S1-004/S1-007 isolation | structural pass |\n| TTL and budget constraints | valid PT15M/zero and negative-budget case | authorization model | structural pass |\n| RDF/SHACL engine conformance | no runtime | portable export | open limit |\n\n# Decision\nThe structural features may be consumed as frozen assumptions by downstream tickets, but engine-specific behavior must remain an explicit unresolved dependency.",
+      "claim_refs": ["claim-lifecycle-coverage", "claim-near-miss-result", "claim-readiness-inference", "claim-engine-assumption"],
+      "producer": "agentos-s1-003-producer"
+    },
+    "architecture_models": {
+      "content": "# Enforcement architecture\nCanonical transactional state -> SQL/application invariants -> deterministic promotion gate -> versioned JSON-LD/RDF projection -> SHACL validation report. SHACL is a portable contract and projection check; it is not the only or primary authorization boundary.\n\n# S1-003 execution path\nfixtures.json + shapes.ttl (frozen hashes) -> validate_structural.py -> raw-results.json -> FLOW-11 bundle -> AgentOS deterministic research gate -> evidence pack + wiki. The structural validator never parses or executes untrusted RDF and never claims SHACL-engine authority.\n\n# Future engine path\nThe next implementation step adds a pinned, isolated pySHACL adapter that consumes RDF fixtures, captures conforms/result graph/result text/version, compares with the frozen structural oracle, and cannot mutate the shapes or expected outcomes. A mismatch quarantines the candidate contract for review.",
+      "claim_refs": ["claim-enforcement-separation", "claim-execution-result", "claim-next-target"],
+      "producer": "agentos-s1-003-producer"
+    },
+    "mental_model": {
+      "content": "# Mental model\nOpen shape means unknown or inherited ContentObject/PROV properties are tolerated; it does not mean missing required scope, malformed evidence, or promotion without grounding is tolerated. Proposed is a belief candidate, not shared knowledge. Promoted is a separate trust boundary requiring an attributable activity and independently grouped evidence.\n\n# Two profiles\nThe open profile asks whether a record is structurally admissible in its current lifecycle state. The promoted_only profile asks whether it is admissible as grounded shared knowledge. Therefore the same proposed record can correctly pass open and fail promoted_only.\n\n# Independence\nURLs are locators, not evidence identities. Two mirrors with one canonical_source_id or one independence_group count once. Scope is equally non-transitive: evidence or actor ownership in another workspace does not become valid through a link.",
+      "claim_refs": ["claim-promotion-constraint", "claim-near-miss-result", "claim-enforcement-separation"],
+      "producer": "agentos-s1-003-producer"
+    },
+    "ontology": {
+      "content": "# Frozen shape contract\nshapes.ttl SHA-256: 2025035016d9f0a6b22dcaffc60d37d2882b0c51ab582f31a4afb532c6cf8f1f. Fixtures SHA-256: 7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211.\n\n# KnowledgeAssertion lifecycle\nproposed -> under_review -> promoted or rejected; promoted -> challenged -> promoted or retracted; promoted -> superseded. All seven vocabulary values appear in valid fixtures. Superseded requires a successor link in the executable structural contract.\n\n# DelegationGrant lifecycle\nproposed -> active or denied; active -> revoked, expired, or exhausted. All six values appear in valid fixtures. Scope, subject, actor, actions, resources, jti, TTL <= PT15M, and budget >= 0 are enforced structurally.\n\n# Promotion\nPromoted requires one PromotionActivity, at least two Evidence nodes, at least two canonical_source_id values and independence_group values, complete provenance resolver fields, and matching workspace scope. Evidence/activity are not required for proposed.\n\n# Shape integrity\nThe snapshot is open, contains sh:maxInclusive, rejected, superseded, and revoked, and contains no sh:maxExclusiveInclusive, accepted, withdrawn, or sh:closed true. SHACL-SPARQL performs the intended distinct-count query in the text, but engine execution remains unverified.",
+      "claim_refs": ["claim-schema-contract", "claim-promotion-constraint", "claim-stale-vocabulary", "claim-engine-assumption"],
+      "producer": "agentos-s1-003-producer"
+    },
+    "mathematical_model": {
+      "content": "# Sets and predicates\nLet A be assertion records, E(a) their evidence set, C(a)={canonical_source_id(e)}, G(a)={independence_group(e)}, S(a) the unique effective workspace, and P(a) the PromotionActivity set.\n\nGrounded(a) := status(a)=promoted AND |P(a)|=1 AND |E(a)|>=2 AND |C(a)|>=2 AND |G(a)|>=2 AND complete_provenance(E(a)) AND same_scope(a,E(a),P(a)).\n\nOpenValid(a) permits any exact assertion lifecycle value and extra properties, but requires one effective scope; if status=promoted then Grounded(a). Superseded(a) additionally requires one successor. GrantValid(g) requires status in the six-value grant vocabulary, unique scope, allowed subject kind, AgentInstallation actor, same ownership scope, non-empty actions/resources, jti, 0<=TTL<=15 minutes, and budget>=0.\n\n# Measurements\nLifecycle coverage = 13 observed / 13 expected = 1.0. Expectation accuracy = 26 matched / 26 profile runs = 1.0. Base fixtures = 24: 13 conforming and 11 non-conforming. Ownership/scope failures = 5 >= 2. Required-token check = 22/22 and forbidden-token count = 0.\n\n# Boundary\nThese predicates are a bounded executable oracle, not proof of RDF graph semantics or SHACL implementation conformance.",
+      "claim_refs": ["claim-promotion-constraint", "claim-lifecycle-coverage", "claim-execution-result", "claim-engine-assumption"],
+      "producer": "agentos-s1-003-producer"
+    },
+    "synthesis_and_gaps": {
+      "content": "# Result\nPASS_WITH_LIMITS. The available execution path closes the lifecycle, scope/ownership, promotion, mirror/Sybil, supersession, TTL, budget, and stale-vocabulary matrix. It covers 24 fixtures, 26 profile runs, 13/13 states, and all expected primary reasons.\n\n# What is ready\nS1-004 and S1-011 may consume the versioned state sets, predicates, fixture identifiers, and hashes as structural assumptions. SQL/application enforcement remains authoritative in the MVP.\n\n# Open gaps\nNo RDF parser, pySHACL engine, entailment regime, result graph, or SHACL-SPARQL execution was available. Turtle syntax and cross-engine behavior are not proven. Promotion distinctness uses SHACL-SPARQL and needs pinned-engine conformance. No production RDF store or ontology service was evaluated.\n\n# Recommendation\nKeep the ticket yellow/PASS_WITH_LIMITS. Add a pinned optional pySHACL environment and RDF serialization of the same fixtures, run base and promoted-only profiles, bind version plus result graph hashes, and compare all outcomes to this oracle before changing the verdict.",
+      "claim_refs": ["claim-execution-result", "claim-readiness-inference", "claim-runtime-limit", "claim-next-target"],
+      "producer": "agentos-s1-003-producer"
+    },
+    "independent_audit": {
+      "content": "# Integrity review\nThe independent verifier replayed validate_structural.py against shapes.ttl and fixtures.json. Input hashes were shapes=2025035016d9f0a6b22dcaffc60d37d2882b0c51ab582f31a4afb532c6cf8f1f, fixtures=7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211, validator=2753a9a0911fb3ccda87ca2f07573e5a2535daa3f0dac4201e18e85b3d3a8e6a, raw=9e04ce7d68decfd8f7541096bd62731b87fd033395c68a0f30d36d46ce4d74a0. The ticket-local .gitattributes and explicit newline setting preserve LF bytes across Windows checkout.\n\n# Probe 1\nA proposed record with extra inherited ContentObject properties passed open and failed promoted_only with not_promoted_status. PASS.\n\n# Probe 2\nOrphan promoted failed missing_promotion_activity; two mirrors failed insufficient_distinct_canonical_sources; missing independence group failed evidence_missing_independence_group. PASS.\n\n# Regression probes\nThe stale accepted status failed; missing superseding assertion failed; cross-workspace evidence, promotion actor, grant subject, missing scope, and multiple scope failed. The shape text contains sh:maxInclusive and no rejected spelling/token regression. PASS.\n\n# Adversarial limit\nThe fallback reproduces intended predicates but cannot validate Turtle syntax, SHACL focus-node targeting, SPARQL query execution, entailment, or implementation differences. It must never be labeled a pySHACL run.\n\n# Verdict\nPASS_WITH_LIMITS. Structural acceptance is supported; full SHACL-engine acceptance remains open. Auditor and producer labels are separate, but both executions occurred in the same local environment and are not independent operators.",
+      "claim_refs": ["claim-execution-result", "claim-near-miss-result", "claim-stale-vocabulary", "claim-runtime-limit"],
+      "producer": "agentos-s1-003-independent-verifier"
+    },
+    "platform_plan": {
+      "content": "# Scope\nFreeze S1-003 v1 as the structural ontology baseline and add a separately versioned engine-conformance layer. Do not weaken SQL/application gates, select a production RDF store, or declare SHACL-engine completion from this run.\n\n# Architecture\nKeep canonical transactional state and SQL/application validation authoritative. Export deterministic RDF fixtures to an isolated pinned pySHACL adapter, capture its report graph and runtime identity, and compare outputs with the immutable structural oracle before downstream consumption.\n\n# Workstreams\n1. Record the dependency decision and pin compatible rdflib/pySHACL versions in an optional isolated environment. 2. Serialize every JSON fixture into deterministic Turtle/RDF while preserving fixture IDs and expected profiles. 3. Execute base and promoted-only shapes and capture conforms, report graph, report text, versions, and hashes. 4. Compare engine outcomes with the structural oracle and quarantine any mismatch. 5. Add exact invariant references to S1-004 and S1-011. 6. Decide whether SHACL-SPARQL distinctness is portable enough or remains duplicated in application/SQL enforcement.\n\n# Milestones\nM1 freezes shapes, fixtures, validator, and raw hashes. M2 produces deterministic RDF for all 24 fixtures. M3 obtains 26/26 matching profile results from pinned pySHACL. M4 completes independent replay and downstream invariant binding. M5 may promote the ticket from PASS_WITH_LIMITS after review.\n\n# Verification\nRequire all 26 profile expectations to match in the pinned engine; hash report graphs and environment metadata; confirm open shapes accept extra inherited properties; confirm orphan, mirror, and missing-group promotions fail; confirm stale spelling/status tokens remain absent; and require an independent reviewer to reproduce the command.\n\n# Open decisions\nChoose the pinned pySHACL/rdflib versions and isolation mechanism; decide the entailment profile; choose blank-node canonicalization for report hashes; decide whether SHACL-SPARQL remains portable contract or advisory projection; name the independent reviewer.\n\n# Risks\nDependency drift, Turtle syntax defects hidden by textual checking, SPARQL prefix behavior, differing entailment regimes, blank-node identity, accidental closed-world assumptions, and promotion logic moving out of the canonical transaction.",
+      "claim_refs": ["claim-readiness-inference", "claim-enforcement-separation", "claim-next-target", "claim-engine-assumption"],
+      "producer": "agentos-s1-003-producer"
+    },
+    "progress": {
+      "content": "# 2026-08-24\nReviewed SRC-05 lifecycle and shapes, SRC-08 audit corrections, SRC-09 rounds 11-13, and the local feature/data-model consumer. Confirmed Python 3.11.15; rdflib=false; pyshacl=false. No dependency was installed and no SHACL engine was claimed.\n\nAuthored shapes.ttl, fixtures.json, and validate_structural.py. Executed the final structural matrix at 2026-08-24T18:22:29.853506Z on Windows-10-10.0.22631-SP0. Result: PASS_WITH_LIMITS, 24 fixtures, 26 profile runs, 13/13 lifecycle states, 13 valid, 11 invalid, 5 scope/ownership failures, all expectations matched, four adversarial probes passed. Ticket-local LF rules and an explicit writer newline make byte hashes stable under core.autocrlf=true.\n\nThe first research-plan persistence attempt failed closed because platform_plan used semantically equivalent headings rather than the required FLOW headings. The bundle was corrected to explicit Scope, Architecture, Workstreams, Milestones, Verification, and Open decisions sections; the failed goal remains in the shared DB as audit history.\n\nHashes: shapes 2025035016d9f0a6b22dcaffc60d37d2882b0c51ab582f31a4afb532c6cf8f1f; fixtures 7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211; validator 2753a9a0911fb3ccda87ca2f07573e5a2535daa3f0dac4201e18e85b3d3a8e6a; raw results 9e04ce7d68decfd8f7541096bd62731b87fd033395c68a0f30d36d46ce4d74a0. Next: persist FLOW-11 through research-plan, check wiki/evidence pack, then keep engine conformance as the named follow-up.",
+      "claim_refs": ["claim-execution-result", "claim-lifecycle-coverage", "claim-runtime-limit", "claim-next-target"],
+      "producer": "agentos-s1-003-producer"
+    }
+  },
+  "audit": {
+    "subject_producer": "agentos-s1-003-producer",
+    "auditor": "agentos-s1-003-independent-verifier",
+    "verdict": "pass_with_limits",
+    "limitations": [
+      "rdflib and pySHACL were unavailable; pySHACL was not executed.",
+      "The stdlib validator is a bounded structural oracle, not a Turtle parser, RDF reasoner, SHACL engine, or SHACL-SPARQL conformance test.",
+      "Producer and verifier labels are process-separated roles in one local environment, not independent human operators.",
+      "SHACL remains a portable projection contract while SQL/application validators remain canonical MVP enforcement."
+    ]
+  }
+}
