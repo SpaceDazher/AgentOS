@@ -2,7 +2,7 @@
 """Mandatory pySHACL probes for S1-003.
 
 Each probe constructs a synthetic RDF data graph and validates it against
-shapes-v2.ttl (open profile) or shapes-promoted-only.ttl (promoted_only
+shapes-v3.ttl (open profile) or shapes-v3-promoted-only.ttl (promoted_only
 profile).  All 10 probes MUST pass.
 
 Probes:
@@ -15,7 +15,7 @@ Probes:
   7. superseded without successor (supersededBy) is rejected.
   8. stale status "accepted" is rejected.
   9. negative budget is rejected.
- 10. verify forbidden tokens are absent from shapes-v2.ttl:
+ 10. verify forbidden tokens are absent from shapes-v3.ttl:
      sh:maxExclusiveInclusive, sh:closed true, "accepted", "withdrawn".
 """
 from __future__ import annotations
@@ -61,8 +61,8 @@ def _validate(shapes_text: str, data_ttl: str):
 
 def _load_shapes():
     return (
-        (HERE / "shapes-v2.ttl").read_text(encoding="utf-8"),
-        (HERE / "shapes-promoted-only.ttl").read_text(encoding="utf-8"),
+        (HERE / "shapes-v3.ttl").read_text(encoding="utf-8"),
+        (HERE / "shapes-v3-promoted-only.ttl").read_text(encoding="utf-8"),
     )
 
 

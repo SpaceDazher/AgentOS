@@ -1,0 +1,249 @@
+@prefix hubs: <https://example.org/agent-hub#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# S1-003 contract, version 3 (engine-validated, constraints preserved from v1)
+#
+# Basis: shapes.ttl (frozen v1 baseline). Preserved verbatim:
+#   - KnowledgeAssertionShape with sh:targetClass, sh:or for promoted/superseded
+#   - GroundedAssertionShape (untargeted, documentation) with full v1 constraints
+#   - EvidenceShape, DelegationGrantShape with all v1 property constraints
+#
+# Additions over v1 (all strengthening, no weakening):
+#   - sh:message on status sh:in -> "stale_or_unknown_status" (maps to oracle)
+#   - sh:message on EvidenceShape.independenceGroup -> "evidence_missing_independence_group"
+#   - Split locatedIn into minCount (missing_effective_scope) and maxCount
+#     (multiple_effective_scopes) so messages match oracle exactly
+#   - New SPARQL on KnowledgeAssertionShape (guarded by status="promoted"):
+#     * missing_promotion_activity (deduplicates v1 sh:or, cleaner message)
+#     * insufficient_distinct_canonical_sources (NEW check not in v1 SHACL)
+#     * insufficient_independence_groups (NEW check not in v1 SHACL)
+#   - New SPARQL on KnowledgeAssertionShape (guarded by status="superseded"):
+#     * missing_superseding_assertion (deduplicates v1 sh:or, cleaner message)
+#   - New SPARQL scope checks:
+#     * evidence_scope_mismatch
+#     * promotion_actor_scope_mismatch
+#     * subject_scope_mismatch (DelegationGrantShape)
+#     * actor_scope_mismatch (DelegationGrantShape)
+#   - sh:message "negative_budget" on DelegationGrantShape.budget
+#
+# Forbidden tokens absent: sh:maxExclusiveInclusive, sh:closed true,
+#   accepted, withdrawn.
+
+hubs:KnowledgeAssertionShape a sh:NodeShape ;
+  sh:targetClass hubs:KnowledgeAssertion ;
+  sh:property [
+    sh:path hubs:supportedBy ;
+    sh:minCount 0 ;
+    sh:class hubs:Evidence ; sh:severity sh:Violation ] ;
+  sh:property [
+    sh:path hubs:status ; sh:minCount 1 ; sh:maxCount 1 ;
+    sh:datatype xsd:string ;
+    sh:in ( "proposed" "under_review" "promoted" "challenged"
+            "retracted" "superseded" "rejected" ) ;
+    sh:message "stale_or_unknown_status" ] ;
+  sh:property [
+    sh:path hubs:locatedIn ; sh:minCount 1 ;
+    sh:class hubs:Workspace ; sh:message "missing_effective_scope" ] ;
+  sh:property [
+    sh:path hubs:locatedIn ; sh:maxCount 1 ;
+    sh:message "multiple_effective_scopes" ] ;
+  sh:or (
+    [ sh:not [ sh:property [ sh:path hubs:status ; sh:hasValue "promoted" ] ] ]
+    [ sh:property [
+        sh:path prov:wasGeneratedBy ; sh:minCount 1 ; sh:maxCount 1 ;
+        sh:class hubs:PromotionActivity ; sh:severity sh:Violation ;
+        sh:message "missing_promotion_activity" ] ;
+      sh:property [
+        sh:path hubs:supportedBy ; sh:minCount 2 ;
+        sh:node hubs:EvidenceShape ; sh:severity sh:Violation ;
+        sh:message "insufficient_evidence_count" ] ]
+  ) ;
+  sh:or (
+    [ sh:not [ sh:property [ sh:path hubs:status ; sh:hasValue "superseded" ] ] ]
+    [ sh:property [
+        sh:path hubs:supersededBy ; sh:minCount 1 ; sh:maxCount 1 ;
+        sh:class hubs:KnowledgeAssertion ; sh:severity sh:Violation ;
+        sh:message "missing_superseding_assertion" ] ]
+  ) ;
+  # Additional SPARQL constraints (strengthening over v1):
+  # These duplicate the sh:or checks but produce clean sh:message values
+  # that the comparison framework can classify.
+  sh:sparql [
+    sh:message "missing_promotion_activity" ;
+    sh:select """
+PREFIX hubs: <https://example.org/agent-hub#>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+SELECT $this WHERE {
+  $this hubs:status "promoted" .
+  FILTER NOT EXISTS {
+    $this prov:wasGeneratedBy ?activity .
+    ?activity a hubs:PromotionActivity .
+  }
+}
+""" ] ;
+  sh:sparql [
+    sh:message "missing_superseding_assertion" ;
+    sh:select """
+PREFIX hubs: <https://example.org/agent-hub#>
+SELECT $this WHERE {
+  $this hubs:status "superseded" .
+  FILTER NOT EXISTS {
+    $this hubs:supersededBy ?succ .
+    ?succ a hubs:KnowledgeAssertion .
+  }
+}
+""" ] ;
+  sh:sparql [
+    sh:message "insufficient_distinct_canonical_sources" ;
+    sh:select """
+PREFIX hubs: <https://example.org/agent-hub#>
+SELECT $this WHERE {
+  $this hubs:status "promoted" .
+  ?this hubs:supportedBy ?evidence .
+  ?evidence hubs:canonicalSourceId ?canonical .
+}
+GROUP BY $this
+HAVING (COUNT(DISTINCT ?canonical) < 2)
+""" ] ;
+  sh:sparql [
+    sh:message "insufficient_independence_groups" ;
+    sh:select """
+PREFIX hubs: <https://example.org/agent-hub#>
+SELECT $this WHERE {
+  $this hubs:status "promoted" .
+  ?this hubs:supportedBy ?evidence .
+  ?evidence hubs:independenceGroup ?group .
+}
+GROUP BY $this
+HAVING (COUNT(DISTINCT ?group) < 2)
+""" ] ;
+  sh:sparql [
+    sh:message "evidence_scope_mismatch" ;
+    sh:select """
+PREFIX hubs: <https://example.org/agent-hub#>
+SELECT $this WHERE {
+  $this hubs:locatedIn ?scope .
+  $this hubs:supportedBy ?ev .
+  ?ev hubs:locatedIn ?evScope .
+  FILTER(?evScope != ?scope)
+}
+""" ] ;
+  sh:sparql [
+    sh:message "promotion_actor_scope_mismatch" ;
+    sh:select """
+PREFIX hubs: <https://example.org/agent-hub#>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+SELECT $this WHERE {
+  $this hubs:locatedIn ?scope .
+  $this prov:wasGeneratedBy ?act .
+  ?act hubs:actorScope ?actScope .
+  FILTER(?actScope != ?scope)
+}
+""" ] .
+
+hubs:GroundedAssertionShape a sh:NodeShape ;
+  sh:property [
+    sh:path hubs:status ; sh:minCount 1 ; sh:maxCount 1 ;
+    sh:hasValue "promoted" ; sh:message "not_promoted_status" ] ;
+  sh:property [
+    sh:path prov:wasGeneratedBy ; sh:minCount 1 ; sh:maxCount 1 ;
+    sh:class hubs:PromotionActivity ; sh:message "missing_promotion_activity" ] ;
+  sh:property [
+    sh:path hubs:supportedBy ; sh:minCount 2 ;
+    sh:node hubs:EvidenceShape ; sh:message "insufficient_evidence_count" ] ;
+  sh:sparql [
+    sh:message "insufficient_distinct_canonical_sources" ;
+    sh:select """
+PREFIX hubs: <https://example.org/agent-hub#>
+SELECT $this WHERE {
+  $this hubs:supportedBy ?evidence .
+  ?evidence hubs:canonicalSourceId ?canonical .
+}
+GROUP BY $this
+HAVING (COUNT(DISTINCT ?canonical) < 2)
+""" ] ;
+  sh:sparql [
+    sh:message "insufficient_independence_groups" ;
+    sh:select """
+PREFIX hubs: <https://example.org/agent-hub#>
+SELECT $this WHERE {
+  $this hubs:supportedBy ?evidence .
+  ?evidence hubs:independenceGroup ?group .
+}
+GROUP BY $this
+HAVING (COUNT(DISTINCT ?group) < 2)
+""" ] .
+
+hubs:EvidenceShape a sh:NodeShape ;
+  sh:targetClass hubs:Evidence ;
+  sh:property [
+    sh:path hubs:canonicalSourceId ; sh:minCount 1 ; sh:maxCount 1 ;
+    sh:datatype xsd:string ] ;
+  sh:property [
+    sh:path hubs:publisherId ; sh:minCount 1 ; sh:maxCount 1 ;
+    sh:datatype xsd:string ] ;
+  sh:property [
+    sh:path hubs:independenceGroup ; sh:minCount 1 ; sh:maxCount 1 ;
+    sh:datatype xsd:string ;
+    sh:message "evidence_missing_independence_group" ] ;
+  sh:property [
+    sh:path hubs:resolverVersion ; sh:minCount 1 ; sh:maxCount 1 ;
+    sh:datatype xsd:string ] ;
+  sh:property [
+    sh:path hubs:metadataFrozenAt ; sh:minCount 1 ; sh:maxCount 1 ;
+    sh:datatype xsd:dateTime ] .
+
+hubs:DelegationGrantShape a sh:NodeShape ;
+  sh:targetClass hubs:DelegationGrant ;
+  sh:property [
+    sh:path hubs:subject ; sh:minCount 1 ; sh:maxCount 1 ;
+    sh:or ( [ sh:class hubs:HumanUser ]
+            [ sh:class hubs:SharedWorkspace ]
+            [ sh:class hubs:PlatformOpsSubject ] ) ] ;
+  sh:property [
+    sh:path hubs:actor ; sh:minCount 1 ; sh:maxCount 1 ;
+    sh:class hubs:AgentInstallation ] ;
+  sh:property [ sh:path hubs:locatedIn ; sh:minCount 1 ; sh:maxCount 1 ;
+    sh:class hubs:Workspace ; sh:message "missing_effective_scope" ] ;
+  sh:property [ sh:path hubs:locatedIn ; sh:maxCount 1 ;
+    sh:message "multiple_effective_scopes" ] ;
+  sh:property [ sh:path hubs:actions ; sh:minCount 1 ] ;
+  sh:property [ sh:path hubs:resources ; sh:minCount 1 ] ;
+  sh:property [ sh:path hubs:constraints ; sh:maxCount 1 ] ;
+  sh:property [ sh:path hubs:jti ; sh:minCount 1 ; sh:maxCount 1 ;
+    sh:datatype xsd:string ] ;
+  sh:property [ sh:path hubs:ttl ; sh:minCount 1 ; sh:maxCount 1 ;
+    sh:datatype xsd:dayTimeDuration ;
+    sh:maxInclusive "PT15M"^^xsd:dayTimeDuration ] ;
+  sh:property [ sh:path hubs:budget ; sh:minCount 1 ; sh:maxCount 1 ;
+    sh:datatype xsd:decimal ; sh:minInclusive 0 ;
+    sh:message "negative_budget" ] ;
+  sh:property [
+    sh:path hubs:status ; sh:minCount 1 ; sh:maxCount 1 ;
+    sh:datatype xsd:string ;
+    sh:in ( "proposed" "active" "revoked" "expired" "exhausted" "denied" ) ] ;
+  sh:sparql [
+    sh:message "subject_scope_mismatch" ;
+    sh:select """
+PREFIX hubs: <https://example.org/agent-hub#>
+SELECT $this WHERE {
+  $this hubs:locatedIn ?scope .
+  $this hubs:subject ?subj .
+  ?subj hubs:locatedIn ?subScope .
+  FILTER(?subScope != ?scope)
+}
+""" ] ;
+  sh:sparql [
+    sh:message "actor_scope_mismatch" ;
+    sh:select """
+PREFIX hubs: <https://example.org/agent-hub#>
+SELECT $this WHERE {
+  $this hubs:locatedIn ?scope .
+  $this hubs:actor ?act .
+  ?act hubs:locatedIn ?actScope .
+  FILTER(?actScope != $scope)
+}
+""" ] .

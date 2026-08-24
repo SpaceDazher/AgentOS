@@ -14,7 +14,7 @@ never required by the unit test suite.
 | pyshacl   | 0.40.1  |
 | owlrl     | 7.6.2   |
 
-Hashes are locked in `requirements-pyshacl.txt`.
+Hashes are locked in `requirements-pyshacl.txt` (all deps + transitive, hash-locked).
 
 ## Creating the isolated venv (Windows / git-bash)
 
@@ -22,27 +22,31 @@ From this directory (`research/tickets/stage-1/S1-003`):
 
 ```bash
 python3.11 -m venv .venv-pyshacl
-./.venv-pyshacl/Scripts/pip install --upgrade pip
-./.venv-pyshacl/Scripts/pip install \
-    rdflib==7.6.0 pyshacl==0.40.1 owlrl==7.6.2
+./.venv-pyshacl/Scripts/python -m pip install --upgrade pip
+./.venv-pyshacl/Scripts/python -m pip install --require-hashes -r requirements-pyshacl.txt
 ```
 
 ## Running the engine
 
 The runner fails closed (exit code 1) if pySHACL is not importable in the
-active interpreter:
+active interpreter, or if any of the 26 expected outcomes does not match:
 
 ```bash
-# Using the isolated venv (recommended — pinned versions):
+# Using the isolated venv (recommended — pinned versions + hash lock):
 ./.venv-pyshacl/Scripts/python validate_pyshacl.py \
     --fixtures fixtures.json \
-    --shapes shapes.ttl \
+    --shapes-open shapes-v3.ttl \
+    --shapes-promoted-only shapes-v3-promoted-only.ttl \
     --out engine-results.json
 
-# Or against any interpreter that has pyshacl:
-python -m pyshacl.shacl --help   # sanity check importability
-python validate_pyshacl.py --fixtures fixtures.json --shapes shapes.ttl \
-    --out engine-results.json
+# Compare against the structural oracle:
+./.venv-pyshacl/Scripts/python comparison.py \
+    --engine-results engine-results.json \
+    --structural-results raw-results.json \
+    --out comparison-results.json
+
+# Run adversarial probes:
+./.venv-pyshacl/Scripts/python probes.py --out probe-results.json
 ```
 
 ## Determinism
@@ -52,5 +56,5 @@ python validate_pyshacl.py --fixtures fixtures.json --shapes shapes.ttl \
 - Each SHACL run stores both a raw report hash (may vary due to internal blank
   nodes) and a stable **semantic digest** (sorted set of
   `<focus-node>|<severity>|<normalized-message>` tuples).
-- Input SHA-256 of `shapes.ttl`, `fixtures.json` and the generated Turtle are
+- Input SHA-256 of `shapes-v3.ttl`, `fixtures.json` and the generated Turtle are
   recorded per run.

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Real pySHACL engine runner for S1-003.
 
-Runs the frozen fixtures through the SHACL engine (shapes-v2.ttl for the open
-profile, shapes-promoted-only.ttl for the promoted_only profile), captures
+Runs the frozen fixtures through the SHACL engine (shapes-v3.ttl for the open
+profile, shapes-v3-promoted-only.ttl for the promoted_only profile), captures
 conformance results + normalized violations, and writes engine-results.json.
 
 Design
@@ -69,7 +69,7 @@ def _import_pyshacl():
 # --------------------------------------------------------------------------- #
 HUBS = "https://example.org/agent-hub#"
 
-# Every violation that shapes-v2.ttl and shapes-promoted-only.ttl can emit
+# Every violation that shapes-v3.ttl and shapes-v3-promoted-only.ttl can emit
 # carries an sh:message that IS the structural reason string.  This set is the
 # authoritative whitelist — any message not in this set is 'unclassified'.
 _KNOWN_REASONS = frozenset({
@@ -269,9 +269,9 @@ def main() -> int:
     parser.add_argument("--fixtures", type=Path,
                         default=HERE / "fixtures.json")
     parser.add_argument("--shapes-open", type=Path,
-                        default=HERE / "shapes-v2.ttl")
+                        default=HERE / "shapes-v3.ttl")
     parser.add_argument("--shapes-promoted-only", type=Path,
-                        default=HERE / "shapes-promoted-only.ttl")
+                        default=HERE / "shapes-v3-promoted-only.ttl")
     parser.add_argument("--out", type=Path,
                         default=HERE / "engine-results.json")
     args = parser.parse_args()

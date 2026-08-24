@@ -2,7 +2,7 @@
 
 Produces a reproducible Turtle graph: stable IRIs keyed on fixture_id, no
 random blank-node identifiers, sorted predicate/object ordering.  The shapes
-in shapes-v2.ttl are evaluated against this graph by pyshacl.validate.
+in shapes-v3.ttl are evaluated against this graph by pyshacl.validate.
 
 Design
 ------
@@ -231,15 +231,103 @@ def _build_activity(builder: TurtleBuilder, fixture_id: str,
     return iri
 
 
-def _build_successor(builder, fixture_id, superseded_by):
+def _build_successor(builder: TurtleBuilder, fixture_id: str,
+                     superseded_by: dict[str, Any],
+                     assertion_ws: str | None = None,
+                     catalog: dict[str, dict[str, Any]] | None = None) -> str:
+    """Emit the successor KnowledgeAssertion reference node.
+
+    The successor is typed as hubs:KnowledgeAssertion (per the fixture data's
+    ``type`` field) and given the minimum required properties to pass
+    KnowledgeAssertionShape validation: ``status="promoted"``, ``locatedIn``,
+    ``prov:wasGeneratedBy`` (a PromotionActivity), and ``hubs:supportedBy``
+    (two Evidence nodes).  This preserves the v1 ``sh:class
+    hubs:KnowledgeAssertion`` constraint on ``supersededBy`` without weakening
+    it.
+
+    Evidence nodes for the successor are created from the catalog (or minimal
+    synthetic ones if the catalog is empty).  No network, no code execution.
+    """
     iri = _successor_iri(fixture_id)
-    # Do NOT type as hubs:KnowledgeAssertion — KnowledgeAssertionShape uses
-    # sh:targetClass hubs:KnowledgeAssertion, and the successor node is a
-    # reference target, not a full assertion.  Typing it would cause it to be
-    # validated for status/locatedIn and produce false violations.
+    rtype = superseded_by.get("type", "KnowledgeAssertion")
+    builder.add(iri, f"{RDF}type", f"{HUBS}{rtype}")
     if superseded_by.get("id"):
         builder.add(iri, f"{HUBS}identifier", _literal_str(superseded_by["id"]))
+
+    # Status and locatedIn (required by KnowledgeAssertionShape)
+    builder.add(iri, f"{HUBS}status", _literal_str("promoted"))
+    ws_iri = _add_workspace(builder, assertion_ws) if assertion_ws else None
+    if ws_iri:
+        builder.add(iri, f"{HUBS}locatedIn", ws_iri)
+
+    # PromotionActivity (required by promoted sh:or + SPARQL)
+    act_iri = f"urn:s1-003:activity:sup-{fixture_id}"
+    builder.add(act_iri, f"{RDF}type", f"{HUBS}PromotionActivity")
+    builder.add(iri, f"{PROV}wasGeneratedBy", act_iri)
+    if ws_iri:
+        builder.add(act_iri, f"{HUBS}actorScope", ws_iri)
+
+    # Evidence nodes (minCount=2 required by promoted sh:or)
+    ev_items = list(catalog.items()) if catalog else []
+    if len(ev_items) >= 2:
+        for i, (ev_id, spec) in enumerate(ev_items[:2]):
+            ev_iri = f"urn:s1-003:evidence:sup-{fixture_id}:ev-{i}"
+            _build_evidence_into(builder, ev_id, spec, ev_iri,
+                                 f"sup-{fixture_id}", ws_iri)
+            builder.add(iri, f"{HUBS}supportedBy", ev_iri)
+    else:
+        for i in range(2):
+            ev_iri = f"urn:s1-003:evidence:sup-{fixture_id}:ev-{i}"
+            _build_minimal_evidence(builder, ev_iri, ws_iri)
+            builder.add(iri, f"{HUBS}supportedBy", ev_iri)
+
     return iri
+
+
+def _build_minimal_evidence(builder: TurtleBuilder, ev_iri: str, ws_iri: str | None):
+    """Emit a minimal Evidence node that passes EvidenceShape validation."""
+    builder.add(ev_iri, f"{RDF}type", f"{HUBS}Evidence")
+    builder.add(ev_iri, f"{HUBS}canonicalSourceId", _literal_str("unknown-source"))
+    builder.add(ev_iri, f"{HUBS}publisherId", _literal_str("unknown-publisher"))
+    builder.add(ev_iri, f"{HUBS}independenceGroup", _literal_str("unknown-group"))
+    builder.add(ev_iri, f"{HUBS}resolverVersion", _literal_str("v1"))
+    builder.add(ev_iri, f"{HUBS}metadataFrozenAt", '"2026-01-01T00:00:00Z"^^<' + f"{XSD}dateTime>")
+    if ws_iri:
+        builder.add(ev_iri, f"{HUBS}locatedIn", ws_iri)
+
+
+def _build_evidence_into(builder: TurtleBuilder, ev_id: str,
+                         spec: dict[str, Any], ev_iri: str,
+                         fixture_id: str, ws_iri: str | None):
+    """Emit an Evidence node with an explicit IRI (used for successor evidence)."""
+    builder.add(ev_iri, f"{RDF}type", f"{HUBS}Evidence")
+    dt_map = {
+        "metadata_frozen_at": f"{XSD}dateTime",
+        "canonical_source_id": None,
+        "publisher_id": None,
+        "independence_group": None,
+        "resolver_version": None,
+        "located_in": None,
+    }
+    pred_map = {
+        "canonical_source_id": f"{HUBS}canonicalSourceId",
+        "publisher_id": f"{HUBS}publisherId",
+        "independence_group": f"{HUBS}independenceGroup",
+        "resolver_version": f"{HUBS}resolverVersion",
+        "metadata_frozen_at": f"{HUBS}metadataFrozenAt",
+        "located_in": f"{HUBS}locatedIn",
+    }
+    for field, pred in pred_map.items():
+        val = spec.get(field)
+        if val is None or val == "":
+            continue
+        if field == "located_in":
+            if ws_iri:
+                builder.add(ev_iri, pred, ws_iri)
+        else:
+            builder.add(ev_iri, pred, _term(val, dt_map.get(field)))
+    if spec.get("url"):
+        builder.add(ev_iri, f"{HUBS}url", _literal_str(spec["url"]))
 
 
 def serialize_fixture(builder: TurtleBuilder, fixture: dict[str, Any],
@@ -262,6 +350,12 @@ def serialize_fixture(builder: TurtleBuilder, fixture: dict[str, Any],
                 builder.add(focus, f"{HUBS}locatedIn", _add_workspace(builder, ws))
         else:
             builder.add(focus, f"{HUBS}locatedIn", _add_workspace(builder, located_in))
+
+    # inherited_content_object_properties (asserted on the assertion root)
+    inherited = data.get("inherited_content_object_properties")
+    if inherited:
+        for k, v in sorted(inherited.items()):
+            builder.add(focus, f"{HUBS}{_safe(k)}", _term(v))
 
     # supportedBy -> Evidence nodes (each fixture gets its own copy)
     for ref in data.get("supported_by", []) or []:
@@ -286,7 +380,10 @@ def serialize_fixture(builder: TurtleBuilder, fixture: dict[str, Any],
     # supersededBy
     sup = data.get("superseded_by")
     if sup:
-        succ_iri = _build_successor(builder, fixture_id, sup)
+        # Pass the assertion's workspace for successor scope
+        sup_ws = located_in[0] if isinstance(located_in, list) else located_in
+        succ_iri = _build_successor(builder, fixture_id, sup,
+                                    assertion_ws=sup_ws, catalog=catalog)
         builder.add(focus, f"{HUBS}supersededBy", succ_iri)
 
     # DelegationGrant-specific fields
