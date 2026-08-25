@@ -96,6 +96,16 @@ def _reduce_merged(records):
     return out
 
 
+def _phase_matches(name: str, qualifier: str | None) -> bool:
+    if not qualifier:
+        return True
+    q = qualifier.strip()
+    if q.startswith("phase_"):
+        return name == q[len("phase_"):]
+    ln, lq = name.lower(), q.lower()
+    return name == q or lq == ln or lq in ln or ln in lq
+
+
 def _make_resolver(observed_by_scenario: dict):
     """Scope/metric resolver shared by SLO evaluation and the
     contract-driven rerun comparison matrix."""
@@ -141,20 +151,31 @@ def _make_resolver(observed_by_scenario: dict):
             elif isinstance(node, dict):
                 nodes.append(node)
             else:
+                qualifier = None
+                if "@" in scope:
+                    qualifier = scope.split("@", 1)[1]
                 phases = metrics.get("phases")
                 if isinstance(phases, list):
-                    phases = {f"phase_{i}": p for i, p in
-                              enumerate(phases) if isinstance(p, dict)}
+                    named = {}
+                    for i, p in enumerate(phases):
+                        if not isinstance(p, dict):
+                            continue
+                        key = next(iter(p), f"phase_{i}")
+                        named[key if len(p) == 1 else f"phase_{i}"] = p
+                    phases = named
                 if isinstance(phases, dict):
                     # phase buckets map phase-name -> {metric_root: record};
-                    # accept both that shape and a flat metric-root mapping
-                    for phase in phases.values():
-                        candidates = []
-                        if isinstance(phase, dict):
-                            candidates.append(phase)
-                            for sub in phase.values():
-                                if isinstance(sub, dict):
-                                    candidates.append(sub)
+                    # a scope qualifier selects named phases ONLY - silently
+                    # aggregating across phases can hide SLO violations
+                    for phase_name, phase in phases.items():
+                        if not isinstance(phase, dict):
+                            continue
+                        if not _phase_matches(phase_name, qualifier):
+                            continue
+                        candidates = [phase]
+                        for sub in phase.values():
+                            if isinstance(sub, dict):
+                                candidates.append(sub)
                         for cand in candidates:
                             if root in cand:
                                 inner = cand[root]
@@ -617,12 +638,29 @@ def _compare_runs(runs: dict[str, dict[str, dict[int, dict]]],
                                     "status": "missing-comparable"})
                 continue
             va, vb = values[0][1], values[1][1]
-            rel = abs(va - vb) / max(abs(vb), 1e-9)
-            comparisons.append({"sli": sli, "scope": scope,
-                                "first": round(va, 6),
-                                "rerun": round(vb, 6),
-                                "relative_diff": round(rel, 6),
-                                "flagged": rel > 0.5})
+            rc = (contract or {}).get("rerun_consistency", {})
+            proportion_sli = sli.startswith(("availability_fraction",
+                                             "error_rate_fraction"))
+            if proportion_sli:
+                diff = abs(va - vb)
+                tol = rc.get("proportion_absolute_tolerance", 0.01)
+                comparisons.append({"sli": sli, "scope": scope,
+                                    "first": round(va, 6),
+                                    "rerun": round(vb, 6),
+                                    "absolute_diff": round(diff, 6),
+                                    "tolerance": tol,
+                                    "flagged": diff > tol})
+            else:
+                rel = abs(va - vb) / max(abs(vb), 1e-9)
+                tol = (rc.get("latency_relative_tolerance", 0.35)
+                       if "latency" in sli or "_ms" in sli
+                       else rc.get("default_relative_tolerance", 0.35))
+                comparisons.append({"sli": sli, "scope": scope,
+                                    "first": round(va, 6),
+                                    "rerun": round(vb, 6),
+                                    "relative_diff": round(rel, 6),
+                                    "tolerance": tol,
+                                    "flagged": rel > tol})
         return {"status": "compared", "basis": "contract-slo-matrix",
                 "comparisons": comparisons,
                 "missing_comparable": missing_comparable,

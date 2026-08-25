@@ -2,7 +2,7 @@
   "schema": "agentos.slo-contract/v1",
   "slo_id": "SLOQUAL-001",
   "title": "AgentOS production-like SLO qualification extending S1-002",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "status": "FROZEN_PRE_RUN",
   "amendments": [
     {
@@ -18,6 +18,15 @@
       "before_any_official_final_series": true,
       "reason": "availability/error-rate SLI definitions were internally inconsistent: error_rate excluded expected denials from its numerator while availability divided successes by ALL dispatched including the seeded 10% deny pool, capping the SLO at ~0.90 by construction",
       "change": "both proportions now exclude expected denials from numerator AND denominator; unexpected denials still count against both; thresholds unchanged",
+      "thresholds_changed": false
+    },
+    {
+      "from_version": "1.0.2",
+      "to_version": "1.0.3",
+      "date": "2026-08-25",
+      "before_any_official_final_series": true,
+      "reason": "review found (a) phase qualifiers were dropped so nested phase metrics aggregated across ALL phases, able to hide violations; (b) denials without a registered deny-pool were classified fail-open as expected; (c) machine-readable SLI denominators still said \"all requests dispatched\"; (d) the rerun divergence tolerance lived only in code",
+      "change": "phase-scoped resolution (qualifier phase_<name> selects that named phase only), deny classification fails closed (no pool => every denial is an error), denominator definitions aligned with v1.0.2 amendment text, rerun consistency tolerances pre-registered per metric class, burst SLO scope renamed to burst@phase_burst",
       "thresholds_changed": false
     }
   ],
@@ -109,14 +118,14 @@
       "id": "error_rate_fraction",
       "window": "measurement phase excluding declared injected-failure windows",
       "numerator": "requests ending FAILED, TIMEOUT, NOT_STARTED, or unexpected DENIED",
-      "denominator": "all requests dispatched in the window",
+      "denominator": "all requests dispatched in the window EXCLUDING expected denials, where a denial is expected ONLY when its request index is explicitly listed in the registered deny pool; with no registered pool every denial counts against both SLIs",
       "retry_timeout_rule": "expected denials (seeded allow/deny mix, post-revocation denies) are not errors"
     },
     {
       "id": "availability_fraction",
       "window": "measurement phase excluding declared injected-outage windows",
       "numerator": "successful requests",
-      "denominator": "all requests dispatched in the window EXCLUDING expected denials (seeded allow/deny mix, post-revocation denies)",
+      "denominator": "all requests dispatched in the window EXCLUDING expected denials, where a denial is expected ONLY when its request index is explicitly listed in the registered deny pool; with no registered pool every denial counts against both SLIs",
       "retry_timeout_rule": "identical to error_rate complement inside its narrower window definition"
     },
     {
@@ -226,7 +235,7 @@
     },
     {
       "sli": "latency_end_to_end_ms.p95",
-      "scope": "burst@10x_peak",
+      "scope": "burst@phase_burst",
       "threshold": "<=200.0 ms",
       "provenance": "candidate = 10x nominal bound during 10x burst",
       "requires_owner_confirmation": true
@@ -305,6 +314,12 @@
     "min_runner_version": "1.0.0",
     "rule": "results produced by incompatible runner versions are rejected by the comparator"
   },
-  "frozen_at": "2026-08-25T04:18:58Z",
-  "self_hash_sha256": "9fdfec5935567f262d3331f4c5f3ec767ada1b2a5ad24c8680f40dc81ced16dc"
+  "frozen_at": "2026-08-25T05:11:28Z",
+  "rerun_consistency": {
+    "proportion_absolute_tolerance": 0.01,
+    "latency_relative_tolerance": 0.35,
+    "default_relative_tolerance": 0.35,
+    "note": "applied by the comparator between independent runs; rows exceeding their class tolerance are flagged rerun-divergence-unexplained"
+  },
+  "self_hash_sha256": "717558b25460ebf508a1d4e9111d948e5a1d6e4263b5a540939f9e81f53fedd3"
 }

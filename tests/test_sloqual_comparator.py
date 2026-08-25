@@ -114,7 +114,7 @@ class FixtureBuilder:
                  "requires_owner_confirmation": True},
                 {"sli": "error_rate_fraction", "scope": "all non-injected windows", "threshold": "<=0.01",
                  "requires_owner_confirmation": True},
-                {"sli": "latency_end_to_end_ms.p95", "scope": "burst@10x_peak",
+                {"sli": "latency_end_to_end_ms.p95", "scope": "burst@phase_burst",
                  "threshold": "<=200.0 ms", "requires_owner_confirmation": True},
                 {"sli": "recovery_time_seconds",
                  "scope": "worker_restart|scheduler_restart|full_restart|net*_faults|provider_*",
@@ -427,6 +427,67 @@ class ComparatorGateTest(unittest.TestCase):
         self.assertGreater(warm["rerun"], 0.0)
         self.assertIn("flagged", warm)
 
+    def test_phase_qualifier_selects_only_named_phase(self):
+        from agentos.sloqual import compare as _cmp
+
+        def rec(v):
+            return {"kind": "summary", "value": v, "median": v,
+                    "max": v * 1.1, "mean": v, "n": 5, "p95": v,
+                    "ci95_low": v * 0.9, "ci95_high": v * 1.2,
+                    "ci_method": "bootstrap_percentile_n1000"}
+
+        obs = {"burst": {"metrics": {"phases": {
+            "nominal_pre": {"latency_end_to_end_ms": rec(1.0)},
+            "burst": {"latency_end_to_end_ms": rec(250.0)},
+            "cooldown": {"latency_end_to_end_ms": rec(2.0)}}}}}
+        find = _cmp._make_resolver(obs)["find"]
+        m = find("latency_end_to_end_ms.p95", "burst@phase_burst")
+        self.assertIsNotNone(m)
+        self.assertEqual(m["p95"], 250.0)
+        self.assertIsNone(find("latency_end_to_end_ms.p95",
+                               "burst@phase_unknown"))
+
+    def test_denials_without_registered_pool_are_errors(self):
+        from agentos.sloqual.scenarios import summarize_open_loop
+
+        class R:
+            schedule_origin_ns = 0
+            drain_s = 0.0
+
+            def raw_rows(self):
+                def row(i, o):
+                    return {"index": i, "outcome": o,
+                            "completion_offset_ms": 1.0,
+                            "end_to_end_ms": 1.0, "queue_wait_ms": 0.0,
+                            "service_ms": 1.0,
+                            "scheduled_offset_ms": float(i)}
+                return ([row(i, "SUCCEEDED") for i in range(90)]
+                        + [row(90 + i, "DENIED") for i in range(10)])
+
+        out = summarize_open_loop(R(), seed=1, tag="t")
+        self.assertEqual(out["counts"]["unexpected_denied"], 10)
+        self.assertLess(out["availability_fraction"]["value"], 0.92)
+
+    def test_denials_in_explicit_pool_stay_expected(self):
+        from agentos.sloqual.scenarios import summarize_open_loop
+
+        class R:
+            schedule_origin_ns = 0
+            drain_s = 0.0
+
+            def raw_rows(self):
+                def row(i, o):
+                    return {"index": i, "outcome": o,
+                            "completion_offset_ms": 1.0,
+                            "end_to_end_ms": 1.0, "queue_wait_ms": 0.0,
+                            "service_ms": 1.0,
+                            "scheduled_offset_ms": float(i)}
+                return ([row(i, "SUCCEEDED") for i in range(90)]
+                        + [row(90 + i, "DENIED") for i in range(10)])
+
+        out = summarize_open_loop(R(), seed=1, tag="t",
+                                  denied_pool_indexes=set(range(90, 100)))
+        self.assertEqual(out["counts"]["unexpected_denied"], 0)
 
 
 if __name__ == "__main__":

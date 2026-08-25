@@ -113,8 +113,8 @@ def summarize_open_loop(result, *, seed: int, tag: str,
     completed = [r for r in rows if r["completion_offset_ms"] is not None]
     succeeded = [r for r in rows if r["outcome"] == "SUCCEEDED"]
     denied = [r for r in rows if r["outcome"] == "DENIED"]
-    unexpected_denied = [r for r in denied
-                         if denied_pool_indexes and r["index"] not in denied_pool_indexes]
+    pool = denied_pool_indexes or set()
+    unexpected_denied = [r for r in denied if r["index"] not in pool]
     failed = [r for r in rows if r["outcome"] in UNEXPECTED_FAILURE_OUTCOMES]
     e2e_values = [r["end_to_end_ms"] for r in completed]
     queue_values = [r["queue_wait_ms"] for r in rows]
