@@ -227,9 +227,17 @@ def journal_chain_ok(conn) -> tuple[bool, int | None]:
     return Journal(type("ChainDB", (), {"conn": conn})()).full_chain_check()
 
 
-_SECRET_MARKERS = (
-    "BEGIN PRIVATE KEY", "BEGIN RSA PRIVATE KEY", "sk-", "api_key=",
-    "password=", "Authorization: Bearer ", "ghp_", "AKIA")
+import re as _re
+
+_SECRET_STRICT_PATTERNS = tuple(_re.compile(p) for p in (
+    r"-----BEGIN [A-Z ]*PRIVATE KEY-----",
+    r"sk-[A-Za-z0-9]{20,}",
+    r"api_key=['\"]?[A-Za-z0-9]{20,}",
+    r"Authorization:\s*Bearer\s+[A-Za-z0-9._-]{20,}",
+    r"ghp_[A-Za-z0-9]{30,}",
+    r"AKIA[0-9A-Z]{16}",
+))
+_SECRET_TEXT_MARKERS = ("password=",)
 
 
 def _parse_ts(value) -> datetime | None:
@@ -348,14 +356,24 @@ def sweep_invariants(conn, paths=()) -> dict:
         files = ([base] if base.is_file() else
                  [p for p in base.rglob("*") if p.is_file()])
         for artifact in files:
-            if artifact.suffix.lower() in (".db", ".wal", ".shm"):
+            if artifact.suffix.lower() in (
+                    ".db", ".wal", ".shm", ".bin", ".dat", ".raw",
+                    ".tmp", ".npy", ".zst", ".gz"):
                 continue
             try:
-                text = artifact.read_text(encoding="utf-8", errors="replace")
+                blob = artifact.read_bytes()
             except OSError:
                 continue
+            if b"\x00" in blob[:4096]:
+                continue  # binary content: text signatures are meaningless
+            try:
+                text = blob.decode("utf-8")
+            except UnicodeDecodeError:
+                continue  # not UTF-8 text: never guess with replacement chars
+            hits = sum(1 for pat in _SECRET_STRICT_PATTERNS
+                       if pat.search(text))
             low = text.lower()
-            findings["secrets_in_artifacts_count"] += sum(
-                1 for marker in _SECRET_MARKERS
-                if marker.lower() in low)
+            hits += sum(1 for marker in _SECRET_TEXT_MARKERS
+                        if marker in low)
+            findings["secrets_in_artifacts_count"] += hits
     return findings

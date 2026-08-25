@@ -2,7 +2,7 @@
   "schema": "agentos.slo-contract/v1",
   "slo_id": "SLOQUAL-001",
   "title": "AgentOS production-like SLO qualification extending S1-002",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "status": "FROZEN_PRE_RUN",
   "amendments": [
     {
@@ -27,6 +27,15 @@
       "before_any_official_final_series": true,
       "reason": "review found (a) phase qualifiers were dropped so nested phase metrics aggregated across ALL phases, able to hide violations; (b) denials without a registered deny-pool were classified fail-open as expected; (c) machine-readable SLI denominators still said \"all requests dispatched\"; (d) the rerun divergence tolerance lived only in code",
       "change": "phase-scoped resolution (qualifier phase_<name> selects that named phase only), deny classification fails closed (no pool => every denial is an error), denominator definitions aligned with v1.0.2 amendment text, rerun consistency tolerances pre-registered per metric class, burst SLO scope renamed to burst@phase_burst",
+      "thresholds_changed": false
+    },
+    {
+      "from_version": "1.0.3",
+      "to_version": "1.0.4",
+      "date": "2026-08-25",
+      "before_any_official_final_series": true,
+      "reason": "A4 pilot exposed (a) secret scan false positives on random binary artifacts decoded lossily, (b) deny-pool false acceptances invisible to SLIs/invariants, (c) order-dependent rerun divergence, (d) fuzzy qualifier matching",
+      "change": "strict typed secret scanning (UTF-8-only, NUL-guarded, length-bounded signatures; binary scratch excluded), deny-pool outcome reconciliation with mandatory zero false_acceptance_count, symmetric rerun formula (denominator = larger magnitude), exact-name qualifier grammar",
       "thresholds_changed": false
     }
   ],
@@ -314,12 +323,16 @@
     "min_runner_version": "1.0.0",
     "rule": "results produced by incompatible runner versions are rejected by the comparator"
   },
-  "frozen_at": "2026-08-25T05:11:28Z",
+  "frozen_at": "2026-08-25T17:37:50Z",
   "rerun_consistency": {
     "proportion_absolute_tolerance": 0.01,
     "latency_relative_tolerance": 0.35,
     "default_relative_tolerance": 0.35,
-    "note": "applied by the comparator between independent runs; rows exceeding their class tolerance are flagged rerun-divergence-unexplained"
+    "note": "applied by the comparator between independent runs; rows exceeding their class tolerance are flagged rerun-divergence-unexplained",
+    "formula": "symmetric_max_denominator"
   },
-  "self_hash_sha256": "717558b25460ebf508a1d4e9111d948e5a1d6e4263b5a540939f9e81f53fedd3"
+  "mandatory_invariants": [
+    "false_acceptance_count"
+  ],
+  "self_hash_sha256": "89bb7a44e8176b8b97e328918344b48782d9e89017b5e62b82ce183e3236de18"
 }

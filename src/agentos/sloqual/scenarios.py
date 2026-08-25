@@ -115,6 +115,10 @@ def summarize_open_loop(result, *, seed: int, tag: str,
     denied = [r for r in rows if r["outcome"] == "DENIED"]
     pool = denied_pool_indexes or set()
     unexpected_denied = [r for r in denied if r["index"] not in pool]
+    # a registered deny-pool request that does NOT come back DENIED is a
+    # false acceptance by the gateway and counts as a hard error
+    false_accepted = [r for r in rows
+                      if r["index"] in pool and r["outcome"] != "DENIED"]
     failed = [r for r in rows if r["outcome"] in UNEXPECTED_FAILURE_OUTCOMES]
     e2e_values = [r["end_to_end_ms"] for r in completed]
     queue_values = [r["queue_wait_ms"] for r in rows]
@@ -143,11 +147,13 @@ def summarize_open_loop(result, *, seed: int, tag: str,
             f"{tag}.throughput_realization", len(completed),
             max(1, dispatched)),
         "error_rate_fraction": proportion_record(
-            f"{tag}.error_rate", len(failed) + len(unexpected_denied),
+            f"{tag}.error_rate",
+            len(failed) + len(unexpected_denied) + len(false_accepted),
             # contract v1.0.2: expected denials are excluded from BOTH sides
             max(1, dispatched - (len(denied) - len(unexpected_denied)))),
         "availability_fraction": proportion_record(
-            f"{tag}.availability", len(succeeded),
+            f"{tag}.availability",
+            len(succeeded) - len(false_accepted),
             max(1, dispatched - (len(denied) - len(unexpected_denied)))),
         "counts": {
             "dispatched": dispatched,
@@ -155,6 +161,7 @@ def summarize_open_loop(result, *, seed: int, tag: str,
             "succeeded": len(succeeded),
             "expected_denied": len(denied) - len(unexpected_denied),
             "unexpected_denied": len(unexpected_denied),
+            "false_acceptance_count": len(false_accepted),
             "failed": len(failed),
             "not_started_dropped": sum(
                 1 for r in rows if r["outcome"] == "NOT_STARTED"),

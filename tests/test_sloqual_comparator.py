@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import sys
 import tempfile
+import sqlite3
 import unittest
 from pathlib import Path
 
@@ -446,6 +447,53 @@ class ComparatorGateTest(unittest.TestCase):
         self.assertEqual(m["p95"], 250.0)
         self.assertIsNone(find("latency_end_to_end_ms.p95",
                                "burst@phase_unknown"))
+        self.assertIsNone(find("latency_end_to_end_ms.p95", "burst@bur"))
+        self.assertIsNone(find("latency_end_to_end_ms.p95", "burst@urst"))
+
+    def test_rerun_divergence_is_order_independent(self):
+        from agentos.sloqual.compare import _relative_diff
+        self.assertEqual(_relative_diff(100.0, 70.0),
+                         _relative_diff(70.0, 100.0))
+
+    def test_deny_pool_false_acceptance_counts_as_error(self):
+        from agentos.sloqual.scenarios import summarize_open_loop
+
+        class R:
+            schedule_origin_ns = 0
+            drain_s = 0.0
+
+            def raw_rows(self):
+                def row(i, o):
+                    return {"index": i, "outcome": o,
+                            "completion_offset_ms": 1.0,
+                            "end_to_end_ms": 1.0, "queue_wait_ms": 0.0,
+                            "service_ms": 1.0,
+                            "scheduled_offset_ms": float(i)}
+                # indexes 90..99 registered for denial; gateway wrongly
+                # accepts five of them
+                rows = [row(i, "SUCCEEDED") for i in range(90)]
+                rows += [row(i, "SUCCEEDED") for i in range(90, 95)]
+                rows += [row(i, "DENIED") for i in range(95, 100)]
+                return rows
+
+        out = summarize_open_loop(R(), seed=1, tag="t",
+                                  denied_pool_indexes=set(range(90, 100)))
+        self.assertEqual(out["counts"]["false_acceptance_count"], 5)
+        self.assertLess(out["availability_fraction"]["value"], 0.96)
+
+    def test_secret_scan_skips_binary_scratch(self):
+        import tempfile
+        from pathlib import Path
+        from agentos.db import open_db
+        from agentos.sloqual.harness import sweep_invariants
+        tmp = Path(tempfile.mkdtemp())
+        blob = b"\x00\xff" * 64 + b"sk-" + b"\xa5" * 32
+        (tmp / "pressure.bin").write_bytes(blob)
+        (tmp / "notes.txt").write_text("hello world", encoding="utf-8")
+        db_path = Path(tempfile.mkdtemp()) / "state.db"
+        conn = open_db(db_path).conn
+        findings = sweep_invariants(conn, paths=(str(tmp),))
+        self.assertEqual(findings["secrets_in_artifacts_count"], 0)
 
     def test_denials_without_registered_pool_are_errors(self):
         from agentos.sloqual.scenarios import summarize_open_loop

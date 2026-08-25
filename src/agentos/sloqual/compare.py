@@ -97,13 +97,21 @@ def _reduce_merged(records):
 
 
 def _phase_matches(name: str, qualifier: str | None) -> bool:
+    """Strict qualifier grammar: bare scope matches every phase; an explicit
+    qualifier must be the exact phase name or phase_<name>. No fuzzy
+    substring matching - a wrong qualifier must yield NO_DATA."""
     if not qualifier:
         return True
     q = qualifier.strip()
     if q.startswith("phase_"):
         return name == q[len("phase_"):]
-    ln, lq = name.lower(), q.lower()
-    return name == q or lq == ln or lq in ln or ln in lq
+    return name == q
+
+
+def _relative_diff(va: float, vb: float) -> float:
+    """Symmetric divergence: denominator is the larger magnitude, so
+    compare(A,B) and compare(B,A) always agree."""
+    return abs(va - vb) / max(abs(va), abs(vb), 1e-9)
 
 
 def _make_resolver(observed_by_scenario: dict):
@@ -492,23 +500,35 @@ def compare(ticket_dir: Path, run_ids: list[str], *, work_root: Path,
                 f"revocation-trials-below-minimum:{run_id}:"
                 f"{total}<{MIN_REVOCATION_TRIALS}")
 
-    from .harness import _SECRET_MARKERS
+    from .harness import _SECRET_STRICT_PATTERNS, _SECRET_TEXT_MARKERS
     for run_id in run_ids:
         run_dir = work_root / run_id
         for artifact in run_dir.rglob("*"):
             if not artifact.is_file():
                 continue
-            if artifact.suffix.lower() in (".db", ".wal", ".shm"):
+            if artifact.suffix.lower() in (
+                    ".db", ".wal", ".shm", ".bin", ".dat", ".raw",
+                    ".tmp", ".npy", ".zst", ".gz"):
                 continue
             try:
-                text = artifact.read_text(encoding="utf-8", errors="replace")
+                blob = artifact.read_bytes()
             except OSError:
                 continue
+            if b"\x00" in blob[:4096]:
+                continue  # binary scratch: text signatures meaningless
+            try:
+                text = blob.decode("utf-8")
+            except UnicodeDecodeError:
+                continue
+            hit = next((pat.pattern for pat in _SECRET_STRICT_PATTERNS
+                        if pat.search(text)), None)
             low = text.lower()
-            hits = [m for m in _SECRET_MARKERS if m.lower() in low]
-            if hits:
+            if hit is None:
+                hit = next((m for m in _SECRET_TEXT_MARKERS
+                            if m in low), None)
+            if hit:
                 failures.append(
-                    f"secrets-in-artifacts:{run_id}:{artifact.name}:{hits[0]}")
+                    f"secrets-in-artifacts:{run_id}:{artifact.name}:{hit}")
 
     if revocation_total_trials < MIN_REVOCATION_TRIALS:
         limits.append(
@@ -651,7 +671,7 @@ def _compare_runs(runs: dict[str, dict[str, dict[int, dict]]],
                                     "tolerance": tol,
                                     "flagged": diff > tol})
             else:
-                rel = abs(va - vb) / max(abs(vb), 1e-9)
+                rel = _relative_diff(va, vb)
                 tol = (rc.get("latency_relative_tolerance", 0.35)
                        if "latency" in sli or "_ms" in sli
                        else rc.get("default_relative_tolerance", 0.35))
@@ -660,6 +680,7 @@ def _compare_runs(runs: dict[str, dict[str, dict[int, dict]]],
                                     "rerun": round(vb, 6),
                                     "relative_diff": round(rel, 6),
                                     "tolerance": tol,
+                                    "formula": "symmetric_max_denominator",
                                     "flagged": rel > tol})
         return {"status": "compared", "basis": "contract-slo-matrix",
                 "comparisons": comparisons,
