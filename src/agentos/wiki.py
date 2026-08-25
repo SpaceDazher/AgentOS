@@ -9,10 +9,12 @@ with provenance; generated notes are overwritten on rebuild.
 """
 from __future__ import annotations
 
+import gc
 import json
 import re
 import shutil
 import tempfile
+import time
 import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -29,6 +31,30 @@ HUMAN_DIRS = ("10-Architecture", "20-Specifications", "90-Glossary")
 
 FRONTMATTER_KEYS = ["id", "type", "title", "status", "created_at",
                     "updated_at"]
+
+
+def _rename_with_retry(source: Path, target: Path) -> None:
+    """Rename a projection tree, tolerating short Windows handle races.
+
+    Windows can briefly keep a directory handle alive after a completed
+    ``glob``/file read.  Collect Python-owned iterators before the first
+    attempt, then retry only the permission error used for that race.  The
+    caller still owns the swap transaction and can restore its backup if the
+    lock does not clear.
+    """
+    gc.collect()
+    attempts = 8
+    for attempt in range(attempts):
+        try:
+            source.rename(target)
+            return
+        except PermissionError:
+            if attempt == attempts - 1:
+                raise
+            gc.collect()
+            time.sleep(min(0.05 * (2 ** attempt), 0.25))
+
+
 @dataclass
 class CheckIssue:
     kind: str        # broken_link | duplicate_id | invalid_frontmatter |
@@ -534,15 +560,17 @@ class WikiBuilder:
         removed = 0
         backup = gen.parent / (gen.name + ".old-" + uuid.uuid4().hex)
         swap_ok = False
-        if gen.exists():
-            gen.rename(backup)          # move OLD away (atomic)
-            removed = len(list(backup.glob("*.md")))
+        old_moved = False
         try:
-            staged_gen.rename(gen)      # move NEW in (atomic)
+            if gen.exists():
+                _rename_with_retry(gen, backup)  # move OLD away (atomic)
+                old_moved = True
+                removed = len(list(backup.glob("*.md")))
+            _rename_with_retry(staged_gen, gen)  # move NEW in (atomic)
             swap_ok = True
         except Exception:
-            if backup.exists() and not gen.exists():
-                backup.rename(gen)      # roll back: old projection restored
+            if old_moved and backup.exists() and not gen.exists():
+                _rename_with_retry(backup, gen)  # roll back old projection
             raise
         finally:
             # Keep the old tree available if swapping failed before rollback;

@@ -13,12 +13,14 @@ Design
   graph so that sh:targetClass targeting yields exactly that fixture's
   focus node, mirroring the structural oracle's per-record evaluation.
 * For each run we record:
-    fixture_id, profile, expected_conforms, observed_conforms,
-    expected_primary_reason, normalized_violations, report_text,
-    semantic_digest, runtime versions, SHA-256 of shapes, fixtures, and RDF.
-* The semantic digest is a sorted set of
-  "<focusNode>|<severity>|<normalized-reason>" tuples — stable across runs
-  and independent of blank-node identifiers in the report graph.
+        fixture_id, profile, expected_conforms, observed_conforms,
+        expected_primary_reason, normalized_violations, report_text,
+        semantic_tuples, semantic_digest, runtime versions, and SHA-256
+        provenance for every deterministic input.
+* ``semantic_tuples`` is a sorted list of canonical JSON strings containing
+  ``[schema, fixture_id, profile, outcome, normalized_reason]``.  The tuple
+  contract is blank-node-independent and is anchored to the structural oracle;
+  ``semantic_digest`` is the SHA-256 of those exact tuple bytes.
 * Exit code is non-zero if any expected outcome does not match.
 """
 from __future__ import annotations
@@ -68,6 +70,8 @@ def _import_pyshacl():
 # reason vocabulary so the comparison is meaningful.
 # --------------------------------------------------------------------------- #
 HUBS = "https://example.org/agent-hub#"
+SEMANTIC_TUPLE_SCHEMA = "agentos.s1-003-semantic/v1"
+CONFORMS_REASON = "__conforms__"
 
 # Every violation that shapes-v3.ttl and shapes-v3-promoted-only.ttl can emit
 # carries an sh:message that IS the structural reason string.  This set is the
@@ -307,24 +311,22 @@ def _filter_unclassified(
 
 
 
-def _semantic_digest(report_graph: Any) -> str:
-    """Produce a stable, blank-node-independent digest of the report.
+def _semantic_tuples(fixture_id: str, profile: str, conforms: bool,
+                     normalized: list[str]) -> list[str]:
+    """Return canonical, blank-node-independent semantic evidence tuples."""
+    reasons = sorted(set(normalized))
+    if not reasons:
+        reasons = [CONFORMS_REASON]
+    outcome = "conforms" if conforms else "violates"
+    return [json.dumps(
+        [SEMANTIC_TUPLE_SCHEMA, fixture_id, profile, outcome, reason],
+        ensure_ascii=False, separators=(",", ":"),
+    ) for reason in reasons]
 
-    For each result we hash the tuple (focusNode, severity, sourceShape,
-    resultPath, resultMessage).  Blank nodes in the report graph are replaced
-    by the focus node's stable IRI, so the digest is deterministic.
-    """
-    tuples: list[str] = []
-    for result in _iter_results(report_graph):
-        focus = _result_field(report_graph, result, "focusNode")
-        severity = _result_field(report_graph, result, "resultSeverity")
-        shape = _result_field(report_graph, result, "sourceShape")
-        path = _result_field(report_graph, result, "resultPath")
-        message = _result_field(report_graph, result, "resultMessage")
-        tuples.append(f"{focus}|{severity}|{shape}|{path}|{message}")
-    tuples.sort()
-    joined = "\n".join(tuples)
-    return hashlib.sha256(joined.encode("utf-8")).hexdigest()
+
+def _semantic_digest_from_tuples(tuples: list[str]) -> str:
+    """Hash canonical tuple strings exactly as the comparator does."""
+    return hashlib.sha256("\n".join(tuples).encode("utf-8")).hexdigest()
 
 
 def _load_fixtures(fixtures_path: Path) -> dict[str, Any]:
@@ -362,6 +364,9 @@ def main() -> int:
 
     shapes_sha = _sha256(args.shapes_open)
     fixtures_sha = _sha256(args.fixtures)
+    validate_structural_sha = _sha256(HERE / "validate_structural.py")
+    fixtures_to_rdf_sha = _sha256(HERE / "fixtures_to_rdf.py")
+    validate_pyshacl_sha = _sha256(HERE / "validate_pyshacl.py")
 
     sys.path.insert(0, str(HERE))
     from fixtures_to_rdf import build_graph
@@ -380,9 +385,11 @@ def main() -> int:
         raw = _run_validation(shapes_open_text, data_ttl)
         normalized, unclassified = _normalize_violations(raw["report_graph"], status_map)
         unclassified_unexpected = _filter_unclassified(unclassified)
-        digest = _semantic_digest(raw["report_graph"])
         expected_conforms = bool(expected["conforms"])
         observed_conforms = raw["conforms"]
+        semantic_tuples = _semantic_tuples(
+            fixture_id, "open", observed_conforms, normalized)
+        digest = _semantic_digest_from_tuples(semantic_tuples)
         match = (expected_conforms == observed_conforms)
         if not match:
             mismatches.append(f"{fixture_id}/open: conforms expected={expected_conforms} got={observed_conforms}")
@@ -405,11 +412,15 @@ def main() -> int:
             "normalized_violations": normalized,
             "unclassified_violations": unclassified_unexpected,
             "report_text": raw["report_text"][:8000],
+            "semantic_tuples": semantic_tuples,
             "semantic_digest": digest,
             "runtime": versions,
             "shapes_sha256": shapes_sha,
             "fixtures_sha256": fixtures_sha,
             "rdf_input_sha256": hashlib.sha256(data_ttl.encode("utf-8")).hexdigest(),
+            "validate_structural_sha256": validate_structural_sha,
+            "fixtures_to_rdf_sha256": fixtures_to_rdf_sha,
+            "validate_pyshacl_sha256": validate_pyshacl_sha,
             "matched": match,
         })
 
@@ -419,9 +430,11 @@ def main() -> int:
             raw_po = _run_validation(shapes_promoted_text, data_ttl)
             normalized_po, unclassified_po = _normalize_violations(raw_po["report_graph"], status_map)
             unclassified_po_unexpected = _filter_unclassified(unclassified_po)
-            digest_po = _semantic_digest(raw_po["report_graph"])
             exp_conforms = bool(exp["conforms"])
             obs_conforms = raw_po["conforms"]
+            semantic_tuples_po = _semantic_tuples(
+                fixture_id, "promoted_only", obs_conforms, normalized_po)
+            digest_po = _semantic_digest_from_tuples(semantic_tuples_po)
             match_po = (exp_conforms == obs_conforms)
             if not match_po:
                 mismatches.append(f"{fixture_id}/promoted_only: conforms expected={exp_conforms} got={obs_conforms}")
@@ -444,11 +457,15 @@ def main() -> int:
                 "normalized_violations": normalized_po,
                 "unclassified_violations": unclassified_po_unexpected,
                 "report_text": raw_po["report_text"][:8000],
+                "semantic_tuples": semantic_tuples_po,
                 "semantic_digest": digest_po,
                 "runtime": versions,
                 "shapes_sha256": _sha256(args.shapes_promoted_only),
                 "fixtures_sha256": fixtures_sha,
                 "rdf_input_sha256": hashlib.sha256(data_ttl.encode("utf-8")).hexdigest(),
+                "validate_structural_sha256": validate_structural_sha,
+                "fixtures_to_rdf_sha256": fixtures_to_rdf_sha,
+                "validate_pyshacl_sha256": validate_pyshacl_sha,
                 "matched": match_po,
             })
 
@@ -460,7 +477,7 @@ def main() -> int:
     overall_pass = len(mismatches) == 0 and matched_count == total
 
     report = {
-        "schema": "agentos.s1-003-engine-results/v1",
+        "schema": "agentos.s1-003-engine-results/v2",
         "pyshacl_executed": True,
         "runtime": versions,
         "inputs": {
@@ -468,8 +485,9 @@ def main() -> int:
             "shapes_open_sha256": shapes_sha,
             "shapes_promoted_only_sha256": _sha256(args.shapes_promoted_only),
             "rdf_input_sha256": rdf_input_sha,
-            "validate_structural_sha256": _sha256(HERE / "validate_structural.py"),
-            "fixtures_to_rdf_sha256": _sha256(HERE / "fixtures_to_rdf.py"),
+            "validate_structural_sha256": validate_structural_sha,
+            "fixtures_to_rdf_sha256": fixtures_to_rdf_sha,
+            "validate_pyshacl_sha256": validate_pyshacl_sha,
         },
         "coverage": {
             "fixture_count": fixture_count,
@@ -479,6 +497,12 @@ def main() -> int:
         "mismatches": mismatches,
         "results": run_results,
         "verdict": "pass" if overall_pass else "fail",
+    }
+    report["summary"] = {
+        "total_runs": total,
+        "matched_runs": matched_count,
+        "mismatch_count": len(mismatches),
+        "verdict": report["verdict"],
     }
 
     args.out.write_text(

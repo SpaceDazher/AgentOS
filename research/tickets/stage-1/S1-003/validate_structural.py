@@ -37,6 +37,8 @@ EVIDENCE_FIELDS = (
     "resolver_version",
     "metadata_frozen_at",
 )
+SEMANTIC_TUPLE_SCHEMA = "agentos.s1-003-semantic/v1"
+CONFORMS_REASON = "__conforms__"
 
 
 def _sha256(path: Path) -> str:
@@ -49,6 +51,17 @@ def _sha256(path: Path) -> str:
 
 def _unique(values: list[str]) -> list[str]:
     return list(dict.fromkeys(values))
+
+
+def _semantic_tuples(fixture_id: str, profile: str, conforms: bool,
+                     violations: list[str]) -> list[str]:
+    """Emit the oracle-side canonical semantic-evidence tuples."""
+    reasons = sorted(set(violations)) or [CONFORMS_REASON]
+    outcome = "conforms" if conforms else "violates"
+    return [json.dumps(
+        [SEMANTIC_TUPLE_SCHEMA, fixture_id, profile, outcome, reason],
+        ensure_ascii=False, separators=(",", ":"),
+    ) for reason in reasons]
 
 
 def _scope(value: Any) -> tuple[str | None, list[str]]:
@@ -254,6 +267,8 @@ def execute(fixtures_path: Path, shapes_path: Path) -> tuple[dict[str, Any], boo
                 "expected_primary_reason": primary,
                 "observed_conforms": conforms,
                 "observed_violations": failures,
+                "semantic_tuples": _semantic_tuples(
+                    fixture["id"], profile, conforms, failures),
                 "expectation_matched": matched,
             })
 

@@ -466,6 +466,39 @@ class TestR9WikiScoping(unittest.TestCase):
         finally:
             shutil.rmtree(root, ignore_errors=True)
 
+    def test_transient_windows_directory_lock_is_retried(self):
+        """A transient old-tree rename failure must not abort or leak staging."""
+        root = Path(tempfile.mkdtemp())
+        try:
+            db = open_db(root / "db.sqlite")
+            db.conn.execute(
+                "INSERT INTO goal(id, concept_text, status) VALUES (?,?,?)",
+                ("goal_RETRY", "retry", "ACTIVE"))
+            wb = WikiBuilder(db, root)
+            wb.build()
+            stale = wb.wiki / "_generated" / "stale.md"
+            stale.write_text("old projection evidence", encoding="utf-8")
+
+            original_rename = Path.rename
+            failures = {"count": 0}
+
+            def fail_old_once(path_obj, target):
+                if (path_obj == wb.wiki / "_generated"
+                        and failures["count"] == 0):
+                    failures["count"] += 1
+                    raise PermissionError(13, "directory is temporarily locked")
+                return original_rename(path_obj, target)
+
+            with patch.object(Path, "rename", new=fail_old_once):
+                result = wb.build()
+            self.assertEqual(failures["count"], 1)
+            self.assertGreater(result["stale_removed"], 0)
+            self.assertFalse(stale.exists())
+            self.assertFalse(any(p.name.startswith(".wiki-stage-")
+                                 for p in wb.wiki.iterdir()))
+            db.conn.close()
+        finally:
+            shutil.rmtree(root, ignore_errors=True)
 
 if __name__ == "__main__":
     unittest.main()

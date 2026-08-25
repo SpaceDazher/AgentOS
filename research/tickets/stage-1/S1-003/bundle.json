@@ -29,8 +29,8 @@
       "verifier_provenance": {
         "method": "host-file-sha256-and-section-review",
         "verified_at": "2026-08-24",
-        "path": "D:/Project/DeepeekHarness/research/50_ontology.md",
-        "file_sha256": "156c8b4425a597ce2be020a1471e1c32817294d6c70abab76bd94215472fa508",
+        "external_path_at_review": "D:/Project/DeepeekHarness/research/50_ontology.md",
+        "external_file_sha256_at_review": "156c8b4425a597ce2be020a1471e1c32817294d6c70abab76bd94215472fa508",
         "canonical_source_id": "SRC-05",
         "publisher_id": "local-deepeek-harness",
         "independence_group": "local-ontology-design",
@@ -49,8 +49,8 @@
       "verifier_provenance": {
         "method": "host-file-sha256-and-defect-table-review",
         "verified_at": "2026-08-24",
-        "path": "D:/Project/DeepeekHarness/research/80_independent_audit.md",
-        "file_sha256": "90c0eae8fd47eb109e5a14a6a77be833e73a549c863a5e27720975f091b2827f",
+        "external_path_at_review": "D:/Project/DeepeekHarness/research/80_independent_audit.md",
+        "external_file_sha256_at_review": "90c0eae8fd47eb109e5a14a6a77be833e73a549c863a5e27720975f091b2827f",
         "canonical_source_id": "SRC-08",
         "publisher_id": "local-deepeek-harness",
         "independence_group": "local-independent-audit",
@@ -69,8 +69,8 @@
       "verifier_provenance": {
         "method": "host-file-sha256-and-round-ledger-review",
         "verified_at": "2026-08-24",
-        "path": "D:/Project/DeepeekHarness/research/PROGRESS.md",
-        "file_sha256": "3fa19d9016370ec16706eaed7b96f8bb3920e37e1557fc97037f93540ed0ba4c",
+        "external_path_at_review": "D:/Project/DeepeekHarness/research/PROGRESS.md",
+        "external_file_sha256_at_review": "3fa19d9016370ec16706eaed7b96f8bb3920e37e1557fc97037f93540ed0ba4c",
         "canonical_source_id": "SRC-09",
         "publisher_id": "local-deepeek-harness",
         "independence_group": "local-correction-ledger"
@@ -164,7 +164,7 @@
       "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-003/raw-results.json",
       "title": "S1-003 Structural Validation Results",
       "source_type": "local deterministic empirical artifact",
-      "content": "The stdlib structural validator executed 26 profile checks over 24 fixtures on 2026-08-24T18:22:29.853506Z. It observed 13/13 lifecycle states, 13 valid and 11 invalid fixtures, 5 ownership/scope failures, all expected reasons, four passing adversarial probes, and pyshacl_executed=false. Raw SHA-256 is 9e04ce7d68decfd8f7541096bd62731b87fd033395c68a0f30d36d46ce4d74a0.",
+      "content": "The stdlib structural validator executed 26 profile checks over 24 fixtures. It observed 13/13 lifecycle states, 13 valid and 11 invalid fixtures, 5 ownership/scope failures, all expected reasons, four passing adversarial probes, and pyshacl_executed=false. Raw SHA-256 is f964ab16e763e95f3dbe911eb8ddc59050c3d79ff4045b5acef733666d9116dd.",
       "verification_status": "verified",
       "verifier": "agentos-s1-003-independent-replay",
       "verification_method": "deterministic-local-replay-and-sha256",
@@ -172,10 +172,10 @@
         "method": "deterministic-local-replay-and-sha256",
         "verified_at": "2026-08-24",
         "path": "research/tickets/stage-1/S1-003/raw-results.json",
-        "file_sha256": "9e04ce7d68decfd8f7541096bd62731b87fd033395c68a0f30d36d46ce4d74a0",
+        "file_sha256": "f964ab16e763e95f3dbe911eb8ddc59050c3d79ff4045b5acef733666d9116dd",
         "fixtures_sha256": "7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211",
         "shapes_sha256": "2025035016d9f0a6b22dcaffc60d37d2882b0c51ab582f31a4afb532c6cf8f1f",
-        "validator_sha256": "2753a9a0911fb3ccda87ca2f07573e5a2535daa3f0dac4201e18e85b3d3a8e6a",
+        "validator_sha256": "acbdb0e07374c8b6a8104efaecd2f7fa97f872c272f461686c3acd1f80019462",
         "canonical_source_id": "S1-003-RESULTS",
         "publisher_id": "agentos-local",
         "independence_group": "s1-003-structural-execution"
@@ -186,15 +186,15 @@
       "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-003/engine-results.v2.json",
       "title": "S1-003 pySHACL Engine Validation Results",
       "source_type": "local deterministic empirical artifact",
-      "content": "validate_pyshacl.py executed pyshacl.validate producing 26 profile runs over 24 fixtures. Runtime: Python 3.11.15, rdflib 7.6.0, pySHACL 0.40.1. Result: 26/26 matched the structural oracle. shapes-v3 SHA-256=8f3a4bf466c14ff67bc42276a12dd398ce056cb7d93b430dbca2c47f640a3c1d, shapes-v3-promoted-only SHA-256=cc0a7135eb0a3f1a09e889b591671e2631c8b31ec6ed38c95c67f997454819c6, fixtures SHA-256=7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211, RDF input SHA-256=4c1af606e66eb7c2151cb4ed1a675f5c9efc824927e28c4e801f53dc6419d534, engine-results SHA-256=c564a1889380e550ebd2d8df06efa9bd4adcc4f6011af7eee1a001efe289d6f5. Fail-closed comparison.py verified all 26 runs against the structural oracle with zero mismatches; 22 adversarial regression tests lock every bypass path.",
+      "content": "validate_pyshacl.py executed pyshacl.validate producing schema-v2 canonical semantic tuples for 26 profile runs over 24 fixtures. Runtime: Python 3.11.15, rdflib 7.6.0, pySHACL 0.40.1. Result: 26/26 matched the structural oracle. shapes-v3 SHA-256=8f3a4bf466c14ff67bc42276a12dd398ce056cb7d93b430dbca2c47f640a3c1d, shapes-v3-promoted-only SHA-256=cc0a7135eb0a3f1a09e889b591671e2631c8b31ec6ed38c95c67f997454819c6, fixtures SHA-256=7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211, RDF input SHA-256=4c1af606e66eb7c2151cb4ed1a675f5c9efc824927e28c4e801f53dc6419d534, engine-results SHA-256=37bc3f47cc22c50d67786f1f8b80ccafd05644d1d7731d8cb7fbc8124feb5b26. Fail-closed comparison.py independently derived every expected tuple and verified all 26 runs with zero mismatches; 42 adversarial regression tests lock the evidence and provenance bypass paths.",
       "verification_status": "verified",
       "verifier": "agentos-s1-003-engine-replay",
       "verification_method": "deterministic-local-replay-and-sha256",
       "verifier_provenance": {
         "method": "deterministic-local-replay-and-sha256",
-        "verified_at": "2026-08-24T19:00:00Z",
+        "verified_at": "2026-08-25T01:45:03Z",
         "path": "research/tickets/stage-1/S1-003/engine-results.json",
-        "file_sha256": "c564a1889380e550ebd2d8df06efa9bd4adcc4f6011af7eee1a001efe289d6f5",
+        "file_sha256": "37bc3f47cc22c50d67786f1f8b80ccafd05644d1d7731d8cb7fbc8124feb5b26",
         "fixtures_sha256": "7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211",
         "shapes_sha256": "8f3a4bf466c14ff67bc42276a12dd398ce056cb7d93b430dbca2c47f640a3c1d",
         "rdf_input_sha256": "4c1af606e66eb7c2151cb4ed1a675f5c9efc824927e28c4e801f53dc6419d534",
@@ -209,6 +209,26 @@
       }
     },
     {
+      "id": "S1-003-COMPARISON",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-003/comparison-results.json",
+      "title": "S1-003 Fail-Closed Engine/Oracle Comparison",
+      "source_type": "local deterministic verification artifact",
+      "content": "comparison.py recomputed all generator and input hashes from disk, derived expected canonical semantic tuples only from raw-results.json, and compared all 26 engine runs. Result: verdict=pass, fail_closed=true, 26/26 matched, zero mismatches. comparison-results SHA-256=f5f813ebdd2028ff51a45d8e99f630e90fad90cbe5439eef9292bbf20235d9cc; comparator SHA-256=39440ac7959f61c048842e5bfbdf11ce3e89dc627d18751c4a8b856d171e000b.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-003-independent-verifier",
+      "verification_method": "fail-closed-replay-and-sha256",
+      "verifier_provenance": {
+        "method": "fail-closed-replay-and-sha256",
+        "verified_at": "2026-08-25T01:45:03Z",
+        "path": "research/tickets/stage-1/S1-003/comparison-results.json",
+        "file_sha256": "f5f813ebdd2028ff51a45d8e99f630e90fad90cbe5439eef9292bbf20235d9cc",
+        "comparison_py_sha256": "39440ac7959f61c048842e5bfbdf11ce3e89dc627d18751c4a8b856d171e000b",
+        "canonical_source_id": "S1-003-COMPARISON",
+        "publisher_id": "agentos-local",
+        "independence_group": "s1-003-comparator-execution"
+      }
+    },
+    {
       "id": "S1-003-ADVERSARIAL",
       "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-003/probe-results.v2.json",
       "title": "S1-003 Adversarial Probe Review",
@@ -219,7 +239,7 @@
       "verification_method": "deterministic-local-replay-and-sha256",
       "verifier_provenance": {
         "method": "deterministic-local-replay-and-sha256",
-        "verified_at": "2026-08-24T19:00:00Z",
+        "verified_at": "2026-08-25T01:45:03Z",
         "path": "research/tickets/stage-1/S1-003/probe-results.json",
         "file_sha256": "512e24bc636aa1137e46095791593b6df54174ec32bbc5627f49e3f1576122fe",
         "canonical_source_id": "S1-003-ADVERSARIAL",
@@ -233,7 +253,7 @@
       "canonical_uri": "https://local.agentos.invalid/AgentOS/tests/test_s1_003_regressions.py",
       "title": "S1-003 Fail-Closed Regression Test Suite",
       "source_type": "local deterministic test suite (stdlib-only, no pySHACL)",
-      "content": "29 adversarial regression tests in tests/test_s1_003_regressions.py verify that comparison.py cannot be bypassed by: corrupting expected_conforms, removing normalized_violations, corrupting expected_primary_reason, tampering shapes/fixtures/rdf hashes, corrupting semantic_digest, injecting unknown unclassified violations, removing pyshacl_executed flag, adding duplicate/extra/missing engine runs, changing runtime versions, tampering on-disk files, string \"false\" for booleans, fake non-empty hashes, fake semantic digests, non-empty unclassified_violations lists, and falsified engine verdict/mismatches. Also verifies validate_pyshacl.py classification (known reasons, unclassified allowlist) and fixtures_to_rdf.py inherited property emission. All 29 tests pass.",
+      "content": "42 adversarial regression tests verify strict engine schema, canonical semantic tuples and digests, exact sorted violation lists, strict per-run matched booleans, complete generator/input hashes, fail-closed result coverage, runtime pins, classification, deterministic RDF projection, safe repo-relative local provenance with DB/workspace separation, and bounded-memory source hashing. All 42 tests pass.",
       "verification_status": "verified",
       "verifier": "agentos-s1-003-test-replay",
       "verification_method": "unittest discover and pass",
@@ -241,13 +261,14 @@
         "method": "unittest discover and pass",
         "verified_at": "2026-08-24",
         "path": "tests/test_s1_003_regressions.py",
+        "file_sha256": "3826b44a6e03191f77c389477875436e35fccf0ccbe641c5d760a4fec4e82b7f",
         "canonical_source_id": "S1-003-REGRESSIONS",
         "publisher_id": "agentos-local",
         "independence_group": "s1-003-regression-tests",
-        "test_count": 29,
-        "test_passed": 29,
+        "test_count": 42,
+        "test_passed": 42,
         "test_failed": 0,
-        "py_version": "3.12.6"
+        "py_version": "3.11.15"
       }
     }
   ],
@@ -417,10 +438,11 @@
     },
     {
       "id": "claim-fail-closed-comparison",
-      "text": "Fact: comparison.py is fail-closed — ALL expectations derive exclusively from raw-results.json (structural oracle) and ALL hashes are recomputed from disk. It aborts (verdict=fail) when: pyshacl_executed is not strict boolean True (string \"false\" rejected), result count != 26, duplicate or extra (fixture_id, profile) keys, any runtime version mismatch, any top-level or per-run shapes/fixtures hash mismatch vs disk, any per-run shapes_sha256 mismatch (open vs promoted_only shapes), per-run rdf_input_sha256 not matching the recomputed single-fixture Turtle hash, semantic_digest not a 64-char hex or a trivial all-0s/all-1s pattern, empty unclassified_violations list required (non-empty list rejected), unknown violation reasons not in _KNOWN_VIOLATION_REASONS, observed_conforms not a strict JSON boolean, engine.verdict != 'pass', engine.mismatches not empty, or coverage counts mismatch. Verdict is 'pass' ONLY when matched==26 AND zero mismatches. 29 adversarial regression tests lock every bypass path.",
+      "text": "Fact: comparison.py is fail-closed — every expectation and canonical semantic tuple is derived exclusively from raw-results.json, while every input/generator hash is recomputed from disk. Schema, exact result keys, runtime pins, complete run coverage, exact sorted violation strings, semantic tuples and their derived digest, strict booleans, per-run matched consistency, summary, coverage, verdict, and mismatch fields must all agree. Verdict is pass only for exactly 26 independently matched runs with zero mismatches. 42 adversarial regression tests cover the evidence, schema, provenance, workspace-root, and bounded-memory hashing paths.",
       "claim_class": "fact",
       "source_ids": [
         "S1-003-ENGINE",
+        "S1-003-COMPARISON",
         "S1-003-REGRESSIONS"
       ]
     },
@@ -442,11 +464,13 @@
     },
     {
       "id": "claim-v3-verdict-pass",
-      "text": "Inference: with shapes-v3.ttl preserving all original constraints, fail-closed comparison verifying strict booleans, recomputed per-fixture RDF hashes, non-trivial semantic digests, non-empty unclassified_violations rejection, and self-reported engine verdict/mismatches/coverage — 26/26 agreement, 29 regression tests, 12/12 adversarial probes — the S1-003 verdict is PASS. The original PASS_WITH_LIMITS is preserved in audit.history.",
+      "text": "Inference: shapes-v3.ttl preserves the original constraints and a fresh engine-schema-v2 replay produced canonical semantic tuples whose digests, exact violation sets, per-run outcomes, complete generator/input hashes, coverage, summary, and verdict were independently recomputed by the fail-closed comparator. With 26/26 agreement, 42 regression tests, and 12/12 adversarial probes, the S1-003 verdict is PASS. The original PASS_WITH_LIMITS remains preserved and superseded in audit.history.",
       "claim_class": "inference",
       "source_ids": [
         "S1-003-ENGINE",
+        "S1-003-COMPARISON",
         "S1-003-ADVERSARIAL",
+        "S1-003-REGRESSIONS",
         "PYSHACL"
       ]
     }
@@ -463,7 +487,7 @@
       "producer": "agentos-s1-003-producer"
     },
     "source_registry": {
-      "content": "# Sources\n| ID | Class | Verification | Role |\n|---|---|---|---|\n| SRC-05 | ontology/SHACL design | local hash + section review | lifecycle and shape baseline |\n| SRC-08 | audit correction history | local hash + defect-table review | closed defects and runtime limit |\n| SRC-09 | correction ledger | local hash + round review | rejected spellings and stale vocabulary |\n| FEATURE-CONSUMER | feature/data-model consumer | local hash + trace review | downstream enforcement split |\n| F4-SHACL | W3C Recommendation | canonical identity + scoped review | normative SHACL vocabulary |\n| F8-PROV-O | W3C Recommendation | S1-001 verified source reuse | Activity/Entity lineage |\n| PYSHACL | official runtime project | project identity + local import probe | runtime availability boundary |\n| S1-003-RESULTS | empirical artifact | deterministic replay + SHA-256 | fixture outcomes |\n\n# Evidence classes\nAll three required classes are present: ontology/SHACL, correction history, and a feature/data-model consumer. Generated measurements are a fourth class. Local .invalid URIs are stable identifiers only and are accompanied by exact host path and file hash.\n\n# Ticket claim-class mapping\nThe harness schema accepts fact/inference/assumption/target. Ticket schema_fact, constraint, near_miss, and tool_availability_limit claims are persisted as sourced fact claims with the original class named in the text; design_inference maps to inference.",
+      "content": "# Sources\n| ID | Class | Verification | Role |\n|---|---|---|---|\n| SRC-05 | ontology/SHACL design | historical external path + SHA-256 review | lifecycle and shape baseline |\n| SRC-08 | audit correction history | historical external path + SHA-256 review | correction history |\n| SRC-09 | correction ledger | historical external path + SHA-256 review | rejected spellings and stale vocabulary |\n| FEATURE-CONSUMER | feature/data-model consumer | repo-relative path + current SHA-256 | downstream enforcement split |\n| F4-SHACL | W3C Recommendation | canonical identity + scoped review | normative SHACL vocabulary |\n| F8-PROV-O | W3C Recommendation | S1-001 verified source reuse | Activity/Entity lineage |\n| PYSHACL | official runtime project | pinned local import and execution probe | engine identity |\n| S1-003-RESULTS | structural artifact | repo-relative path + current SHA-256 | structural oracle |\n| S1-003-ENGINE | pySHACL artifact | repo-relative path + current SHA-256 | engine observations |\n| S1-003-COMPARISON | verification artifact | repo-relative path + current SHA-256 | independent fail-closed comparison |\n| S1-003-ADVERSARIAL | probe artifact | repo-relative path + current SHA-256 | adversarial behavior |\n| S1-003-REGRESSIONS | test suite | repo-relative path + current SHA-256 | bypass regressions |\n\n# Evidence classes\nOntology/design inputs, correction history, downstream consumer evidence, normative standards, pinned runtime identity, and four independently hashed local execution/test artifacts are present. The three DeepeekHarness paths are historical external-review provenance and are not presented as files inside AgentOS. Every AgentOS-local verified source declaring path/file_sha256 is resolved under the trusted workspace and checked from disk.\n\n# Ticket claim-class mapping\nThe harness schema accepts fact/inference/assumption/target. Historical availability claims remain explicitly superseded; the current PASS relies on engine, comparison, adversarial, and regression evidence.",
       "claim_refs": [
         "claim-schema-contract",
         "claim-runtime-limit",
@@ -534,7 +558,7 @@
       "producer": "agentos-s1-003-producer"
     },
     "independent_audit": {
-      "content": "# Integrity review\nThe independent verifier replayed validate_structural.py against shapes.ttl and fixtures.json. Input hashes were shapes=2025035016d9f0a6b22dcaffc60d37d2882b0c51ab582f31a4afb532c6cf8f1f, fixtures=7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211, validator=2753a9a0911fb3ccda87ca2f07573e5a2535daa3f0dac4201e18e85b3d3a8e6a, raw=9e04ce7d68decfd8f7541096bd62731b87fd033395c68a0f30d36d46ce4d74a0. The ticket-local .gitattributes and explicit newline setting preserve LF bytes across Windows checkout.\n\n# Probe 1\nA proposed record with extra inherited ContentObject properties passed open and failed promoted_only with not_promoted_status. PASS.\n\n# Probe 2\nOrphan promoted failed missing_promotion_activity; two mirrors failed insufficient_distinct_canonical_sources; missing independence group failed evidence_missing_independence_group. PASS.\n\n# Regression probes\nThe stale accepted status failed; missing superseding assertion failed; cross-workspace evidence, promotion actor, grant subject, missing scope, and multiple scope failed. The shape text contains sh:maxInclusive and no rejected spelling/token regression. PASS.\n\n# Adversarial limit\nThe fallback reproduces intended predicates but cannot validate Turtle syntax, SHACL focus-node targeting, SPARQL query execution, entailment, or implementation differences. It must never be labeled a pySHACL run.\n\n# Verdict\nPASS_WITH_LIMITS. Structural acceptance is supported; full SHACL-engine acceptance remains open. Auditor and producer labels are separate, but both executions occurred in the same local environment and are not independent operators.\n\n# Engine replay\nThe independent verifier also replayed validate_pyshacl.py against shapes-v2.ttl and fixtures.ttl (RDF input SHA c95306bb6f4863d101ee08db0e2a461f8cb3424cdd5063ceff5ccb2191bd9724). Result: 26/26 matching the structural oracle. pySHACL v0.40.1 on Python 3.11.15 with rdflib 7.6.0.\n\n# Adversarial engine review\nAll 12 mandatory probes executed via real pySHACL engine passed. No closed-world reasoning was used. No network access occurred.\n\n# Verdict\nPASS (promoted from PASS_WITH_LIMITS). Structural and engine acceptance are both supported. Auditor and producer labels are separate process roles in one local environment, not independent human operators.",
+      "content": "# Historical structural review\nThe first deterministic structural replay against shapes.ttl correctly reported PASS_WITH_LIMITS because it did not execute an RDF/SHACL engine. That record and its limitations remain preserved in audit.history and are explicitly superseded.\n\n# Fresh engine replay\nThe verifier regenerated fixtures.ttl (SHA-256 4c1af606e66eb7c2151cb4ed1a675f5c9efc824927e28c4e801f53dc6419d534), regenerated the structural oracle (SHA-256 f964ab16e763e95f3dbe911eb8ddc59050c3d79ff4045b5acef733666d9116dd), and executed validate_pyshacl.py (SHA-256 fef73eb79edb09b6f3dd609a7755f36d8cf9fa1617872649a03400a816f20dc4) against shapes-v3.ttl and shapes-v3-promoted-only.ttl. The v2 engine artifact (SHA-256 37bc3f47cc22c50d67786f1f8b80ccafd05644d1d7731d8cb7fbc8124feb5b26) records Python 3.11.15, rdflib 7.6.0, pySHACL 0.40.1 and 26/26 matching profile runs.\n\n# Fail-closed comparison\ncomparison.py (SHA-256 39440ac7959f61c048842e5bfbdf11ce3e89dc627d18751c4a8b856d171e000b) recomputed the frozen input and generator hashes, exact canonical semantic tuples and their digests, exact violation lists, run coverage, summary and verdict. comparison-results.json SHA-256 is f5f813ebdd2028ff51a45d8e99f630e90fad90cbe5439eef9292bbf20235d9cc; verdict=pass, fail_closed=true, 26/26, zero mismatches.\n\n# Adversarial and regression review\nAll 12 mandatory probes executed through pySHACL passed. Forty-two regression tests cover schema, semantic evidence, provenance, tampering, coverage, workspace-root bypasses, and bounded-memory local hashing. SQL/application enforcement remains the canonical MVP authorization boundary; no production RDF store or cross-engine portability claim is made.\n\n# Verdict\nPASS for the bounded S1-003 pySHACL contract. Producer and verifier are separate process roles in one local environment, not independent human operators.",
       "claim_refs": [
         "claim-execution-result",
         "claim-near-miss-result",
@@ -617,7 +641,41 @@
         "probes_passed": 12,
         "probes_total": 12,
         "pyshacl_executed": true,
-        "notes": "v3 shapes preserve all original v1 constraints (sh:or, sh:maxCount=1, sh:node, sh:class) and add fail-closed SPARQL checks for distinct canonical sources, independence groups, and scope mismatches. comparison.py is fail-closed. requirements-pyshacl.txt uses a single --require-hashes lock. fixtures_to_rdf.py emits inherited_content_object_properties on assertion root. Successor nodes are typed KnowledgeAssertion with minimal valid promoted properties."
+        "notes": "v3 shapes preserve all original v1 constraints (sh:or, sh:maxCount=1, sh:node, sh:class) and add fail-closed SPARQL checks for distinct canonical sources, independence groups, and scope mismatches. comparison.py is fail-closed. requirements-pyshacl.txt uses a single --require-hashes lock. fixtures_to_rdf.py emits inherited_content_object_properties on assertion root. Successor nodes are typed KnowledgeAssertion with minimal valid promoted properties.",
+        "superseded": true,
+        "superseded_reason": "Replayed after engine schema v2, canonical semantic evidence, complete generator hash binding, and local provenance enforcement."
+      },
+      {
+        "timestamp": "2026-08-25T01:45:03Z",
+        "verdict": "pass",
+        "verifier": "agentos-s1-003-independent-verifier",
+        "shapes_sha256": "8f3a4bf466c14ff67bc42276a12dd398ce056cb7d93b430dbca2c47f640a3c1d",
+        "fixtures_sha256": "7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211",
+        "fixtures_ttl_sha256": "4c1af606e66eb7c2151cb4ed1a675f5c9efc824927e28c4e801f53dc6419d534",
+        "validate_structural_sha256": "acbdb0e07374c8b6a8104efaecd2f7fa97f872c272f461686c3acd1f80019462",
+        "fixtures_to_rdf_sha256": "798d67656309be52d8a8d617758a81f29a53e3d0035acc4f2e11955837e51e4f",
+        "validate_pyshacl_sha256": "fef73eb79edb09b6f3dd609a7755f36d8cf9fa1617872649a03400a816f20dc4",
+        "comparison_sha256": "39440ac7959f61c048842e5bfbdf11ce3e89dc627d18751c4a8b856d171e000b",
+        "raw_results_sha256": "f964ab16e763e95f3dbe911eb8ddc59050c3d79ff4045b5acef733666d9116dd",
+        "engine_results_sha256": "37bc3f47cc22c50d67786f1f8b80ccafd05644d1d7731d8cb7fbc8124feb5b26",
+        "probe_results_sha256": "512e24bc636aa1137e46095791593b6df54174ec32bbc5627f49e3f1576122fe",
+        "comparison_results_sha256": "f5f813ebdd2028ff51a45d8e99f630e90fad90cbe5439eef9292bbf20235d9cc",
+        "regression_tests_sha256": "3826b44a6e03191f77c389477875436e35fccf0ccbe641c5d760a4fec4e82b7f",
+        "runtime": {
+          "python": "3.11.15",
+          "rdflib": "7.6.0",
+          "pyshacl": "0.40.1",
+          "owlrl": "7.6.2"
+        },
+        "engine_schema": "agentos.s1-003-engine-results/v2",
+        "runs": 26,
+        "matched": 26,
+        "probes_passed": 12,
+        "probes_total": 12,
+        "regression_tests_passed": 42,
+        "pyshacl_executed": true,
+        "fail_closed": true,
+        "notes": "Fresh replay from deterministic RDF generation through pySHACL, strict engine/oracle comparison, adversarial probes, and repo-relative provenance validation. No engine result was hand-edited."
       }
     ],
     "supersedes": {

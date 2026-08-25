@@ -23,6 +23,7 @@ import sys
 import tempfile
 from pathlib import Path
 from unittest import TestCase
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parent.parent
 S1003 = ROOT / "research" / "tickets" / "stage-1" / "S1-003"
@@ -39,12 +40,53 @@ def _disk_hashes() -> dict:
     return cmp._disk_hashes(S1003)
 
 
+def _prepare_v2_engine(engine: dict, structural: dict) -> dict:
+    """Upgrade the checked-in pre-replay fixture in memory for unit tests.
+
+    ``engine-results.json`` is intentionally not edited by this regression
+    suite; the parent replay will regenerate it from validate_pyshacl.py.  The
+    comparator tests still need a complete v2-shaped artifact, so this helper
+    adds only deterministic schema fields in memory.
+    """
+    engine["schema"] = cmp.ENGINE_SCHEMA
+    disk = cmp._disk_hashes(S1003)
+    engine["inputs"].update({
+        "fixtures_sha256": disk["fixtures_json"],
+        "shapes_open_sha256": disk["shapes_open"],
+        "shapes_promoted_only_sha256": disk["shapes_promoted_only"],
+        "rdf_input_sha256": disk["fixtures_ttl"],
+        "validate_structural_sha256": disk["validate_structural"],
+        "fixtures_to_rdf_sha256": disk["fixtures_to_rdf"],
+        "validate_pyshacl_sha256": disk["validate_pyshacl"],
+    })
+    structural_by_key = {
+        (item["fixture_id"], item["profile"]): item
+        for item in structural["results"]
+    }
+    for run in engine["results"]:
+        key = (run["fixture_id"], run["profile"])
+        oracle = structural_by_key[key]
+        tuples = cmp._expected_semantic_tuples(oracle, *key)
+        run["semantic_tuples"] = tuples
+        run["semantic_digest"] = cmp._semantic_digest_from_tuples(tuples)
+        run["validate_structural_sha256"] = disk["validate_structural"]
+        run["fixtures_to_rdf_sha256"] = disk["fixtures_to_rdf"]
+        run["validate_pyshacl_sha256"] = disk["validate_pyshacl"]
+    engine["summary"] = {
+        "total_runs": len(engine["results"]),
+        "matched_runs": len(engine["results"]),
+        "mismatch_count": 0,
+        "verdict": "pass",
+    }
+    return engine
+
+
 class TestComparisonFailClosed(TestCase):
     """Verify that comparison.py cannot be bypassed by tampering engine-results."""
 
     def setUp(self):
         self.structural = _load("raw-results.json")
-        self.engine = _load("engine-results.json")
+        self.engine = _prepare_v2_engine(_load("engine-results.json"), self.structural)
         self.disk = _disk_hashes()
 
     def test_baseline_passes(self):
@@ -137,6 +179,28 @@ class TestComparisonFailClosed(TestCase):
         report = cmp.compare(tampered, self.structural, self.disk)
         self.assertEqual(report["verdict"], "fail")
         self.assertTrue(any("rdf_input_sha256" in m for m in report["mismatches"]))
+
+    def test_top_level_provenance_hashes_are_content_bound(self):
+        """Every declared top-level deterministic-input hash must match disk."""
+        for field in ("rdf_input_sha256", "validate_structural_sha256",
+                      "fixtures_to_rdf_sha256", "validate_pyshacl_sha256"):
+            tampered = copy.deepcopy(self.engine)
+            tampered["inputs"][field] = "2" * 64
+            report = cmp.compare(tampered, self.structural, self.disk)
+            self.assertEqual(report["verdict"], "fail", (field, report))
+            self.assertTrue(any(field in m for m in report["mismatches"]),
+                            (field, report["mismatches"]))
+
+    def test_per_run_generator_hashes_are_content_bound(self):
+        """Per-run provenance cannot be replaced by another valid digest."""
+        for field in ("validate_structural_sha256", "fixtures_to_rdf_sha256",
+                      "validate_pyshacl_sha256"):
+            tampered = copy.deepcopy(self.engine)
+            tampered["results"][0][field] = "deadbeef" * 8
+            report = cmp.compare(tampered, self.structural, self.disk)
+            self.assertEqual(report["verdict"], "fail", (field, report))
+            self.assertTrue(any(field in m for m in report["mismatches"]),
+                            (field, report["mismatches"]))
 
     def test_tampering_semantic_digest_is_caught(self):
         """A run with an empty semantic_digest must FAIL."""
@@ -253,6 +317,46 @@ class TestComparisonFailClosed(TestCase):
         self.assertEqual(report["verdict"], "fail")
         self.assertTrue(any("semantic_digest" in m for m in report["mismatches"]))
 
+    def test_arbitrary_valid_semantic_digest_is_caught(self):
+        """Any digest not derived from canonical tuples must FAIL."""
+        for fake in ("2" * 64, "deadbeef" * 8):
+            tampered = copy.deepcopy(self.engine)
+            tampered["results"][0]["semantic_digest"] = fake
+            report = cmp.compare(tampered, self.structural, self.disk)
+            self.assertEqual(report["verdict"], "fail", (fake, report))
+            self.assertTrue(any("semantic_digest" in m
+                                for m in report["mismatches"]),
+                            (fake, report["mismatches"]))
+
+    def test_tampered_semantic_tuples_are_caught(self):
+        """Replacing canonical evidence tuples must FAIL even with a valid digest."""
+        tampered = copy.deepcopy(self.engine)
+        tampered["results"][0]["semantic_tuples"] = ["[\"s1-003-semantic/v1\",\"wrong\"]"]
+        report = cmp.compare(tampered, self.structural, self.disk)
+        self.assertEqual(report["verdict"], "fail")
+        self.assertTrue(any("semantic_tuples" in m
+                            for m in report["mismatches"]))
+
+    def test_normalized_violations_must_be_sorted_unique_strings(self):
+        """A JSON object is not a valid normalized-violations list."""
+        tampered = copy.deepcopy(self.engine)
+        good_run = next(r for r in tampered["results"] if r["observed_conforms"])
+        good_run["normalized_violations"] = {"not_promoted_status": True}
+        report = cmp.compare(tampered, self.structural, self.disk)
+        self.assertEqual(report["verdict"], "fail")
+        self.assertTrue(any("normalized_violations" in m
+                            for m in report["mismatches"]))
+
+    def test_per_run_matched_must_be_strict_and_consistent(self):
+        """A forged false or string matched field must FAIL."""
+        for value in (False, "false"):
+            tampered = copy.deepcopy(self.engine)
+            tampered["results"][0]["matched"] = value
+            report = cmp.compare(tampered, self.structural, self.disk)
+            self.assertEqual(report["verdict"], "fail", (value, report))
+            self.assertTrue(any("matched" in m for m in report["mismatches"]),
+                            (value, report["mismatches"]))
+
     def test_unclassified_violations_field_is_checked(self):
         """Non-empty unclassified_violations must FAIL (not just normalized)."""
         tampered = copy.deepcopy(self.engine)
@@ -277,6 +381,18 @@ class TestComparisonFailClosed(TestCase):
         report = cmp.compare(tampered, self.structural, self.disk)
         self.assertEqual(report["verdict"], "fail")
         self.assertTrue(any("engine.mismatches" in m for m in report["mismatches"]))
+
+    def test_engine_summary_and_coverage_are_consistent(self):
+        """Forged summary/coverage counts cannot accompany a PASS."""
+        for field, value in (("matched_runs", 25), ("mismatch_count", 1)):
+            tampered = copy.deepcopy(self.engine)
+            tampered["summary"][field] = value
+            report = cmp.compare(tampered, self.structural, self.disk)
+            self.assertEqual(report["verdict"], "fail", (field, report))
+        tampered = copy.deepcopy(self.engine)
+        tampered["coverage"]["matched_run_count"] = 25
+        report = cmp.compare(tampered, self.structural, self.disk)
+        self.assertEqual(report["verdict"], "fail", report)
 
     # ------------------------------------------------------------------ #
     # sha-check mode
@@ -426,6 +542,120 @@ class TestFixturesToRdf(TestCase):
         self.assertIn("media_type", turtle)
         self.assertEqual(len(sha), 64)
         self.assertEqual(sha, hashlib.sha256(turtle.encode("utf-8")).hexdigest())
+
+
+class TestResearchLocalProvenance(TestCase):
+    """Verified local sources must bind to a safe, repo-relative file hash."""
+
+    def setUp(self):
+        self.root = Path(tempfile.mkdtemp())
+        sys.path.insert(0, str(ROOT / "src"))
+        from agentos.db import open_db
+        from agentos.research import fixture_bundle, run_research_plan
+        self.db = open_db(self.root / "agentos.db")
+        self.fixture_bundle = fixture_bundle
+        self.run_research_plan = run_research_plan
+
+    def tearDown(self):
+        self.db.conn.close()
+        shutil.rmtree(self.root, ignore_errors=True)
+
+    def _local_bundle(self, path: str, file_sha256: str) -> dict:
+        bundle = self.fixture_bundle("local provenance")
+        bundle["sources"][0]["verifier_provenance"] = {
+            "method": "local-file-sha256",
+            "path": path,
+            "file_sha256": file_sha256,
+        }
+        return bundle
+
+    def test_valid_repo_relative_local_hash_passes(self):
+        target = self.root / "verified.md"
+        target.write_text("verified local source\n", encoding="utf-8")
+        digest = hashlib.sha256(target.read_bytes()).hexdigest()
+        result = self.run_research_plan(
+            self.db, self.root, "valid local provenance",
+            self._local_bundle("verified.md", digest),
+        )
+        self.assertEqual(result["status"], "pass", result)
+
+    def test_local_provenance_hashing_streams_file_bytes(self):
+        """A large verified source must not be loaded by Path.read_bytes()."""
+        target = self.root / "verified.md"
+        target.write_text("streamed verified source\n", encoding="utf-8")
+        digest = hashlib.sha256(target.read_bytes()).hexdigest()
+        original_read_bytes = Path.read_bytes
+
+        def refuse_whole_target(path_obj):
+            if path_obj == target:
+                raise AssertionError("verified source was read into memory at once")
+            return original_read_bytes(path_obj)
+
+        with patch.object(Path, "read_bytes", new=refuse_whole_target):
+            result = self.run_research_plan(
+                self.db, self.root, "stream local provenance",
+                self._local_bundle("verified.md", digest),
+            )
+        self.assertEqual(result["status"], "pass", result)
+
+    def test_explicit_workspace_root_is_used_when_db_root_differs(self):
+        """Local provenance resolves against the trusted workspace, not DB storage."""
+        from agentos.db import open_db
+
+        db_root = self.root / "db-root"
+        workspace = self.root / "workspace"
+        target = workspace / "research" / "source.md"
+        target.parent.mkdir(parents=True)
+        target.write_text("repo-relative verified source\n", encoding="utf-8")
+        digest = hashlib.sha256(target.read_bytes()).hexdigest()
+        db = open_db(db_root / "agentos.db")
+        try:
+            result = self.run_research_plan(
+                db, db_root, "separate workspace provenance",
+                self._local_bundle("research/source.md", digest),
+                workspace_root=workspace,
+            )
+        finally:
+            db.conn.close()
+        self.assertEqual(result["status"], "pass", result)
+
+    def test_stale_local_hash_research_plan_is_rejected(self):
+        target = self.root / "verified.md"
+        target.write_text("verified local source\n", encoding="utf-8")
+        result = self.run_research_plan(
+            self.db, self.root, "stale local provenance",
+            self._local_bundle("verified.md", "0" * 64),
+        )
+        self.assertEqual(result["status"], "fail", result)
+        self.assertTrue(any("file_sha256" in item
+                            for item in result["next_actions"]), result)
+
+    def test_absolute_and_traversal_local_paths_are_rejected(self):
+        target = self.root / "verified.md"
+        target.write_text("verified local source\n", encoding="utf-8")
+        digest = hashlib.sha256(target.read_bytes()).hexdigest()
+        for path in (str(target), "../verified.md"):
+            result = self.run_research_plan(
+                self.db, self.root, f"unsafe local path {path}",
+                self._local_bundle(path, digest),
+            )
+            self.assertEqual(result["status"], "fail", (path, result))
+            self.assertTrue(any("path" in item.lower()
+                                for item in result["next_actions"]),
+                            (path, result["next_actions"]))
+
+    def test_malformed_local_hash_is_rejected(self):
+        target = self.root / "verified.md"
+        target.write_text("verified local source\n", encoding="utf-8")
+        for digest in ("A" * 64, "deadbeef", "g" * 64):
+            result = self.run_research_plan(
+                self.db, self.root, f"malformed local hash {digest[:8]}",
+                self._local_bundle("verified.md", digest),
+            )
+            self.assertEqual(result["status"], "fail", (digest, result))
+            self.assertTrue(any("file_sha256" in item
+                                for item in result["next_actions"]),
+                            (digest, result["next_actions"]))
 
 
 if __name__ == "__main__":

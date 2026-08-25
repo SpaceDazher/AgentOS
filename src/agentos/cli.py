@@ -3,6 +3,7 @@
     python -m agentos.cli demo [--worker fake|hermes] [--flaky] [--db PATH]
     python -m agentos.cli evidence --goal GOAL_ID
     python -m agentos.cli research-plan --topic TOPIC --bundle PATH --db ROOT
+        [--workspace-root REPO_ROOT]
 
 stdout carries exactly one JSON document; any warnings/diagnostics emitted by
 library code during execution are re-routed to stderr. Exit codes: 0 success,
@@ -332,6 +333,8 @@ def main(argv: list[str] | None = None) -> int:
                     help="structured offline research bundle JSON")
     rp.add_argument("--db", required=True,
                     help="root directory containing agentos.db and goals/")
+    rp.add_argument("--workspace-root", default=None,
+                    help="trusted repository root for verified local sources; defaults to cwd")
     for verb in ("wiki-build", "wiki-check", "wiki-status"):
         w = sub.add_parser(verb)
         w.add_argument("--db", default=None,
@@ -374,7 +377,9 @@ def main(argv: list[str] | None = None) -> int:
             root = Path(a.db).resolve()
             db = open_db(root / "agentos.db")
             result = _call_quietly(run_research_plan, db, root, a.topic,
-                                   a.bundle)
+                                   a.bundle,
+                                   workspace_root=Path(
+                                       a.workspace_root or Path.cwd()).resolve())
         except Exception as exc:
             _emit_json({"status": "fail", "summary": "research-plan error",
                         "next_actions": [f"{type(exc).__name__}: {exc}"],

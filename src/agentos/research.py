@@ -11,7 +11,7 @@ import hashlib
 import json
 import re
 import os
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from types import MappingProxyType
 from typing import Any, Mapping
 from urllib.parse import urlsplit, urlunsplit
@@ -64,6 +64,7 @@ DEFAULT_CONFIG: Mapping[str, Any] = MappingProxyType({
 })
 
 _HEX64 = re.compile(r"\A[0-9a-fA-F]{64}\Z")
+_LOWER_HEX64 = re.compile(r"\A[0-9a-f]{64}\Z")
 _URI_SCHEMES = {"http", "https"}
 
 
@@ -91,6 +92,15 @@ def _nonempty(value: Any) -> bool:
 
 def _sha_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
+
+
+def _sha_file(path: Path) -> str:
+    """Hash a local artifact with bounded memory use."""
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def _content_bytes(value: Any) -> bytes:
@@ -408,7 +418,76 @@ def _source_provenance(item: Mapping[str, Any]) -> tuple[str, str, dict[str, Any
     return status, _as_text(verifier).strip(), {"method": _as_text(method).strip(), **dict(provenance)}
 
 
-def _normalize_bundle(bundle: Mapping[str, Any], config: Mapping[str, Any]) -> tuple[dict[str, Any], list[str]]:
+def _validate_local_verified_provenance(
+    raw: Mapping[str, Any], status: str, workspace_root: Path | None,
+) -> list[str]:
+    """Validate an explicitly declared local verified-source file binding.
+
+    Offline fixtures intentionally omit ``path``/``file_sha256`` and remain
+    valid.  Once a verified source declares either local provenance field, the
+    pair becomes a strict contract: the path is repo-relative, resolves inside
+    the planner workspace, and the declared lowercase SHA-256 matches bytes on
+    disk.  No path is ever fetched or executed.
+    """
+    provenance = raw.get("verifier_provenance", raw.get("provenance", {}))
+    if not isinstance(provenance, Mapping):
+        return []
+    has_path = "path" in provenance
+    has_hash = "file_sha256" in provenance
+    if status != "verified" or not (has_path or has_hash):
+        return []
+    errors: list[str] = []
+    if not has_path or not has_hash:
+        errors.append(
+            "verified local provenance requires both verifier_provenance.path "
+            "and verifier_provenance.file_sha256")
+        return errors
+    path_value = provenance.get("path")
+    digest_value = provenance.get("file_sha256")
+    if (not isinstance(path_value, str) or not path_value.strip()
+            or Path(path_value).is_absolute()
+            or PureWindowsPath(path_value).is_absolute()
+            or PureWindowsPath(path_value).drive
+            or path_value.replace("\\", "/").startswith("/")):
+        errors.append(
+            "verifier_provenance.path must be a repo-relative path inside workspace")
+        return errors
+    normalized_parts = path_value.replace("\\", "/").split("/")
+    if any(part in {"", ".", ".."} for part in normalized_parts):
+        errors.append(
+            "verifier_provenance.path must not contain empty, '.' or '..' segments")
+        return errors
+    if not isinstance(digest_value, str) or _LOWER_HEX64.fullmatch(digest_value) is None:
+        errors.append(
+            "verifier_provenance.file_sha256 must be exactly 64 lowercase hex characters")
+        return errors
+    if workspace_root is None:
+        errors.append("workspace root is required for verified local provenance")
+        return errors
+    root = workspace_root.resolve()
+    candidate = (root / Path(*normalized_parts)).resolve()
+    try:
+        candidate.relative_to(root)
+    except ValueError:
+        errors.append("verifier_provenance.path resolves outside workspace")
+        return errors
+    if not candidate.is_file():
+        errors.append(f"verifier_provenance.path does not name a file: {path_value}")
+        return errors
+    try:
+        actual = _sha_file(candidate)
+    except OSError as exc:
+        errors.append(f"verifier_provenance.path cannot be read: {exc}")
+        return errors
+    if actual != digest_value:
+        errors.append(
+            "verifier_provenance.file_sha256 does not match the local file bytes")
+    return errors
+
+
+def _normalize_bundle(bundle: Mapping[str, Any], config: Mapping[str, Any],
+                      workspace_root: Path | None = None
+                      ) -> tuple[dict[str, Any], list[str]]:
     """Normalize untrusted input and return DB-ready values plus validation errors."""
     errors: list[str] = []
     normalized: dict[str, Any] = {"sources": [], "claims": [], "artifacts": {}, "audit": {}}
@@ -464,6 +543,10 @@ def _normalize_bundle(bundle: Mapping[str, Any], config: Mapping[str, Any]) -> t
             status = "unverified"
         if status == "verified" and (not verifier or not method):
             errors.append(f"source {index} verified status requires verifier and method provenance")
+        errors.extend(
+            f"source {index}: {error}"
+            for error in _validate_local_verified_provenance(
+                raw, status, workspace_root))
         # Keep canonical ids compact enough for the vault redactor to retain
         # them as exact frontmatter bindings (long opaque strings are treated
         # as token-like untrusted text by wiki.py).
@@ -1024,13 +1107,19 @@ def _attach_research_outputs(db, root: Path, goal_id: str,
 
 
 def run_research_plan(db, root_dir: str | Path, topic: str,
-                      bundle: Any = None, config: Mapping[str, Any] | None = None) -> dict[str, Any]:
+                      bundle: Any = None, config: Mapping[str, Any] | None = None,
+                      *, workspace_root: str | Path | None = None) -> dict[str, Any]:
     """Run one bounded research campaign and return a JSON-safe result.
 
     ``db`` may be an open :class:`agentos.db.Database`; callers needing a
     path-level API can use :func:`research_plan`, which owns the connection.
+
+    ``root_dir`` is the DB/artifact root.  Verified local provenance is
+    resolved relative to ``workspace_root`` when supplied; the legacy
+    ``root_dir`` fallback preserves existing programmatic callers.
     """
     root = Path(root_dir).resolve()
+    workspace = Path(workspace_root).resolve() if workspace_root is not None else root
     root.mkdir(parents=True, exist_ok=True)
     topic_text = _as_text(topic).strip()
     topic_errors: list[str] = []
@@ -1082,7 +1171,8 @@ def run_research_plan(db, root_dir: str | Path, topic: str,
                 "next_actions": list(dict.fromkeys(errors)), "artifacts": []}
     manifest, manifest_errors = _manifest_hash(loaded or {}, config_norm)
     errors.extend(manifest_errors)
-    normalized, bundle_errors = _normalize_bundle(loaded or {}, config_norm)
+    normalized, bundle_errors = _normalize_bundle(
+        loaded or {}, config_norm, workspace_root=workspace)
     errors.extend(bundle_errors)
     if errors:
         return {"status": "fail", "summary": "research bundle validation failed",
@@ -1150,12 +1240,14 @@ class ResearchPlanner:
         self.config = dict(config or {})
 
     def run(self, topic: str, bundle: Any = None,
-            config: Mapping[str, Any] | None = None) -> dict[str, Any]:
+            config: Mapping[str, Any] | None = None, *,
+            workspace_root: str | Path | None = None) -> dict[str, Any]:
         merged = dict(self.config)
         if config:
             merged.update(dict(config))
         return run_research_plan(self.db, self.root_dir, topic, bundle,
-                                 merged if merged else None)
+                                 merged if merged else None,
+                                 workspace_root=workspace_root)
 
     plan = run
 
@@ -1166,7 +1258,8 @@ ResearchWorkflow = ResearchPlanner
 def research_plan(topic: str, bundle: Any = None, *, db=None,
                   db_path: str | Path | None = None,
                   root_dir: str | Path | None = None,
-                  config: Mapping[str, Any] | None = None) -> dict[str, Any]:
+                  config: Mapping[str, Any] | None = None,
+                  workspace_root: str | Path | None = None) -> dict[str, Any]:
     """Path-level convenience API usable without invoking the CLI."""
     owned = None
     if db is None:
@@ -1180,7 +1273,8 @@ def research_plan(topic: str, bundle: Any = None, *, db=None,
         if root.suffix:
             root = root.parent
     try:
-        return run_research_plan(db, root, topic, bundle, config)
+        return run_research_plan(db, root, topic, bundle, config,
+                                 workspace_root=workspace_root)
     finally:
         if owned is not None:
             owned.conn.close()

@@ -37,6 +37,9 @@ from typing import Any
 HERE = Path(__file__).resolve().parent
 
 EXPECTED_RUN_COUNT = 26
+ENGINE_SCHEMA = "agentos.s1-003-engine-results/v2"
+SEMANTIC_TUPLE_SCHEMA = "agentos.s1-003-semantic/v1"
+CONFORMS_REASON = "__conforms__"
 
 # Pinned runtime identity — the engine MUST report these exact versions.
 EXPECTED_RUNTIME = {"python": "3.11.15", "rdflib": "7.6.0", "pyshacl": "0.40.1"}
@@ -84,6 +87,7 @@ PINNED = {
     "fixtures_ttl": "fixtures.ttl",
     "fixtures_to_rdf": "fixtures_to_rdf.py",
     "validate_structural": "validate_structural.py",
+    "validate_pyshacl": "validate_pyshacl.py",
 }
 
 
@@ -126,14 +130,103 @@ def _is_hex_sha256(value: Any) -> bool:
     return isinstance(value, str) and _HEX_SHA256_RE.match(value) is not None
 
 
-def _struct_to_key(r: dict) -> tuple[str, str]:
-    """(fixture_id, profile) tuple for a structural result."""
-    return (r["fixture_id"], r.get("profile", "open"))
+def _canonical_semantic_tuples(fixture_id: str, profile: str,
+                               conforms: bool,
+                               violations: list[str]) -> list[str]:
+    """Build the structural semantic-evidence contract for one run.
+
+    The tuple deliberately contains only stable, oracle-owned values.  It is
+    independent of pySHACL validation-result blank nodes while still binding
+    the evidence to the exact fixture/profile/outcome and normalized reason.
+    Each tuple is a canonical JSON string so the comparator can validate both
+    its shape and its byte representation without importing rdflib.
+    """
+    reasons = sorted(set(violations))
+    if not reasons:
+        reasons = [CONFORMS_REASON]
+    outcome = "conforms" if conforms else "violates"
+    return [json.dumps(
+        [SEMANTIC_TUPLE_SCHEMA, fixture_id, profile, outcome, reason],
+        ensure_ascii=False, separators=(",", ":"),
+    ) for reason in reasons]
+
+
+def _semantic_digest_from_tuples(tuples: list[str]) -> str:
+    """Hash the exact canonical tuple bytes, including their required order."""
+    return hashlib.sha256("\n".join(tuples).encode("utf-8")).hexdigest()
+
+
+def _expected_semantic_tuples(sr: dict[str, Any], fixture_id: str,
+                              profile: str) -> list[str]:
+    """Derive authoritative tuples from a structural-oracle result."""
+    observed = sr.get("observed_conforms")
+    if type(observed) is not bool:
+        observed = bool(sr.get("expected_conforms"))
+    violations = sr.get("observed_violations", [])
+    if not isinstance(violations, list) or not all(
+            isinstance(item, str) for item in violations):
+        violations = []
+    return _canonical_semantic_tuples(fixture_id, profile, observed, violations)
+
+
+def _validate_semantic_tuples(value: Any, expected: list[str]) -> list[str]:
+    """Return schema errors for a semantic-tuple list.
+
+    Equality with ``expected`` is intentional: tuple content is anchored to
+    structural oracle data, not merely to a self-consistent digest supplied by
+    the untrusted engine artifact.
+    """
+    errors: list[str] = []
+    if not isinstance(value, list):
+        return [f"semantic_tuples must be a list[str] (got {value!r})"]
+    if not all(type(item) is str for item in value):
+        errors.append("semantic_tuples must contain only strings")
+        return errors
+    if value != sorted(value):
+        errors.append("semantic_tuples must be sorted")
+    if len(value) != len(set(value)):
+        errors.append("semantic_tuples must not contain duplicates")
+    for item in value:
+        try:
+            parsed = json.loads(item)
+        except (TypeError, ValueError) as exc:
+            errors.append(f"semantic_tuples contains invalid JSON tuple: {exc}")
+            continue
+        if not isinstance(parsed, list) or len(parsed) != 5 \
+                or not all(type(part) is str for part in parsed):
+            errors.append(f"semantic_tuples tuple has invalid format: {item!r}")
+            continue
+        canonical = json.dumps(parsed, ensure_ascii=False,
+                               separators=(",", ":"))
+        if canonical != item:
+            errors.append(f"semantic_tuples tuple is not canonical: {item!r}")
+        if parsed[0] != SEMANTIC_TUPLE_SCHEMA:
+            errors.append(f"semantic_tuples tuple has unknown schema: {item!r}")
+    if value != expected:
+        errors.append(
+            f"semantic_tuples do not match structural oracle: "
+            f"engine={value!r} expected={expected!r}")
+    return errors
 
 
 def _disk_hashes(here: Path) -> dict[str, str]:
     """Recompute every pinned file hash from disk."""
     return {role: _sha256_file(here / fname) for role, fname in PINNED.items()}
+
+
+def _object_keys(value: Any, field: str, expected: set[str]) -> list[str]:
+    """Require a JSON object with exactly the declared keys."""
+    if not isinstance(value, dict):
+        return [f"{field} must be a JSON object"]
+    errors: list[str] = []
+    actual = set(value)
+    missing = expected - actual
+    extra = actual - expected
+    if missing:
+        errors.append(f"{field} missing keys: {sorted(missing)}")
+    if extra:
+        errors.append(f"{field} has unknown keys: {sorted(extra)}")
+    return errors
 
 
 # --------------------------------------------------------------------------- #
@@ -147,229 +240,294 @@ def compare(engine_results: dict, structural_results: dict,
     The engine results are treated as untrusted observed data.
     """
     mismatches: list[str] = []
+    if not isinstance(engine_results, dict):
+        return _fail("engine results must be a JSON object", 0)
+    if not isinstance(structural_results, dict):
+        return _fail("structural results must be a JSON object", 0)
 
-    # Load fixtures for per-run RDF hash verification (7k).
+    # Load fixtures for per-run RDF hash verification.  The fixtures and all
+    # generator inputs are local deterministic sources, never engine authority.
     fixtures_doc = _load_json(HERE / "fixtures.json")
     catalog = fixtures_doc.get("evidence_catalog", {})
-    fixture_map = {f["id"]: f for f in fixtures_doc.get("fixtures", [])}
+    fixture_map = {
+        f.get("id"): f for f in fixtures_doc.get("fixtures", [])
+        if isinstance(f, dict) and isinstance(f.get("id"), str)
+    }
 
-    # --- Pre 1: pySHACL must have executed (strict boolean, not truthiness) ---
+    # --- Top-level schema and execution gate --------------------------------
+    if engine_results.get("schema") != ENGINE_SCHEMA:
+        mismatches.append(
+            f"schema expected={ENGINE_SCHEMA!r} got={engine_results.get('schema')!r}")
     py_exec = engine_results.get("pyshacl_executed")
     if py_exec is not True:
         return _fail(
             f"pyshacl_executed is not boolean True (got {py_exec!r} of type "
             f"{type(py_exec).__name__}) — engine did not run", 0)
 
-    # --- Pre 2: runtime identity ---
-    rt = engine_results.get("runtime", {})
-    for k, v in EXPECTED_RUNTIME.items():
-        if rt.get(k) != v:
-            mismatches.append(f"runtime.{k} expected={v} got={rt.get(k)}")
+    # --- Runtime identity and top-level provenance ---------------------------
+    rt = engine_results.get("runtime")
+    mismatches.extend(_object_keys(rt, "runtime", set(EXPECTED_RUNTIME)))
+    if isinstance(rt, dict):
+        for k, v in EXPECTED_RUNTIME.items():
+            if rt.get(k) != v:
+                mismatches.append(f"runtime.{k} expected={v} got={rt.get(k)}")
 
-    # --- Pre 3: exact run count ---
-    engine_runs = engine_results.get("results", [])
+    input_to_disk = {
+        "fixtures_sha256": "fixtures_json",
+        "shapes_open_sha256": "shapes_open",
+        "shapes_promoted_only_sha256": "shapes_promoted_only",
+        "rdf_input_sha256": "fixtures_ttl",
+        "validate_structural_sha256": "validate_structural",
+        "fixtures_to_rdf_sha256": "fixtures_to_rdf",
+        "validate_pyshacl_sha256": "validate_pyshacl",
+    }
+    inp = engine_results.get("inputs")
+    mismatches.extend(_object_keys(inp, "inputs", set(input_to_disk)))
+    if isinstance(inp, dict):
+        for field, disk_key in input_to_disk.items():
+            value = inp.get(field)
+            if not _is_hex_sha256(value):
+                mismatches.append(f"{field} must be a lowercase SHA-256 digest")
+            elif value != disk_hashes[disk_key]:
+                mismatches.append(
+                    f"{field}: engine={value} disk={disk_hashes[disk_key]}")
+
+    # --- Oracle and run key-set checks ---------------------------------------
+    struct_results = structural_results.get("results")
+    if not isinstance(struct_results, list):
+        return _fail("structural results.results must be a list", 0)
+    if len(struct_results) != EXPECTED_RUN_COUNT:
+        mismatches.append(
+            f"expected {EXPECTED_RUN_COUNT} structural runs, got {len(struct_results)}")
+
+    def record_key(record: Any, label: str, index: int) -> tuple[str, str] | None:
+        if not isinstance(record, dict):
+            mismatches.append(f"{label}[{index}] must be a JSON object")
+            return None
+        fid = record.get("fixture_id")
+        profile = record.get("profile")
+        if not isinstance(fid, str) or not fid:
+            mismatches.append(f"{label}[{index}].fixture_id must be a non-empty string")
+            return None
+        if profile not in {"open", "promoted_only"}:
+            mismatches.append(
+                f"{label}[{index}].profile must be open/promoted_only")
+            return None
+        return fid, profile
+
+    struct_keys_list = [record_key(r, "structural", i)
+                        for i, r in enumerate(struct_results)]
+    struct_keys = {key for key in struct_keys_list if key is not None}
+    if len(struct_keys) != len([key for key in struct_keys_list if key is not None]):
+        mismatches.append("duplicate structural run key")
+
+    engine_runs = engine_results.get("results")
+    if not isinstance(engine_runs, list):
+        return _fail("engine results.results must be a list", 0)
     if len(engine_runs) != EXPECTED_RUN_COUNT:
         mismatches.append(
             f"expected {EXPECTED_RUN_COUNT} engine runs, got {len(engine_runs)}")
-
-    # --- Pre 4: no duplicate keys ---
-    engine_keys: list[tuple[str, str]] = []
-    for r in engine_runs:
-        engine_keys.append(_struct_to_key(r))
-    seen: set[tuple[str, str]] = set()
-    for k in engine_keys:
-        if k in seen:
-            mismatches.append(f"duplicate engine run: {k}")
-        seen.add(k)
-
-    # --- Pre 5: key set must match structural oracle exactly ---
-    struct_results = structural_results.get("results", [])
-    struct_keys = {_struct_to_key(r) for r in struct_results}
-    engine_key_set = set(engine_keys)
-    missing = struct_keys - engine_key_set
-    extra = engine_key_set - struct_keys
+    engine_keys_list = [record_key(r, "engine", i)
+                        for i, r in enumerate(engine_runs)]
+    engine_keys = {key for key in engine_keys_list if key is not None}
+    if len(engine_keys) != len([key for key in engine_keys_list if key is not None]):
+        mismatches.append("duplicate engine run key")
+    missing = struct_keys - engine_keys
+    extra = engine_keys - struct_keys
     if missing:
         mismatches.append(f"missing engine runs: {sorted(missing)}")
     if extra:
         mismatches.append(f"extra engine runs: {sorted(extra)}")
 
-    # --- Pre 6: top-level hashes must match disk ---
-    inp = engine_results.get("inputs", {})
-    if inp.get("fixtures_sha256") != disk_hashes["fixtures_json"]:
-        mismatches.append(
-            f"fixtures_sha256: engine={inp.get('fixtures_sha256')} "
-            f"disk={disk_hashes['fixtures_json']}")
-    if inp.get("shapes_open_sha256") != disk_hashes["shapes_open"]:
-        mismatches.append(
-            f"shapes_open_sha256: engine={inp.get('shapes_open_sha256')} "
-            f"disk={disk_hashes['shapes_open']}")
-    if inp.get("shapes_promoted_only_sha256") != disk_hashes["shapes_promoted_only"]:
-        mismatches.append(
-            f"shapes_promoted_only_sha256: engine={inp.get('shapes_promoted_only_sha256')} "
-            f"disk={disk_hashes['shapes_promoted_only']}")
+    struct_by_key: dict[tuple[str, str], dict] = {
+        key: record for key, record in zip(struct_keys_list, struct_results)
+        if key is not None and isinstance(record, dict)
+    }
 
-    # --- Pre 6b: top-level rdf_input_sha256 must match fixtures.ttl on disk ---
-    if inp.get("rdf_input_sha256") != disk_hashes["fixtures_ttl"]:
+    # --- Top-level summary types are checked now and values after the loop ---
+    engine_mismatches = engine_results.get("mismatches")
+    if not isinstance(engine_mismatches, list) or not all(
+            type(item) is str for item in engine_mismatches):
+        mismatches.append("engine.mismatches must be a list[str]")
+    elif engine_mismatches:
         mismatches.append(
-            f"rdf_input_sha256: engine={inp.get('rdf_input_sha256')} "
-            f"disk={disk_hashes['fixtures_ttl']}")
-
-    # --- Pre 6c: generator hashes must match disk ---
-    if inp.get("validate_structural_sha256") != disk_hashes["validate_structural"]:
-        mismatches.append(
-            f"validate_structural_sha256: engine={inp.get('validate_structural_sha256')} "
-            f"disk={disk_hashes['validate_structural']}")
-    if inp.get("fixtures_to_rdf_sha256") != disk_hashes["fixtures_to_rdf"]:
-        mismatches.append(
-            f"fixtures_to_rdf_sha256: engine={inp.get('fixtures_to_rdf_sha256')} "
-            f"disk={disk_hashes['fixtures_to_rdf']}")
-
-    # --- Pre 8: engine self-reported verdict, mismatches, and coverage ---
+            f"engine.mismatches expected=[] got={engine_mismatches!r}")
     engine_verdict = engine_results.get("verdict")
     if engine_verdict != "pass":
         mismatches.append(
             f"engine.verdict expected='pass' got={engine_verdict!r}")
-    if engine_results.get("mismatches") != []:
-        mismatches.append(
-            f"engine.mismatches expected=[] got={engine_results.get('mismatches')!r}")
-    cov = engine_results.get("coverage", {})
-    if cov.get("fixture_count") != 24:
-        mismatches.append(
-            f"engine.coverage.fixture_count expected=24 got={cov.get('fixture_count')}")
-    if cov.get("profile_run_count") != EXPECTED_RUN_COUNT:
-        mismatches.append(
-            f"engine.coverage.profile_run_count expected={EXPECTED_RUN_COUNT} "
-            f"got={cov.get('profile_run_count')}")
-    if cov.get("matched_run_count") != EXPECTED_RUN_COUNT:
-        mismatches.append(
-            f"engine.coverage.matched_run_count expected={EXPECTED_RUN_COUNT} "
-            f"got={cov.get('matched_run_count')}")
+    cov = engine_results.get("coverage")
+    mismatches.extend(_object_keys(
+        cov, "engine.coverage",
+        {"fixture_count", "profile_run_count", "matched_run_count"}))
+    summary = engine_results.get("summary")
+    mismatches.extend(_object_keys(
+        summary, "engine.summary",
+        {"total_runs", "matched_runs", "mismatch_count", "verdict"}))
 
-    # --- Build structural lookup (oracle is source of truth for expectations) ---
-    struct_by_key: dict[tuple[str, str], dict] = {
-        _struct_to_key(r): r for r in struct_results
-    }
-
-    # --- Pre 7: per-run provenance + outcome comparison ---
+    # --- Per-run provenance and oracle comparison ----------------------------
     per_run: list[dict[str, Any]] = []
     matched = 0
-    for er in engine_runs:
-        fid = er["fixture_id"]
-        profile = er.get("profile", "open")
-        key = (fid, profile)
+    required_run_keys = {
+        "fixture_id", "profile", "expected_conforms", "observed_conforms",
+        "expected_primary_reason", "normalized_violations",
+        "unclassified_violations", "report_text", "semantic_tuples",
+        "semantic_digest", "runtime", "shapes_sha256", "fixtures_sha256",
+        "rdf_input_sha256", "validate_structural_sha256",
+        "fixtures_to_rdf_sha256", "validate_pyshacl_sha256", "matched",
+    }
+    per_run_hashes = {
+        "fixtures_sha256": "fixtures_json",
+        "validate_structural_sha256": "validate_structural",
+        "fixtures_to_rdf_sha256": "fixtures_to_rdf",
+        "validate_pyshacl_sha256": "validate_pyshacl",
+    }
+    for index, er in enumerate(engine_runs):
+        key = engine_keys_list[index]
+        if key is None:
+            continue
+        fid, profile = key
         sr = struct_by_key.get(key)
         if sr is None:
-            # Already caught by Pre 5, but keep for safety.
             mismatches.append(f"no structural oracle record for {key}")
             continue
 
         run_mismatches: list[str] = []
+        run_mismatches.extend(_object_keys(er, f"{fid}/{profile}", required_run_keys))
 
-        # 7a. per-run runtime identity
-        er_rt = er.get("runtime", {})
-        for k, v in EXPECTED_RUNTIME.items():
-            if er_rt.get(k) != v:
+        expected_conforms = sr.get("expected_conforms")
+        oracle_observed = sr.get("observed_conforms")
+        if type(expected_conforms) is not bool:
+            run_mismatches.append("structural expected_conforms is not boolean")
+            expected_conforms = False
+        if type(oracle_observed) is not bool:
+            run_mismatches.append("structural observed_conforms is not boolean")
+            oracle_observed = expected_conforms
+        if expected_conforms != oracle_observed:
+            run_mismatches.append(
+                f"structural oracle expected/observed conforms disagree: "
+                f"expected={expected_conforms} observed={oracle_observed}")
+
+        expected_primary = sr.get("expected_primary_reason")
+        if expected_primary is not None and type(expected_primary) is not str:
+            run_mismatches.append("structural expected_primary_reason must be string/null")
+            expected_primary = None
+        if er.get("expected_conforms") is not expected_conforms:
+            run_mismatches.append(
+                f"expected_conforms: oracle={expected_conforms} "
+                f"engine={er.get('expected_conforms')!r}")
+        if er.get("expected_primary_reason") != expected_primary:
+            run_mismatches.append(
+                f"expected_primary_reason: oracle={expected_primary!r} "
+                f"engine={er.get('expected_primary_reason')!r}")
+
+        # Runtime and deterministic file hashes are checked for every run.
+        er_rt = er.get("runtime")
+        run_mismatches.extend(_object_keys(
+            er_rt, f"{fid}/{profile}.runtime", set(EXPECTED_RUNTIME)))
+        if isinstance(er_rt, dict):
+            for name, value in EXPECTED_RUNTIME.items():
+                if er_rt.get(name) != value:
+                    run_mismatches.append(
+                        f"runtime.{name} expected={value} got={er_rt.get(name)}")
+        expected_shapes_hash = (disk_hashes["shapes_promoted_only"]
+                               if profile == "promoted_only"
+                               else disk_hashes["shapes_open"])
+        hash_checks = {"shapes_sha256": expected_shapes_hash,
+                       **{field: disk_hashes[disk_key]
+                          for field, disk_key in per_run_hashes.items()}}
+        for field, expected_hash in hash_checks.items():
+            value = er.get(field)
+            if not _is_hex_sha256(value):
+                run_mismatches.append(f"{field} must be a lowercase SHA-256 digest")
+            elif value != expected_hash:
                 run_mismatches.append(
-                    f"runtime.{k} expected={v} got={er_rt.get(k)}")
+                    f"{field}: engine={value} disk={expected_hash}")
 
-        # 7b. per-run shapes hash must match the correct shapes file on disk
-        #      (open profile → shapes-v3.ttl, promoted_only → shapes-v3-promoted-only.ttl)
-        if profile == "promoted_only":
-            expected_shapes_hash = disk_hashes["shapes_promoted_only"]
-        else:
-            expected_shapes_hash = disk_hashes["shapes_open"]
-        if er.get("shapes_sha256") != expected_shapes_hash:
+        observed_conforms = er.get("observed_conforms")
+        if type(observed_conforms) is not bool:
             run_mismatches.append(
-                f"shapes_sha256: engine={er.get('shapes_sha256')} "
-                f"disk={expected_shapes_hash}")
-
-        # 7c. per-run fixtures hash must match disk
-        if er.get("fixtures_sha256") != disk_hashes["fixtures_json"]:
-            run_mismatches.append(
-                f"fixtures_sha256: engine={er.get('fixtures_sha256')} "
-                f"disk={disk_hashes['fixtures_json']}")
-
-        # 7d. observed_conforms must be a strict JSON boolean, then it must
-        #      match the structural oracle expectation.  We do NOT coerce
-        #      with bool() because bool("false") == True.
-        if type(er.get("observed_conforms")) is not bool:
-            run_mismatches.append(
-                f"observed_conforms is not a JSON boolean "
-                f"(got {er.get('observed_conforms')!r} of type "
-                f"{type(er.get('observed_conforms')).__name__})")
-        expected_conforms = bool(sr["expected_conforms"])
-        observed_conforms = er["observed_conforms"]
-        if expected_conforms != observed_conforms:
+                f"observed_conforms is not a JSON boolean (got {observed_conforms!r})")
+        elif observed_conforms != expected_conforms:
             run_mismatches.append(
                 f"conforms: oracle={expected_conforms} engine={observed_conforms}")
 
-        # 7e. if expected to fail, the expected primary_reason must be present
-        #     in the engine's normalized_violations (from the oracle's reason).
-        expected_primary = sr.get("expected_primary_reason")
-        engine_violations = er.get("normalized_violations", [])
-
-        if not expected_conforms and expected_primary:
-            if expected_primary not in engine_violations:
+        struct_violations_raw = sr.get("observed_violations", [])
+        if not isinstance(struct_violations_raw, list) or not all(
+                type(item) is str for item in struct_violations_raw):
+            run_mismatches.append("structural observed_violations must be list[str]")
+            struct_violations: list[str] = []
+        else:
+            struct_violations = sorted(set(struct_violations_raw))
+            if struct_violations_raw != struct_violations:
                 run_mismatches.append(
-                    f"primary_reason '{expected_primary}' missing from "
-                    f"engine violations {engine_violations}")
-
-        # 7f. the structural oracle's observed reasons must all be present
-        #     in the engine violations — bidirectional check.
-        struct_violations = set(sr.get("observed_violations", []))
-        engine_violation_set = set(engine_violations)
-        missing_in_engine = struct_violations - engine_violation_set
-        if missing_in_engine:
+                    "structural observed_violations must be sorted and unique")
+        unknown_struct = set(struct_violations) - _KNOWN_VIOLATION_REASONS
+        if unknown_struct:
             run_mismatches.append(
-                f"structural violations not in engine: {sorted(missing_in_engine)}")
+                f"structural oracle has unknown violation reasons: {sorted(unknown_struct)}")
 
-        # 7g. no unclassified violations — require the list to be exactly []
+        engine_violations = er.get("normalized_violations")
+        if not isinstance(engine_violations, list) or not all(
+                type(item) is str for item in engine_violations):
+            run_mismatches.append("normalized_violations must be a list[str]")
+            engine_violations = []
+        else:
+            if engine_violations != sorted(engine_violations):
+                run_mismatches.append("normalized_violations must be sorted")
+            if len(engine_violations) != len(set(engine_violations)):
+                run_mismatches.append("normalized_violations must not contain duplicates")
+            unknown_reasons = set(engine_violations) - _KNOWN_VIOLATION_REASONS
+            if unknown_reasons:
+                run_mismatches.append(
+                    f"unknown violation reasons in engine output: {sorted(unknown_reasons)}")
+            if engine_violations != struct_violations:
+                run_mismatches.append(
+                    f"normalized_violations: oracle={struct_violations!r} "
+                    f"engine={engine_violations!r}")
+        if not expected_conforms and expected_primary and expected_primary not in engine_violations:
+            run_mismatches.append(
+                f"primary_reason '{expected_primary}' missing from engine violations")
         uv = er.get("unclassified_violations")
-        if not isinstance(uv, list) or len(uv) != 0:
+        if uv != [] or not isinstance(uv, list):
             run_mismatches.append(
-                f"unclassified_violations must be an empty list "
-                f"(got {uv!r})")
-        # 7g-bis: also check the "unclassified" string inside normalized
-        if "unclassified" in engine_violation_set:
-            run_mismatches.append(
-                "unclassified violation present — engine emitted an "
-                "unknown reason that was not mapped")
+                f"unclassified_violations must be an empty list (got {uv!r})")
 
-        # 7i. no unknown/arbitrary violation reasons allowed
-        unknown_reasons = engine_violation_set - _KNOWN_VIOLATION_REASONS
-        if unknown_reasons:
-            run_mismatches.append(
-                f"unknown violation reasons in engine output: "
-                f"{sorted(unknown_reasons)}")
-
-        # 7j. per-run rdf_input_sha256 must match the hash of the
-        #      single-fixture Turtle graph recomputed from fixtures.json.
-        #      This prevents substitution of any non-empty 64-char hex string.
+        # Recompute the single-fixture RDF hash from fixtures.json, not from
+        # any engine-supplied content.
         expected_rdf_hash = _compute_fixture_rdf_hash(
             fixture_map.get(fid, {}), catalog)
-        if er.get("rdf_input_sha256") != expected_rdf_hash:
+        rdf_value = er.get("rdf_input_sha256")
+        if not _is_hex_sha256(rdf_value) or rdf_value != expected_rdf_hash:
             run_mismatches.append(
-                f"rdf_input_sha256: engine={er.get('rdf_input_sha256')} "
-                f"recomputed={expected_rdf_hash}")
+                f"rdf_input_sha256: engine={rdf_value} recomputed={expected_rdf_hash}")
 
-        # 7h. semantic_digest must be a 64-char hex string AND must not be a
-        #      trivial all-zeros / all-ones pattern.  The actual digest
-        #      value depends on the raw report graph (blank nodes, focus node
-        #      IRIs) which the comparator cannot recompute without rdflib,
-        #      but we can reject obviously fake values.
-        sd = er.get("semantic_digest")
-        if not _is_hex_sha256(sd):
+        expected_tuples = _expected_semantic_tuples(sr, fid, profile)
+        if "semantic_tuples" in sr and sr.get("semantic_tuples") != expected_tuples:
             run_mismatches.append(
-                f"semantic_digest must be a 64-char hex digest "
-                f"(got {sd!r})")
-        elif sd == "0" * 64 or sd == "1" * 64:
+                "structural semantic_tuples do not match its observed violations")
+        run_mismatches.extend(_validate_semantic_tuples(
+            er.get("semantic_tuples"), expected_tuples))
+        expected_digest = _semantic_digest_from_tuples(expected_tuples)
+        digest = er.get("semantic_digest")
+        if not _is_hex_sha256(digest) or digest != expected_digest:
             run_mismatches.append(
-                f"semantic_digest is a trivial pattern ({sd[:16]}...) "
-                f"— must be a real digest from the report graph")
+                f"semantic_digest: engine={digest!r} expected={expected_digest}")
+        if type(er.get("report_text")) is not str:
+            run_mismatches.append("report_text must be a string")
+
+        computed_run_pass = not run_mismatches
+        reported_matched = er.get("matched")
+        if type(reported_matched) is not bool:
+            run_mismatches.append(
+                f"matched must be a JSON boolean (got {reported_matched!r})")
+        elif reported_matched != computed_run_pass:
+            run_mismatches.append(
+                f"matched inconsistent with computed run result: "
+                f"reported={reported_matched} computed={computed_run_pass}")
 
         if run_mismatches:
-            for m in run_mismatches:
-                mismatches.append(f"{fid}/{profile}: {m}")
+            mismatches.extend(f"{fid}/{profile}: {item}" for item in run_mismatches)
         else:
             matched += 1
 
@@ -380,19 +538,49 @@ def compare(engine_results: dict, structural_results: dict,
             "observed_conforms": observed_conforms,
             "expected_primary_reason": expected_primary,
             "engine_normalized_violations": engine_violations,
-            "structural_observed_violations": sorted(struct_violations),
+            "structural_observed_violations": struct_violations,
+            "semantic_tuples_match": er.get("semantic_tuples") == expected_tuples,
+            "semantic_digest_match": digest == expected_digest,
             "shapes_sha256_match": er.get("shapes_sha256") == expected_shapes_hash,
             "fixtures_sha256_match": er.get("fixtures_sha256") == disk_hashes["fixtures_json"],
-            "runtime_match": all(
+            "runtime_match": isinstance(er_rt, dict) and all(
                 er_rt.get(k) == v for k, v in EXPECTED_RUNTIME.items()),
-            "passed": len(run_mismatches) == 0,
+            "passed": not run_mismatches,
             "run_mismatches": run_mismatches,
         })
 
-    # Verdict is "pass" ONLY when every run matched AND there are zero
-    # pre-checks mismatches.  This prevents the fail-open case where 26 runs
-    # match but there are also extra/duplicate runs or hash mismatches.
+    # Verdict is derived independently.  A self-reported PASS, coverage, or
+    # summary cannot turn a mismatch-free-looking subset into acceptance.
     verdict = "pass" if matched == EXPECTED_RUN_COUNT and not mismatches else "fail"
+    expected_coverage = {
+        "fixture_count": len({key[0] for key in struct_keys}),
+        "profile_run_count": len(struct_results),
+        "matched_run_count": matched,
+    }
+    if isinstance(cov, dict):
+        for field, expected_value in expected_coverage.items():
+            actual = cov.get(field)
+            if type(actual) is not int or actual != expected_value:
+                mismatches.append(
+                    f"engine.coverage.{field} expected={expected_value} got={actual!r}")
+    expected_summary = {
+        "total_runs": len(engine_runs),
+        "matched_runs": matched,
+        "mismatch_count": len(mismatches),
+        "verdict": verdict,
+    }
+    if isinstance(summary, dict):
+        for field, expected_value in expected_summary.items():
+            if summary.get(field) != expected_value:
+                mismatches.append(
+                    f"engine.summary.{field} expected={expected_value!r} "
+                    f"got={summary.get(field)!r}")
+    # A summary mismatch itself changes the authoritative result; report it in
+    # a second pass only for verdict computation, without recursively changing
+    # the expected mismatch_count field.
+    if mismatches and verdict == "pass":
+        verdict = "fail"
+
     return {
         "total_runs": len(engine_runs),
         "matched": matched,
@@ -448,6 +636,8 @@ def main() -> int:
              inp.get("validate_structural_sha256"), disk["validate_structural"]),
             ("fixtures_to_rdf_sha256",
              inp.get("fixtures_to_rdf_sha256"), disk["fixtures_to_rdf"]),
+            ("validate_pyshacl_sha256",
+             inp.get("validate_pyshacl_sha256"), disk["validate_pyshacl"]),
         ]
         hash_errors: list[str] = []
         for name, engine_val, disk_val in checks:
