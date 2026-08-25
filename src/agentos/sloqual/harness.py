@@ -230,14 +230,17 @@ def journal_chain_ok(conn) -> tuple[bool, int | None]:
 import re as _re
 
 _SECRET_STRICT_PATTERNS = tuple(_re.compile(p) for p in (
-    r"-----BEGIN [A-Z ]*PRIVATE KEY-----",
-    r"sk-[A-Za-z0-9]{20,}",
-    r"api_key=['\"]?[A-Za-z0-9]{20,}",
-    r"Authorization:\s*Bearer\s+[A-Za-z0-9._-]{20,}",
-    r"ghp_[A-Za-z0-9]{30,}",
-    r"AKIA[0-9A-Z]{16}",
+    rb"-----BEGIN [A-Z ]*PRIVATE KEY-----",
+    rb"sk-[A-Za-z0-9]{20,}",
+    rb"api_key=['\"]?[A-Za-z0-9]{20,}",
+    rb"Authorization:\s*Bearer\s+[A-Za-z0-9._-]{20,}",
+    rb"ghp_[A-Za-z0-9]{30,}",
+    rb"AKIA[0-9A-Z]{16}",
+    rb"password=[^\s\"']{8,}",
+    rb"api_key=[A-Za-z0-9_-]{16,}",
 ))
-_SECRET_TEXT_MARKERS = ("password=",)
+# byte-level search: file type, extension and encodability are attacker
+# controlled and never justify skipping an artifact
 
 
 def _parse_ts(value) -> datetime | None:
@@ -267,6 +270,7 @@ def sweep_invariants(conn, paths=()) -> dict:
         "side_effect_duplication_count": 0,
         "confirmed_data_loss_count": 0,
         "secrets_in_artifacts_count": 0,
+        "secrets_scan_unreadable_files": 0,
     }
     shim = type("ChainDB", (), {"conn": conn})()
     ok, bad_seq = Journal(shim).full_chain_check()
@@ -356,24 +360,11 @@ def sweep_invariants(conn, paths=()) -> dict:
         files = ([base] if base.is_file() else
                  [p for p in base.rglob("*") if p.is_file()])
         for artifact in files:
-            if artifact.suffix.lower() in (
-                    ".db", ".wal", ".shm", ".bin", ".dat", ".raw",
-                    ".tmp", ".npy", ".zst", ".gz"):
-                continue
             try:
                 blob = artifact.read_bytes()
             except OSError:
+                findings["secrets_scan_unreadable_files"] += 1
                 continue
-            if b"\x00" in blob[:4096]:
-                continue  # binary content: text signatures are meaningless
-            try:
-                text = blob.decode("utf-8")
-            except UnicodeDecodeError:
-                continue  # not UTF-8 text: never guess with replacement chars
-            hits = sum(1 for pat in _SECRET_STRICT_PATTERNS
-                       if pat.search(text))
-            low = text.lower()
-            hits += sum(1 for marker in _SECRET_TEXT_MARKERS
-                        if marker in low)
-            findings["secrets_in_artifacts_count"] += hits
+            findings["secrets_in_artifacts_count"] += sum(
+                1 for pat in _SECRET_STRICT_PATTERNS if pat.search(blob))
     return findings

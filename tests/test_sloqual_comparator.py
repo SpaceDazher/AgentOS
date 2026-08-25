@@ -481,19 +481,52 @@ class ComparatorGateTest(unittest.TestCase):
         self.assertEqual(out["counts"]["false_acceptance_count"], 5)
         self.assertLess(out["availability_fraction"]["value"], 0.96)
 
-    def test_secret_scan_skips_binary_scratch(self):
+    def test_byte_level_scan_detects_key_in_binary_named_file(self):
         import tempfile
         from pathlib import Path
         from agentos.db import open_db
         from agentos.sloqual.harness import sweep_invariants
         tmp = Path(tempfile.mkdtemp())
-        blob = b"\x00\xff" * 64 + b"sk-" + b"\xa5" * 32
-        (tmp / "pressure.bin").write_bytes(blob)
-        (tmp / "notes.txt").write_text("hello world", encoding="utf-8")
-        db_path = Path(tempfile.mkdtemp()) / "state.db"
-        conn = open_db(db_path).conn
+        (tmp / "leak.bin").write_bytes(
+            b"\x00\xff noise " * 8 + b"sk-live9fJ3kQ7zR1mW4xY8nB2vC6"
+            + b"\xa5 tail")
+        (tmp / "random.bin").write_bytes(bytes(range(256)) * 64)
+        conn = open_db(Path(tempfile.mkdtemp()) / "state.db").conn
         findings = sweep_invariants(conn, paths=(str(tmp),))
-        self.assertEqual(findings["secrets_in_artifacts_count"], 0)
+        self.assertEqual(findings["secrets_in_artifacts_count"], 1)
+        self.assertEqual(findings["secrets_scan_unreadable_files"], 0)
+
+    def test_false_acceptance_reaches_root_gate_even_when_slos_pass(self):
+        import json as _json
+        self.builder.add_run("run-A")
+        self.builder.add_run("run-B")
+        seed_file = next((self.builder.root / "work" / "run-A"
+                          / "warm_steady_state").glob("seed-*.json"))
+        payload = _json.loads(seed_file.read_text())
+        payload["result"]["metrics"].setdefault("counts", {})[
+            "false_acceptance_count"] = 1
+        seed_file.write_text(_json.dumps(payload))
+        result = run_compare(self.builder)
+        self.assertEqual(result["verdict"], "FAIL")
+        self.assertTrue(any(c.startswith("false-acceptance:")
+                            for c in result["fail_conditions"]))
+
+
+    def test_unknown_top_level_qualifier_is_no_data(self):
+        from agentos.sloqual import compare as _cmp
+
+        def rec(v):
+            return {"kind": "summary", "value": v, "median": v,
+                    "max": v, "mean": v, "n": 3, "p95": v}
+
+        obs = {"warm_steady_state": {"metrics": {
+            "latency_end_to_end_ms": rec(5.0)}}}
+        find = _cmp._make_resolver(
+            obs, {"warm_steady_state": ["nominal"]})["find"]
+        self.assertIsNotNone(find("latency_end_to_end_ms.p95",
+                                   "warm_steady_state@nominal"))
+        self.assertIsNone(find("latency_end_to_end_ms.p95",
+                               "warm_steady_state@garbage"))
 
     def test_denials_without_registered_pool_are_errors(self):
         from agentos.sloqual.scenarios import summarize_open_loop

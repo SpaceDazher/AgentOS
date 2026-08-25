@@ -114,7 +114,8 @@ def _relative_diff(va: float, vb: float) -> float:
     return abs(va - vb) / max(abs(va), abs(vb), 1e-9)
 
 
-def _make_resolver(observed_by_scenario: dict):
+def _make_resolver(observed_by_scenario: dict,
+                   qualifier_vocab: dict | None = None):
     """Scope/metric resolver shared by SLO evaluation and the
     contract-driven rerun comparison matrix."""
     INJECTED_SCENARIOS = {
@@ -152,6 +153,14 @@ def _make_resolver(observed_by_scenario: dict):
                 root, stat_hint = head, tail
         nodes = []
         for key in scenario_keys:
+            raw_scope_qual = None
+            if "@" in scope:
+                raw_scope_qual = scope.split("@", 1)[1]
+            if qualifier_vocab is not None and raw_scope_qual is not None:
+                # unqualified scopes are unaffected; a declared qualifier must
+                # belong to the contract vocabulary or resolution stops
+                if raw_scope_qual not in qualifier_vocab.get(key, []):
+                    continue
             metrics = observed_by_scenario.get(key, {}).get("metrics", {})
             node = metrics.get(root)
             if isinstance(node, list):
@@ -206,7 +215,12 @@ def _evaluate_slos(contract: dict, observed_by_scenario: dict) -> tuple[list[dic
     table: list[dict] = []
     cannot_pass: list[str] = []
     failures: list[str] = []
-    find_metric = _make_resolver(observed_by_scenario)["find"]
+    _main_vocab: dict = {}
+    for _slo in contract.get("slos", []):
+        _sc, _, _q = str(_slo.get("scope", "")).partition("@")
+        if _q:
+            _main_vocab.setdefault(_sc, []).append(_q)
+    find_metric = _make_resolver(observed_by_scenario, _main_vocab)["find"]
 
     def threshold_parts(threshold: str):
         match = re.search(r"(<=|>=)\s*([0-9]+(?:\.[0-9]+)?)", threshold)
@@ -500,35 +514,27 @@ def compare(ticket_dir: Path, run_ids: list[str], *, work_root: Path,
                 f"revocation-trials-below-minimum:{run_id}:"
                 f"{total}<{MIN_REVOCATION_TRIALS}")
 
-    from .harness import _SECRET_STRICT_PATTERNS, _SECRET_TEXT_MARKERS
+    from .harness import _SECRET_STRICT_PATTERNS
     for run_id in run_ids:
         run_dir = work_root / run_id
+        unreadable = 0
         for artifact in run_dir.rglob("*"):
             if not artifact.is_file():
-                continue
-            if artifact.suffix.lower() in (
-                    ".db", ".wal", ".shm", ".bin", ".dat", ".raw",
-                    ".tmp", ".npy", ".zst", ".gz"):
                 continue
             try:
                 blob = artifact.read_bytes()
             except OSError:
+                unreadable += 1
                 continue
-            if b"\x00" in blob[:4096]:
-                continue  # binary scratch: text signatures meaningless
-            try:
-                text = blob.decode("utf-8")
-            except UnicodeDecodeError:
-                continue
-            hit = next((pat.pattern for pat in _SECRET_STRICT_PATTERNS
-                        if pat.search(text)), None)
-            low = text.lower()
-            if hit is None:
-                hit = next((m for m in _SECRET_TEXT_MARKERS
-                            if m in low), None)
+            hit = next((pat.pattern.decode("ascii", "replace")
+                        for pat in _SECRET_STRICT_PATTERNS
+                        if pat.search(blob)), None)
             if hit:
                 failures.append(
                     f"secrets-in-artifacts:{run_id}:{artifact.name}:{hit}")
+        if unreadable:
+            failures.append(
+                f"secrets-scan-incomplete:{run_id}:{unreadable}")
 
     if revocation_total_trials < MIN_REVOCATION_TRIALS:
         limits.append(
@@ -547,8 +553,31 @@ def compare(ticket_dir: Path, run_ids: list[str], *, work_root: Path,
     if any(row["requires_owner_confirmation"] for row in slo_table):
         limits.append("owner-confirmation-pending:thresholds-marked-in-contract")
 
+    # deny-pool reconciliation: a locally counted false acceptance must
+    # surface in the root invariants AND is always a hard failure
+    for _rid, _scen_map in runs.items():
+        for _scen, _seeds in _scen_map.items():
+            for _seed, _payload in _seeds.items():
+                res = _payload.get("result", {})
+                counts = res.get("metrics", {}).get("counts", {})
+                fa = int(counts.get("false_acceptance_count") or 0)
+                if not fa:
+                    continue
+                inv = res.setdefault("invariants", {})
+                if isinstance(inv, dict):
+                    inv["false_acceptance_count"] = max(
+                        fa, int(inv.get("false_acceptance_count") or 0))
+                failures.append(
+                    f"false-acceptance:{_rid}:{_scen}:seed-{_seed}:{fa}")
+
+    qualifier_vocab: dict = {}
+    for _slo in (contract or {}).get("slos", []):
+        _sc, _, _q = str(_slo.get("scope", "")).partition("@")
+        if _q:
+            qualifier_vocab.setdefault(_sc, []).append(_q)
+
     def _eval_for_bucket(sli, scope, bucket):
-        return _make_resolver(bucket)["find"](sli, scope)
+        return _make_resolver(bucket, qualifier_vocab)["find"](sli, scope)
 
     rerun_summary = _compare_runs(runs, contract, _eval_for_bucket)
     for missing in rerun_summary.get("missing_comparable", []):

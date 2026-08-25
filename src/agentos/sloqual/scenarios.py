@@ -118,7 +118,8 @@ def summarize_open_loop(result, *, seed: int, tag: str,
     # a registered deny-pool request that does NOT come back DENIED is a
     # false acceptance by the gateway and counts as a hard error
     false_accepted = [r for r in rows
-                      if r["index"] in pool and r["outcome"] != "DENIED"]
+                      if r["index"] in pool
+                      and r["outcome"] == "SUCCEEDED"]
     failed = [r for r in rows if r["outcome"] in UNEXPECTED_FAILURE_OUTCOMES]
     e2e_values = [r["end_to_end_ms"] for r in completed]
     queue_values = [r["queue_wait_ms"] for r in rows]

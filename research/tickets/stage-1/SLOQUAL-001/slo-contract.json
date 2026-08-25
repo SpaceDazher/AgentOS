@@ -2,7 +2,7 @@
   "schema": "agentos.slo-contract/v1",
   "slo_id": "SLOQUAL-001",
   "title": "AgentOS production-like SLO qualification extending S1-002",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "status": "FROZEN_PRE_RUN",
   "amendments": [
     {
@@ -36,6 +36,15 @@
       "before_any_official_final_series": true,
       "reason": "A4 pilot exposed (a) secret scan false positives on random binary artifacts decoded lossily, (b) deny-pool false acceptances invisible to SLIs/invariants, (c) order-dependent rerun divergence, (d) fuzzy qualifier matching",
       "change": "strict typed secret scanning (UTF-8-only, NUL-guarded, length-bounded signatures; binary scratch excluded), deny-pool outcome reconciliation with mandatory zero false_acceptance_count, symmetric rerun formula (denominator = larger magnitude), exact-name qualifier grammar",
+      "thresholds_changed": false
+    },
+    {
+      "from_version": "1.0.4",
+      "to_version": "1.0.5",
+      "date": "2026-08-25",
+      "before_any_official_final_series": true,
+      "reason": "r6 review: secret scan was fail-open (extension/NUL/encoding skips let a real key in .bin bypass detection), locally counted deny-pool false acceptances never reached the root invariant gate, and top-level scope qualifiers were not validated",
+      "change": "byte-level strict scanning of every artifact (unreadable files block the verdict via secrets-scan-incomplete), local false_acceptance_count reconciled into root invariants plus hard failure strings, contract-declared qualifier vocabulary enforced for every scoped SLI",
       "thresholds_changed": false
     }
   ],
@@ -323,7 +332,7 @@
     "min_runner_version": "1.0.0",
     "rule": "results produced by incompatible runner versions are rejected by the comparator"
   },
-  "frozen_at": "2026-08-25T17:37:50Z",
+  "frozen_at": "2026-08-25T17:57:43Z",
   "rerun_consistency": {
     "proportion_absolute_tolerance": 0.01,
     "latency_relative_tolerance": 0.35,
@@ -334,5 +343,5 @@
   "mandatory_invariants": [
     "false_acceptance_count"
   ],
-  "self_hash_sha256": "89bb7a44e8176b8b97e328918344b48782d9e89017b5e62b82ce183e3236de18"
+  "self_hash_sha256": "698bd8943f00f4cfe2c21fcbe150f219c569766ad4a86d71e2537d5dd9e622f7"
 }
