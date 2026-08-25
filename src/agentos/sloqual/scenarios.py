@@ -47,13 +47,20 @@ class ScenarioConfig:
         return path
 
 
-def _spawn(module: str, args: list[str], cfg: ScenarioConfig) -> subprocess.Popen:
+def _spawn(module: str, args: list[str], cfg: ScenarioConfig,
+           stderr_path: Path | None = None) -> subprocess.Popen:
     env = dict(os.environ)
     env["PYTHONPATH"] = str(cfg.repo_src)
     env["PYTHONDONTWRITEBYTECODE"] = "1"
-    return subprocess.Popen(
-        [sys.executable, "-m", f"agentos.sloqual.{module}", *args],
-        env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    err = (open(stderr_path, "ab") if stderr_path is not None
+           else subprocess.DEVNULL)
+    try:
+        return subprocess.Popen(
+            [sys.executable, "-m", f"agentos.sloqual.{module}", *args],
+            env=env, stdout=subprocess.DEVNULL, stderr=err)
+    finally:
+        if stderr_path is not None:
+            err.close()
 
 
 def _read_jsonl(path: Path) -> list[dict]:
@@ -190,7 +197,7 @@ def scenario_cold_start(cfg: ScenarioConfig, seed: int) -> dict:
     result = OpenLoopRunner(max_inflight=64).run(
         schedule, dispatch_fn=lambda i: _authorize_dispatch(
             handle, ctx, resolved, i))
-    invariants = H.sweep_invariants(handle.db.conn)
+    invariants = H.sweep_invariants(handle.db.conn, paths=[handle.root])
     handle.close()
     return {
         "seed": seed,
@@ -242,7 +249,7 @@ def _steady_like_run(cfg: ScenarioConfig, scenario_id: str, seed: int, *,
         result, seed=seed, tag=scenario_id,
         denied_pool_indexes=denied_pool)
     metrics.update(_db_latency_metrics(handle, scenario_id, seed))
-    invariants = H.sweep_invariants(handle.db.conn)
+    invariants = H.sweep_invariants(handle.db.conn, paths=[handle.root])
     raw_rows = result.raw_rows()
     if client is not None:
         client.close()
@@ -387,7 +394,7 @@ def scenario_burst(cfg: ScenarioConfig, seed: int) -> dict:
                                       denied_pool_indexes=denied_pool)
         phase_metrics[phase_name] = summary
         all_rows.extend(result.raw_rows())
-    invariants = H.sweep_invariants(handle.db.conn)
+    invariants = H.sweep_invariants(handle.db.conn, paths=[handle.root])
     handle.close()
     return {"seed": seed, "metrics": {"phases": phase_metrics},
             "invariants": invariants}
@@ -421,7 +428,7 @@ def scenario_queue_backpressure(cfg: ScenarioConfig, seed: int) -> dict:
     summary = summarize_open_loop(result, seed=seed, tag="queue_backpressure")
     summary["queue_depth_max_observed"] = {
         "value": inflight["max"], "unit": "requests", "count": 1, "kind": "value"}
-    invariants = H.sweep_invariants(handle.db.conn)
+    invariants = H.sweep_invariants(handle.db.conn, paths=[handle.root])
     handle.close()
     return {"seed": seed, "metrics": summary, "invariants": invariants}
 
@@ -490,7 +497,7 @@ def _provider_scenario_run(cfg: ScenarioConfig, scenario_id: str, seed: int, *,
             recovery_metrics.append({
                 "label": mark["label"],
                 "recovery_time_seconds": round((first_ok_abs - mark["restored_ns"]) / 1e9, 6)})
-    invariants = H.sweep_invariants(handle.db.conn)
+    invariants = H.sweep_invariants(handle.db.conn, paths=[handle.root])
     client.close()
     handle.close()
     server.stop()
@@ -550,22 +557,31 @@ def scenario_worker_restart(cfg: ScenarioConfig, seed: int) -> dict:
     post_log = sdir / "worker-post.jsonl"
     common = ["--db", str(handle.db_path), "--run-id", run_b,
               "--goal-id", handle.goal_id, "--task-id", task_b,
+              "--lease-owner", ctx_b.lease_owner,
               "--workspace", str(sdir), "--subject", "worker-restart-seat"]
     proc = _spawn("worker_loop", [*common, "--duration-s", "3600",
-                                  "--poll-ms", "20", "--out", str(pre_log)], cfg)
+                                  "--poll-ms", "20", "--out", str(pre_log)],
+                  cfg, stderr_path=sdir / "worker-pre.stderr.log")
     time.sleep(20)
     kill_wall = time.time_ns()
     kill_perf = time.perf_counter_ns()
     proc.terminate()
     proc.wait(timeout=15)
     proc2 = _spawn("worker_loop", [*common, "--duration-s", "25",
-                                   "--poll-ms", "20", "--out", str(post_log)], cfg)
+                                   "--poll-ms", "20", "--out", str(post_log)],
+                   cfg, stderr_path=sdir / "worker-post.stderr.log")
     proc2.wait(timeout=60)
     pre_rows = [r for r in _read_jsonl(pre_log) if r["outcome"] == "SUCCEEDED"]
     post_rows = [r for r in _read_jsonl(post_log) if r["outcome"] == "SUCCEEDED"]
-    recovery_s = None
-    if pre_rows and post_rows:
-        recovery_s = (post_rows[0]["t_ns"] - kill_perf) / 1e9
+    if not pre_rows or not post_rows:
+        # fail-closed: an unmeasured restart is a scenario FAILURE, never a
+        # silent empty record (SLOQUAL-001 review finding).
+        handle.close()
+        raise RuntimeError(
+            f"worker_restart produced no successful operations "
+            f"(pre={len(pre_rows)}, post={len(post_rows)}); "
+            "worker subprocess did not execute the workload")
+    recovery_s = (post_rows[0]["t_ns"] - kill_perf) / 1e9
     # stale-lease subcheck: an expired lease must deny mutating ops
     stale_violation = 0
     handle.engine.plan_tasks(handle.goal_id, [{
@@ -588,12 +604,18 @@ def scenario_worker_restart(cfg: ScenarioConfig, seed: int) -> dict:
         stale_violation += 1  # executed under expired lease!
     except StaleOwnerError:
         pass
-    invariants = H.sweep_invariants(handle.db.conn)
-    invariants["stale_lease_executions_count"] = stale_violation
+    invariants = H.sweep_invariants(handle.db.conn, paths=[handle.root])
+    invariants["stale_lease_executions_count"] = max(
+        int(invariants.get("stale_lease_executions_count", 0)),
+        stale_violation)
     handle.close()
+    rec_raw = ([recovery_s] if recovery_s is not None else []) + [
+        (r["t_ns"] - kill_perf) / 1e9 for r in post_rows[:20]]
+    rec_record = MetricRecord(
+        "recovery_time_seconds", "s", rec_raw,
+        seed_parts=(seed, "worker_restart")).to_dict(include_raw=True)
     return {"seed": seed,
-            "metrics": {"recovery_time_seconds": {
-                "value": recovery_s, "unit": "s", "count": 1, "kind": "value"},
+            "metrics": {"recovery_time_seconds": rec_record,
                 "pre_successes": len(pre_rows), "post_successes": len(post_rows),
                 "kill_wall_ns": kill_wall},
             "invariants": invariants}
@@ -623,11 +645,13 @@ def scenario_scheduler_restart(cfg: ScenarioConfig, seed: int) -> dict:
     first_after = next((e for e in ok_events if e["t_ns"] > killed_at), None)
     recovery_s = ((first_after["t_ns"] - restarted_at) / 1e9
                   if first_after else None)
-    invariants = H.sweep_invariants(handle.db.conn)
+    invariants = H.sweep_invariants(handle.db.conn, paths=[handle.root])
     handle.close()
+    rec_raw = ([recovery_s] if recovery_s is not None else [])
     return {"seed": seed, "metrics": {
-        "recovery_time_seconds": {"value": recovery_s, "unit": "s",
-                                  "count": 1, "kind": "value"},
+        "recovery_time_seconds": MetricRecord(
+            "recovery_time_seconds", "s", rec_raw,
+            seed_parts=(seed, "scheduler_restart")).to_dict(include_raw=True),
         "scheduler_ticks_total": len(events),
         "ticks_before_kill": sum(1 for e in ok_events if e["t_ns"] <= killed_at)},
         "invariants": invariants}
@@ -658,13 +682,20 @@ def scenario_full_restart(cfg: ScenarioConfig, seed: int) -> dict:
         "SELECT seq FROM audit_event ORDER BY seq DESC LIMIT 1").fetchone()[0]
     anchor_after = handle2.db.conn.execute(
         "SELECT head_digest FROM audit_anchor WHERE id=1").fetchone()[0]
-    data_loss = 0 if (seq_after >= seq_before and anchor_after == anchor_before) else 1
-    invariants = H.sweep_invariants(handle2.db.conn)
+    # Data-loss detection: audit sequence must never regress, the reopened
+    # chain must verify end-to-end, and the first request must succeed.
+    # (Anchor equality across the restart boundary is NOT required: any
+    # event appended between the two reads legitimately advances it.)
+    ok_chain, _bad = H.journal_chain_ok(handle2.db.conn)
+    data_loss = 0 if (seq_after >= seq_before and ok_chain
+                      and first[0] == "SUCCEEDED") else 1
+    invariants = H.sweep_invariants(handle2.db.conn, paths=[handle2.root])
     invariants["confirmed_data_loss_count"] = data_loss
     handle2.close()
     return {"seed": seed, "metrics": {
-        "recovery_time_seconds": {"value": recovery_s, "unit": "s",
-                                  "count": 1, "kind": "value"},
+        "recovery_time_seconds": MetricRecord(
+            "recovery_time_seconds", "s", [recovery_s],
+            seed_parts=(seed, "full_restart")).to_dict(include_raw=True),
         "first_request_after_restart": first[0],
         "audit_seq_before": seq_before, "audit_seq_after": seq_after},
         "invariants": invariants}
@@ -693,7 +724,7 @@ def scenario_sqlite_lock_contention(cfg: ScenarioConfig, seed: int) -> dict:
     summary["sqlite_busy_count"] = {
         "value": busy, "unit": "requests", "count": 1, "kind": "value"}
     summary.update(_db_latency_metrics(handle, "lock_contention", seed))
-    invariants = H.sweep_invariants(handle.db.conn)
+    invariants = H.sweep_invariants(handle.db.conn, paths=[handle.root])
     handle.close()
     return {"seed": seed, "metrics": summary, "invariants": invariants}
 
@@ -735,7 +766,7 @@ def scenario_disk_slow_saturation(cfg: ScenarioConfig, seed: int) -> dict:
     method_limitation = ("user-space IO pressure (parallel fsynced "
                          "writes); true block-device throttling unavailable")
     metrics.update(_db_latency_metrics(handle, "disk_saturation", seed))
-    invariants = H.sweep_invariants(handle.db.conn)
+    invariants = H.sweep_invariants(handle.db.conn, paths=[handle.root])
     handle.close()
     return {"seed": seed, "metrics": metrics,
             "method_limitation": method_limitation, "invariants": invariants}
@@ -963,8 +994,10 @@ def scenario_revocation_under_load(cfg: ScenarioConfig, seed: int) -> dict:
         "gate_all_trials_le_5000ms": bool(latencies)
         and max(latencies) <= 5000.0 and censored == 0 and violations == 0,
     }
-    invariants = H.sweep_invariants(conn)
-    invariants["capability_scope_violations_count"] = violations
+    invariants = H.sweep_invariants(conn, paths=[handle.root])
+    invariants["capability_scope_violations_count"] = max(
+        int(invariants.get("capability_scope_violations_count", 0)),
+        violations)
     handle.close()
     return {"seed": seed, "metrics": metrics, "invariants": invariants,
             "trials": trials}
@@ -976,7 +1009,9 @@ def scenario_recovery_after_failures(cfg: ScenarioConfig, seed: int) -> dict:
     checked: list[dict] = []
     totals = {key: 0 for key in (
         "audit_chain_violations_count", "lost_terminal_transitions_count",
-        "false_acceptance_count")}
+        "false_acceptance_count", "capability_scope_violations_count",
+        "stale_lease_executions_count", "side_effect_duplication_count",
+        "confirmed_data_loss_count", "secrets_in_artifacts_count")}
     for db_path in sorted(root.glob("*/*/qual.db")):
         scenario = db_path.parent.parent.name
         if scenario == "recovery_after_failures":
@@ -984,16 +1019,29 @@ def scenario_recovery_after_failures(cfg: ScenarioConfig, seed: int) -> dict:
         uri = f"file:{db_path.as_posix()}?mode=ro"
         conn = sqlite3.connect(uri, uri=True)
         conn.row_factory = sqlite3.Row
-        findings = H.sweep_invariants(conn)
+        t0 = time.perf_counter_ns()
+        findings = H.sweep_invariants(conn, paths=[db_path.parent])
+        if findings.get("audit_chain_violations_count", 0):
+            # A concurrent writer can make a mid-append snapshot look broken;
+            # re-verify after quiescence before accepting the finding.
+            time.sleep(0.5)
+            findings = H.sweep_invariants(conn, paths=[db_path.parent])
+        verify_s = (time.perf_counter_ns() - t0) / 1e9
         conn.close()
         checked.append({"scenario": scenario, "db": str(db_path),
-                        "findings": findings})
+                        "findings": findings, "verify_seconds": verify_s})
         for key in totals:
             value = findings.get(key, 0)
             if isinstance(value, int) and value > 0:
                 totals[key] += value
+    verify_raw = [c.get("verify_seconds") for c in checked
+                  if c.get("verify_seconds") is not None]
     return {"seed": seed, "metrics": {
         "databases_verified": len(checked),
+        "db_verification_seconds": MetricRecord(
+            "db_verification_seconds", "s", verify_raw,
+            seed_parts=(seed, "recovery_after_failures")
+        ).to_dict(include_raw=True),
         "violation_totals": totals},
         "databases_checked": checked,
         "invariants": {**totals,

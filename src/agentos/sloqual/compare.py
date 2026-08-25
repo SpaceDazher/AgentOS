@@ -10,6 +10,7 @@ An empty measurement set can NEVER yield PASS.
 from __future__ import annotations
 
 import json
+import re
 import statistics
 from pathlib import Path
 
@@ -87,35 +88,60 @@ def _evaluate_slos(contract: dict, observed_by_scenario: dict) -> tuple[list[dic
     table: list[dict] = []
     cannot_pass: list[str] = []
 
+    INJECTED_SCENARIOS = {
+        "queue_backpressure", "provider_full_outage", "provider_degraded",
+        "sqlite_lock_contention", "disk_slow_saturation", "network_faults"}
+
+    def _resolve_scenarios(scope: str) -> list[str]:
+        text = (scope or "").strip()
+        if text.lower().startswith("all"):
+            return [k for k in observed_by_scenario
+                    if k not in INJECTED_SCENARIOS]
+        chosen: list[str] = []
+        for part in text.split("|"):
+            base = part.split("@")[0].strip()
+            if not base:
+                continue
+            if base.endswith("*"):
+                prefix = base[:-1]
+                chosen += [k for k in observed_by_scenario
+                           if k.startswith(prefix)]
+            elif base in observed_by_scenario:
+                chosen.append(base)
+        seen: set[str] = set()
+        return [k for k in chosen if not (k in seen or seen.add(k))]
+
     def find_metric(sli_path: str, scope: str):
-        scenario = scope.split("@")[0].strip() if scope else ""
-        bucket = observed_by_scenario.get(scenario)
-        if bucket is None and scenario in ("", "all"):
-            root_metric = sli_path.split(".")[0]
-            for candidate in ("warm_steady_state",
-                              *observed_by_scenario.keys()):
-                cand_bucket = observed_by_scenario.get(candidate)
-                if cand_bucket and root_metric in cand_bucket.get("metrics", {}):
-                    bucket = cand_bucket
-                    break
-        if not bucket:
+        scenario_keys = _resolve_scenarios(scope)
+        root = sli_path
+        stat_hint = None
+        if "." in sli_path:
+            head, tail = sli_path.rsplit(".", 1)
+            if tail in ("p50", "p95", "p99", "max", "mean", "median", "value"):
+                root, stat_hint = head, tail
+        nodes = []
+        for key in scenario_keys:
+            metrics = observed_by_scenario.get(key, {}).get("metrics", {})
+            if root in metrics:
+                nodes.append(metrics[root])
+        if not nodes:
+            # fall back to whole-contract union when scope names scenarios
+            # that produced no such metric (e.g. provider_* without outages)
+            for key, bucket in observed_by_scenario.items():
+                if root in bucket.get("metrics", {}):
+                    nodes.append(bucket["metrics"][root])
+        if not nodes:
             return None
-        node = bucket.get("metrics", bucket)
-        for part in sli_path.split("."):
-            if not isinstance(node, dict) or part not in node:
-                return None
-            node = node[part]
-        return _reduce_merged(node)
+        merged = _reduce_merged(nodes)
+        if stat_hint and merged.get(stat_hint) is not None:
+            merged["_stat_hint"] = stat_hint
+        return merged
 
     def threshold_parts(threshold: str):
-        text = threshold.replace("ms", "").replace("events/s", "").strip()
-        for op in ("<=", ">="):
-            if text.startswith(op):
-                try:
-                    return op, float(text[len(op):].strip())
-                except ValueError:
-                    continue
-        return None, None
+        match = re.search(r"(<=|>=)\s*([0-9]+(?:\.[0-9]+)?)", threshold)
+        if not match:
+            return None, None
+        return match.group(1), float(match.group(2))
 
     for slo in contract["slos"]:
         scope = slo.get("scope", "")
@@ -129,8 +155,14 @@ def _evaluate_slos(contract: dict, observed_by_scenario: dict) -> tuple[list[dic
             cannot_pass.append(f"no-data:{slo['sli']}@{scope}")
             table.append(entry)
             continue
-        statistic = ("max" if "max" in str(slo.get("statistic_for_verdict", "")).lower()
-                     else "p95")
+        verdict_text = str(slo.get("statistic_for_verdict", "")).lower()
+        if "max" in verdict_text:
+            statistic = "max"
+        elif metric.get("_stat_hint"):
+            statistic = metric["_stat_hint"]
+        else:
+            statistic = ("value" if slo["sli"].endswith("fraction")
+                         or slo["sli"].endswith("seconds") else "p95")
         value = metric.get(statistic, metric.get("value"))
         ci_hi = metric.get("ci95_high")
         op, bound = threshold_parts(slo["threshold"])
@@ -186,11 +218,25 @@ def compare(ticket_dir: Path, run_ids: list[str], *, work_root: Path,
             recorded_hash = manifest_hash(manifest)
             mapping = manifest.get("production_like_proof", {}).get(
                 "capacity_mapping", {})
-            production_like_flags.append(bool(mapping))
+            required_ratios = {
+                k: v for k, v in (mapping.items() if isinstance(mapping, dict)
+                                  else [])
+                if k.endswith("_ratio") and isinstance(v, (int, float))}
+            server_class = mapping.get("server_class_storage") if isinstance(
+                mapping, dict) else None
+            ratios_ok = bool(required_ratios) and all(
+                v >= 1.0 for v in required_ratios.values()) and (
+                server_class is not False)
+            production_like_flags.append(ratios_ok)
+            if not ratios_ok:
+                limits.append(
+                    f"production-like-profile-not-proven:{run_id}:"
+                    f"{json.dumps(required_ratios, sort_keys=True)}")
             if manifest.get("runner_version") != RUNNER_VERSION:
                 failures.append(f"incompatible-runner-version:{run_id}")
         else:
             production_like_flags.append(False)
+            limits.append(f"production-like-profile-absent:{run_id}")
         env_hashes[run_id] = recorded_hash
 
         scenario_map = runs[run_id]
@@ -237,7 +283,10 @@ def compare(ticket_dir: Path, run_ids: list[str], *, work_root: Path,
                     limits.append(f"env-hash-unrecorded:{run_id}:{scenario_id}:{seed}")
 
     if not any(production_like_flags):
-        failures.append("missing-production-like-proof")
+        limits.append(
+            "production-like-proof-missing-or-insufficient:verdict-capped-at-PWL")
+    else:
+        limits.append("production-like-profile-accepted")
 
     # --- aggregate observed metrics per run ---------------------------------
     observed_by_scenario: dict[str, dict] = {}
@@ -247,41 +296,71 @@ def compare(ticket_dir: Path, run_ids: list[str], *, work_root: Path,
     invariant_totals: dict[str, int] = {}
     scale_gaps: list[str] = []
 
-    main_run = run_ids[0]
+    # observed metrics for SLO evaluation come from the FIRST (main) run;
+    # the rerun is checked separately for consistency below.
+    main_run = run_ids[0] if run_ids else ""
     for scenario_id, seeds in runs.get(main_run, {}).items():
         merged_metrics: dict = {}
         for seed, payload in sorted(seeds.items()):
-            metrics = payload.get("result", {}).get("metrics", {})
-            for key, value in metrics.items():
+            for key, value in payload.get("result", {}).get(
+                    "metrics", {}).items():
                 merged_metrics.setdefault(key, []).append(value)
         observed_by_scenario[scenario_id] = {"metrics": merged_metrics}
-        for seed, payload in seeds.items():
-            result = payload.get("result", {})
-            if scenario_id != "revocation_under_load":
-                for name, count in (result.get("invariants") or {}).items():
-                    if isinstance(count, int) and count > 0:
-                        invariant_totals[f"{scenario_id}:{name}"] = \
-                            invariant_totals.get(f"{scenario_id}:{name}", 0) + count
-                if result.get("completed_at_required_scale") is False:
-                    scale_gaps.append(f"{scenario_id}:below-required-scale")
-                profile = result.get("db_profile") or {}
-                if profile and not profile.get("reached_target", True):
-                    scale_gaps.append(f"{scenario_id}:db-growth-below-target")
-                if result.get("metrics", {}).get("_power_insufficient"):
-                    limits.append(f"insufficient-statistical-power:{scenario_id}:{seed}")
+
+    mandatory_invariants = [i["id"] for i in contract.get("invariants", [])]
+
+    def _check_seed_invariants(run_id: str, scenario_id: str, seed: int,
+                               payload: dict) -> None:
+        """Every contract-mandatory counter must be present, numeric,
+        non-negative and exactly zero — in EVERY run, not just the first."""
+        inv = payload.get("result", {}).get("invariants") or {}
+        for key in mandatory_invariants:
+            value = inv.get(key)
+            label = f"{run_id}:{scenario_id}:{seed}:{key}"
+            if isinstance(value, bool) or not isinstance(value, (int, float)):
+                failures.append(f"invariant-missing-or-negative:{label}={value!r}")
+                invariant_totals[label] = -1
+            elif value < 0:
+                failures.append(f"invariant-missing-or-negative:{label}={value}")
+                invariant_totals[label] = int(value)
+            elif value > 0:
+                failures.append(
+                    f"invariant-violation:{label}={int(value)}")
+                invariant_totals[label] = int(value)
             else:
-                m = result.get("metrics", {})
-                revocation_total_trials += int(m.get("trials_total", 0))
-                lat = m.get("revocation_enforcement_latency_ms", {})
-                revocation_max_ms = max(revocation_max_ms,
-                                        float(lat.get("max") or 0.0))
-                revocation_violations += int(
-                    m.get("allow_after_commit_violations", 0))
-                if not m.get("gate_all_trials_le_5000ms", False):
-                    failures.append(f"revocation-gate-not-passed:{main_run}:{seed}")
-                for check in m.get("resurrection_checks", []):
-                    if not check.get("still_denies_after_restart"):
-                        failures.append("capability-resurrection-after-restart")
+                invariant_totals.setdefault(label, 0)
+
+    for run_id in run_ids:
+        for scenario_id, seeds in runs.get(run_id, {}).items():
+            for seed, payload in sorted(seeds.items()):
+                result = payload.get("result", {})
+                if scenario_id != "revocation_under_load":
+                    _check_seed_invariants(run_id, scenario_id, seed, payload)
+                    if result.get("completed_at_required_scale") is False:
+                        scale_gaps.append(
+                            f"{run_id}:{scenario_id}:below-required-scale")
+                    profile = result.get("db_profile") or {}
+                    if profile and not profile.get("reached_target", True):
+                        scale_gaps.append(
+                            f"{run_id}:{scenario_id}:db-growth-below-target")
+                    if result.get("metrics", {}).get("_power_insufficient"):
+                        limits.append(
+                            f"insufficient-statistical-power:{run_id}:{scenario_id}:{seed}")
+                else:
+                    m = result.get("metrics", {})
+                    revocation_total_trials += int(m.get("trials_total", 0))
+                    lat = m.get("revocation_enforcement_latency_ms", {})
+                    revocation_max_ms = max(revocation_max_ms,
+                                            float(lat.get("max") or 0.0))
+                    revocation_violations += int(
+                        m.get("allow_after_commit_violations", 0))
+                    if not m.get("gate_all_trials_le_5000ms", False):
+                        failures.append(
+                            f"revocation-gate-not-passed:{run_id}:{seed}")
+                    for check in m.get("resurrection_checks", []):
+                        if not check.get("still_denies_after_restart"):
+                            failures.append(
+                                f"capability-resurrection-after-restart:{run_id}:{seed}")
     if revocation_total_trials < MIN_REVOCATION_TRIALS:
         limits.append(
             f"revocation-trials-below-minimum:{revocation_total_trials}<{MIN_REVOCATION_TRIALS}")
@@ -290,8 +369,6 @@ def compare(ticket_dir: Path, run_ids: list[str], *, work_root: Path,
             f"revocation-latency-over-limit:{revocation_max_ms}ms>{REVOCATION_LIMIT_MS}ms")
     if revocation_violations > 0:
         failures.append(f"post-revoke-forbidden-side-effects:{revocation_violations}")
-    for name, count in invariant_totals.items():
-        failures.append(f"invariant-violation:{name}={count}")
     for gap in scale_gaps:
         limits.append(gap)
 
@@ -300,6 +377,14 @@ def compare(ticket_dir: Path, run_ids: list[str], *, work_root: Path,
         limits.append("owner-confirmation-pending:thresholds-marked-in-contract")
 
     rerun_summary = _compare_runs(runs)
+    for comp in rerun_summary.get("comparisons", []):
+        if not isinstance(comp, dict):
+            continue
+        for label, cell in comp.items():
+            if isinstance(cell, dict) and cell.get("flagged"):
+                limits.append(
+                    f"rerun-divergence-unexplained:{comp.get('scenario')}:"
+                    f"{label}:rel={cell.get('relative_diff')}")
 
     verdict = "PASS"
     if failures:

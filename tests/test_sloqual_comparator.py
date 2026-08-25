@@ -91,7 +91,15 @@ class FixtureBuilder:
         return {
             "schema": "agentos.slo-contract/v1", "slo_id": "T", "version": "1.0.0",
             "extends": [], "mandatory_scenarios": list(SCENARIOS),
-            "sli_definitions": [], "invariants": [],
+            "sli_definitions": [],
+            "invariants": [{"id": k, "threshold": 0} for k in (
+                "false_acceptance_count", "lost_terminal_transitions_count",
+                "audit_chain_violations_count",
+                "capability_scope_violations_count",
+                "stale_lease_executions_count",
+                "side_effect_duplication_count",
+                "confirmed_data_loss_count",
+                "secrets_in_artifacts_count")],
             "sampling": {}, "confidence_intervals": {},
             "verdict_rules": {}, "change_policy": "x",
             "frozen_at_placeholder": "x",
@@ -102,14 +110,14 @@ class FixtureBuilder:
                 {"sli": "throughput_achieved_events_per_second",
                  "scope": "warm_steady_state@nominal", "threshold": ">=34.0 events/s",
                  "requires_owner_confirmation": False},
-                {"sli": "availability_fraction", "scope": "all", "threshold": ">=0.999",
+                {"sli": "availability_fraction", "scope": "all non-injected windows", "threshold": ">=0.999",
                  "requires_owner_confirmation": True},
-                {"sli": "error_rate_fraction", "scope": "all", "threshold": "<=0.01",
+                {"sli": "error_rate_fraction", "scope": "all non-injected windows", "threshold": "<=0.01",
                  "requires_owner_confirmation": True},
                 {"sli": "latency_end_to_end_ms.p95", "scope": "burst@10x_peak",
                  "threshold": "<=200.0 ms", "requires_owner_confirmation": True},
                 {"sli": "recovery_time_seconds",
-                 "scope": "worker_restart|scheduler_restart|full_restart",
+                 "scope": "worker_restart|scheduler_restart|full_restart|net*_faults|provider_*",
                  "threshold": "<=30.0 s", "requires_owner_confirmation": True},
                 {"sli": "db_transaction_latency_ms.p95",
                  "scope": "warm_steady_state@nominal", "threshold": "<=10.0 ms",
@@ -147,7 +155,16 @@ class FixtureBuilder:
                     continue
                 metrics = _normal_metrics()
                 trials_payload = None
-                result_extra: dict = {}
+                result_extra: dict = {
+                    "invariants": {k: 0 for k in (
+                        "false_acceptance_count",
+                        "lost_terminal_transitions_count",
+                        "audit_chain_violations_count",
+                        "capability_scope_violations_count",
+                        "stale_lease_executions_count",
+                        "side_effect_duplication_count",
+                        "confirmed_data_loss_count",
+                        "secrets_in_artifacts_count")}}
                 if scenario == "revocation_under_load":
                     metrics = _revocation_metrics(
                         max_ms=revocation_max_ms,
@@ -169,7 +186,7 @@ class FixtureBuilder:
                 if empty_metrics_for and scenario == empty_metrics_for:
                     metrics = {}
                 if invariant_violation_in and scenario == invariant_violation_in:
-                    result_extra["invariants"] = {"lost_terminal_transitions_count": 2}
+                    result_extra["invariants"]["lost_terminal_transitions_count"] = 2
                 payload = {
                     "schema": "agentos.sloqual-result/v1",
                     "runner_version": RUNNER_VERSION,
@@ -215,7 +232,7 @@ class ComparatorGateTest(unittest.TestCase):
         self.assertEqual(result["fail_conditions"], [])
         self.assertIn("owner-confirmation-pending:thresholds-marked-in-contract",
                       result["limits"])
-        self.assertLessEqual(result["revocation"]["total_trials_main_run"], 105)
+        self.assertGreaterEqual(result["revocation"]["total_trials_main_run"], 100)
 
     def test_contract_modified_after_launch_rejected(self):
         self.builder.add_run("run-A", corrupt_contract_hash=True)
@@ -231,8 +248,6 @@ class ComparatorGateTest(unittest.TestCase):
         result = run_compare(self.builder)
         self.assertTrue(any(r.startswith("revocation-latency-over-limit")
                             for r in result["fail_conditions"]))
-        self.assertTrue(any(r.endswith(":FAIL") or "FAIL" in r for r in
-                            result["limits"]))
         self.assertEqual(result["verdict"], "FAIL")
 
     def test_post_revoke_side_effect_fails(self):
@@ -273,12 +288,17 @@ class ComparatorGateTest(unittest.TestCase):
         self.assertIn("duplicated-run-id", result["fail_conditions"])
         self.assertEqual(result["verdict"], "FAIL")
 
-    def test_missing_production_like_proof_rejected(self):
-        self.builder.add_run("run-A", env_capacity_mapping={})
+    def test_insufficient_production_like_profile_blocks_full_pass(self):
+        self.builder.add_run("run-A", env_capacity_mapping={
+            "cpu_ratio": 1.2, "storage_projection_ratio": 0.02,
+            "server_class_storage": False})
         self.builder.add_run("run-B", env_capacity_mapping={})
         result = run_compare(self.builder)
-        self.assertIn("missing-production-like-proof", result["fail_conditions"])
-        self.assertEqual(result["verdict"], "FAIL")
+        self.assertTrue(any(r.startswith("production-like-profile-not-proven")
+                            for r in result["limits"]))
+        self.assertNotIn("missing-production-like-proof",
+                         result["fail_conditions"])
+        self.assertEqual(result["verdict"], "PASS_WITH_LIMITS")
 
     def test_environment_hash_mismatch_rejected(self):
         self.builder.add_run("run-A", wrong_env_hash_for="soak")

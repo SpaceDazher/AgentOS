@@ -340,14 +340,26 @@ class ToolGateway:
 
         # F7: lease validity — status must be RUNNING and lease unexpired,
         # checked against the PERSISTED row (not the caller-supplied context).
+        # Lease timestamps are parsed, never string-compared: writers may
+        # store second-precision ISO stamps while _now() has milliseconds,
+        # and lexicographic order across mixed precision is wrong within the
+        # expiry second (found by SLOQUAL-001 worker_restart probe).
         fence = None
         if mutating:
             row = self.db.conn.execute(
                 "SELECT lease_owner, lease_expires_at, status FROM run WHERE id=?",
                 (ctx.run_id,)).fetchone()
+            expired = False
+            if row and row["lease_expires_at"]:
+                try:
+                    exp = datetime.fromisoformat(
+                        str(row["lease_expires_at"]).replace("Z", "+00:00"))
+                    expired = datetime.now(timezone.utc) >= exp
+                except ValueError:
+                    expired = (row["lease_expires_at"] or "") <= _now()
             if (not row or row["lease_owner"] != ctx.lease_owner
                     or row["status"] != "RUNNING"
-                    or (row["lease_expires_at"] or "") <= _now()):
+                    or expired):
                 record("DENIED")
                 raise StaleOwnerError(
                     "mutating op denied: run not RUNNING or lease expired/mismatched")

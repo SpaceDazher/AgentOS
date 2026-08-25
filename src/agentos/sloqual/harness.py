@@ -222,8 +222,29 @@ def ledger_subject_context(handle: RuntimeHandle, *, subject: str,
         subject=subject)
 
 
-def sweep_invariants(conn) -> dict:
+def journal_chain_ok(conn) -> tuple[bool, int | None]:
+    """End-to-end audit chain verification for an arbitrary open connection."""
+    return Journal(type("ChainDB", (), {"conn": conn})()).full_chain_check()
+
+
+_SECRET_MARKERS = (
+    "BEGIN PRIVATE KEY", "BEGIN RSA PRIVATE KEY", "sk-", "api_key=",
+    "password=", "Authorization: Bearer ", "ghp_", "AKIA")
+
+
+def _parse_ts(value) -> datetime | None:
+    try:
+        return datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except (TypeError, ValueError):
+        return None
+
+
+def sweep_invariants(conn, paths=()) -> dict:
     """Static post-failure invariant sweep over one durable DB.
+
+    Every contract-mandatory counter receives a REAL measured value: the
+    comparator treats missing or negative sentinels as violations, so this
+    function never returns -1 placeholders.
 
     Fixture goal ids shipped by core migrations (present in every fresh
     database, CANCELLED without audit events by design) are excluded."""
@@ -233,10 +254,11 @@ def sweep_invariants(conn) -> dict:
         "lost_terminal_transitions_count": 0,
         "false_acceptance_count": 0,
         "unresolved_unknown_outcomes_count": 0,
-        "stale_lease_executions_count": -1,  # runtime-detected only
-        "capability_scope_violations_count": -1,
-        "side_effect_duplication_count": -1,
-        "confirmed_data_loss_count": -1,
+        "stale_lease_executions_count": 0,
+        "capability_scope_violations_count": 0,
+        "side_effect_duplication_count": 0,
+        "confirmed_data_loss_count": 0,
+        "secrets_in_artifacts_count": 0,
     }
     shim = type("ChainDB", (), {"conn": conn})()
     ok, bad_seq = Journal(shim).full_chain_check()
@@ -266,4 +288,74 @@ def sweep_invariants(conn) -> dict:
         "SELECT count(*) FROM activity WHERE status IN"
         " ('UNKNOWN_OUTCOME','EXECUTING')").fetchone()[0]
     findings["unresolved_unknown_outcomes_count"] = unresolved
+
+    # stale-lease executions: a SUCCEEDED write-class op stamped after its
+    # run's persisted lease expiry. Timestamps are parsed, never compared as
+    # strings (writer second-precision vs activity millisecond precision).
+    expiry_cache: dict[str, datetime | None] = {}
+    for row in conn.execute(
+            "SELECT a.created_at AS ts, r.id AS rid, r.lease_expires_at AS exp"
+            " FROM activity a JOIN run r ON r.id = a.run_id"
+            " WHERE a.status='SUCCEEDED' AND a.effect_class='write'"):
+        if row["rid"] not in expiry_cache:
+            expiry_cache[row["rid"]] = _parse_ts(row["exp"])
+        exp = expiry_cache[row["rid"]]
+        ts = _parse_ts(row["ts"])
+        if exp is not None and ts is not None and ts > exp:
+            findings["stale_lease_executions_count"] += 1
+    # capability/scope: succeeded write-class ops with no durable grant for
+    # their lease-owner subject covering the operation time.
+    for row in conn.execute(
+            "SELECT a.run_id AS rid, a.created_at AS ts,"
+            " r.lease_owner AS owner FROM activity a"
+            " JOIN run r ON r.id = a.run_id"
+            " WHERE a.status='SUCCEEDED' AND a.effect_class='write'"):
+        grant_row = conn.execute(
+            "SELECT 1 FROM sloqual_capability_grant g"
+            " WHERE g.subject=? AND g.status='GRANTED' AND g.granted_at <= ?"
+            " LIMIT 1", (row["owner"], row["ts"])).fetchone()
+        revoke_row = conn.execute(
+            "SELECT 1 FROM sloqual_revocation_event e WHERE e.subject=?"
+            " AND e.revoked_at <= ? LIMIT 1",
+            (row["owner"], row["ts"])).fetchone()
+        if grant_row is None and revoke_row is None:
+            # no ledger coverage at all: only acceptable when the DB has no
+            # ledger tables (pure-core scenarios); counted otherwise.
+            has_ledger = conn.execute(
+                "SELECT 1 FROM sqlite_master WHERE name="
+                "'sloqual_capability_grant'").fetchone()
+            if has_ledger:
+                findings["capability_scope_violations_count"] += 1
+    # side-effect duplication: same op+args executed successfully more than
+    # once within a run (idempotency key must have made it REPLAYED).
+    dup_rows = conn.execute(
+        "SELECT count(*) FROM (SELECT run_id, op_name, args_canonical_json"
+        " FROM activity WHERE status='SUCCEEDED' AND effect_class='write'"
+        " GROUP BY run_id, op_name, args_canonical_json HAVING count(*) > 1)"
+    ).fetchone()[0]
+    findings["side_effect_duplication_count"] = dup_rows
+    # confirmed data loss: runs marked COMPLETED whose task left non-DONE.
+    lost = conn.execute(
+        "SELECT count(*) FROM run r JOIN task t ON t.id=r.task_id"
+        " WHERE r.status='COMPLETED' AND t.status NOT IN ('DONE','CANCELLED')"
+    ).fetchone()[0]
+    findings["confirmed_data_loss_count"] = lost
+    # secrets in artifacts on disk next to this database.
+    for path in paths:
+        base = Path(path)
+        if not base.exists():
+            continue
+        files = ([base] if base.is_file() else
+                 [p for p in base.rglob("*") if p.is_file()])
+        for artifact in files:
+            if artifact.suffix.lower() in (".db", ".wal", ".shm"):
+                continue
+            try:
+                text = artifact.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                continue
+            low = text.lower()
+            findings["secrets_in_artifacts_count"] += sum(
+                1 for marker in _SECRET_MARKERS
+                if marker.lower() in low)
     return findings

@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import subprocess
 import sys
 import time
 from datetime import datetime, timezone
@@ -77,6 +78,29 @@ def cmd_run_scenario(args) -> int:
                          repo_src=Path(args.repo_src))
     result = SCENARIO_REGISTRY[scenario_id](cfg, cfg_seed)
     ended_ns = time.perf_counter_ns()
+    # Bind every result to the recorded environment: hash + exact commit
+    # travel INSIDE the seed file (review finding: unrecorded hashes let a
+    # mixed-version series look comparable).
+    env_hash = None
+    manifest_path = (Path(args.work_root) / args.run_id /
+                     "environment-manifest.json")
+    if not manifest_path.exists():
+        manifest_path = Path(args.work_root) / "environment-manifest.json"
+    if manifest_path.exists():
+        try:
+            from .environment import manifest_hash as _mh
+            env_hash = _mh(json.loads(
+                manifest_path.read_text(encoding="utf-8")))
+        except (OSError, ValueError):
+            env_hash = None
+    commit_sha = None
+    try:
+        commit_sha = subprocess.run(
+            ["git", "rev-parse", "HEAD"], capture_output=True, text=True,
+            cwd=str(Path(args.repo_src).parent), timeout=10,
+            encoding="utf-8", errors="replace").stdout.strip() or None
+    except (OSError, subprocess.SubprocessError):
+        commit_sha = None
     payload = {
         "schema": "agentos.sloqual-result/v1",
         "runner_version": RUNNER_VERSION,
@@ -85,6 +109,8 @@ def cmd_run_scenario(args) -> int:
         "scenario_manifest_version": "1.0.0",
         "seed": cfg_seed,
         "contract_sha256": contract_hash,
+        "environment_hash": env_hash,
+        "commit_sha": commit_sha,
         "started_at_utc": started_wall,
         "ended_at_utc": _utc(),
         "elapsed_seconds": round((ended_ns - started_ns) / 1e9, 6),
