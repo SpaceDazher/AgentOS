@@ -1,0 +1,41 @@
+{
+  "schema": "agentos.scenario-manifest/v1",
+  "manifest_id": "SLOQUAL-001-scenarios",
+  "version": "1.0.0",
+  "extends": ["S1-002"],
+  "security_gate_refs": ["S1-008"],
+  "workload_engine": {
+    "arrival_model": "open-loop pre-computed schedule from seeded RNG (exponential inter-arrivals unless fixed_rate=true); generator never slows to match the system",
+    "latency_reference": "scheduled send time on time.perf_counter_ns (monotonic)",
+    "decomposition": ["queue_wait_ms = dispatch_start - scheduled_send", "service_ms = completion - dispatch_start", "end_to_end_ms = completion - scheduled_send"],
+    "loss_accounting": "dropped/late/not-started requests are counted and reported; never silently dropped",
+    "allow_deny_mix": "seeded 90% allow / 10% deny (S1-002 compatible)"
+  },
+  "provider_stub": {
+    "transport": "stdlib TCP JSON-lines on 127.0.0.1 ephemeral port",
+    "fault_modes": ["ok", "latency", "timeout", "empty_response", "rate_limited", "disconnect", "full_outage"],
+    "role": "models the external API boundary only; never bypasses the gateway"
+  },
+  "scenarios": [
+    {"id": "cold_start", "required": true, "duration_s": null, "requests_per_seed": 300, "params": {"fixed_rate": 20}, "measures": ["recovery_time_seconds(start->first success)", "latency_end_to_end_ms"], "notes": "fresh process + fresh DB per seed"},
+    {"id": "warm_steady_state", "required": true, "duration_s": 30, "rate_events_per_second": 34, "warmup_events": 100, "measures": ["throughput", "latency_end_to_end_ms", "error_rate", "availability", "queue_wait_ms", "db_transaction_latency_ms", "audit_journal_latency_ms"]},
+    {"id": "sustained_load", "required": true, "min_duration_s": 21600, "pilot_duration_s": 900, "rate_events_per_second": 34, "warmup_window_s": 60, "measures": ["throughput", "latency_end_to_end_ms", "availability", "error_rate", "db_transaction_latency_ms", "audit_journal_latency_ms"], "scale_note": "PASS at required scale only with >=6h continuous run; pilot runs contribute PASS_WITH_LIMITS evidence"},
+    {"id": "soak", "required": true, "min_duration_s": 86400, "pilot_duration_s": 1200, "rate_events_per_second": 10, "sample_interval_s": 60, "measures": ["memory_rss_bytes", "db_size_bytes", "latency_end_to_end_ms", "availability"], "scale_note": ">=24h required for full credit"},
+    {"id": "burst", "required": true, "base_rate_events_per_second": 34, "burst_multiplier": 10, "burst_rate_events_per_second": 340, "burst_duration_s": 30, "cooldown_duration_s": 30, "warmup_events": 100, "measures": ["latency_end_to_end_ms", "error_rate", "queue_wait_ms"]},
+    {"id": "queue_backpressure", "required": true, "saturating_rate_events_per_second": 400, "duration_s": 60, "max_inflight": 5000, "measures": ["queue_depth_max", "queue_wait_ms", "dropped_requests", "drain_time_seconds"], "functional_gate": "system applies backpressure without unbounded memory or lost confirmed transitions and drains afterwards"},
+    {"id": "provider_full_outage", "required": true, "duration_s": 60, "rate_events_per_second": 20, "fault": {"mode": "full_outage", "window_s": [15, 35]}, "measures": ["error_rate(injected vs non-injected windows)", "availability(non-injected)", "recovery_time_seconds"]},
+    {"id": "provider_degraded", "required": true, "duration_s": 90, "rate_events_per_second": 20, "fault": {"mode": "mixed", "mix": {"timeout": 0.2, "empty_response": 0.2, "rate_limited": 0.2}}, "measures": ["external_provider_failure_rate_fraction", "error_rate", "fail_closed_behavior"]},
+    {"id": "worker_restart", "required": true, "duration_s": 90, "rate_events_per_second": 20, "restarts": 3, "measures": ["recovery_time_seconds", "stale_lease_executions_count", "side_effect_duplication_count", "confirmed_data_loss_count"]},
+    {"id": "scheduler_restart", "required": true, "duration_s": 90, "restarts": 2, "measures": ["recovery_time_seconds", "lost_terminal_transitions_count"]},
+    {"id": "full_restart", "required": true, "restarts": 2, "measures": ["recovery_time_seconds", "confirmed_data_loss_count", "audit_chain_violations_count"], "notes": "whole AgentOS stack: scheduler+worker+gateway processes stopped and restarted against the same durable DB"},
+    {"id": "sqlite_lock_contention", "required": true, "duration_s": 60, "rate_events_per_second": 20, "contention_writer_processes": 2, "busy_timeout_ms": 5000, "measures": ["db_transaction_latency_ms", "latency_end_to_end_ms", "SQLITE_BUSY_count"]},
+    {"id": "disk_slow_saturation", "required": true, "duration_s": 60, "rate_events_per_second": 20, "method": "user-space IO pressure: parallel large synchronous writes saturating storage queue during window", "honest_limitation": "true block-device throttling unavailable without host admin tooling; recorded as user-space approximation", "measures": ["db_transaction_latency_ms", "latency_end_to_end_ms"]},
+    {"id": "db_growth", "required": true, "target_rows": 2000000, "bulk_insert_batch": 5000, "then_measure_requests": 1000, "rate_events_per_second": 34, "measures": ["latency_end_to_end_ms", "db_transaction_latency_ms", "db_size_bytes"], "scale_note": "production-like volume target from S1-002 storage probe; shortfall recorded if target rows unreachable in session budget"},
+    {"id": "network_faults", "required": true, "duration_s": 120, "rate_events_per_second": 20, "phases": [{"mode": "latency", "added_ms": 250, "duration_s": 30}, {"mode": "packet_loss", "loss_fraction": 0.3, "duration_s": 30}, {"mode": "disconnect", "duration_s": 20}], "measures": ["recovery_time_seconds", "error_rate", "external_provider_failure_rate_fraction"]},
+    {"id": "revocation_under_load", "required": true, "trials_total_min": 100, "load_levels": ["idle", "nominal@34eps", "burst@340eps"], "instances": 3, "poll_interval_ms": 25, "measures": ["revocation_enforcement_latency_ms(max,p95,p99 per distribution)", "post_revocation_forbidden_side_effects", "capability_resurrection_after_restart"], "security_gate": "S1-008: EVERY observed trial <= 5 s; restarts and queues must not restore a revoked capability"},
+    {"id": "recovery_after_failures", "required": true, "applies_to": "every injected-failure scenario", "checks": ["audit_chain_violations_count=0", "lost_terminal_transitions_count=0", "confirmed_data_loss_count=0", "unresolved_unknown_outcomes reconciled or explicitly listed"]}
+  ],
+  "long_scenario_policy": "Long-duration scenarios (sustained_load >=6h, soak >=24h) are NOT part of the unit-test suite and are executed only via explicit runner invocation with --duration override.",
+  "seed_policy": "seeds [11,22,33,44,55]; scenario seed = base_seed*100000 + scenario_index*1000 + repetition",
+  "runner_version_min": "1.0.0"
+}

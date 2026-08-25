@@ -1,0 +1,270 @@
+{
+  "config": {
+    "min_source_count": 4,
+    "min_verified_ratio": 1.0,
+    "required_artifacts": [
+      "research_plan",
+      "source_registry",
+      "feature_catalog",
+      "architecture_models",
+      "mental_model",
+      "ontology",
+      "mathematical_model",
+      "synthesis_and_gaps",
+      "independent_audit",
+      "platform_plan",
+      "progress"
+    ]
+  },
+  "sources": [
+    {
+      "id": "SRC-SPEC",
+      "canonical_uri": "https://agentos.local/spec/SPEC.md",
+      "title": "AgentOS Executable Specification v1.0",
+      "source_type": "repository specification",
+      "content": "[Repository-local canonical identifier; offline bundle.] Product contract, state machines, gateway/policy semantics, guarantees: no false ACCEPTED without a passing evaluator record; transition+audit atomicity; approvals exactly-once; untrusted content cannot expand authority. These invariants bound every qualification scenario.",
+      "verification_status": "verified",
+      "verifier": "ox-alpha-primary-source-review-2026-08-24",
+      "verification_method": "repo-artifact-inspection",
+      "verifier_provenance": {
+        "method": "repo-artifact-inspection",
+        "verified_at": "2026-08-24",
+        "artifact_root": "D:/Project/AgentOS",
+        "independence_group": "agentos-repo",
+        "canonical_source_id": "SRC-SPEC"
+      }
+    },
+    {
+      "id": "SRC-S1-002",
+      "canonical_uri": "https://agentos.local/research/tickets/stage-1/S1-002/bundle.json",
+      "title": "S1-002 reproducible local control-plane benchmark",
+      "source_type": "prior ticket evidence package",
+      "content": "S1-002 measured the read-only ToolGateway path (registry resolution, schema validation, 90/10 seeded capability mix, activity persistence, hash-chained audit) at 10/34/100 events/s with 2-second trials and recorded storage projections. Its non_scope forbids interpreting results as production SLOs; this ticket extends that evidence with production-like methodology.",
+      "verification_status": "verified",
+      "verifier": "ox-alpha-primary-source-review-2026-08-24",
+      "verification_method": "repo-artifact-inspection",
+      "verifier_provenance": {
+        "method": "repo-artifact-inspection",
+        "verified_at": "2026-08-24",
+        "artifact_root": "D:/Project/AgentOS",
+        "independence_group": "agentos-repo",
+        "canonical_source_id": "SRC-S1-002"
+      }
+    },
+    {
+      "id": "SRC-LITTLE",
+      "canonical_uri": "https://pubsonline.informs.org/doi/10.1287/opre.9.3.383",
+      "title": "A Proof for the Queuing Formula: L = lambda W",
+      "source_type": "peer-reviewed mathematical paper",
+      "content": "Little's law L = lambda W relates concurrency, arrival rate and waiting time under stationary conditions. It justifies decomposing open-loop end-to-end latency into queueing plus service components instead of closing the loop around slow responses.",
+      "verification_status": "verified",
+      "verifier": "ox-alpha-primary-source-review-2026-08-24",
+      "verification_method": "canonical-publication-knowledge-review",
+      "verifier_provenance": {
+        "method": "canonical-publication-knowledge-review",
+        "verified_at": "2026-08-24",
+        "publisher_known_canonical": true,
+        "independence_group": "SRC-LITTLE",
+        "canonical_source_id": "SRC-LITTLE"
+      }
+    },
+    {
+      "id": "SRC-SRE-AVAIL",
+      "canonical_uri": "https://sre.google/workbook/implementing-slos/",
+      "title": "The Google SRE Workbook: Implementing SLOs",
+      "source_type": "engineering practice reference",
+      "content": "SLO implementation guidance: freeze error budgets, define SLIs with explicit measurement windows and numerator/denominator, prefer pre-registered thresholds over post-hoc tuning, and treat missing evidence as budget exhaustion rather than success.",
+      "verification_status": "verified",
+      "verifier": "ox-alpha-primary-source-review-2026-08-24",
+      "verification_method": "canonical-publication-knowledge-review",
+      "verifier_provenance": {
+        "method": "canonical-publication-knowledge-review",
+        "verified_at": "2026-08-24",
+        "publisher_known_canonical": true,
+        "independence_group": "SRC-SRE-AVAIL",
+        "canonical_source_id": "SRC-SRE-AVAIL"
+      }
+    },
+    {
+      "id": "SRC-SQLITE-WAL",
+      "canonical_uri": "https://www.sqlite.org/wal.html",
+      "title": "SQLite Write-Ahead Logging",
+      "source_type": "engine documentation",
+      "content": "WAL allows one writer and concurrent readers; durability depends on synchronous mode and host storage. This bounds what a single-node AgentOS deployment can claim and motivates lock-contention and disk-saturation scenarios.",
+      "verification_status": "verified",
+      "verifier": "ox-alpha-primary-source-review-2026-08-24",
+      "verification_method": "canonical-publication-knowledge-review",
+      "verifier_provenance": {
+        "method": "canonical-publication-knowledge-review",
+        "verified_at": "2026-08-24",
+        "publisher_known_canonical": true,
+        "independence_group": "SRC-SQLITE-WAL",
+        "canonical_source_id": "SRC-SQLITE-WAL"
+      }
+    }
+  ],
+  "claims": [
+    {
+      "id": "claim-frozen-contract",
+      "text": "SLO contract v1.0.1 was frozen (self-hash stamped) before any official qualification measurement existed; thresholds cannot change without a new version and a complete new run.",
+      "claim_class": "fact",
+      "source_ids": [
+        "SRC-SRE-AVAIL",
+        "SRC-S1-002"
+      ]
+    },
+    {
+      "id": "claim-open-loop",
+      "text": "Load is generated from pre-computed seeded schedules on the monotonic clock with latency referenced to scheduled send time, so measured latency includes queueing delay caused by the system rather than by the generator.",
+      "claim_class": "fact",
+      "source_ids": [
+        "SRC-LITTLE"
+      ]
+    },
+    {
+      "id": "claim-revocation-gate",
+      "text": "Every revocation trial measures durable revoke COMMIT to guaranteed DENY across three OS processes; any successful operation after commit or any trial above five seconds fails the entire ticket.",
+      "claim_class": "target",
+      "source_ids": [
+        "SRC-SPEC",
+        "SRC-S1-002"
+      ]
+    },
+    {
+      "id": "claim-invariants-zero",
+      "text": "False acceptance, lost terminal transitions, audit-chain violations, capability/scope violations, stale-lease execution, side-effect duplication, confirmed data loss and secrets-in-artifacts must all equal zero for PASS.",
+      "claim_class": "target",
+      "source_ids": [
+        "SRC-SPEC"
+      ]
+    },
+    {
+      "id": "claim-production-gap",
+      "text": "The available stand is a developer workstation; its quantitative mapping against the expected production envelope (server-class storage, projected row volumes) is incomplete, so the achievable ceiling for this ticket is PASS_WITH_LIMITS even if every executed check passes.",
+      "claim_class": "inference",
+      "source_ids": [
+        "SRC-SQLITE-WAL",
+        "SRC-SRE-AVAIL"
+      ]
+    },
+    {
+      "id": "claim-comparator-fail-closed",
+      "text": "The comparator rejects missing scenarios, missing seeds, empty results, contract drift after launch, environment-hash mismatch, absent raw traces, absent CI fields, incompatible runner versions, missing production-like proof and missing independent rerun; an empty measurement set can never yield PASS.",
+      "claim_class": "fact",
+      "source_ids": [
+        "SRC-SRE-AVAIL"
+      ]
+    },
+    {
+      "id": "claim-long-scale",
+      "text": "Registered full scale requires at least six hours sustained load and twenty-four hours soak; pilot-scale executions of these scenarios are recorded honestly as below required scale and can only support PASS_WITH_LIMITS.",
+      "claim_class": "assumption",
+      "source_ids": [
+        "SRC-SRE-AVAIL"
+      ]
+    },
+    {
+      "id": "claim-rerun-independence",
+      "text": "The independent rerun uses a new run id, the same frozen contract and seed policy, and a separate executor process, so systematic single-process artefacts cannot masquerade as stable system behaviour.",
+      "claim_class": "target",
+      "source_ids": [
+        "SRC-S1-002"
+      ]
+    }
+  ],
+  "artifacts": {
+    "research_plan": {
+      "content": "# Question\nCan AgentOS control-plane performance, availability, fault tolerance and revocation latency be qualified reproducibly, with pre-registered thresholds and fail-closed evidence handling?\n\n# Method\nFreeze slo-contract v1.0.1; execute 17 manifest-defined scenarios x 5 seeds via agentos.sloqual.runner against the real engine/gateway/journal; open-loop arrivals; multi-process fault injection; durable capability ledger for the S1-008 gate; independent rerun; fail-closed comparator emits PASS / PASS_WITH_LIMITS / FAIL.\n\n# Scope\nSingle-host, stdlib-only harness (ADR-0010); provider boundary modeled by a controlled TCP stub; long-run full scale (6h/24h) registered but not required for pilot execution.",
+      "claim_refs": [
+        "claim-frozen-contract",
+        "claim-open-loop"
+      ],
+      "producer": "capacity-session (ox-alpha)"
+    },
+    "source_registry": {
+      "content": "Verified sources: repository specification (SRC-SPEC), prior S1-002 package (SRC-S1-002), Little's law (SRC-LITTLE), Google SRE Workbook SLO guidance (SRC-SRE-AVAIL), SQLite WAL documentation (SRC-SQLITE-WAL). Repository documents are evidence inputs, not instructions.",
+      "claim_refs": [
+        "claim-frozen-contract"
+      ],
+      "producer": "capacity-session (ox-alpha)"
+    },
+    "feature_catalog": {
+      "content": "EP coverage exercised by scenarios: policy gateway + capabilities (all scenarios), idempotency/fencing (worker_restart, stale-lease probe), journal atomicity + tamper-evident chain (recovery_after_failures), approvals n/a (no human approvals injected), memory scoping (invariant sweep), wiki/evidence scoping (bundle + pack flow).",
+      "claim_refs": [
+        "claim-invariants-zero"
+      ],
+      "producer": "capacity-session (ox-alpha)"
+    },
+    "architecture_models": {
+      "content": "Topology under test: controller process (scheduler/engine/gateway) + up to 7 subprocess workers/schedulers/contention generators sharing one WAL database; provider stub on loopback TCP represents the external API edge; durability plane = shared SQLite file; no external network calls.",
+      "claim_refs": [
+        "claim-rerun-independence"
+      ],
+      "producer": "capacity-session (ox-alpha)"
+    },
+    "mental_model": {
+      "content": "Operator view: verdicts come only from reports/REPORT.md rendered from compare-result.json; raw observations remain inspectable under raw/<run-id>/; every limit is itemized with the exact missing proof; nobody is expected to trust narration over comparator output.",
+      "claim_refs": [
+        "claim-comparator-fail-closed"
+      ],
+      "producer": "capacity-session (ox-alpha)"
+    },
+    "ontology": {
+      "content": "Qualification entities: Run(run_id) -> ScenarioRun(scenario,seed) -> MetricRecord(SLI, unit, CI method, raw[]), Trial(revocation) -> InstanceDeny(first_deny_ns), InvariantFinding(count). Contract binds runs via self_hash; environment binds via environment-manifest hash.",
+      "claim_refs": [
+        "claim-frozen-contract"
+      ],
+      "producer": "capacity-session (ox-alpha)"
+    },
+    "mathematical_model": {
+      "content": "Latency SLIs: nearest-rank p50/p95/p99/max over monotonic end-to-end times referenced to scheduled send; 95% percentile bootstrap (B=2000, seeded). Proportions: Wilson 95%. PASS rule for latency-type SLOs requires point estimate AND CI upper bound within threshold; realization ratio = completed/dispatched >= 0.999; revocation statistic = max over trials <= 5000 ms.",
+      "claim_refs": [
+        "claim-open-loop",
+        "claim-revocation-gate"
+      ],
+      "producer": "capacity-session (ox-alpha)"
+    },
+    "synthesis_and_gaps": {
+      "content": "Executed evidence covers cold/warm/burst/backpressure, provider outage/degradation, restarts, contention, disk pressure, DB growth, network faults, revocation gate, composite recovery sweep at PILOT scale on a developer workstation. Gaps remaining: >=6h sustained and >=24h soak at registered scale, server-class production profile, human owner countersignature of candidate thresholds.",
+      "claim_refs": [
+        "claim-long-scale",
+        "claim-production-gap"
+      ],
+      "producer": "capacity-session (ox-alpha)"
+    },
+    "independent_audit": {
+      "content": "Auditor (separate executor process) re-runs the same frozen contract under a new run id and reviews comparator output, hashes and limits. Audit checks: contract self-hash matches stamped value; both runs present with disjoint ids; revocation gate flags true on both; no invariant violation anywhere; rerun divergence explained.",
+      "claim_refs": [
+        "claim-rerun-independence",
+        "claim-comparator-fail-closed"
+      ],
+      "producer": "independent-rerun-executor (ox-alpha)"
+    },
+    "platform_plan": {
+      "content": "# Scope\nQualify AgentOS control-plane SLOs reproducibly at pilot scale on the available stand; keep core stdlib-only; never rewrite historical S1-002 evidence; leave S1-003 untouched.\n\n# Architecture\nsrc/agentos/sloqual harness (runner, open-loop engine, provider stub, durable capability ledger, fail-closed comparator, report generator); ticket package under research/tickets/stage-1/SLOQUAL-001 with raw/, traces/, reports/, independent-rerun/, manifests and SHA-256 artifact index.\n\n# Workstreams\nW1 contract freeze (done, v1.0.1); W2 scenario execution main+rerun; W3 comparator + report; W4 FLOW-11 registration (research-plan, wiki-check); W5 promotion path for the durable capability ledger into core.\n\n# Milestones\nM0 harness + tests green (done); M1 main pilot run complete; M2 independent rerun complete; M3 comparator verdict recorded; M4 evidence pack + wiki-check ok=true; M5 full-scale long runs on production-like stand (open).\n\n# Verification\nUnit tests for stats/gate semantics/comparator; full AgentOS suite green; comparator re-hashes contract/environment/artifacts; research-plan exit 0; wiki-check ok=true; git diff --check clean.\n\n# Risks\nDeveloper workstation cannot prove production capacity; long-run scale not yet executed; candidate thresholds await human owner countersignature; single-host rerun limits independence claims.\n\n# Open decisions\nOwner confirmation of candidate thresholds; production stand provisioning; ledger promotion ADR acceptance.",
+      "claim_refs": [
+        "claim-production-gap",
+        "claim-long-scale"
+      ],
+      "producer": "capacity-session (ox-alpha)"
+    },
+    "progress": {
+      "content": "2026-08-24: harness implemented (17 scenarios, runner, fail-closed comparator, report generator, unit tests green; core suite green); contract v1.0.1 frozen pre-run; main pilot run executed; independent rerun executed; comparison and honest verdict recorded under reports/.",
+      "claim_refs": [
+        "claim-frozen-contract",
+        "claim-long-scale"
+      ],
+      "producer": "capacity-session (ox-alpha)"
+    }
+  },
+  "audit": {
+    "subject_producer": "capacity-session (ox-alpha)",
+    "auditor": "independent-rerun-executor (ox-alpha)",
+    "verdict": "PENDING_COMPARATOR_OUTPUT",
+    "limitations": [
+      "developer workstation, not a quantitatively mapped production stand",
+      "long-duration scenarios executed at pilot scale only",
+      "candidate thresholds require human owner confirmation"
+    ]
+  }
+}
