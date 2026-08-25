@@ -50,7 +50,7 @@ def _normal_metrics() -> dict:
         "queue_wait_ms": _latency_record(3.0),
         "throughput_achieved_events_per_second": _value(35.5),
         "error_rate_fraction": _proportion(0.004),
-        "availability_fraction": _proportion(0.997),
+        "availability_fraction": _proportion(0.9996),
         "db_transaction_latency_ms": _latency_record(1.5),
         "audit_journal_latency_ms": _latency_record(0.9),
         "counts": {"dispatched": 1020, "succeeded": 1015},
@@ -125,6 +125,9 @@ class FixtureBuilder:
                 {"sli": "audit_journal_latency_ms.p95",
                  "scope": "warm_steady_state@nominal", "threshold": "<=10.0 ms",
                  "requires_owner_confirmation": True},
+                {"sli": "startup_to_first_success_ms",
+                 "scope": "provider_*", "threshold": "<=500.0 ms",
+                 "requires_owner_confirmation": True},
                 {"sli": "revocation_enforcement_latency_ms",
                  "scope": "revocation_under_load", "threshold": "<=5000.0 ms",
                  "statistic_for_verdict": "max",
@@ -133,11 +136,15 @@ class FixtureBuilder:
         }
 
     def add_run(self, run_id: str, *, revocation_max_ms: float = 40.0,
-                revocation_trials: int = 21, revocation_violations: int = 0,
+                revocation_trials: int = 105, revocation_violations: int = 0,
                 drop_seed: int | None = None, corrupt_contract_hash: bool = False,
                 strip_ci_from: str | None = None,
                 empty_metrics_for: str | None = None,
                 invariant_violation_in: str | None = None,
+                high_latency_for: str | None = None,
+                secret_marker_in: str | None = None,
+                bad_commit_for: str | None = None,
+                revocation_trials_default: int = 105,
                 env_capacity_mapping: dict | None = None,
                 wrong_env_hash_for: str | None = None):
         run_dir = self.root / "work" / run_id
@@ -181,6 +188,12 @@ class FixtureBuilder:
                 if scenario == "burst":
                     metrics = {"phases": {"burst": {
                         "latency_end_to_end_ms": _latency_record(90.0)}}}
+                if high_latency_for == scenario:
+                    metrics["latency_end_to_end_ms"] = _latency_record(25.0)
+                if secret_marker_in == scenario:
+                    metrics["_operator_note"] = {
+                        "name": "note", "unit": "text", "kind": "value",
+                        "count": 1, "value": "password=TOPSECRET"}
                 if strip_ci_from and scenario == strip_ci_from:
                     metrics["queue_wait_ms"].pop("ci95_high")
                 if empty_metrics_for and scenario == empty_metrics_for:
@@ -191,6 +204,8 @@ class FixtureBuilder:
                     "schema": "agentos.sloqual-result/v1",
                     "runner_version": RUNNER_VERSION,
                     "run_id": run_id, "scenario_id": scenario, "seed": seed,
+                    "commit_sha": (
+                        ("f" * 40) if bad_commit_for == scenario else ("a" * 40)),
                     "contract_sha256": (
                         "0" * 64 if corrupt_contract_hash else self.contract_hash),
                     "environment_hash": (
@@ -226,8 +241,8 @@ class ComparatorGateTest(unittest.TestCase):
         self.assertIn("missing-independent-rerun", result["fail_conditions"])
 
     def test_full_happy_path_yields_pass_with_limits_not_fail(self):
-        self.builder.add_run("run-A", revocation_trials=21)
-        self.builder.add_run("run-B", revocation_trials=21)
+        self.builder.add_run("run-A", revocation_trials=25)
+        self.builder.add_run("run-B", revocation_trials=25)
         result = run_compare(self.builder)
         self.assertEqual(result["fail_conditions"], [])
         self.assertIn("owner-confirmation-pending:thresholds-marked-in-contract",
@@ -315,6 +330,84 @@ class ComparatorGateTest(unittest.TestCase):
         self.assertTrue(any(r.startswith("invariant-violation:")
                             for r in result["fail_conditions"]))
         self.assertEqual(result["verdict"], "FAIL")
+
+    def test_slo_table_resolves_real_measurements(self):
+        self.builder.add_run("run-A")
+        self.builder.add_run("run-B")
+        result = run_compare(self.builder)
+        table = result["slo_table"]
+        self.assertTrue(table)
+        for row in table:
+            self.assertNotIn(row["verdict"], ("UNKNOWN",),
+                             f"unresolved SLO row: {row}")
+        latency_rows = [r for r in table
+                        if r["slo"] == "latency_end_to_end_ms.p95"
+                        and r["scope"].startswith("warm")]
+        self.assertTrue(latency_rows and latency_rows[0]["observed"] is not None)
+        self.assertFalse(any(c.startswith("no-data:") for c in
+                             result["limits"]))
+
+    def test_scope_without_metric_stays_no_data(self):
+        # startup_to_first_success_ms exists ONLY in cold_start; a provider_*
+        # scope must NOT pick it up from another scenario (no cross-pickup)
+        self.builder.add_run("run-A")
+        self.builder.add_run("run-B")
+        result = run_compare(self.builder)
+        row = [r for r in result["slo_table"]
+               if r["slo"] == "startup_to_first_success_ms"][0]
+        self.assertEqual(row["verdict"], "NO_DATA")
+
+    def test_measured_slo_threshold_violation_is_hard_fail(self):
+        self.builder.add_run("run-A", high_latency_for="warm_steady_state")
+        self.builder.add_run("run-B")
+        result = run_compare(self.builder)
+        self.assertTrue(any(r.startswith("slo-threshold-violation:")
+                            for r in result["fail_conditions"]))
+        self.assertEqual(result["verdict"], "FAIL")
+
+    def test_revocation_invariants_are_gated(self):
+        self.builder.add_run("run-A",
+                             invariant_violation_in="revocation_under_load")
+        self.builder.add_run("run-B")
+        result = run_compare(self.builder)
+        self.assertTrue(any(r.startswith("invariant-violation:run-A:"
+                                          "revocation_under_load:")
+                            for r in result["fail_conditions"]))
+        self.assertEqual(result["verdict"], "FAIL")
+
+    def test_per_run_revocation_minimum_enforced(self):
+        self.builder.add_run("run-A", revocation_trials=15)
+        self.builder.add_run("run-B", revocation_trials=105)
+        result = run_compare(self.builder)
+        self.assertTrue(any(r.startswith(
+            "revocation-trials-below-minimum:run-A:") for r in
+            result["fail_conditions"]))
+        self.assertEqual(result["verdict"], "FAIL")
+
+    def test_commit_sha_binding_rejects_foreign_commit(self):
+        self.builder.add_run("run-A", bad_commit_for="soak")
+        self.builder.add_run("run-B")
+        result = run_compare(self.builder)
+        self.assertTrue(any(r.startswith("commit-sha-mismatch:")
+                            for r in result["fail_conditions"]))
+        self.assertEqual(result["verdict"], "FAIL")
+
+    def test_secret_marker_in_results_is_a_failure(self):
+        self.builder.add_run("run-A", secret_marker_in="soak")
+        self.builder.add_run("run-B")
+        result = run_compare(self.builder)
+        self.assertTrue(any(r.startswith("secrets-in-artifacts:")
+                            for r in result["fail_conditions"]))
+        self.assertEqual(result["verdict"], "FAIL")
+
+    def test_rerun_comparison_rows_carry_measurements(self):
+        self.builder.add_run("run-A")
+        self.builder.add_run("run-B")
+        result = run_compare(self.builder)
+        comp = result["rerun_comparison"]["comparisons"]
+        warm = [c for c in comp if c.get("scenario") == "warm_steady_state"][0]
+        self.assertIn("e2e_p95", warm)
+        self.assertGreater(warm["e2e_p95"]["first"], 0.0)
 
 
 if __name__ == "__main__":

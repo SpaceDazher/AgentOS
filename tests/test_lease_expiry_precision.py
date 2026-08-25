@@ -52,6 +52,37 @@ class LeaseExpiryPrecisionTest(unittest.TestCase):
         finally:
             handle.close()
 
+    def test_malformed_expiry_fails_closed(self):
+        """A lease_expires_at that cannot be parsed must DENY mutating ops —
+        never fall back to a string comparison that lets writes through."""
+        from agentos.sloqual import harness as H
+        from agentos.sloqual.harness import WRITE_CAPABILITY
+        from agentos.sloqual.revocation import grant
+        sdir = Path(tempfile.mkdtemp(prefix="lease-malformed"))
+        handle = H.build_runtime(sdir)
+        try:
+            handle.engine.plan_tasks(handle.goal_id, [{
+                "key": "lm", "title": "lm-probe",
+                "definition_of_done": "regression"}])
+            handle.engine.schedule_ready_tasks(handle.goal_id)
+            row = handle.db.conn.execute(
+                "SELECT id FROM task WHERE title='lm-probe'").fetchone()
+            _, short_ctx = handle.engine.open_run(row[0], lease_minutes=30)
+            handle.db.conn.execute(
+                "UPDATE run SET lease_expires_at='not-a-timestamp' "
+                "WHERE id=?", (short_ctx.run_id,))
+            grant(handle.db.conn, subject="lease-probe2",
+                  capability=WRITE_CAPABILITY)
+            probe = H.ledger_subject_context(
+                handle, subject="lease-probe2", run_id=short_ctx.run_id,
+                lease_owner=short_ctx.lease_owner)
+            resolved = handle.gateway.resolve("qual.worklog_append", "1.0.0")
+            with self.assertRaises(StaleOwnerError):
+                handle.gateway.invoke(probe, resolved,
+                                      {"line_id": "malformed-expiry"})
+        finally:
+            handle.close()
+
     def test_persisted_expiry_parses_as_utc(self):
         stamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         parsed = datetime.fromisoformat(stamp.replace("Z", "+00:00"))

@@ -350,13 +350,18 @@ class ToolGateway:
                 "SELECT lease_owner, lease_expires_at, status FROM run WHERE id=?",
                 (ctx.run_id,)).fetchone()
             expired = False
-            if row and row["lease_expires_at"]:
+            if row is not None and row["lease_expires_at"]:
                 try:
                     exp = datetime.fromisoformat(
                         str(row["lease_expires_at"]).replace("Z", "+00:00"))
                     expired = datetime.now(timezone.utc) >= exp
                 except ValueError:
-                    expired = (row["lease_expires_at"] or "") <= _now()
+                    # malformed persisted expiry must FAIL CLOSED: deny the
+                    # mutating op rather than guess (SLOQUAL-001 probe)
+                    expired = True
+            elif row is not None:
+                # existing run with missing/empty expiry: deny mutating ops
+                expired = True
             if (not row or row["lease_owner"] != ctx.lease_owner
                     or row["status"] != "RUNNING"
                     or expired):

@@ -83,10 +83,11 @@ def _reduce_merged(records):
     return out
 
 
-def _evaluate_slos(contract: dict, observed_by_scenario: dict) -> tuple[list[dict], list[str]]:
-    """Returns (slo_table, cannot_pass_reasons)."""
+def _evaluate_slos(contract: dict, observed_by_scenario: dict) -> tuple[list[dict], list[str], list[str]]:
+    """Returns (slo_table, cannot_pass_reasons, hard_failures)."""
     table: list[dict] = []
     cannot_pass: list[str] = []
+    failures: list[str] = []
 
     INJECTED_SCENARIOS = {
         "queue_backpressure", "provider_full_outage", "provider_degraded",
@@ -122,16 +123,13 @@ def _evaluate_slos(contract: dict, observed_by_scenario: dict) -> tuple[list[dic
         nodes = []
         for key in scenario_keys:
             metrics = observed_by_scenario.get(key, {}).get("metrics", {})
-            if root in metrics:
-                nodes.append(metrics[root])
+            node = metrics.get(root)
+            if isinstance(node, list):
+                nodes.extend(n for n in node if isinstance(n, dict))
+            elif isinstance(node, dict):
+                nodes.append(node)
         if not nodes:
-            # fall back to whole-contract union when scope names scenarios
-            # that produced no such metric (e.g. provider_* without outages)
-            for key, bucket in observed_by_scenario.items():
-                if root in bucket.get("metrics", {}):
-                    nodes.append(bucket["metrics"][root])
-        if not nodes:
-            return None
+            return None  # no arbitrary cross-scope pickup: absent means NO_DATA
         merged = _reduce_merged(nodes)
         if stat_hint and merged.get(stat_hint) is not None:
             merged["_stat_hint"] = stat_hint
@@ -163,7 +161,12 @@ def _evaluate_slos(contract: dict, observed_by_scenario: dict) -> tuple[list[dic
         else:
             statistic = ("value" if slo["sli"].endswith("fraction")
                          or slo["sli"].endswith("seconds") else "p95")
-        value = metric.get(statistic, metric.get("value"))
+        if metric.get(statistic) is None:
+            for fallback in ("value", "median", "p50", "max"):
+                if metric.get(fallback) is not None:
+                    statistic = fallback
+                    break
+        value = metric.get(statistic)
         ci_hi = metric.get("ci95_high")
         op, bound = threshold_parts(slo["threshold"])
         verdict = "UNKNOWN"
@@ -180,13 +183,19 @@ def _evaluate_slos(contract: dict, observed_by_scenario: dict) -> tuple[list[dic
             ci_ok = (ci_lo is not None and ci_lo >= bound)
             verdict = "PASS_CANDIDATE" if (point_ok and ci_ok) else (
                 "FAIL" if not point_ok else "CI_CROSSES_THRESHOLD")
-        if verdict in ("FAIL", "CI_CROSSES_THRESHOLD", "UNKNOWN"):
-            cannot_pass.append(f"{slo['sli']}@{slo.get('scope','')}:{verdict}")
+        if verdict == "FAIL":
+            # an OBSERVED threshold violation can never be argued down to a
+            # limit: it is a hard failure under the frozen contract
+            failures.append(
+                f"slo-threshold-violation:{slo['sli']}@{scope}:"
+                f"{value}!{op}{bound}")
+        elif verdict in ("CI_CROSSES_THRESHOLD", "UNKNOWN"):
+            cannot_pass.append(f"{slo['sli']}@{scope}:{verdict}")
         entry.update({"observed": value,
                       "ci": [metric.get("ci95_low"), metric.get("ci95_high")],
                       "statistic": statistic, "verdict": verdict})
         table.append(entry)
-    return table, cannot_pass
+    return table, cannot_pass, failures
 
 
 def compare(ticket_dir: Path, run_ids: list[str], *, work_root: Path,
@@ -205,6 +214,7 @@ def compare(ticket_dir: Path, run_ids: list[str], *, work_root: Path,
     if set(REQUIRED_SCENARIOS) != set(contract["mandatory_scenarios"]):
         failures.append("scenario-set-mismatch-vs-contract")
 
+    main_known_commit: str | None = None  # resolved after loading seeds
     runs: dict[str, dict[str, dict[int, dict]]] = {}
     env_hashes: dict[str, str | None] = {}
     production_like_flags: list[bool] = []
@@ -221,7 +231,7 @@ def compare(ticket_dir: Path, run_ids: list[str], *, work_root: Path,
             required_ratios = {
                 k: v for k, v in (mapping.items() if isinstance(mapping, dict)
                                   else [])
-                if k.endswith("_ratio") and isinstance(v, (int, float))}
+                if "_ratio" in k and isinstance(v, (int, float))}
             server_class = mapping.get("server_class_storage") if isinstance(
                 mapping, dict) else None
             ratios_ok = bool(required_ratios) and all(
@@ -271,6 +281,50 @@ def compare(ticket_dir: Path, run_ids: list[str], *, work_root: Path,
                         failures.append(
                             f"{issue}:{run_id}:{scenario_id}:{seed}")
 
+    # resolve the series commit from the FIRST run's first stamped seed,
+    # then hold every seed of every run to that same frozen commit
+    main_known_commit = None
+    first_run_seeds = next(iter(runs.values()), {})
+    for seeds in first_run_seeds.values():
+        for payload in seeds.values():
+            sha = payload.get("commit_sha")
+            if sha:
+                main_known_commit = str(sha)
+                break
+        if main_known_commit:
+            break
+
+    # every seed must carry the SAME frozen code commit as its run manifest
+    for run_id, scenario_map in runs.items():
+        manifest_path = work_root / run_id / "environment-manifest.json"
+        manifest_commit = None
+        if manifest_path.exists():
+            try:
+                raw = json.loads(manifest_path.read_text(
+                    encoding="utf-8")).get("git_commit_sha")
+                if isinstance(raw, dict):
+                    raw = raw.get("value")
+                manifest_commit = str(raw) if raw and raw != "unavailable" \
+                    else None
+            except (OSError, ValueError):
+                manifest_commit = None
+        seen_commits: set[str] = set()
+        for scenario_id, seeds in scenario_map.items():
+            for seed, payload in seeds.items():
+                sha = payload.get("commit_sha")
+                if not sha:
+                    failures.append(
+                        f"commit-sha-unrecorded:{run_id}:{scenario_id}:{seed}")
+                else:
+                    seen_commits.add(str(sha))
+        for foreign in sorted(seen_commits - {main_known_commit}):
+            failures.append(
+                f"commit-sha-mismatch:{run_id}:{foreign}")
+        if (manifest_commit and seen_commits
+                and manifest_commit not in seen_commits):
+            failures.append(
+                f"commit-sha-mismatch-vs-manifest:{run_id}:{manifest_commit}")
+
     # environment hash must be consistent inside each run's seed files
     for run_id, scenario_map in runs.items():
         for scenario_id, seeds in scenario_map.items():
@@ -285,8 +339,6 @@ def compare(ticket_dir: Path, run_ids: list[str], *, work_root: Path,
     if not any(production_like_flags):
         limits.append(
             "production-like-proof-missing-or-insufficient:verdict-capped-at-PWL")
-    else:
-        limits.append("production-like-profile-accepted")
 
     # --- aggregate observed metrics per run ---------------------------------
     observed_by_scenario: dict[str, dict] = {}
@@ -347,6 +399,7 @@ def compare(ticket_dir: Path, run_ids: list[str], *, work_root: Path,
                         limits.append(
                             f"insufficient-statistical-power:{run_id}:{scenario_id}:{seed}")
                 else:
+                    _check_seed_invariants(run_id, scenario_id, seed, payload)
                     m = result.get("metrics", {})
                     revocation_total_trials += int(m.get("trials_total", 0))
                     lat = m.get("revocation_enforcement_latency_ms", {})
@@ -361,9 +414,40 @@ def compare(ticket_dir: Path, run_ids: list[str], *, work_root: Path,
                         if not check.get("still_denies_after_restart"):
                             failures.append(
                                 f"capability-resurrection-after-restart:{run_id}:{seed}")
+    per_run_trials: dict[str, int] = {}
+    for run_id, scenario_map in runs.items():
+        total = 0
+        for seed, payload in scenario_map.get("revocation_under_load",
+                                              {}).items():
+            total += int(payload.get("result", {}).get("metrics", {}).get(
+                "trials_total", 0))
+        per_run_trials[run_id] = total
+        if total < MIN_REVOCATION_TRIALS:
+            failures.append(
+                f"revocation-trials-below-minimum:{run_id}:"
+                f"{total}<{MIN_REVOCATION_TRIALS}")
+
+    from .harness import _SECRET_MARKERS
+    for run_id in run_ids:
+        run_dir = work_root / run_id
+        for artifact in run_dir.rglob("*"):
+            if not artifact.is_file():
+                continue
+            if artifact.suffix.lower() in (".db", ".wal", ".shm"):
+                continue
+            try:
+                text = artifact.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                continue
+            low = text.lower()
+            hits = [m for m in _SECRET_MARKERS if m.lower() in low]
+            if hits:
+                failures.append(
+                    f"secrets-in-artifacts:{run_id}:{artifact.name}:{hits[0]}")
+
     if revocation_total_trials < MIN_REVOCATION_TRIALS:
         limits.append(
-            f"revocation-trials-below-minimum:{revocation_total_trials}<{MIN_REVOCATION_TRIALS}")
+            f"revocation-trials-below-minimum-total:{revocation_total_trials}")
     if revocation_max_ms > REVOCATION_LIMIT_MS:
         failures.append(
             f"revocation-latency-over-limit:{revocation_max_ms}ms>{REVOCATION_LIMIT_MS}ms")
@@ -372,7 +456,9 @@ def compare(ticket_dir: Path, run_ids: list[str], *, work_root: Path,
     for gap in scale_gaps:
         limits.append(gap)
 
-    slo_table, cannot_pass = _evaluate_slos(contract, observed_by_scenario)
+    slo_table, cannot_pass, slo_failures = _evaluate_slos(
+        contract, observed_by_scenario)
+    failures.extend(slo_failures)
     if any(row["requires_owner_confirmation"] for row in slo_table):
         limits.append("owner-confirmation-pending:thresholds-marked-in-contract")
 
@@ -411,16 +497,28 @@ def compare(ticket_dir: Path, run_ids: list[str], *, work_root: Path,
     }
 
 
+def _seed_metric(payload: dict, path: tuple[str, ...]) -> float | None:
+    node = payload.get("result", {}).get("metrics", {})
+    for part in path:
+        if isinstance(node, dict):
+            node = node.get(part)
+        else:
+            break
+    if isinstance(node, bool):
+        return None
+    if isinstance(node, (int, float)):
+        return float(node)
+    if isinstance(node, dict):
+        for key in (path[-1], "value"):
+            value = node.get(key) if isinstance(node, dict) else None
+            if isinstance(value, (int, float)) and not isinstance(value, bool):
+                return float(value)
+    return None
+
+
 def _p95_of_seed_metrics(payloads: list[dict], metric_path: tuple[str, ...]) -> float | None:
-    values = []
-    for payload in payloads:
-        node = payload.get("result", {}).get("metrics", {})
-        for part in metric_path:
-            node = node.get(part, {}) if isinstance(node, dict) else {}
-        if isinstance(node, dict) and node.get("p95") is not None:
-            values.append(float(node["p95"]))
-        elif isinstance(node, dict) and node.get("value") is not None:
-            values.append(float(node["value"]))
+    values = [v for v in (_seed_metric(p, metric_path) for p in payloads)
+              if v is not None]
     return statistics.median(values) if values else None
 
 
