@@ -77,6 +77,7 @@ _KNOWN_REASONS = frozenset({
     "missing_promotion_activity",
     "insufficient_distinct_canonical_sources",
     "insufficient_independence_groups",
+    "insufficient_evidence_count",
     "evidence_missing_independence_group",
     "evidence_missing_canonical_source_id",
     "evidence_missing_publisher_id",
@@ -213,9 +214,22 @@ def _result_field(report_graph: Any, result, prop: str) -> str:
     return str(val) if val is not None else ""
 
 
-def _normalize_violations(report_graph: Any, status_map: dict[str, set[str]]) -> list[str]:
-    """Extract and classify every sh:result in the report graph."""
+def _normalize_violations(
+    report_graph: Any, status_map: dict[str, set[str]]
+) -> tuple[list[str], list[dict[str, str]]]:
+    """Extract and classify every sh:result in the report graph.
+
+    Returns (classified, unclassified) where *classified* is a sorted list of
+    oracle-reason strings and *unclassified* is a list of raw dicts
+    ``{source_shape, constraint_component, result_path, result_message,
+    focus_node}`` for results that did not map to a known reason.
+
+    Fail-closed design: unclassified results are NOT discarded — the caller
+    must check the unclassified list and fail unless every entry matches an
+    explicit versioned allowlist.
+    """
     violations: list[str] = []
+    unclassified: list[dict[str, str]] = []
     for result in _iter_results(report_graph):
         source_shape = _result_field(report_graph, result, "sourceShape")
         cc = _result_field(report_graph, result, "sourceConstraintComponent")
@@ -224,11 +238,73 @@ def _normalize_violations(report_graph: Any, status_map: dict[str, set[str]]) ->
         focus = _result_field(report_graph, result, "focusNode")
 
         reason = _classify_violation(source_shape, cc, path, message, focus, status_map)
-        if reason != "unclassified":
-            if reason not in violations:
-                violations.append(reason)
+        if reason == "unclassified":
+            unclassified.append({
+                "source_shape": source_shape,
+                "constraint_component": cc,
+                "result_path": path,
+                "result_message": message,
+                "focus_node": focus,
+            })
+        elif reason not in violations:
+            violations.append(reason)
 
-    return sorted(violations)
+    return sorted(violations), unclassified
+
+
+#: Versioned allowlist of unclassified violation signatures that are known
+#: to be benign for shapes-v3.  Each entry is a frozen tuple
+#: ``(constraint_component_suffix, result_path_suffix, message_prefix)``.
+#: The component and path are matched by suffix (to be robust against IRI-prefix
+#: differences).  The message is matched by PREFIX — this handles the
+#: ``sh:or`` wrapper violation whose message includes the focus node IRI
+#: (which varies per fixture).
+#:
+#: An empty message_prefix ("") matches any message (catch-all for that
+#: component+path).
+#: An empty allowlist means *any* unclassified result blocks the run.
+UNCLASSIFIED_ALLOWLIST: frozenset[tuple[str, str, str]] = frozenset({
+    # sh:Or on KnowledgeAssertionShape emits a generic wrapper violation whose
+    # message starts with "Node ... must conform to one or more shapes".
+    # These fire alongside classified sibling violations (e.g.
+    # missing_promotion_activity, insufficient_independence_groups) and are
+    # redundant — the structural oracle tracks only the specific reason.
+    ("OrConstraintComponent", "", "Node "),
+})
+
+
+def _filter_unclassified(
+    unclassified: list[dict[str, str]],
+) -> list[dict[str, str]]:
+    """Filter unclassified violations through the versioned allowlist.
+
+    Returns the list of unclassified entries that are NOT covered by the
+    allowlist — i.e. truly unexpected violations that must cause a fail.
+
+    Matching: (cc_suffix, path_suffix, msg_prefix).  The message is matched
+    by prefix; an empty prefix matches any message for the component.
+    """
+    unexpected: list[dict[str, str]] = []
+    for entry in unclassified:
+        cc = entry.get("constraint_component", "")
+        cc_suffix = cc.split("#")[-1] if cc else ""
+        path = entry.get("result_path", "") or ""
+        path_suffix = path.split("#")[-1] if path else ""
+        msg = entry.get("result_message", "") or ""
+
+        allowed = False
+        for allow_cc, allow_path, allow_msg in UNCLASSIFIED_ALLOWLIST:
+            if cc_suffix == allow_cc and path_suffix == allow_path:
+                if not allow_msg or msg.startswith(allow_msg):
+                    allowed = True
+                    break
+
+        if not allowed:
+            unexpected.append(entry)
+    return unexpected
+
+
+
 
 
 def _semantic_digest(report_graph: Any) -> str:
@@ -302,7 +378,8 @@ def main() -> int:
         # open profile
         data_ttl, status_map = _build_single_fixture_graph(fixture, catalog)
         raw = _run_validation(shapes_open_text, data_ttl)
-        normalized = _normalize_violations(raw["report_graph"], status_map)
+        normalized, unclassified = _normalize_violations(raw["report_graph"], status_map)
+        unclassified_unexpected = _filter_unclassified(unclassified)
         digest = _semantic_digest(raw["report_graph"])
         expected_conforms = bool(expected["conforms"])
         observed_conforms = raw["conforms"]
@@ -313,6 +390,12 @@ def main() -> int:
             if expected["primary_reason"] not in normalized:
                 match = False
                 mismatches.append(f"{fixture_id}/open: primary_reason '{expected['primary_reason']}' not in {normalized}")
+        if unclassified_unexpected:
+            match = False
+            mismatches.append(
+                f"{fixture_id}/open: {len(unclassified_unexpected)} unexpected unclassified violations: "
+                f"{unclassified_unexpected}"
+            )
         run_results.append({
             "fixture_id": fixture_id,
             "profile": "open",
@@ -320,6 +403,7 @@ def main() -> int:
             "observed_conforms": observed_conforms,
             "expected_primary_reason": expected.get("primary_reason"),
             "normalized_violations": normalized,
+            "unclassified_violations": unclassified_unexpected,
             "report_text": raw["report_text"][:8000],
             "semantic_digest": digest,
             "runtime": versions,
@@ -333,7 +417,8 @@ def main() -> int:
         if "promoted_only" in additional:
             exp = additional["promoted_only"]
             raw_po = _run_validation(shapes_promoted_text, data_ttl)
-            normalized_po = _normalize_violations(raw_po["report_graph"], status_map)
+            normalized_po, unclassified_po = _normalize_violations(raw_po["report_graph"], status_map)
+            unclassified_po_unexpected = _filter_unclassified(unclassified_po)
             digest_po = _semantic_digest(raw_po["report_graph"])
             exp_conforms = bool(exp["conforms"])
             obs_conforms = raw_po["conforms"]
@@ -344,6 +429,12 @@ def main() -> int:
                 if exp["primary_reason"] not in normalized_po:
                     match_po = False
                     mismatches.append(f"{fixture_id}/promoted_only: primary_reason '{exp['primary_reason']}' not in {normalized_po}")
+            if unclassified_po_unexpected:
+                match_po = False
+                mismatches.append(
+                    f"{fixture_id}/promoted_only: {len(unclassified_po_unexpected)} "
+                    f"unexpected unclassified violations: {unclassified_po_unexpected}"
+                )
             run_results.append({
                 "fixture_id": fixture_id,
                 "profile": "promoted_only",
@@ -351,6 +442,7 @@ def main() -> int:
                 "observed_conforms": obs_conforms,
                 "expected_primary_reason": exp.get("primary_reason"),
                 "normalized_violations": normalized_po,
+                "unclassified_violations": unclassified_po_unexpected,
                 "report_text": raw_po["report_text"][:8000],
                 "semantic_digest": digest_po,
                 "runtime": versions,
