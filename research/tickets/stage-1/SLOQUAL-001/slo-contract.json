@@ -2,7 +2,7 @@
   "schema": "agentos.slo-contract/v1",
   "slo_id": "SLOQUAL-001",
   "title": "AgentOS production-like SLO qualification extending S1-002",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "status": "FROZEN_PRE_RUN",
   "amendments": [
     {
@@ -10,6 +10,15 @@
       "before_any_official_run": true,
       "change": "throughput SLO restated from absolute achieved events/s (>=34) to offered-load realization ratio (>=0.999 of scheduled arrivals)",
       "rationale": "Under an open-loop schedule the realized rate computed over [first scheduled, last completion] systematically undershoots the offered rate by the drain tail even with zero loss; realization ratio measures what the SLO actually protects (no lost offered load). No official qualification measurement existed when this amendment was frozen."
+    },
+    {
+      "from_version": "1.0.1",
+      "to_version": "1.0.2",
+      "date": "2026-08-25",
+      "before_any_official_final_series": true,
+      "reason": "availability/error-rate SLI definitions were internally inconsistent: error_rate excluded expected denials from its numerator while availability divided successes by ALL dispatched including the seeded 10% deny pool, capping the SLO at ~0.90 by construction",
+      "change": "both proportions now exclude expected denials from numerator AND denominator; unexpected denials still count against both; thresholds unchanged",
+      "thresholds_changed": false
     }
   ],
   "extends": [
@@ -107,7 +116,7 @@
       "id": "availability_fraction",
       "window": "measurement phase excluding declared injected-outage windows",
       "numerator": "successful requests",
-      "denominator": "all requests dispatched in the window",
+      "denominator": "all requests dispatched in the window EXCLUDING expected denials (seeded allow/deny mix, post-revocation denies)",
       "retry_timeout_rule": "identical to error_rate complement inside its narrower window definition"
     },
     {
@@ -296,6 +305,6 @@
     "min_runner_version": "1.0.0",
     "rule": "results produced by incompatible runner versions are rejected by the comparator"
   },
-  "frozen_at": "2026-08-24T23:16:17Z",
-  "self_hash_sha256": "dbb9868e74317b11e3cc1c31d79d66318d0731cca312b4445fc1fd5e31af49b2"
+  "frozen_at": "2026-08-25T04:18:58Z",
+  "self_hash_sha256": "9fdfec5935567f262d3331f4c5f3ec767ada1b2a5ad24c8680f40dc81ced16dc"
 }

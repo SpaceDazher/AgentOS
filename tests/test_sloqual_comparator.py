@@ -337,15 +337,29 @@ class ComparatorGateTest(unittest.TestCase):
         result = run_compare(self.builder)
         table = result["slo_table"]
         self.assertTrue(table)
+        probe_rows = [r for r in table
+                      if r["scope"] == "provider_*"
+                      and r["slo"] == "startup_to_first_success_ms"]
         for row in table:
-            self.assertNotIn(row["verdict"], ("UNKNOWN",),
+            if row in probe_rows:
+                self.assertEqual(row["verdict"], "NO_DATA",
+                                 "cross-scope pickup must stay absent")
+                continue
+            self.assertNotIn(row["verdict"], ("UNKNOWN", "NO_DATA"),
                              f"unresolved SLO row: {row}")
         latency_rows = [r for r in table
                         if r["slo"] == "latency_end_to_end_ms.p95"
                         and r["scope"].startswith("warm")]
         self.assertTrue(latency_rows and latency_rows[0]["observed"] is not None)
-        self.assertFalse(any(c.startswith("no-data:") for c in
-                             result["limits"]))
+        stray_no_data = [c for c in result["limits"]
+                         if "no-data:" in c
+                         and "startup_to_first_success_ms" not in c]
+        self.assertEqual(stray_no_data, [])
+        burst_rows = [r for r in table
+                      if r["scope"].startswith("burst")]
+        self.assertTrue(burst_rows and
+                        burst_rows[0]["observed"] is not None,
+                        "burst nested latency must resolve")
 
     def test_scope_without_metric_stays_no_data(self):
         # startup_to_first_success_ms exists ONLY in cold_start; a provider_*
@@ -405,9 +419,14 @@ class ComparatorGateTest(unittest.TestCase):
         self.builder.add_run("run-B")
         result = run_compare(self.builder)
         comp = result["rerun_comparison"]["comparisons"]
-        warm = [c for c in comp if c.get("scenario") == "warm_steady_state"][0]
-        self.assertIn("e2e_p95", warm)
-        self.assertGreater(warm["e2e_p95"]["first"], 0.0)
+        self.assertEqual(result["rerun_comparison"]["basis"],
+                         "contract-slo-matrix")
+        warm = [x for x in comp if x.get("sli") == "latency_end_to_end_ms.p95"
+                and str(x.get("scope", "")).startswith("warm")][0]
+        self.assertGreater(warm["first"], 0.0)
+        self.assertGreater(warm["rerun"], 0.0)
+        self.assertIn("flagged", warm)
+
 
 
 if __name__ == "__main__":

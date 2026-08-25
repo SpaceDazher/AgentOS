@@ -80,21 +80,33 @@ def _reduce_merged(records):
              if isinstance(r, dict) and r.get("ci95_high") is not None]
     out["ci95_low"] = min(lows) if lows else None
     out["ci95_high"] = max(highs) if highs else None
+    kinds = {r.get("kind") for r in records if isinstance(r, dict)}
+    if kinds == {"proportion"}:
+        successes = sum(int(r.get("successes") or 0) for r in records
+                        if isinstance(r, dict))
+        count = sum(int(r.get("count") or 0) for r in records
+                    if isinstance(r, dict))
+        if count > 0:
+            from .stats import wilson_interval
+            lo, hi = wilson_interval(successes, count)
+            out.update({"successes": successes, "count": count,
+                        "value": successes / count,
+                        "ci95_low": lo, "ci95_high": hi,
+                        "ci_method": "wilson_score_pooled_level0.95"})
     return out
 
 
-def _evaluate_slos(contract: dict, observed_by_scenario: dict) -> tuple[list[dict], list[str], list[str]]:
-    """Returns (slo_table, cannot_pass_reasons, hard_failures)."""
-    table: list[dict] = []
-    cannot_pass: list[str] = []
-    failures: list[str] = []
-
+def _make_resolver(observed_by_scenario: dict):
+    """Scope/metric resolver shared by SLO evaluation and the
+    contract-driven rerun comparison matrix."""
     INJECTED_SCENARIOS = {
         "queue_backpressure", "provider_full_outage", "provider_degraded",
         "sqlite_lock_contention", "disk_slow_saturation", "network_faults"}
 
     def _resolve_scenarios(scope: str) -> list[str]:
-        text = (scope or "").strip()
+        # comma clauses ("revocation_under_load, all trials") are qualifiers;
+        # the scenario selection lives before the first comma
+        text = (scope or "").split(",")[0].strip()
         if text.lower().startswith("all"):
             return [k for k in observed_by_scenario
                     if k not in INJECTED_SCENARIOS]
@@ -128,12 +140,44 @@ def _evaluate_slos(contract: dict, observed_by_scenario: dict) -> tuple[list[dic
                 nodes.extend(n for n in node if isinstance(n, dict))
             elif isinstance(node, dict):
                 nodes.append(node)
+            else:
+                phases = metrics.get("phases")
+                if isinstance(phases, list):
+                    phases = {f"phase_{i}": p for i, p in
+                              enumerate(phases) if isinstance(p, dict)}
+                if isinstance(phases, dict):
+                    # phase buckets map phase-name -> {metric_root: record};
+                    # accept both that shape and a flat metric-root mapping
+                    for phase in phases.values():
+                        candidates = []
+                        if isinstance(phase, dict):
+                            candidates.append(phase)
+                            for sub in phase.values():
+                                if isinstance(sub, dict):
+                                    candidates.append(sub)
+                        for cand in candidates:
+                            if root in cand:
+                                inner = cand[root]
+                                if isinstance(inner, list):
+                                    nodes.extend(n for n in inner
+                                                 if isinstance(n, dict))
+                                elif isinstance(inner, dict):
+                                    nodes.append(inner)
         if not nodes:
             return None  # no arbitrary cross-scope pickup: absent means NO_DATA
         merged = _reduce_merged(nodes)
         if stat_hint and merged.get(stat_hint) is not None:
             merged["_stat_hint"] = stat_hint
         return merged
+    return {"resolve": _resolve_scenarios, "find": find_metric}
+
+
+def _evaluate_slos(contract: dict, observed_by_scenario: dict) -> tuple[list[dict], list[str], list[str]]:
+    """Returns (slo_table, cannot_pass_reasons, hard_failures)."""
+    table: list[dict] = []
+    cannot_pass: list[str] = []
+    failures: list[str] = []
+    find_metric = _make_resolver(observed_by_scenario)["find"]
 
     def threshold_parts(threshold: str):
         match = re.search(r"(<=|>=)\s*([0-9]+(?:\.[0-9]+)?)", threshold)
@@ -462,7 +506,12 @@ def compare(ticket_dir: Path, run_ids: list[str], *, work_root: Path,
     if any(row["requires_owner_confirmation"] for row in slo_table):
         limits.append("owner-confirmation-pending:thresholds-marked-in-contract")
 
-    rerun_summary = _compare_runs(runs)
+    def _eval_for_bucket(sli, scope, bucket):
+        return _make_resolver(bucket)["find"](sli, scope)
+
+    rerun_summary = _compare_runs(runs, contract, _eval_for_bucket)
+    for missing in rerun_summary.get("missing_comparable", []):
+        limits.append(f"rerun-missing-comparable:{missing}")
     for comp in rerun_summary.get("comparisons", []):
         if not isinstance(comp, dict):
             continue
@@ -522,12 +571,63 @@ def _p95_of_seed_metrics(payloads: list[dict], metric_path: tuple[str, ...]) -> 
     return statistics.median(values) if values else None
 
 
-def _compare_runs(runs: dict[str, dict[str, dict[int, dict]]]) -> dict:
+def _compare_runs(runs: dict[str, dict[str, dict[int, dict]]],
+                  contract: dict | None = None,
+                  evaluate=None) -> dict:
     run_ids = list(runs.keys())
     if len(run_ids) < 2:
         return {"status": "rerun-missing"}
     first, second = run_ids[0], run_ids[1]
     comparisons = []
+    if contract and evaluate is not None:
+        missing_comparable = []
+        for slo in contract.get("slos", []):
+            sli, scope = slo["sli"], slo.get("scope", "")
+            values = []
+            for rid in (first, second):
+                observed: dict = {}
+                for scenario_id, seeds in runs.get(rid, {}).items():
+                    merged = {}
+                    for seed, payload in sorted(seeds.items()):
+                        for key, value in payload.get("result", {}).get(
+                                "metrics", {}).items():
+                            merged.setdefault(key, []).append(value)
+                    observed[scenario_id] = {"metrics": merged}
+                metric = evaluate(sli, scope, observed)
+                if metric:
+                    verdict_text = str(
+                        slo.get("statistic_for_verdict", "")).lower()
+                    if "max" in verdict_text:
+                        stat = "max"
+                    elif metric.get("_stat_hint"):
+                        stat = metric["_stat_hint"]
+                    elif metric.get("value") is not None:
+                        stat = "value"
+                    else:
+                        stat = "p95"
+                    if metric.get(stat) is None:
+                        for fallback in ("value", "median", "p50", "max"):
+                            if metric.get(fallback) is not None:
+                                stat = fallback
+                                break
+                    values.append((rid, metric.get(stat)))
+            if any(v is None for _, v in values) or len(values) < 2:
+                missing_comparable.append(f"{sli}@{scope}")
+                comparisons.append({"sli": sli, "scope": scope,
+                                    "status": "missing-comparable"})
+                continue
+            va, vb = values[0][1], values[1][1]
+            rel = abs(va - vb) / max(abs(vb), 1e-9)
+            comparisons.append({"sli": sli, "scope": scope,
+                                "first": round(va, 6),
+                                "rerun": round(vb, 6),
+                                "relative_diff": round(rel, 6),
+                                "flagged": rel > 0.5})
+        return {"status": "compared", "basis": "contract-slo-matrix",
+                "comparisons": comparisons,
+                "missing_comparable": missing_comparable,
+                "gross_divergences": sum(
+                    1 for c in comparisons if c.get("flagged"))}
     for scenario_id in REQUIRED_SCENARIOS:
         seeds_a = runs[first].get(scenario_id, {})
         seeds_b = runs[second].get(scenario_id, {})

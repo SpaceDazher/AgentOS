@@ -144,9 +144,11 @@ def summarize_open_loop(result, *, seed: int, tag: str,
             max(1, dispatched)),
         "error_rate_fraction": proportion_record(
             f"{tag}.error_rate", len(failed) + len(unexpected_denied),
-            max(1, dispatched)),
+            # contract v1.0.2: expected denials are excluded from BOTH sides
+            max(1, dispatched - (len(denied) - len(unexpected_denied)))),
         "availability_fraction": proportion_record(
-            f"{tag}.availability", len(succeeded), max(1, dispatched)),
+            f"{tag}.availability", len(succeeded),
+            max(1, dispatched - (len(denied) - len(unexpected_denied)))),
         "counts": {
             "dispatched": dispatched,
             "completed": len(completed),
