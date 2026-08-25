@@ -468,6 +468,8 @@ def main() -> int:
             "shapes_open_sha256": shapes_sha,
             "shapes_promoted_only_sha256": _sha256(args.shapes_promoted_only),
             "rdf_input_sha256": rdf_input_sha,
+            "validate_structural_sha256": _sha256(HERE / "validate_structural.py"),
+            "fixtures_to_rdf_sha256": _sha256(HERE / "fixtures_to_rdf.py"),
         },
         "coverage": {
             "fixture_count": fixture_count,

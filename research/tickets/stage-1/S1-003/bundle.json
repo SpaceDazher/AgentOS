@@ -233,7 +233,7 @@
       "canonical_uri": "https://local.agentos.invalid/AgentOS/tests/test_s1_003_regressions.py",
       "title": "S1-003 Fail-Closed Regression Test Suite",
       "source_type": "local deterministic test suite (stdlib-only, no pySHACL)",
-      "content": "22 adversarial regression tests in tests/test_s1_003_regressions.py verify that comparison.py cannot be bypassed by: corrupting expected_conforms, removing normalized_violations, corrupting expected_primary_reason, tampering shapes/fixtures/rdf hashes, corrupting semantic_digest, injecting unknown unclassified violations, removing pyshacl_executed flag, adding duplicate/extra/missing engine runs, changing runtime versions, and tampering on-disk files. Also verifies validate_pyshacl.py classification (known reasons, unclassified allowlist) and fixtures_to_rdf.py inherited property emission. All 22 tests pass.",
+      "content": "29 adversarial regression tests in tests/test_s1_003_regressions.py verify that comparison.py cannot be bypassed by: corrupting expected_conforms, removing normalized_violations, corrupting expected_primary_reason, tampering shapes/fixtures/rdf hashes, corrupting semantic_digest, injecting unknown unclassified violations, removing pyshacl_executed flag, adding duplicate/extra/missing engine runs, changing runtime versions, tampering on-disk files, string \"false\" for booleans, fake non-empty hashes, fake semantic digests, non-empty unclassified_violations lists, and falsified engine verdict/mismatches. Also verifies validate_pyshacl.py classification (known reasons, unclassified allowlist) and fixtures_to_rdf.py inherited property emission. All 29 tests pass.",
       "verification_status": "verified",
       "verifier": "agentos-s1-003-test-replay",
       "verification_method": "unittest discover and pass",
@@ -244,8 +244,8 @@
         "canonical_source_id": "S1-003-REGRESSIONS",
         "publisher_id": "agentos-local",
         "independence_group": "s1-003-regression-tests",
-        "test_count": 22,
-        "test_passed": 22,
+        "test_count": 29,
+        "test_passed": 29,
         "test_failed": 0,
         "py_version": "3.12.6"
       }
@@ -417,7 +417,7 @@
     },
     {
       "id": "claim-fail-closed-comparison",
-      "text": "Fact: comparison.py is fail-closed — it derives ALL expectations exclusively from raw-results.json (structural oracle) and recomputes ALL hashes from disk. It aborts (verdict=fail) when: the engine did not execute (pyshacl_executed!=true), result count != 26, duplicate or extra (fixture_id, profile) keys, any runtime version mismatch, any top-level or per-run shapes/fixtures hash mismatch vs disk, any per-run shapes_sha256 mismatch (open vs promoted_only shapes), empty semantic_digest or rdf_input_sha256, unclassified or unknown violation reasons, or any conforms/primary_reason mismatch. Verdict is 'pass' ONLY when matched==26 AND zero mismatches. 22 adversarial regression tests lock every bypass path.",
+      "text": "Fact: comparison.py is fail-closed — ALL expectations derive exclusively from raw-results.json (structural oracle) and ALL hashes are recomputed from disk. It aborts (verdict=fail) when: pyshacl_executed is not strict boolean True (string \"false\" rejected), result count != 26, duplicate or extra (fixture_id, profile) keys, any runtime version mismatch, any top-level or per-run shapes/fixtures hash mismatch vs disk, any per-run shapes_sha256 mismatch (open vs promoted_only shapes), per-run rdf_input_sha256 not matching the recomputed single-fixture Turtle hash, semantic_digest not a 64-char hex or a trivial all-0s/all-1s pattern, empty unclassified_violations list required (non-empty list rejected), unknown violation reasons not in _KNOWN_VIOLATION_REASONS, observed_conforms not a strict JSON boolean, engine.verdict != 'pass', engine.mismatches not empty, or coverage counts mismatch. Verdict is 'pass' ONLY when matched==26 AND zero mismatches. 29 adversarial regression tests lock every bypass path.",
       "claim_class": "fact",
       "source_ids": [
         "S1-003-ENGINE",
@@ -442,7 +442,7 @@
     },
     {
       "id": "claim-v3-verdict-pass",
-      "text": "Inference: with shapes-v3.ttl preserving all original constraints, fail-closed comparison verifying 26/26, hash-locked runtime identity, complete RDF projection, and 12/12 adversarial probes passing through real pySHACL, the S1-003 verdict is PASS. The original PASS_WITH_LIMITS is preserved in audit.history.",
+      "text": "Inference: with shapes-v3.ttl preserving all original constraints, fail-closed comparison verifying strict booleans, recomputed per-fixture RDF hashes, non-trivial semantic digests, non-empty unclassified_violations rejection, and self-reported engine verdict/mismatches/coverage — 26/26 agreement, 29 regression tests, 12/12 adversarial probes — the S1-003 verdict is PASS. The original PASS_WITH_LIMITS is preserved in audit.history.",
       "claim_class": "inference",
       "source_ids": [
         "S1-003-ENGINE",

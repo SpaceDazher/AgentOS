@@ -18,6 +18,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import shutil
 import sys
 import tempfile
 from pathlib import Path
@@ -214,6 +215,70 @@ class TestComparisonFailClosed(TestCase):
             f"expected unclassified/unknown violation in mismatches: {report['mismatches']}")
 
     # ------------------------------------------------------------------ #
+    # R8 regression: strict type checks, content-aware hashes, engine
+    # summary validation — all bypass paths from REVISE verdict
+    # ------------------------------------------------------------------ #
+    def test_string_false_pyshacl_executed_is_caught(self):
+        """pyshacl_executed='false' (string) must FAIL — strict boolean."""
+        tampered = copy.deepcopy(self.engine)
+        tampered["pyshacl_executed"] = "false"  # not boolean True
+        report = cmp.compare(tampered, self.structural, self.disk)
+        self.assertEqual(report["verdict"], "fail")
+        self.assertTrue(any("pyshacl_executed" in m for m in report["mismatches"]))
+
+    def test_string_false_observed_conforms_is_caught(self):
+        """observed_conforms='false' (string) must FAIL — strict boolean."""
+        tampered = copy.deepcopy(self.engine)
+        good = next(r for r in tampered["results"] if r["observed_conforms"] is True)
+        good["observed_conforms"] = "false"
+        report = cmp.compare(tampered, self.structural, self.disk)
+        self.assertEqual(report["verdict"], "fail")
+        self.assertTrue(any("not a JSON boolean" in m for m in report["mismatches"]))
+
+    def test_fake_nonempty_hash_is_caught(self):
+        """rdf_input_sha256='000...000' (non-empty but fake) must FAIL."""
+        tampered = copy.deepcopy(self.engine)
+        for r in tampered["results"]:
+            r["rdf_input_sha256"] = "0" * 64
+        report = cmp.compare(tampered, self.structural, self.disk)
+        self.assertEqual(report["verdict"], "fail")
+        self.assertTrue(any("rdf_input_sha256" in m for m in report["mismatches"]))
+
+    def test_nonempty_fake_semantic_digest_is_caught(self):
+        """semantic_digest='111...111' (non-empty but fake) must FAIL."""
+        tampered = copy.deepcopy(self.engine)
+        for r in tampered["results"]:
+            r["semantic_digest"] = "1" * 64
+        report = cmp.compare(tampered, self.structural, self.disk)
+        self.assertEqual(report["verdict"], "fail")
+        self.assertTrue(any("semantic_digest" in m for m in report["mismatches"]))
+
+    def test_unclassified_violations_field_is_checked(self):
+        """Non-empty unclassified_violations must FAIL (not just normalized)."""
+        tampered = copy.deepcopy(self.engine)
+        good_run = next(r for r in tampered["results"] if r["observed_conforms"])
+        good_run["unclassified_violations"] = [{"totally": "unexpected"}]
+        report = cmp.compare(tampered, self.structural, self.disk)
+        self.assertEqual(report["verdict"], "fail")
+        self.assertTrue(any("unclassified_violations" in m for m in report["mismatches"]))
+
+    def test_engine_verdict_fail_is_caught(self):
+        """Engine self-reported verdict='fail' must cause FAIL."""
+        tampered = copy.deepcopy(self.engine)
+        tampered["verdict"] = "fail"
+        report = cmp.compare(tampered, self.structural, self.disk)
+        self.assertEqual(report["verdict"], "fail")
+        self.assertTrue(any("engine.verdict" in m for m in report["mismatches"]))
+
+    def test_engine_mismatches_populated_is_caught(self):
+        """Non-empty engine.mismatches must cause FAIL."""
+        tampered = copy.deepcopy(self.engine)
+        tampered["mismatches"] = ["forged: engine claims a problem"]
+        report = cmp.compare(tampered, self.structural, self.disk)
+        self.assertEqual(report["verdict"], "fail")
+        self.assertTrue(any("engine.mismatches" in m for m in report["mismatches"]))
+
+    # ------------------------------------------------------------------ #
     # sha-check mode
     # ------------------------------------------------------------------ #
     def test_sha_check_catches_tampered_shapes_on_disk(self):
@@ -356,12 +421,9 @@ class TestFixturesToRdf(TestCase):
         turtle, sha = self.build_graph(self.doc)
         fixture_id = "assertion-proposed-inherited"
         self.assertIn(fixture_id, turtle)
-        # The assertion should carry inherited fields like digest and media_type
-        # directly on the assertion IRI (not just nested inside evidence).
         self.assertIn("urn:s1-003:fixture:assertion-proposed-inherited", turtle)
         self.assertIn("digest", turtle)
         self.assertIn("media_type", turtle)
-        # The hash should be a valid 64-char hex
         self.assertEqual(len(sha), 64)
         self.assertEqual(sha, hashlib.sha256(turtle.encode("utf-8")).hexdigest())
 

@@ -83,6 +83,7 @@ PINNED = {
     "fixtures_json": "fixtures.json",
     "fixtures_ttl": "fixtures.ttl",
     "fixtures_to_rdf": "fixtures_to_rdf.py",
+    "validate_structural": "validate_structural.py",
 }
 
 
@@ -99,6 +100,30 @@ def _sha256_file(path: Path) -> str:
         for chunk in iter(lambda: f.read(65536), b""):
             h.update(chunk)
     return h.hexdigest()
+
+
+def _compute_fixture_rdf_hash(fixture: dict, catalog: dict) -> str:
+    """Recompute the SHA-256 of the single-fixture Turtle graph.
+
+    Uses fixtures_to_rdf.build_graph which is stdlib-only (no rdflib needed
+    for Turtle *generation* — only the shapes evaluation requires rdflib).
+    This lets the comparator independently verify the engine's per-run
+    rdf_input_sha256 field.
+    """
+    sys.path.insert(0, str(HERE))
+    from fixtures_to_rdf import build_graph
+    doc = {"evidence_catalog": catalog, "fixtures": [fixture]}
+    turtle, sha = build_graph(doc)
+    return sha
+
+
+import re as _re
+_HEX_SHA256_RE = _re.compile(r"^[0-9a-f]{64}$")
+
+
+def _is_hex_sha256(value: Any) -> bool:
+    """Return True only if value is a string of exactly 64 lowercase hex chars."""
+    return isinstance(value, str) and _HEX_SHA256_RE.match(value) is not None
 
 
 def _struct_to_key(r: dict) -> tuple[str, str]:
@@ -123,9 +148,17 @@ def compare(engine_results: dict, structural_results: dict,
     """
     mismatches: list[str] = []
 
-    # --- Pre 1: pySHACL must have executed ---
-    if not engine_results.get("pyshacl_executed"):
-        return _fail("pyshacl_executed is not true — engine did not run", 0)
+    # Load fixtures for per-run RDF hash verification (7k).
+    fixtures_doc = _load_json(HERE / "fixtures.json")
+    catalog = fixtures_doc.get("evidence_catalog", {})
+    fixture_map = {f["id"]: f for f in fixtures_doc.get("fixtures", [])}
+
+    # --- Pre 1: pySHACL must have executed (strict boolean, not truthiness) ---
+    py_exec = engine_results.get("pyshacl_executed")
+    if py_exec is not True:
+        return _fail(
+            f"pyshacl_executed is not boolean True (got {py_exec!r} of type "
+            f"{type(py_exec).__name__}) — engine did not run", 0)
 
     # --- Pre 2: runtime identity ---
     rt = engine_results.get("runtime", {})
@@ -175,6 +208,43 @@ def compare(engine_results: dict, structural_results: dict,
             f"shapes_promoted_only_sha256: engine={inp.get('shapes_promoted_only_sha256')} "
             f"disk={disk_hashes['shapes_promoted_only']}")
 
+    # --- Pre 6b: top-level rdf_input_sha256 must match fixtures.ttl on disk ---
+    if inp.get("rdf_input_sha256") != disk_hashes["fixtures_ttl"]:
+        mismatches.append(
+            f"rdf_input_sha256: engine={inp.get('rdf_input_sha256')} "
+            f"disk={disk_hashes['fixtures_ttl']}")
+
+    # --- Pre 6c: generator hashes must match disk ---
+    if inp.get("validate_structural_sha256") != disk_hashes["validate_structural"]:
+        mismatches.append(
+            f"validate_structural_sha256: engine={inp.get('validate_structural_sha256')} "
+            f"disk={disk_hashes['validate_structural']}")
+    if inp.get("fixtures_to_rdf_sha256") != disk_hashes["fixtures_to_rdf"]:
+        mismatches.append(
+            f"fixtures_to_rdf_sha256: engine={inp.get('fixtures_to_rdf_sha256')} "
+            f"disk={disk_hashes['fixtures_to_rdf']}")
+
+    # --- Pre 8: engine self-reported verdict, mismatches, and coverage ---
+    engine_verdict = engine_results.get("verdict")
+    if engine_verdict != "pass":
+        mismatches.append(
+            f"engine.verdict expected='pass' got={engine_verdict!r}")
+    if engine_results.get("mismatches") != []:
+        mismatches.append(
+            f"engine.mismatches expected=[] got={engine_results.get('mismatches')!r}")
+    cov = engine_results.get("coverage", {})
+    if cov.get("fixture_count") != 24:
+        mismatches.append(
+            f"engine.coverage.fixture_count expected=24 got={cov.get('fixture_count')}")
+    if cov.get("profile_run_count") != EXPECTED_RUN_COUNT:
+        mismatches.append(
+            f"engine.coverage.profile_run_count expected={EXPECTED_RUN_COUNT} "
+            f"got={cov.get('profile_run_count')}")
+    if cov.get("matched_run_count") != EXPECTED_RUN_COUNT:
+        mismatches.append(
+            f"engine.coverage.matched_run_count expected={EXPECTED_RUN_COUNT} "
+            f"got={cov.get('matched_run_count')}")
+
     # --- Build structural lookup (oracle is source of truth for expectations) ---
     struct_by_key: dict[tuple[str, str], dict] = {
         _struct_to_key(r): r for r in struct_results
@@ -219,9 +289,16 @@ def compare(engine_results: dict, structural_results: dict,
                 f"fixtures_sha256: engine={er.get('fixtures_sha256')} "
                 f"disk={disk_hashes['fixtures_json']}")
 
-        # 7d. conforms must match structural oracle expectation
+        # 7d. observed_conforms must be a strict JSON boolean, then it must
+        #      match the structural oracle expectation.  We do NOT coerce
+        #      with bool() because bool("false") == True.
+        if type(er.get("observed_conforms")) is not bool:
+            run_mismatches.append(
+                f"observed_conforms is not a JSON boolean "
+                f"(got {er.get('observed_conforms')!r} of type "
+                f"{type(er.get('observed_conforms')).__name__})")
         expected_conforms = bool(sr["expected_conforms"])
-        observed_conforms = bool(er["observed_conforms"])
+        observed_conforms = er["observed_conforms"]
         if expected_conforms != observed_conforms:
             run_mismatches.append(
                 f"conforms: oracle={expected_conforms} engine={observed_conforms}")
@@ -246,7 +323,13 @@ def compare(engine_results: dict, structural_results: dict,
             run_mismatches.append(
                 f"structural violations not in engine: {sorted(missing_in_engine)}")
 
-        # 7g. no unclassified violations allowed
+        # 7g. no unclassified violations — require the list to be exactly []
+        uv = er.get("unclassified_violations")
+        if not isinstance(uv, list) or len(uv) != 0:
+            run_mismatches.append(
+                f"unclassified_violations must be an empty list "
+                f"(got {uv!r})")
+        # 7g-bis: also check the "unclassified" string inside normalized
         if "unclassified" in engine_violation_set:
             run_mismatches.append(
                 "unclassified violation present — engine emitted an "
@@ -259,16 +342,30 @@ def compare(engine_results: dict, structural_results: dict,
                 f"unknown violation reasons in engine output: "
                 f"{sorted(unknown_reasons)}")
 
-        # 7j. per-run rdf_input_sha256 must be present and non-empty
-        #      (the full-graph hash is verified separately via --sha-check)
-        if not er.get("rdf_input_sha256"):
-            run_mismatches.append("rdf_input_sha256 is empty or missing")
+        # 7j. per-run rdf_input_sha256 must match the hash of the
+        #      single-fixture Turtle graph recomputed from fixtures.json.
+        #      This prevents substitution of any non-empty 64-char hex string.
+        expected_rdf_hash = _compute_fixture_rdf_hash(
+            fixture_map.get(fid, {}), catalog)
+        if er.get("rdf_input_sha256") != expected_rdf_hash:
+            run_mismatches.append(
+                f"rdf_input_sha256: engine={er.get('rdf_input_sha256')} "
+                f"recomputed={expected_rdf_hash}")
 
-        # 7h. semantic_digest must be stable per (fixtures_sha + shapes + run)
-        #      We cannot recompute it without the engine, but we can assert it
-        #      is present and non-empty.
-        if not er.get("semantic_digest"):
-            run_mismatches.append("semantic_digest is empty or missing")
+        # 7h. semantic_digest must be a 64-char hex string AND must not be a
+        #      trivial all-zeros / all-ones pattern.  The actual digest
+        #      value depends on the raw report graph (blank nodes, focus node
+        #      IRIs) which the comparator cannot recompute without rdflib,
+        #      but we can reject obviously fake values.
+        sd = er.get("semantic_digest")
+        if not _is_hex_sha256(sd):
+            run_mismatches.append(
+                f"semantic_digest must be a 64-char hex digest "
+                f"(got {sd!r})")
+        elif sd == "0" * 64 or sd == "1" * 64:
+            run_mismatches.append(
+                f"semantic_digest is a trivial pattern ({sd[:16]}...) "
+                f"— must be a real digest from the report graph")
 
         if run_mismatches:
             for m in run_mismatches:
@@ -284,7 +381,7 @@ def compare(engine_results: dict, structural_results: dict,
             "expected_primary_reason": expected_primary,
             "engine_normalized_violations": engine_violations,
             "structural_observed_violations": sorted(struct_violations),
-            "shapes_sha256_match": er.get("shapes_sha256") == disk_hashes["shapes_open"],
+            "shapes_sha256_match": er.get("shapes_sha256") == expected_shapes_hash,
             "fixtures_sha256_match": er.get("fixtures_sha256") == disk_hashes["fixtures_json"],
             "runtime_match": all(
                 er_rt.get(k) == v for k, v in EXPECTED_RUNTIME.items()),
@@ -346,6 +443,11 @@ def main() -> int:
             ("shapes_open_sha256", inp.get("shapes_open_sha256"), disk["shapes_open"]),
             ("shapes_promoted_only_sha256",
              inp.get("shapes_promoted_only_sha256"), disk["shapes_promoted_only"]),
+            ("rdf_input_sha256", inp.get("rdf_input_sha256"), disk["fixtures_ttl"]),
+            ("validate_structural_sha256",
+             inp.get("validate_structural_sha256"), disk["validate_structural"]),
+            ("fixtures_to_rdf_sha256",
+             inp.get("fixtures_to_rdf_sha256"), disk["fixtures_to_rdf"]),
         ]
         hash_errors: list[str] = []
         for name, engine_val, disk_val in checks:
