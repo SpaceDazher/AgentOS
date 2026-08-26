@@ -30,6 +30,10 @@ Key properties:
 - **Transactional journal** — every guarded state transition commits its row
   change and its audit event in *one* SQLite transaction (`journal.py`). Audit
   rows form a SHA-256 hash chain; `journal.full_chain_check()` detects tampering.
+- **Off-host anchoring** — `anchor.py` exports a self-checking
+  `agentos.anchor-export/v1` bundle with the chain head for storage outside the
+  host (git/object storage/synced folder); `anchor-verify` re-checks bundle
+  integrity, per-seq historical binding, and the full chain of any DB copy.
 - **SQLite via atomic migrations** — schema is created by running
   `src/agentos/migrations/*.sql`; each migration and its marker commit or roll
   back together, and the historical interrupted-0010 rebuild is recoverable.
@@ -59,6 +63,10 @@ PYTHONPATH=src python -m agentos.cli evidence --goal ID --db DIR
 # Bounded offline research → platform-plan workflow (one JSON document):
 PYTHONPATH=src python -m agentos.cli research-plan \
   --topic "a platform question" --bundle research-bundle.json --db DIR
+
+# Off-host audit anchoring: export the chain head, verify it against any copy:
+PYTHONPATH=src python -m agentos.cli anchor-export --db DIR --out anchor-snapshot.json
+PYTHONPATH=src python -m agentos.cli anchor-verify --bundle anchor-snapshot.json --db DIR
 
 # Failure-path test suite:
 python -m unittest discover -s tests

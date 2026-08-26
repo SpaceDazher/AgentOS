@@ -17,8 +17,12 @@ contract первого прогона нарушен (packs per-episode отс�
    remote. 10 минут работы.
 2. ~~Gold/near-miss корпуса~~ **ВЫПОЛНЕНО** (EPIC phase 2): 30 evaluator-quality
    фикстур + FPR=0/FNR=0 в `tests/test_stage_corpus.py`.
-3. **Off-host копия `audit_anchor.head`** — cron-задача, выталкивающая якорь
-   наружу (git-репо/объектное хранилище). Даёт настоящее внешнее якорение.
+3. ~~Off-host копия `audit_anchor.head`~~ **ВЫПОЛНЕНО (export/verify шаг)**:
+   `anchor.py` + CLI `anchor-export`/`anchor-verify` выдают самопроверяемый
+   бандл `agentos.anchor-export/v1` с головой цепочки и проверяют его против
+   любой копии БД (структура, историческая привязка по seq, полная цепочка).
+   Осталось: внешнее расписание (cron/git push), выталкивающее бандл наружу,
+   и опциональная нотаризация.
 4. **Повторный прогон E2 с исправленным runner'ом** (packs + env в каждом
    эпизоде) — закрывает recording-contract отклонения из §Compliance.
 
