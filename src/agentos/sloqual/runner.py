@@ -77,6 +77,15 @@ def cmd_run_scenario(args) -> int:
                          seeds=[cfg_seed], overrides=overrides,
                          repo_src=Path(args.repo_src))
     result = SCENARIO_REGISTRY[scenario_id](cfg, cfg_seed)
+    # Persist scenario-local deny-pool failures in the root invariant record
+    # as well as their detailed phase/window bucket.
+    false_acceptances = cmp_mod._metric_counter_total(
+        result.get("metrics", {}), "false_acceptance_count")
+    if false_acceptances:
+        invariants = result.setdefault("invariants", {})
+        invariants["false_acceptance_count"] = max(
+            false_acceptances,
+            int(invariants.get("false_acceptance_count") or 0))
     ended_ns = time.perf_counter_ns()
     # Bind every result to the recorded environment: hash + exact commit
     # travel INSIDE the seed file (review finding: unrecorded hashes let a

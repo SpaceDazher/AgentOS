@@ -60,6 +60,26 @@ def _iter_metric_records(node, path=""):
                     value, f"{path}.{key}" if path else key)
 
 
+def _metric_counter_total(node, counter: str) -> int:
+    """Sum a counter from every named ``counts`` bucket in a metric tree."""
+    total = 0
+    if isinstance(node, dict):
+        counts = node.get("counts")
+        if isinstance(counts, dict):
+            if counter in counts:
+                value = counts[counter]
+                if (isinstance(value, bool) or not isinstance(value, int)
+                        or value < 0):
+                    raise ValueError(f"{counter}={value!r}")
+                total += value
+        for key, value in node.items():
+            if key != "counts":
+                total += _metric_counter_total(value, counter)
+    elif isinstance(node, list):
+        total += sum(_metric_counter_total(value, counter) for value in node)
+    return total
+
+
 def _reduce_merged(records):
     """Reduce a list of per-seed metric records into one envelope record."""
     if isinstance(records, dict):
@@ -172,19 +192,21 @@ def _make_resolver(observed_by_scenario: dict,
                 if "@" in scope:
                     qualifier = scope.split("@", 1)[1]
                 phases = metrics.get("phases")
+                phase_items = []
                 if isinstance(phases, list):
-                    named = {}
-                    for i, p in enumerate(phases):
-                        if not isinstance(p, dict):
-                            continue
-                        key = next(iter(p), f"phase_{i}")
-                        named[key if len(p) == 1 else f"phase_{i}"] = p
-                    phases = named
-                if isinstance(phases, dict):
+                    # Merging seeds produces a list of complete phase maps.
+                    # Preserve the phase names across seeds so a qualifier
+                    # selects the same phase from every seed.
+                    for phase_map in phases:
+                        if isinstance(phase_map, dict):
+                            phase_items.extend(phase_map.items())
+                elif isinstance(phases, dict):
+                    phase_items.extend(phases.items())
+                if phase_items:
                     # phase buckets map phase-name -> {metric_root: record};
                     # a scope qualifier selects named phases ONLY - silently
                     # aggregating across phases can hide SLO violations
-                    for phase_name, phase in phases.items():
+                    for phase_name, phase in phase_items:
                         if not isinstance(phase, dict):
                             continue
                         if not _phase_matches(phase_name, qualifier):
@@ -559,8 +581,14 @@ def compare(ticket_dir: Path, run_ids: list[str], *, work_root: Path,
         for _scen, _seeds in _scen_map.items():
             for _seed, _payload in _seeds.items():
                 res = _payload.get("result", {})
-                counts = res.get("metrics", {}).get("counts", {})
-                fa = int(counts.get("false_acceptance_count") or 0)
+                try:
+                    fa = _metric_counter_total(
+                        res.get("metrics", {}), "false_acceptance_count")
+                except ValueError as exc:
+                    failures.append(
+                        f"invalid-metric-counter:{_rid}:{_scen}:"
+                        f"seed-{_seed}:{exc}")
+                    continue
                 if not fa:
                     continue
                 inv = res.setdefault("invariants", {})

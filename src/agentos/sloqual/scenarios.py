@@ -382,6 +382,8 @@ def scenario_burst(cfg: ScenarioConfig, seed: int) -> dict:
     handle = H.build_runtime(cfg.scenario_dir("burst", seed))
     subject = f"burst-{seed}"
     ctx = H.ledger_subject_context(handle, subject=subject)
+    denied_ctx = H.ledger_subject_context(
+        handle, subject=f"{subject}-registered-deny")
     grant(handle.db.conn, subject=subject, capability=READ_CAPABILITY)
     resolved = handle.gateway.resolve("qual.authorize", "1.0.0")
     for i in range(100):
@@ -398,7 +400,7 @@ def scenario_burst(cfg: ScenarioConfig, seed: int) -> dict:
         denied_pool = _split_allow_deny(count, seed)
         result = OpenLoopRunner(max_inflight=2048).run(
             schedule, dispatch_fn=lambda i: _authorize_dispatch(
-                handle, ctx, resolved, i))
+                handle, denied_ctx if i in denied_pool else ctx, resolved, i))
         summary = summarize_open_loop(result, seed=seed,
                                       tag=f"burst.{phase_name}",
                                       denied_pool_indexes=denied_pool)

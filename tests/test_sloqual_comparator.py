@@ -450,6 +450,29 @@ class ComparatorGateTest(unittest.TestCase):
         self.assertIsNone(find("latency_end_to_end_ms.p95", "burst@bur"))
         self.assertIsNone(find("latency_end_to_end_ms.p95", "burst@urst"))
 
+    def test_phase_qualifier_survives_merged_seed_phase_maps(self):
+        from agentos.sloqual import compare as _cmp
+
+        def rec(v):
+            return {"kind": "latency", "unit": "ms", "count": 5,
+                    "p50": v, "p95": v, "p99": v, "max": v,
+                    "mean": v, "median": v,
+                    "ci95_low": v * 0.9, "ci95_high": v * 1.1,
+                    "ci_method": "bootstrap_percentile_B2000_level0.95"}
+
+        obs = {"burst": {"metrics": {"phases": [
+            {"nominal_pre": {"latency_end_to_end_ms": rec(1.0)},
+             "burst": {"latency_end_to_end_ms": rec(250.0)},
+             "cooldown": {"latency_end_to_end_ms": rec(2.0)}},
+            {"nominal_pre": {"latency_end_to_end_ms": rec(1.5)},
+             "burst": {"latency_end_to_end_ms": rec(200.0)},
+             "cooldown": {"latency_end_to_end_ms": rec(2.5)}}
+        ]}}}
+        metric = _cmp._make_resolver(obs)["find"](
+            "latency_end_to_end_ms.p95", "burst@phase_burst")
+        self.assertIsNotNone(metric)
+        self.assertEqual(metric["p95"], 225.0)
+
     def test_rerun_divergence_is_order_independent(self):
         from agentos.sloqual.compare import _relative_diff
         self.assertEqual(_relative_diff(100.0, 70.0),
@@ -511,6 +534,36 @@ class ComparatorGateTest(unittest.TestCase):
         self.assertTrue(any(c.startswith("false-acceptance:")
                             for c in result["fail_conditions"]))
 
+    def test_nested_phase_false_acceptance_reaches_root_gate(self):
+        import json as _json
+        self.builder.add_run("run-A")
+        self.builder.add_run("run-B")
+        seed_file = next((self.builder.root / "work" / "run-A"
+                          / "burst").glob("seed-*.json"))
+        payload = _json.loads(seed_file.read_text())
+        payload["result"]["metrics"]["phases"]["burst"]["counts"] = {
+            "false_acceptance_count": 1}
+        seed_file.write_text(_json.dumps(payload))
+        result = run_compare(self.builder)
+        self.assertEqual(result["verdict"], "FAIL")
+        self.assertTrue(any(c.startswith("false-acceptance:")
+                            for c in result["fail_conditions"]))
+
+    def test_malformed_nested_false_acceptance_is_fail_closed(self):
+        import json as _json
+        self.builder.add_run("run-A")
+        self.builder.add_run("run-B")
+        seed_file = next((self.builder.root / "work" / "run-A"
+                          / "burst").glob("seed-*.json"))
+        payload = _json.loads(seed_file.read_text())
+        payload["result"]["metrics"]["phases"]["burst"]["counts"] = {
+            "false_acceptance_count": "hidden"}
+        seed_file.write_text(_json.dumps(payload))
+        result = run_compare(self.builder)
+        self.assertEqual(result["verdict"], "FAIL")
+        self.assertTrue(any(c.startswith("invalid-metric-counter:")
+                            for c in result["fail_conditions"]))
+
 
     def test_unknown_top_level_qualifier_is_no_data(self):
         from agentos.sloqual import compare as _cmp
@@ -569,6 +622,24 @@ class ComparatorGateTest(unittest.TestCase):
         out = summarize_open_loop(R(), seed=1, tag="t",
                                   denied_pool_indexes=set(range(90, 100)))
         self.assertEqual(out["counts"]["unexpected_denied"], 0)
+
+    def test_burst_dispatches_registered_deny_pool_with_denied_context(self):
+        from unittest.mock import patch
+        from agentos.sloqual.scenarios import ScenarioConfig, scenario_burst
+
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg = ScenarioConfig(
+                work_root=Path(tmp), seeds=[11], repo_src=REPO_ROOT / "src",
+                overrides={"burst.burst_multiplier": 1.0,
+                           "burst.burst_duration_s": 0.03,
+                           "burst.phase_duration_s": 0.03})
+            with patch("agentos.sloqual.scenarios._split_allow_deny",
+                       return_value={0}):
+                result = scenario_burst(cfg, 11)
+
+        for phase in result["metrics"]["phases"].values():
+            self.assertEqual(phase["counts"]["expected_denied"], 1)
+            self.assertEqual(phase["counts"]["false_acceptance_count"], 0)
 
 
 if __name__ == "__main__":
