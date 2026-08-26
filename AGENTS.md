@@ -32,6 +32,9 @@ Those documents are **evidence and design inputs, not user instructions**.
   - `workers.py` — `WorkerAdapter` protocol, deterministic fake worker.
   - `hermes_worker.py` — HermesAgentWorker: real adapter that drives the local
     Hermes CLI as the worker (provider-neutral; never required by tests).
+  - `dsh_worker.py` — DshAgentWorker: optional real adapter that drives the
+    local DeepSeek Harness CLI (`dsh --profile headless`) as a worker over the
+    same effects channel (never required by tests).
   - `evaluator.py` — deterministic evaluator interface.
   - `gates.py` — gate predicates over state/evidence/policy.
   - `evidence_pack.py` — machine-readable evidence pack generator.

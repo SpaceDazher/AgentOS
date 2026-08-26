@@ -1,6 +1,6 @@
 """CLI: single-command demo of the full vertical scenario + utility verbs.
 
-    python -m agentos.cli demo [--worker fake|hermes] [--flaky] [--db PATH]
+    python -m agentos.cli demo [--worker fake|hermes|dsh] [--flaky] [--db PATH]
     python -m agentos.cli evidence --goal GOAL_ID
     python -m agentos.cli research-plan --topic TOPIC --bundle PATH --db ROOT
         [--workspace-root REPO_ROOT]
@@ -129,6 +129,13 @@ def run_demo(worker_kind: str = "fake", flaky: bool = False,
             except Exception as e:
                 return {"error": f"hermes worker unavailable: {e}",
                         "hint": "install hermes CLI or use --worker fake"}
+        elif worker_kind == "dsh":
+            try:
+                from .dsh_worker import DshAgentWorker
+                worker = DshAgentWorker()
+            except Exception as e:
+                return {"error": f"dsh worker unavailable: {e}",
+                        "hint": "install dsh CLI or use --worker fake"}
         else:
             worker = FakeWorker()
     task_id = db.conn.execute(
@@ -320,7 +327,7 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="agentos")
     sub = ap.add_subparsers(dest="cmd", required=True)
     d = sub.add_parser("demo")
-    d.add_argument("--worker", choices=["fake", "hermes"], default="fake")
+    d.add_argument("--worker", choices=["fake", "hermes", "dsh"], default="fake")
     d.add_argument("--flaky", action="store_true",
                    help="scripted first-attempt failure to exercise retry path")
     d.add_argument("--db", default=None, help="root dir for db/workspaces/artifacts")

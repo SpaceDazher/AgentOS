@@ -87,6 +87,7 @@ To drive tasks with a real agent instead of the fake worker:
 
 ```bash
 PYTHONPATH=src python -m agentos.cli demo --worker hermes   # requires `hermes` on PATH
+PYTHONPATH=src python -m agentos.cli demo --worker dsh      # requires `dsh` on PATH (DeepSeek Harness)
 ```
 
 ### Research-to-platform-plan contract
@@ -158,6 +159,13 @@ StepResult`). The engine sees only the protocol — providers are swappable:
   parsing a final `AGENTOS_RESULT {...}` line. Worker output is treated as
   **untrusted data**: if `hermes` is missing, it fails with a typed
   `WorkerUnavailable` reason. Tests never require it.
+- **`DshAgentWorker`** (`dsh_worker.py`) — optional adapter that drives the
+  local DeepSeek Harness CLI (`dsh --profile headless <prompt>`: answer one
+  task, print, exit) over the same effects-channel protocol, reusing the
+  Hermes block parser verbatim. It exists so this checkout can be exercised
+  by a DeepSeek-Harness-based agent without any other provider installed.
+  Output is untrusted data; `dsh` missing ⇒ typed `WorkerUnavailable`.
+  Tests never require it.
 
 ### ToolGateway pipeline
 

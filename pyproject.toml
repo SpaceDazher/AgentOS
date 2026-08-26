@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agentos-harness"
+version = "0.1.0"
+description = "AgentOS Harness — durable, policy-enforced goal-execution runtime for software-producing agent episodes"
+readme = "README.md"
+requires-python = ">=3.11"
+# Stdlib-only core per ADR-0001. Optional runtimes (e.g. pyshacl/rdflib for
+# S1-003) are pinned per-ticket and are NOT declared here (ADR-0009).
+dependencies = []
+
+[project.scripts]
+agentos = "agentos.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+agentos = ["migrations/*.sql"]
