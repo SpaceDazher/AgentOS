@@ -1,6 +1,6 @@
 # SLOQUAL-001 — Production-like SLO qualification (extends S1-002)
 
-Status: **IN_PROGRESS → verdict produced by comparator** · Owner role:
+Status: **COMPLETE · comparator verdict FAIL** · Owner role:
 `capacity` (co-owner `security` for the S1-008 gate) · Human threshold
 countersignature: **PENDING**
 
@@ -12,7 +12,7 @@ production SLOs. This ticket creates the *next*, separate qualification
 package that:
 
 1. freezes an SLO contract **before** any measurement (`slo-contract.json`
-   v1.0.1, self-hashed; thresholds cannot change without a new version and a
+   v1.0.5, self-hashed; thresholds cannot change without a new version and a
    complete new run);
 2. defines 17 mandatory scenarios in a versioned manifest
    (`scenario-manifest.json` v1.0.0);
@@ -34,7 +34,7 @@ is read-only input). Security gate semantics from **S1-008** (revocation
 
 | Path | Content |
 |---|---|
-| `slo-contract.json` | frozen SLO contract v1.0.1 (self-hash stamped) |
+| `slo-contract.json` | frozen SLO contract v1.0.5 (self-hash stamped) |
 | `scenario-manifest.json` | versioned scenario definitions |
 | `raw/<run-id>/` | per-scenario, per-seed raw results + environment manifest |
 | `reports/` | `compare-result.json`, `REPORT.md` |
@@ -68,3 +68,13 @@ security/correctness violations, verified hashes, and a consistent
 independent rerun. Anything less is `PASS_WITH_LIMITS` with the missing
 proofs itemized by the comparator; any invariant or security violation is
 `FAIL`. See `reports/REPORT.md` for the current outcome.
+
+## Current outcome
+
+The qualification process is finished, but the production SLO is **not**
+accepted. Runs `sloqual-final-a11-20260826` and
+`sloqual-final-b10-20260826-execB` reproduced burst p95 near 11.8 s against
+the 200 ms limit. Both runs passed the S1-008 revocation gate (105 trials per
+run, maximum 2546.742 ms, zero forbidden post-revoke effects) and reported
+zero mandatory invariant violations. The authoritative result and remaining
+limits are in `reports/REPORT.md`.
