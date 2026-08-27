@@ -248,7 +248,11 @@ class ComparatorGateTest(unittest.TestCase):
         self.assertEqual(result["fail_conditions"], [])
         self.assertIn("owner-confirmation-pending:thresholds-marked-in-contract",
                       result["limits"])
-        self.assertGreaterEqual(result["revocation"]["total_trials_main_run"], 100)
+        self.assertEqual(result["revocation"]["total_trials_main_run"], 125)
+        self.assertEqual(result["revocation"]["trials_per_run"], {
+            "run-A": 125,
+            "run-B": 125,
+        })
 
     def test_contract_modified_after_launch_rejected(self):
         self.builder.add_run("run-A", corrupt_contract_hash=True)

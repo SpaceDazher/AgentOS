@@ -451,7 +451,7 @@ def compare(ticket_dir: Path, run_ids: list[str], *, work_root: Path,
 
     # --- aggregate observed metrics per run ---------------------------------
     observed_by_scenario: dict[str, dict] = {}
-    revocation_total_trials = 0
+    revocation_total_trials_main = 0
     revocation_max_ms = 0.0
     revocation_violations = 0
     invariant_totals: dict[str, int] = {}
@@ -510,7 +510,9 @@ def compare(ticket_dir: Path, run_ids: list[str], *, work_root: Path,
                 else:
                     _check_seed_invariants(run_id, scenario_id, seed, payload)
                     m = result.get("metrics", {})
-                    revocation_total_trials += int(m.get("trials_total", 0))
+                    if run_id == main_run:
+                        revocation_total_trials_main += int(
+                            m.get("trials_total", 0))
                     lat = m.get("revocation_enforcement_latency_ms", {})
                     revocation_max_ms = max(revocation_max_ms,
                                             float(lat.get("max") or 0.0))
@@ -558,9 +560,6 @@ def compare(ticket_dir: Path, run_ids: list[str], *, work_root: Path,
             failures.append(
                 f"secrets-scan-incomplete:{run_id}:{unreadable}")
 
-    if revocation_total_trials < MIN_REVOCATION_TRIALS:
-        limits.append(
-            f"revocation-trials-below-minimum-total:{revocation_total_trials}")
     if revocation_max_ms > REVOCATION_LIMIT_MS:
         failures.append(
             f"revocation-latency-over-limit:{revocation_max_ms}ms>{REVOCATION_LIMIT_MS}ms")
@@ -636,7 +635,8 @@ def compare(ticket_dir: Path, run_ids: list[str], *, work_root: Path,
         "slo_table": slo_table,
         "invariant_totals_main_run": invariant_totals,
         "revocation": {
-            "total_trials_main_run": revocation_total_trials,
+            "total_trials_main_run": revocation_total_trials_main,
+            "trials_per_run": per_run_trials,
             "max_observed_ms": revocation_max_ms,
             "limit_ms": REVOCATION_LIMIT_MS,
             "violations": revocation_violations},

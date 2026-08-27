@@ -35,6 +35,7 @@ def generate_markdown(ticket_dir: Path) -> str:
     lines.append(
         f"- trials (main run): **{rev['total_trials_main_run']}** "
         f"(minimum {100})\n"
+        f"- trials by run: **{rev.get('trials_per_run', {})}**\n"
         f"- max observed enforcement latency: **{rev['max_observed_ms']} ms** "
         f"(limit ≤ {rev['limit_ms']} ms)\n"
         f"- post-revoke forbidden side effects: **{rev['violations']}**\n")
