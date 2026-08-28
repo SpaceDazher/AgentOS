@@ -34,7 +34,7 @@ from agentos.journal import Journal  # noqa: E402
 
 
 def run_episode(root: Path, task: dict, repeat: int,
-                timeout_s: int) -> dict:
+                timeout_s: int, worker=None) -> dict:
     t0 = time.perf_counter()
     ep_root = root / f"{task['key']}-r{repeat}"
     db = open_db(ep_root / "agentos.db")
@@ -63,7 +63,8 @@ def run_episode(root: Path, task: dict, repeat: int,
         "SELECT id FROM task WHERE goal_id=?", (goal_id,)).fetchone()[0]
     run_id, ctx = eng.open_run(task_id)
 
-    worker = HermesAgentWorker(timeout_s=timeout_s)
+    if worker is None:
+        worker = HermesAgentWorker(timeout_s=timeout_s)
     step = 0
     worker_ok = False
     worker_failed = False
@@ -158,7 +159,8 @@ def run_episode(root: Path, task: dict, repeat: int,
         "SELECT status, terminal_reason FROM run WHERE id=?",
         (run_id,)).fetchone()
     return {
-        "task": task["key"], "repeat": repeat, "worker": "hermes",
+        "task": task["key"], "repeat": repeat,
+        "worker": getattr(worker, "name", "hermes"),
         "episode_success": episode_ok,
         "gate_result": gate_result, "gate_reasons": reasons,
         "evaluation_results": eval_results,
@@ -176,7 +178,8 @@ def run_episode(root: Path, task: dict, repeat: int,
         "evidence_pack_sha256": pack_sha256,
         "env": {
             "python": sys.version.split()[0],
-            "hermes_bin_name": Path(worker.bin).name if worker.bin else None,
+            "hermes_bin_name": (Path(worker.bin).name
+                                if getattr(worker, "bin", None) else None),
             "platform": sys.platform,
             # provider/model identity is not exposed by the hermes CLI in a
             # stable machine-readable form; recorded as the CLI version below.
