@@ -1,0 +1,347 @@
+{
+  "schema": "agentos.slo-contract/v1",
+  "slo_id": "SLOQUAL-001",
+  "title": "AgentOS production-like SLO qualification extending S1-002",
+  "version": "1.0.5",
+  "status": "FROZEN_PRE_RUN",
+  "amendments": [
+    {
+      "to_version": "1.0.1",
+      "before_any_official_run": true,
+      "change": "throughput SLO restated from absolute achieved events/s (>=34) to offered-load realization ratio (>=0.999 of scheduled arrivals)",
+      "rationale": "Under an open-loop schedule the realized rate computed over [first scheduled, last completion] systematically undershoots the offered rate by the drain tail even with zero loss; realization ratio measures what the SLO actually protects (no lost offered load). No official qualification measurement existed when this amendment was frozen."
+    },
+    {
+      "from_version": "1.0.1",
+      "to_version": "1.0.2",
+      "date": "2026-08-25",
+      "before_any_official_final_series": true,
+      "reason": "availability/error-rate SLI definitions were internally inconsistent: error_rate excluded expected denials from its numerator while availability divided successes by ALL dispatched including the seeded 10% deny pool, capping the SLO at ~0.90 by construction",
+      "change": "both proportions now exclude expected denials from numerator AND denominator; unexpected denials still count against both; thresholds unchanged",
+      "thresholds_changed": false
+    },
+    {
+      "from_version": "1.0.2",
+      "to_version": "1.0.3",
+      "date": "2026-08-25",
+      "before_any_official_final_series": true,
+      "reason": "review found (a) phase qualifiers were dropped so nested phase metrics aggregated across ALL phases, able to hide violations; (b) denials without a registered deny-pool were classified fail-open as expected; (c) machine-readable SLI denominators still said \"all requests dispatched\"; (d) the rerun divergence tolerance lived only in code",
+      "change": "phase-scoped resolution (qualifier phase_<name> selects that named phase only), deny classification fails closed (no pool => every denial is an error), denominator definitions aligned with v1.0.2 amendment text, rerun consistency tolerances pre-registered per metric class, burst SLO scope renamed to burst@phase_burst",
+      "thresholds_changed": false
+    },
+    {
+      "from_version": "1.0.3",
+      "to_version": "1.0.4",
+      "date": "2026-08-25",
+      "before_any_official_final_series": true,
+      "reason": "A4 pilot exposed (a) secret scan false positives on random binary artifacts decoded lossily, (b) deny-pool false acceptances invisible to SLIs/invariants, (c) order-dependent rerun divergence, (d) fuzzy qualifier matching",
+      "change": "strict typed secret scanning (UTF-8-only, NUL-guarded, length-bounded signatures; binary scratch excluded), deny-pool outcome reconciliation with mandatory zero false_acceptance_count, symmetric rerun formula (denominator = larger magnitude), exact-name qualifier grammar",
+      "thresholds_changed": false
+    },
+    {
+      "from_version": "1.0.4",
+      "to_version": "1.0.5",
+      "date": "2026-08-25",
+      "before_any_official_final_series": true,
+      "reason": "r6 review: secret scan was fail-open (extension/NUL/encoding skips let a real key in .bin bypass detection), locally counted deny-pool false acceptances never reached the root invariant gate, and top-level scope qualifiers were not validated",
+      "change": "byte-level strict scanning of every artifact (unreadable files block the verdict via secrets-scan-incomplete), local false_acceptance_count reconciled into root invariants plus hard failure strings, contract-declared qualifier vocabulary enforced for every scoped SLI",
+      "thresholds_changed": false
+    }
+  ],
+  "extends": [
+    "S1-002"
+  ],
+  "supersedes": [],
+  "security_gate_refs": [
+    "S1-008"
+  ],
+  "historical_evidence_protected": {
+    "s1_002_package": "research/tickets/stage-1/S1-002/",
+    "rule": "S1-002 artifacts are read-only inputs; this ticket never modifies them."
+  },
+  "owner": {
+    "primary_role": "capacity",
+    "co_owner_roles": [
+      "security"
+    ],
+    "human_confirmation": "PENDING",
+    "note": "Ticket-plan role owners (docs/RESEARCH_STAGE_1_TICKETS.md). No named human owner has countersigned thresholds marked requires_owner_confirmation=true."
+  },
+  "measurement_period": {
+    "planned_start_utc": "2026-08-24T00:00:00Z",
+    "planned_end_utc": "OPEN_UNTIL_CLOSURE",
+    "long_scenario_requirements": {
+      "sustained_load_min_seconds": 21600,
+      "soak_min_seconds": 86400
+    }
+  },
+  "error_budget": {
+    "availability_target": 0.999,
+    "budget_fraction": 0.001,
+    "unit": "fraction of dispatched requests in non-injected windows",
+    "burn_tracking": "per scenario, cumulative"
+  },
+  "production_like_profile": {
+    "manifest_ref": "environment-manifest.json",
+    "qualification_rule": "profile_status is PRODUCTION_LIKE only when environment-manifest.json contains quantitative capacity_mapping vs the expected production envelope (>=34 events/s control-plane planning point from SRC-06 s8, storage projection from S1-002, cardinality, multi-process topology, server-class disk/storage class) AND all mapped ratios >= 1.0.",
+    "expected_production_capacity": {
+      "control_plane_events_per_second_planning_point": 34,
+      "burst_events_per_second_benchmark_point": 100,
+      "storage_projection_rows_36_5m": 36500000,
+      "source": "S1-002 bundle / SRC-06 section 8 planning assumptions"
+    },
+    "fallback_rule": "If the available stand is not production-like, runner still executes and records measurements; final verdict is capped at PASS_WITH_LIMITS."
+  },
+  "mandatory_scenarios": [
+    "cold_start",
+    "warm_steady_state",
+    "sustained_load",
+    "soak",
+    "burst",
+    "queue_backpressure",
+    "provider_full_outage",
+    "provider_degraded",
+    "worker_restart",
+    "scheduler_restart",
+    "full_restart",
+    "sqlite_lock_contention",
+    "disk_slow_saturation",
+    "db_growth",
+    "network_faults",
+    "revocation_under_load",
+    "recovery_after_failures"
+  ],
+  "scenario_manifest_ref": "scenario-manifest.json#v1.0.0",
+  "sli_definitions": [
+    {
+      "id": "throughput_achieved_events_per_second",
+      "window": "[first scheduled arrival, last observed completion] of measurement phase (warm-up excluded)",
+      "clock": "time.perf_counter_ns (monotonic)",
+      "numerator": "requests observed terminal (SUCCEEDED or expected-DENIED)",
+      "denominator": "observed wall seconds of the window",
+      "retry_timeout_rule": "no automatic retries are generated; timed-out requests count as errors, never re-dispatched"
+    },
+    {
+      "id": "latency_end_to_end_ms",
+      "quantiles": [
+        "p50",
+        "p95",
+        "p99"
+      ],
+      "window": "per request: scheduled send time -> completion observation, monotonic",
+      "numerator_denominator": "one observation per dispatched request that reached a terminal state",
+      "retry_timeout_rule": "timed-out/not-started requests are excluded from latency distribution and reported separately as dropped_or_late"
+    },
+    {
+      "id": "error_rate_fraction",
+      "window": "measurement phase excluding declared injected-failure windows",
+      "numerator": "requests ending FAILED, TIMEOUT, NOT_STARTED, or unexpected DENIED",
+      "denominator": "all requests dispatched in the window EXCLUDING expected denials, where a denial is expected ONLY when its request index is explicitly listed in the registered deny pool; with no registered pool every denial counts against both SLIs",
+      "retry_timeout_rule": "expected denials (seeded allow/deny mix, post-revocation denies) are not errors"
+    },
+    {
+      "id": "availability_fraction",
+      "window": "measurement phase excluding declared injected-outage windows",
+      "numerator": "successful requests",
+      "denominator": "all requests dispatched in the window EXCLUDING expected denials, where a denial is expected ONLY when its request index is explicitly listed in the registered deny pool; with no registered pool every denial counts against both SLIs",
+      "retry_timeout_rule": "identical to error_rate complement inside its narrower window definition"
+    },
+    {
+      "id": "queue_wait_ms",
+      "definition": "dispatch_start_monotonic - scheduled_send_monotonic, >= 0; queue_depth sampled at each dispatch attempt",
+      "window": "measurement phase"
+    },
+    {
+      "id": "recovery_time_seconds",
+      "start_point": "injected failure effect observed (process exit acknowledged / fault window ended)",
+      "end_point": "first subsequent request completing successfully through the full gateway path AND affected component reattached",
+      "clock": "monotonic perf_counter_ns; wall timestamps recorded alongside"
+    },
+    {
+      "id": "revocation_enforcement_latency_ms",
+      "start_point": "COMMIT return of the SQLite transaction flipping grant status GRANTED->REVOKED and appending the durable revocation event",
+      "end_point": "first guaranteed DENY observed at EVERY affected instance (per-instance first-deny recorded; trial value = max)",
+      "units": "milliseconds; wall-clock equivalent seconds also recorded",
+      "retry_timeout_rule": "instances poll continuously; no retries mask denial; any successful forbidden side effect after commit is an invariant violation"
+    },
+    {
+      "id": "db_transaction_latency_ms",
+      "definition": "duration of engine/journal transition transactions (state mutation + audit event in one SQLite tx), perf_counter around the call"
+    },
+    {
+      "id": "audit_journal_latency_ms",
+      "definition": "duration of audit_event appends inside their committing transaction, perf_counter around the append path"
+    },
+    {
+      "id": "external_provider_failure_rate_fraction",
+      "numerator": "provider calls classified timeout/empty/rate_limited/disconnect/error",
+      "denominator": "all provider calls issued in the window",
+      "note": "measured against the controlled provider stub; informational unless a threshold is set"
+    }
+  ],
+  "invariants": [
+    {
+      "id": "false_acceptance_count",
+      "threshold": 0,
+      "definition": "goal reaches ACCEPTED without a passing evaluator record satisfying the gate predicate"
+    },
+    {
+      "id": "lost_terminal_transitions_count",
+      "threshold": 0,
+      "definition": "terminal state change without corresponding durable audit event recoverable after restart"
+    },
+    {
+      "id": "audit_chain_violations_count",
+      "threshold": 0,
+      "definition": "full prev_event_sha256 chain walk fails or ACCEPTED goal lacks goal.accepted event"
+    },
+    {
+      "id": "capability_scope_violations_count",
+      "threshold": 0,
+      "definition": "operation succeeds while its required capability is not durably granted, or cross-scope memory read succeeds"
+    },
+    {
+      "id": "stale_lease_executions_count",
+      "threshold": 0,
+      "definition": "mutating op succeeds under expired/mismatched lease"
+    },
+    {
+      "id": "side_effect_duplication_count",
+      "threshold": 0,
+      "definition": "same idempotency key executes its effect twice instead of REPLAYED"
+    },
+    {
+      "id": "confirmed_data_loss_count",
+      "threshold": 0,
+      "definition": "transition confirmed committed before a crash is absent after recovery"
+    },
+    {
+      "id": "secrets_in_artifacts_count",
+      "threshold": 0,
+      "definition": "secret/token markers found in manifests, raw results, traces or reports"
+    }
+  ],
+  "slos": [
+    {
+      "sli": "latency_end_to_end_ms.p95",
+      "scope": "warm_steady_state@nominal",
+      "threshold": "<=20.0 ms",
+      "statistic_for_verdict": "p95 point estimate with one-sided CI rule",
+      "provenance": "S1-002 local control-plane target local_20ms_target_observed",
+      "requires_owner_confirmation": true
+    },
+    {
+      "sli": "throughput_realization_fraction",
+      "scope": "warm_steady_state@nominal",
+      "threshold": ">=0.999",
+      "provenance": "offered-load realization of the SRC-06 34 events/s planning point; v1.0.1 amendment before first official run",
+      "requires_owner_confirmation": true
+    },
+    {
+      "sli": "availability_fraction",
+      "scope": "all non-injected windows",
+      "threshold": ">=0.999",
+      "provenance": "candidate; no approved AgentOS availability target exists",
+      "requires_owner_confirmation": true
+    },
+    {
+      "sli": "error_rate_fraction",
+      "scope": "all non-injected windows",
+      "threshold": "<=0.01",
+      "provenance": "candidate derived from availability budget headroom",
+      "requires_owner_confirmation": true
+    },
+    {
+      "sli": "latency_end_to_end_ms.p95",
+      "scope": "burst@phase_burst",
+      "threshold": "<=200.0 ms",
+      "provenance": "candidate = 10x nominal bound during 10x burst",
+      "requires_owner_confirmation": true
+    },
+    {
+      "sli": "recovery_time_seconds",
+      "scope": "worker_restart|scheduler_restart|full_restart|network_faults|provider_*|sqlite_lock_contention|disk_slow_saturation",
+      "threshold": "<=30.0 s",
+      "provenance": "candidate operational bound; no approved value exists",
+      "requires_owner_confirmation": true
+    },
+    {
+      "sli": "db_transaction_latency_ms.p95",
+      "scope": "warm_steady_state@nominal",
+      "threshold": "<=10.0 ms",
+      "provenance": "candidate anchored to S1-002 observed single-digit-ms service times",
+      "requires_owner_confirmation": true
+    },
+    {
+      "sli": "audit_journal_latency_ms.p95",
+      "scope": "warm_steady_state@nominal",
+      "threshold": "<=10.0 ms",
+      "provenance": "candidate, same anchor as db_transaction_latency",
+      "requires_owner_confirmation": true
+    },
+    {
+      "sli": "revocation_enforcement_latency_ms",
+      "scope": "revocation_under_load, all trials",
+      "threshold": "<=5000.0 ms for EVERY observed trial (max)",
+      "statistic_for_verdict": "max <= 5000 ms; p95/p99/max reported",
+      "provenance": "S1-008 research bound (<=5 seconds), P0 security gate",
+      "requires_owner_confirmation": false
+    }
+  ],
+  "sampling": {
+    "seeds_per_mandatory_scenario": [
+      11,
+      22,
+      33,
+      44,
+      55
+    ],
+    "min_seeds_per_scenario": 5,
+    "min_requests_per_short_scenario_seed": 1000,
+    "revocation_trials_total_min": 100,
+    "revocation_trial_distribution": "across all seeds x load levels {idle, nominal, burst}",
+    "power_rule": "if observed sample size < registered minimum, statistical_power='insufficient' and verdict contribution is PASS_WITH_LIMITS, never PASS"
+  },
+  "confidence_intervals": {
+    "method_latencies": "nonparametric percentile bootstrap, B=2000, seeded from scenario seed (+sli offset)",
+    "method_proportions": "Wilson score interval, 95%",
+    "level": 0.95,
+    "threshold_visibility_rule": "for a latency-type SLO, PASS requires point estimate <= threshold AND 95% CI upper bound <= threshold; CI crossing the threshold can never yield PASS"
+  },
+  "warmup_policy": {
+    "cold_start": "none (cold is the measurand); startup work recorded separately",
+    "default_warm": "100 discarded gateway events against the live runtime before the measurement window",
+    "long_scenarios": "60 s warm-up window excluded from statistics",
+    "exclusion_reporting": "warm-up event counts recorded per trial"
+  },
+  "stopping_rule": {
+    "type": "FIXED_BATCH",
+    "detail": "pre-registered batch sizes per scenario; no early stop on good results",
+    "abort_conditions": [
+      "invariant violated",
+      "harness crash; >3 consecutive crashes for the same scenario marks scenario_failed and stops that scenario only"
+    ]
+  },
+  "verdict_rules": {
+    "PASS": "ALL of: every mandatory scenario completed_at_required_scale=true; every SLO passes including CI-upper rule; revocation gate passes all trials <=5 s; all invariants = 0; production-like proof complete; independent rerun consistent; evidence pack + hashes verified.",
+    "FAIL": "ANY invariant != 0, OR any observed revocation trial > 5 s, OR comparator rejection (missing/empty/inconsistent evidence), OR audit-chain/security violation.",
+    "PASS_WITH_LIMITS": "No FAIL condition, but at least one required proof is incomplete (e.g., stand not production-like, sustained/soak not run at full required duration, insufficient statistical power, owner confirmation pending, rerun executed on same host). Every missing proof itemized."
+  },
+  "change_policy": "Thresholds are frozen before any result is viewed. Any modification creates version 1.x.y with a new self-hash and requires a complete new qualification run; results remain bound to the exact self_hash_sha256 used at run time.",
+  "runner_compatibility": {
+    "min_runner_version": "1.0.0",
+    "rule": "results produced by incompatible runner versions are rejected by the comparator"
+  },
+  "frozen_at": "2026-08-25T17:57:43Z",
+  "rerun_consistency": {
+    "proportion_absolute_tolerance": 0.01,
+    "latency_relative_tolerance": 0.35,
+    "default_relative_tolerance": 0.35,
+    "note": "applied by the comparator between independent runs; rows exceeding their class tolerance are flagged rerun-divergence-unexplained",
+    "formula": "symmetric_max_denominator"
+  },
+  "mandatory_invariants": [
+    "false_acceptance_count"
+  ],
+  "self_hash_sha256": "698bd8943f00f4cfe2c21fcbe150f219c569766ad4a86d71e2537d5dd9e622f7"
+}

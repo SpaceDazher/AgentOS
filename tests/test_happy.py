@@ -4,6 +4,7 @@ from agentos.gates import Gates
 from agentos.evidence_pack import build as build_evidence
 from agentos.workers import FakeWorker
 from pathlib import Path
+from unittest.mock import patch
 
 
 class TestHappyPath(AgentOSTestCase):
@@ -86,3 +87,31 @@ class TestHappyPath(AgentOSTestCase):
             "SELECT COUNT(*) FROM relation_assertion WHERE rel='SUPERSEDES'"
         ).fetchone()[0]
         self.assertGreaterEqual(rel, 1)
+
+    def test_run_and_task_completion_roll_back_together(self):
+        """A crash between completion steps must not persist a split state."""
+        goal_id = self.make_goal_with_task()
+        run_id, ctx = self.open_live_run(goal_id)
+        artifacts_before = self.db.conn.execute(
+            "SELECT COUNT(*) FROM artifact_version WHERE goal_id=?",
+            (goal_id,)).fetchone()[0]
+
+        with patch.object(self.eng, "_store_artifact",
+                          side_effect=RuntimeError("simulated crash")):
+            with self.assertRaisesRegex(RuntimeError, "simulated crash"):
+                self.eng.complete_live_run(ctx, outputs={"tick": 1})
+
+        run_status = self.db.conn.execute(
+            "SELECT status FROM run WHERE id=?", (run_id,)).fetchone()[0]
+        task_status = self.db.conn.execute(
+            "SELECT status FROM task WHERE id=?", (ctx.task_id,)).fetchone()[0]
+        artifacts_after = self.db.conn.execute(
+            "SELECT COUNT(*) FROM artifact_version WHERE goal_id=?",
+            (goal_id,)).fetchone()[0]
+        self.assertEqual((run_status, task_status), ("RUNNING", "RUNNING"))
+        self.assertEqual(artifacts_after, artifacts_before)
+        self.assertEqual(self.db.conn.execute(
+            "SELECT COUNT(*) FROM audit_event WHERE goal_id=?"
+            " AND event_type IN ('run.completed','task.done')",
+            (goal_id,)).fetchone()[0], 0)
+        self.assertEqual(self.j.full_chain_check(), (True, None))

@@ -187,7 +187,7 @@
       "producer": "agentos-s1-002-producer"
     },
     "progress": {
-      "content": "# 2026-08-24\nS1-002 benchmark runner authored and executed twice. The first pass exposed the need for mean W; the final pass added mean and population standard deviation while preserving p50/p95/p99/max. Final raw run: 2026-08-24T17:52:01.458Z to 2026-08-24T17:52:47.550Z, 1728 paced events plus 2000 storage-probe events, seed 20260824.\n\nFinal raw path: research/tickets/stage-1/S1-002/raw-results.json; bytes 552600; SHA-256 8cf8e60290d5992f1a495a700b7bc812ccf2ea725c75822a23104c94918d9d3f. All six load/mode aggregates include p95/p99 and queue depth.\n\nCurrent research decision: PASS_WITH_LIMITS pending canonical research-plan persistence and wiki check. No production SLO, distributed worker count, revocation bound, or annual production storage claim is closed by this run.",
+      "content": "# 2026-08-27\nS1-002 local benchmark and its SLOQUAL-001 follow-up are complete as research tickets. The local baseline remains PASS_WITH_LIMITS: raw path research/tickets/stage-1/S1-002/raw-results.json, 552600 bytes, SHA-256 8cf8e60290d5992f1a495a700b7bc812ccf2ea725c75822a23104c94918d9d3f.\n\nThe production-like qualification executed two authoritative 17-scenario x 5-seed runs. Its comparator result is FAIL because burst p95 reproduced at approximately 11.8 seconds against the 200 ms contract. S1-008 revocation passed 105 trials per run and all mandatory invariant counters were zero. FLOW-11 persisted the final research bundle with pass_with_limits and wiki-check reported zero issues. No production SLO or customer commitment is authorized.",
       "claim_refs": ["claim-benchmark-run", "claim-storage-result", "claim-slo-target"],
       "producer": "agentos-s1-002-producer"
     }
@@ -200,7 +200,8 @@
       "The benchmark is a short single-process local SQLite/WAL baseline with deterministic arrivals and a small read handler, not production traffic.",
       "Distributed worker count, external calls, revocation, fan-out, failover, and multi-region behavior remain unverified.",
       "The auditor role is adversarial and process-separated but not an external human or independently operated model.",
-      "The 20 ms p95 value remains an internal target; no production SLO or customer commitment is authorized."
+      "The 20 ms p95 value remains an internal target; no production SLO or customer commitment is authorized.",
+      "The follow-up SLOQUAL-001 qualification completed on 2026-08-27 with a reproducible FAIL: burst p95 was approximately 11.8 seconds against the 200 ms contract."
     ]
   }
 }

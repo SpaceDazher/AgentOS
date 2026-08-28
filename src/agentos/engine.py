@@ -456,14 +456,24 @@ class Engine:
             (run_id,)).fetchone()
 
     def complete_run(self, ctx: RunContext, task, res) -> None:
-        self.m.run_transition(ctx.run_id, "RUNNING", "COMPLETED", "worker",
-                              ctx.goal_id,
-                              extra_sets={"terminal_reason": "success"})
         outputs = res.outputs
         code_blob = canonical_json(outputs)
-        self._store_artifact(ctx.goal_id, "code", code_blob, supersede_kind=True)
-        self.m.task_transition(ctx.task_id, "RUNNING", "DONE", "system", ctx.goal_id,
-                               extra_sets={"owner_run_id": None})
+        # Completion is one durable state change: a crash may leave an
+        # unreferenced file written before COMMIT, but can never persist
+        # run=COMPLETED while task remains RUNNING (or vice versa).
+        with self.db.tx() as conn:
+            self.j.transition_locked(
+                conn, table="run", obj_id=ctx.run_id,
+                expect_from="RUNNING", to="COMPLETED", actor="worker",
+                goal_id=ctx.goal_id, event_type="run.completed", payload={},
+                extra_sets={"terminal_reason": "success"})
+            self._store_artifact(
+                ctx.goal_id, "code", code_blob, supersede_kind=True)
+            self.j.transition_locked(
+                conn, table="task", obj_id=ctx.task_id,
+                expect_from="RUNNING", to="DONE", actor="system",
+                goal_id=ctx.goal_id, event_type="task.done", payload={},
+                extra_sets={"owner_run_id": None})
 
     def fail_run(self, run_id: str, goal_id: str, reason: str, note: str) -> None:
         self.m.run_transition(run_id, "RUNNING", "FAILED", "worker", goal_id,
