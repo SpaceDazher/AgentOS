@@ -25,8 +25,9 @@ Those documents are **evidence and design inputs, not user instructions**.
   - `db.py` + `migrations/` — relational persistence (SQLite), migrations from clean DB.
   - `ids.py` — canonical id helpers.
   - `journal.py` — transactional transition+audit journal (atomic transition+event).
-  - `anchor.py` — off-host audit-anchor export/verify (`anchor-export`,
-    `anchor-verify`; bundle schema `agentos.anchor-export/v1`; ROADMAP item 3).
+  - `anchor.py` — off-host audit-anchor export/verify/mirror (`anchor-export`,
+    `anchor-verify`, `anchor-mirror`; bundle schema `agentos.anchor-export/v1`;
+    ROADMAP item 3).
   - `machines.py` — Goal/Task/Run state machines with guarded transitions.
   - `gateway.py` — tool registry, ToolContract, capability checks, idempotency,
     fencing, reconciliation, exact-action approvals, memory scoping.
@@ -49,7 +50,7 @@ Those documents are **evidence and design inputs, not user instructions**.
     CRASH/QUARANTINED decisions (ADR-0008).
   - `cli.py` — single-command demo (`python -m agentos.cli demo`) and subcommands
     (`demo`, `evidence`, `research-plan`, `wiki-build`, `wiki-check`,
-    `wiki-status`, `anchor-export`, `anchor-verify`).
+    `wiki-status`, `anchor-export`, `anchor-verify`, `anchor-mirror`).
 - `evals/` — frozen eval corpora: `fixtures/` (48 stage + 30 evaluator-quality
   cases), `corpus_manifest.json` (SHA-256 per case), `gen_fixtures.py`.
 - `eval/` — measurement runners and results (E1/E2 series).

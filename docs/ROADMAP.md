@@ -24,12 +24,15 @@ contract первого прогона нарушен (packs per-episode отс�
    CI-матрица сработает на PR.
 2. ~~Gold/near-miss корпуса~~ **ВЫПОЛНЕНО** (EPIC phase 2): 30 evaluator-quality
    фикстур + FPR=0/FNR=0 в `tests/test_stage_corpus.py`.
-3. ~~Off-host копия `audit_anchor.head`~~ **ВЫПОЛНЕНО (export/verify шаг)**:
-   `anchor.py` + CLI `anchor-export`/`anchor-verify` выдают самопроверяемый
-   бандл `agentos.anchor-export/v1` с головой цепочки и проверяют его против
-   любой копии БД (структура, историческая привязка по seq, полная цепочка).
-   Осталось: внешнее расписание (cron/git push), выталкивающее бандл наружу,
-   и опциональная нотаризация.
+3. ~~Off-host копия `audit_anchor.head`~~ **ВЫПОЛНЕНО (полностью)**:
+   export/verify — `anchor.py` + CLI `anchor-export`/`anchor-verify` (бандл
+   `agentos.anchor-export/v1`, историческая привязка по seq); транспорт —
+   `anchor-mirror`: идемпотентное зеркало в произвольный каталог
+   (immutable content-addressed бандлы `anchors/<seq>-<head16>.json` +
+   append-only `history.ndjson` + указатель `latest.json`, отказ при
+   расхождении состояния) и `scripts/anchor-mirror-task.ps1` — регистрация
+   часовой задачи Windows. Осталось только опциональное: нотаризация и
+   git-push зеркала на внешний remote (выбор оператора).
 4. ~~Повторный прогон E2 с исправленным runner'ом~~ **ВЫПОЛНЕНО**: E2-v2
    записал packs+env в 100/100 эпизодах (`eval/E2_RESULTS_V2.md`), retry-серия
    закрыла 42 провайдерных отказа (`eval/E2_RETRY_RESULTS.md`); контракт

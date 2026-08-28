@@ -24,7 +24,9 @@ Verification recomputes three independent facts:
 """
 from __future__ import annotations
 
+import hashlib
 import json
+import os
 from pathlib import Path
 
 from .ids import canonical_json, sha256_text
@@ -122,3 +124,94 @@ def verify_bundle(bundle_path: str | Path, db) -> dict:
     report["ok"] = bool(report["struct_ok"] and report["hist_ok"]
                         and report["chain_ok"])
     return report
+
+
+# -- off-host mirroring (ROADMAP item 3, transport step) -------------------------
+
+MIRROR_HISTORY = "history.ndjson"
+MIRROR_LATEST = "latest.json"
+
+
+def _write_atomic(path: Path, data: str) -> None:
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(data, encoding="utf-8")
+    os.replace(tmp, path)
+
+
+def mirror_anchor(db, dest_dir: str | Path, *,
+                  now_iso: str | None = None) -> dict:
+    """Idempotent off-host mirror of the audit anchor head.
+
+    Layout inside `dest_dir` (typically a git repo or a synced folder on
+    another volume/host):
+      anchors/<seq>-<head16>.json   content-addressed, immutable once written
+      latest.json                   pointer to the newest mirrored anchor
+      history.ndjson                append-only line per NEW mirrored anchor
+
+    Determinism/idempotency: the bundle name is (last_seq, head_digest)-based,
+    so re-running with an unchanged state writes nothing new; the first
+    written bundle for a given state wins and is never silently replaced.
+    Fail-loudly: a broken audit chain raises before anything is touched.
+    """
+    dest = Path(dest_dir)
+    anchors_dir = dest / "anchors"
+    pending = dest / ".pending.json"
+    bundle = export_anchor(db, pending, now_iso=now_iso)
+    # export succeeded (chain verified); place it content-addressed
+    state = bundle["state"]
+    seq = int(state["last_seq"])
+    head = state["head_digest"]
+    name = f"{seq:012d}-{head[:16]}.json"
+    target = anchors_dir / name
+    file_sha = hashlib.sha256(pending.read_bytes()).hexdigest()
+    changed = True
+    if target.exists():
+        existing_bytes = target.read_bytes()
+        existing_sha = hashlib.sha256(existing_bytes).hexdigest()
+        if existing_sha == file_sha:
+            changed = False          # byte-identical re-export
+        else:
+            try:
+                existing_state_sha = json.loads(
+                    existing_bytes.decode("utf-8"))["state_sha256"]
+            except Exception:    # noqa: BLE001 — unreadable entry = conflict
+                existing_state_sha = None
+            if existing_state_sha == bundle["state_sha256"]:
+                # same state, different timestamp: keep the FIRST immutable
+                # bundle and report its digest
+                changed = False
+                file_sha = existing_sha
+            else:
+                # same (seq, head) but a different state: refusing to
+                # overwrite an immutable mirror entry fails loudly
+                pending.unlink(missing_ok=True)
+                raise AnchorExportError(
+                    f"mirror entry {name} already exists with a different "
+                    f"state for the same chain head")
+    else:
+        anchors_dir.mkdir(parents=True, exist_ok=True)
+        os.replace(pending, target)
+    pending.unlink(missing_ok=True)
+
+    latest = {"schema": SCHEMA, "anchor_file": f"anchors/{name}",
+              "bundle_sha256": file_sha, "state": state,
+              "mirrored_at": bundle["exported_at"]}
+    _write_atomic(dest / MIRROR_LATEST,
+                  json.dumps(latest, indent=2, sort_keys=True) + "\n")
+
+    if changed:
+        line = canonical_json({
+            "mirrored_at": bundle["exported_at"],
+            "last_seq": seq,
+            "head_digest": head,
+            "anchor_file": f"anchors/{name}",
+            "bundle_sha256": file_sha,
+        }) + "\n"
+        with open(dest / MIRROR_HISTORY, "a", encoding="utf-8") as f:
+            f.write(line)
+
+    return {"status": "ok", "changed": changed, "anchor_file": f"anchors/{name}",
+            "last_seq": seq, "head_digest": head,
+            "bundle_sha256": file_sha, "dest": str(dest),
+            "latest": str(dest / MIRROR_LATEST),
+            "history": str(dest / MIRROR_HISTORY)}

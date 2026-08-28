@@ -34,6 +34,9 @@ Key properties:
   `agentos.anchor-export/v1` bundle with the chain head for storage outside the
   host (git/object storage/synced folder); `anchor-verify` re-checks bundle
   integrity, per-seq historical binding, and the full chain of any DB copy.
+  `anchor-mirror` maintains an idempotent off-host mirror (immutable
+  content-addressed bundles + append-only history + `latest.json` pointer);
+  `scripts/anchor-mirror-task.ps1` registers an hourly Windows task for it.
 - **SQLite via atomic migrations** — schema is created by running
   `src/agentos/migrations/*.sql`; each migration and its marker commit or roll
   back together, and the historical interrupted-0010 rebuild is recoverable.
@@ -67,6 +70,10 @@ PYTHONPATH=src python -m agentos.cli research-plan \
 # Off-host audit anchoring: export the chain head, verify it against any copy:
 PYTHONPATH=src python -m agentos.cli anchor-export --db DIR --out anchor-snapshot.json
 PYTHONPATH=src python -m agentos.cli anchor-verify --bundle anchor-snapshot.json --db DIR
+
+# Idempotent off-host mirror (immutable bundles + append-only history):
+PYTHONPATH=src python -m agentos.cli anchor-mirror --db DIR --dest /path/to/offsite
+# hourly scheduled task (Windows): scripts/anchor-mirror-task.ps1 -Repo ... -Db ... -Dest ...
 
 # Failure-path test suite:
 python -m unittest discover -s tests

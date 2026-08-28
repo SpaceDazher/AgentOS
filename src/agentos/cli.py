@@ -358,6 +358,12 @@ def main(argv: list[str] | None = None) -> int:
                     help="bundle produced by anchor-export")
     av.add_argument("--db", default=None,
                     help="root directory containing agentos.db to check against")
+    am = sub.add_parser("anchor-mirror",
+                        help="idempotently mirror the anchor head to an off-host directory")
+    am.add_argument("--db", default=None,
+                    help="root directory containing agentos.db")
+    am.add_argument("--dest", required=True,
+                    help="destination directory (git repo / synced folder)")
     a = ap.parse_args(argv)
 
     if a.cmd == "anchor-export":
@@ -385,6 +391,17 @@ def main(argv: list[str] | None = None) -> int:
             return 1
         _emit_json(report)
         return 0 if report.get("ok") else 1
+    if a.cmd == "anchor-mirror":
+        from .anchor import mirror_anchor
+        try:
+            root = Path(a.db or ".").resolve()
+            db = open_db(root / "agentos.db")
+            result = _call_quietly(mirror_anchor, db, Path(a.dest))
+        except Exception as exc:
+            _emit_json({"error": f"{type(exc).__name__}: {exc}"})
+            return 1
+        _emit_json(result)
+        return 0
 
     if a.cmd == "wiki-build":
         from .wiki import WikiBuilder
