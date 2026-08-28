@@ -65,6 +65,15 @@ def cmd_run_scenario(args) -> int:
         return 2
     ticket = Path(args.ticket)
     contract, contract_hash = verify_frozen(ticket / "slo-contract.json")
+    scenario_manifest_path = ticket / "scenario-manifest.json"
+    scenario_manifest = json.loads(
+        scenario_manifest_path.read_text(encoding="utf-8"))
+    scenario_manifest_version = str(
+        scenario_manifest.get("version", "")).strip()
+    if not scenario_manifest_version:
+        raise ValueError("scenario manifest has no version")
+    scenario_manifest_hash = hashlib.sha256(
+        scenario_manifest_path.read_bytes()).hexdigest()
     overrides = dict(kv.split("=", 1) for kv in args.override or [])
     overrides = {k: float(v) for k, v in overrides.items()}
     cfg_seed = args.seed
@@ -115,7 +124,8 @@ def cmd_run_scenario(args) -> int:
         "runner_version": RUNNER_VERSION,
         "run_id": args.run_id,
         "scenario_id": scenario_id,
-        "scenario_manifest_version": "1.0.0",
+        "scenario_manifest_version": scenario_manifest_version,
+        "scenario_manifest_sha256": scenario_manifest_hash,
         "seed": cfg_seed,
         "contract_sha256": contract_hash,
         "environment_hash": env_hash,

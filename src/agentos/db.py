@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+import re
 import sqlite3
 from pathlib import Path
 
@@ -99,6 +100,89 @@ def _default_db_path() -> Path:
     return root / "agentos.db"
 
 
+_RESEARCH_TICKET_RE = re.compile(
+    r"^(S\d+-\d+)(?=$|[^A-Za-z0-9])", re.IGNORECASE)
+
+
+def _research_ticket_key(topic: str) -> str | None:
+    match = _RESEARCH_TICKET_RE.match(str(topic).strip())
+    return match.group(1).upper() if match else None
+
+
+def _backfill_research_series(conn: sqlite3.Connection) -> None:
+    """Attach legacy campaigns after an additive series migration.
+
+    Kept in the runner rather than the migration SQL so a database prepared
+    without the optional research tables can still apply 0014 before 0013.
+    Existing immutable rows are never updated or removed.
+    """
+    conn.execute("BEGIN IMMEDIATE")
+    try:
+        tables = {row[0] for row in conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table'")}
+        if not {"research_campaign", "research_series"}.issubset(tables):
+            conn.execute("COMMIT")
+            return
+
+        # Select the complete legacy input set while holding the write lock.
+        # This prevents a concurrent opener from observing a partially planned
+        # lineage or inserting another unbound campaign between read and write.
+        rows = conn.execute(
+            "SELECT c.id, c.goal_id, c.topic, c.manifest_sha256, c.created_at"
+            " FROM research_campaign c"
+            " LEFT JOIN research_series rs ON rs.campaign_id=c.id"
+            " WHERE rs.campaign_id IS NULL ORDER BY c.created_at, c.id").fetchall()
+        next_revision: dict[str, int] = {}
+        prior_campaign: dict[str, str | None] = {}
+        planned: list[tuple[sqlite3.Row, str, int, str | None]] = []
+        for row in rows:
+            key = _research_ticket_key(row["topic"])
+            if key is None:
+                # Campaign IDs are canonical primary keys, so this fallback is
+                # collision-safe for legacy rows without a ticket prefix.
+                key = "legacy:" + row["id"]
+                revision = 1
+                supersedes = None
+            else:
+                if key not in next_revision:
+                    existing = conn.execute(
+                        "SELECT revision, campaign_id FROM research_series"
+                        " WHERE research_key=? ORDER BY revision DESC LIMIT 1",
+                        (key,)).fetchone()
+                    next_revision[key] = int(existing["revision"]) if existing else 0
+                    prior_campaign[key] = (existing["campaign_id"]
+                                           if existing else None)
+                next_revision[key] += 1
+                revision = next_revision[key]
+                supersedes = prior_campaign[key]
+                prior_campaign[key] = row["id"]
+            planned.append((row, key, revision, supersedes))
+
+        for row, key, revision, supersedes in planned:
+            conn.execute(
+                # Plain INSERT is intentional: a uniqueness/FK collision is
+                # migration corruption and must abort rather than silently
+                # leaving a campaign without its required series binding.
+                "INSERT INTO research_series"
+                "(id, research_key, revision, campaign_id, goal_id, topic,"
+                " manifest_sha256, supersedes_campaign_id) VALUES (?,?,?,?,?,?,?,?)",
+                ("rseries-legacy-" + row["id"], key, revision, row["id"],
+                 row["goal_id"], row["topic"], row["manifest_sha256"],
+                 supersedes),
+            )
+        remaining = conn.execute(
+            "SELECT COUNT(*) FROM research_campaign c"
+            " LEFT JOIN research_series rs ON rs.campaign_id=c.id"
+            " WHERE rs.campaign_id IS NULL").fetchone()[0]
+        if remaining:
+            raise RuntimeError(
+                f"research series backfill incomplete: {remaining} campaigns")
+        conn.execute("COMMIT")
+    except Exception:
+        conn.rollback()
+        raise
+
+
 class Database:
     def __init__(self, path: str | os.PathLike | None = None):
         self.path = Path(path) if path else _default_db_path()
@@ -130,6 +214,7 @@ class Database:
             _apply_migration(
                 self.conn, path.name, path.read_text(encoding="utf-8"))
             done.append(path.name)
+        _backfill_research_series(self.conn)
         return done
 
 

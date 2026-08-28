@@ -2,7 +2,7 @@
   "schema": "agentos.slo-contract/v1",
   "slo_id": "SLOQUAL-001",
   "title": "AgentOS production-like SLO qualification extending S1-002",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "status": "FROZEN_PRE_RUN",
   "amendments": [
     {
@@ -45,6 +45,15 @@
       "before_any_official_final_series": true,
       "reason": "r6 review: secret scan was fail-open (extension/NUL/encoding skips let a real key in .bin bypass detection), locally counted deny-pool false acceptances never reached the root invariant gate, and top-level scope qualifiers were not validated",
       "change": "byte-level strict scanning of every artifact (unreadable files block the verdict via secrets-scan-incomplete), local false_acceptance_count reconciled into root invariants plus hard failure strings, contract-declared qualifier vocabulary enforced for every scoped SLI",
+      "thresholds_changed": false
+    },
+    {
+      "from_version": "1.0.5",
+      "to_version": "1.0.6",
+      "date": "2026-08-28",
+      "before_any_official_final_series": true,
+      "reason": "the v1.0.5 A11/B10 qualification exposed a real serialized SQLite activity/audit bottleneck under the 10x burst; the remediation changes the measured execution path and therefore requires a new frozen contract and runner identity",
+      "change": "read-only gateway calls may use a bounded open-loop group-commit path; every request still receives an individual policy decision, activity row and hash-chained audit event, while the batch commits atomically. Mutating, dangerous, approval, idempotency and fencing paths remain single-call. Runner compatibility advances to 2.1.0; v1.0.5 A11/B10 remains immutable historical FAIL evidence and cannot be mixed with v1.0.6 results.",
       "thresholds_changed": false
     }
   ],
@@ -111,7 +120,7 @@
     "revocation_under_load",
     "recovery_after_failures"
   ],
-  "scenario_manifest_ref": "scenario-manifest.json#v1.0.0",
+  "scenario_manifest_ref": "scenario-manifest.json#v1.1.0",
   "sli_definitions": [
     {
       "id": "throughput_achieved_events_per_second",
@@ -329,10 +338,9 @@
   },
   "change_policy": "Thresholds are frozen before any result is viewed. Any modification creates version 1.x.y with a new self-hash and requires a complete new qualification run; results remain bound to the exact self_hash_sha256 used at run time.",
   "runner_compatibility": {
-    "min_runner_version": "1.0.0",
+    "min_runner_version": "2.1.0",
     "rule": "results produced by incompatible runner versions are rejected by the comparator"
   },
-  "frozen_at": "2026-08-25T17:57:43Z",
   "rerun_consistency": {
     "proportion_absolute_tolerance": 0.01,
     "latency_relative_tolerance": 0.35,
@@ -343,5 +351,6 @@
   "mandatory_invariants": [
     "false_acceptance_count"
   ],
-  "self_hash_sha256": "698bd8943f00f4cfe2c21fcbe150f219c569766ad4a86d71e2537d5dd9e622f7"
+  "frozen_at": "2026-08-28T15:33:00Z",
+  "self_hash_sha256": "4a660709fa06b9b9dc5637eecb5b278c1af686ce64ddadd471338014d307813b"
 }

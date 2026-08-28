@@ -16,6 +16,7 @@ Each test gets its own throwaway sqlite DB in a per-test tmpdir (tests/base),
 so tampering done here never outlives the test run.
 """
 from tests.base import AgentOSTestCase
+from unittest.mock import patch
 
 from agentos.gateway import (
     ApprovalInvalid,
@@ -64,6 +65,26 @@ class TestAuditAtomicity(AgentOSTestCase):
         ok, bad = self.j.full_chain_check()
         self.assertTrue(ok)
         self.assertIsNone(bad)
+
+    def test_gateway_activity_and_audit_event_rollback_together(self):
+        goal_id = self.make_goal_with_task()
+        _, ctx = self.open_live_run(goal_id)
+        self.gw.register(self.write_contract(handler=lambda **_: {"ok": True}))
+        contract = self.gw.resolve("fs.write.handler")
+        before = self.db.conn.execute(
+            "SELECT COUNT(*) FROM activity").fetchone()[0]
+
+        with patch.object(
+                self.j, "_append_event_locked",
+                side_effect=RuntimeError("injected audit failure")):
+            with self.assertRaises(RuntimeError):
+                self.gw.invoke(
+                    ctx, contract,
+                    {"path": str(self.root / "out.txt"), "content": "v1"})
+
+        after = self.db.conn.execute(
+            "SELECT COUNT(*) FROM activity").fetchone()[0]
+        self.assertEqual(after, before)
 
 
 class TestHashChainTamperDetection(AgentOSTestCase):

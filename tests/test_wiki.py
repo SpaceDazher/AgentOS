@@ -66,6 +66,14 @@ class TestWiki(unittest.TestCase):
                         f"issues after clean build: {res['issues']}")
         self.assertGreater(res["files"], 0)
 
+    def test_check_fails_closed_when_generated_projection_is_empty(self):
+        (self.wb.wiki / "_generated").mkdir(parents=True)
+        res = self.wb.check()
+        self.assertFalse(res["ok"])
+        self.assertIn(
+            "missing_generated_projection",
+            {issue["kind"] for issue in res["issues"]})
+
     def test_check_detects_broken_link(self):
         self.wb.build()
         p = self.wb.wiki / "_generated" / "Home.md"

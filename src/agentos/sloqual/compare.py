@@ -10,6 +10,7 @@ An empty measurement set can NEVER yield PASS.
 from __future__ import annotations
 
 import json
+import hashlib
 import re
 import statistics
 from pathlib import Path
@@ -315,6 +316,22 @@ def compare(ticket_dir: Path, run_ids: list[str], *, work_root: Path,
 
     # --- contract integrity -------------------------------------------------
     contract, contract_hash = verify_frozen(ticket_dir / "slo-contract.json")
+    contract_file_hash = hashlib.sha256(
+        (ticket_dir / "slo-contract.json").read_bytes()).hexdigest()
+    scenario_manifest_path = ticket_dir / "scenario-manifest.json"
+    scenario_manifest_hash: str | None = None
+    scenario_manifest_version: str | None = None
+    try:
+        scenario_manifest = json.loads(
+            scenario_manifest_path.read_text(encoding="utf-8"))
+        scenario_manifest_version = str(
+            scenario_manifest.get("version", "")).strip() or None
+        scenario_manifest_hash = hashlib.sha256(
+            scenario_manifest_path.read_bytes()).hexdigest()
+        if scenario_manifest_version is None:
+            failures.append("scenario-manifest-version-missing")
+    except (OSError, ValueError, TypeError):
+        failures.append("scenario-manifest-invalid-or-missing")
 
     if len(run_ids) < 2:
         failures.append("missing-independent-rerun")
@@ -353,6 +370,14 @@ def compare(ticket_dir: Path, run_ids: list[str], *, work_root: Path,
                     f"{json.dumps(required_ratios, sort_keys=True)}")
             if manifest.get("runner_version") != RUNNER_VERSION:
                 failures.append(f"incompatible-runner-version:{run_id}")
+            input_hashes = manifest.get("input_file_hashes", {})
+            if input_hashes.get("slo-contract.json") != contract_file_hash:
+                failures.append(f"manifest-contract-hash-mismatch:{run_id}")
+            if (scenario_manifest_hash is None or
+                    input_hashes.get("scenario-manifest.json")
+                    != scenario_manifest_hash):
+                failures.append(
+                    f"manifest-scenario-hash-mismatch:{run_id}")
         else:
             production_like_flags.append(False)
             limits.append(f"production-like-profile-absent:{run_id}")
@@ -374,6 +399,13 @@ def compare(ticket_dir: Path, run_ids: list[str], *, work_root: Path,
                 if payload.get("runner_version") != RUNNER_VERSION:
                     failures.append(
                         f"incompatible-runner-version:{run_id}:{scenario_id}:{seed}")
+                if (payload.get("scenario_manifest_version")
+                        != scenario_manifest_version
+                        or payload.get("scenario_manifest_sha256")
+                        != scenario_manifest_hash):
+                    failures.append(
+                        f"scenario-manifest-mismatch:{run_id}:"
+                        f"{scenario_id}:{seed}")
                 result = payload.get("result", {})
                 metrics = result.get("metrics", {})
                 if not metrics:

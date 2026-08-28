@@ -1,6 +1,6 @@
 # SLOQUAL-001 — Production-like SLO qualification (extends S1-002)
 
-Status: **COMPLETE · comparator verdict FAIL** · Owner role:
+Status: **REQUALIFICATION READY · v1.0.6 series pending** · Owner role:
 `capacity` (co-owner `security` for the S1-008 gate) · Human threshold
 countersignature: **PENDING**
 
@@ -12,10 +12,10 @@ production SLOs. This ticket creates the *next*, separate qualification
 package that:
 
 1. freezes an SLO contract **before** any measurement (`slo-contract.json`
-   v1.0.5, self-hashed; thresholds cannot change without a new version and a
+   v1.0.6, self-hashed; thresholds cannot change without a new version and a
    complete new run);
 2. defines 17 mandatory scenarios in a versioned manifest
-   (`scenario-manifest.json` v1.0.0);
+   (`scenario-manifest.json` v1.1.0);
 3. executes them against the **real** AgentOS engine/gateway/journal with an
    open-loop load model (no coordinated omission), multi-process fault
    injection, and a durable capability ledger for the S1-008 revocation
@@ -34,7 +34,7 @@ is read-only input). Security gate semantics from **S1-008** (revocation
 
 | Path | Content |
 |---|---|
-| `slo-contract.json` | frozen SLO contract v1.0.5 (self-hash stamped) |
+| `slo-contract.json` | frozen SLO contract v1.0.6 (self-hash stamped) |
 | `scenario-manifest.json` | versioned scenario definitions |
 | `raw/<run-id>/` | per-scenario, per-seed raw results + environment manifest |
 | `reports/` | `compare-result.json`, `REPORT.md` |
@@ -71,10 +71,17 @@ proofs itemized by the comparator; any invariant or security violation is
 
 ## Current outcome
 
-The qualification process is finished, but the production SLO is **not**
-accepted. Runs `sloqual-final-a11-20260826` and
+The last completed qualification remains the historical **FAIL** under
+contract v1.0.5: runs `sloqual-final-a11-20260826` and
 `sloqual-final-b10-20260826-execB` reproduced burst p95 near 11.8 s against
-the 200 ms limit. Both runs passed the S1-008 revocation gate (105 trials per
-run, maximum 2546.742 ms, zero forbidden post-revoke effects) and reported
-zero mandatory invariant violations. The authoritative result and remaining
-limits are in `reports/REPORT.md`.
+the 200 ms limit. Both runs passed the S1-008 revocation gate and reported
+zero mandatory invariant violations.
+
+Contract v1.0.6 and scenario manifest v1.1.0 describe a bounded read-only
+batch path that preserves per-request policy, handler, activity, and audit
+semantics while reducing SQLite group-commit contention. Engineering probes
+are promising but are **not qualification evidence**. A new complete A/B
+series, stamped with one clean implementation commit, is required before the
+current verdict can change. Even a successful local series is capped at
+`PASS_WITH_LIMITS` until the production-like profile, long-duration runs,
+human SLO ownership, and external independent rerun are proven.

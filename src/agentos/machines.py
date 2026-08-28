@@ -74,6 +74,10 @@ class Machines:
         self.db = db
         self.j = journal
         self._gate_auth: GateAuthority | None = None
+        # Capability held only by this state-machine instance.  It allows the
+        # research workflow to record a supersession without pretending that
+        # an end user requested it or broadening the normal actor allow-list.
+        self._supersession_authority = object()
 
     def set_gate_authority(self, auth: GateAuthority) -> None:
         self._gate_auth = auth
@@ -81,14 +85,16 @@ class Machines:
     def _do(self, table: str, transitions: dict, obj_id: str, frm: str, to: str,
             actor: str, goal_id: str | None, event_type: str, payload: dict,
             extra_sets: dict | None = None, transition_key: str | None = None,
-            authority_ok: bool = True) -> dict:
+            authority_ok: bool = True,
+            internal_authority: object | None = None) -> dict:
         allowed = transitions.get((frm, to))
         if allowed is None:
             raise TransitionError(f"{table} {frm}->{to} is not a defined transition")
         if to in ("ACCEPTED", "REJECTED"):
             raise TransitionError(
                 f"{table} {frm}->{to} must go through accept_by_gate_record()")
-        if not authority_ok or actor not in allowed:
+        internal_ok = internal_authority is self._supersession_authority
+        if not authority_ok or (actor not in allowed and not internal_ok):
             raise TransitionError(
                 f"actor '{actor}' may not move {table}:{obj_id} {frm}->{to} "
                 f"(allowed: {sorted(allowed)})"
@@ -104,6 +110,27 @@ class Machines:
                         payload: dict | None = None) -> dict:
         return self._do("goal", GOAL_TRANSITIONS, goal_id, frm, to, actor, goal_id,
                         f"goal.{to.lower()}", payload or {})
+
+    def cancel_superseded_goal(self, goal_id: str,
+                               payload: dict | None = None) -> dict:
+        """Journal a host-owned cancellation for an obsolete revision.
+
+        This is intentionally a separate capability from ``goal_transition``:
+        callers cannot claim requester authority, while the transition still
+        uses the same state-machine table and atomic Journal CAS.
+        """
+        row = self.db.conn.execute(
+            "SELECT status FROM goal WHERE id=?", (goal_id,)).fetchone()
+        if not row:
+            raise TransitionError(f"goal {goal_id} does not exist")
+        status = row["status"]
+        if (status, "CANCELLED") not in GOAL_TRANSITIONS:
+            raise TransitionError(
+                f"goal {goal_id} cannot be superseded from {status}")
+        return self._do("goal", GOAL_TRANSITIONS, goal_id, status,
+                        "CANCELLED", "research-planner", goal_id,
+                        "goal.cancelled",
+                        payload or {}, internal_authority=self._supersession_authority)
 
     def accept_by_gate_record(self, goal_id: str, to: str, *,
                               auth: GateAuthority, gate_id: str,

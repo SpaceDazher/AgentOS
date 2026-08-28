@@ -8,7 +8,8 @@ long-lived interactive worker session — instead of invoking after completion.
 from tests.base import AgentOSTestCase
 from pathlib import Path
 from agentos.gateway import (
-    GatewayError, IdempotencyConflict, StaleOwnerError,
+    GatewayError, IdempotencyConflict, RunContext, StaleOwnerError,
+    ToolContract,
 )
 
 
@@ -194,3 +195,63 @@ class TestFencing(AgentOSTestCase):
         row = self.db.conn.execute(
             "SELECT value FROM fence_counter WHERE id=1").fetchone()[0]
         self.assertGreaterEqual(row, v2)
+
+
+class TestReadBatch(AgentOSTestCase):
+    def setUp(self):
+        super().setUp()
+        self.goal_id = self.make_goal_with_task()
+        _, self.ctx = self.open_live_run(self.goal_id)
+        self.calls = []
+        self.gw.register(ToolContract(
+            name="catalog.lookup", version="1.0.0",
+            input_schema={
+                "type": "object",
+                "properties": {"item": {"type": "integer"}},
+                "required": ["item"],
+                "additionalProperties": False,
+            },
+            required_capability="fs.read", effect_class="read",
+            handler=lambda item: self.calls.append(item) or {"item": item},
+        ))
+
+    def test_batch_records_each_result_and_denial_atomically(self):
+        denied_ctx = RunContext(
+            run_id=self.ctx.run_id, goal_id=self.ctx.goal_id,
+            task_id=self.ctx.task_id, lease_owner=self.ctx.lease_owner,
+            capabilities=set(), workspace_path=self.ctx.workspace_path)
+        results = self.gw.invoke_read_batch(
+            self.gw.resolve("catalog.lookup"),
+            [(self.ctx, {"item": 1}), (denied_ctx, {"item": 2}),
+             (self.ctx, {"item": 3})])
+
+        self.assertEqual([r["status"] for r in results],
+                         ["SUCCEEDED", "DENIED", "SUCCEEDED"])
+        self.assertEqual(self.calls, [1, 3])
+        rows = self.db.conn.execute(
+            "SELECT status FROM activity WHERE op_name='catalog.lookup'"
+            " ORDER BY rowid").fetchall()
+        self.assertEqual([r[0] for r in rows],
+                         ["SUCCEEDED", "DENIED", "SUCCEEDED"])
+
+    def test_batch_rolls_back_all_activities_when_audit_append_fails(self):
+        from unittest.mock import patch
+        before = self.db.conn.execute(
+            "SELECT COUNT(*) FROM activity").fetchone()[0]
+        with patch.object(
+                self.j, "_append_event_locked",
+                side_effect=RuntimeError("injected audit failure")):
+            with self.assertRaises(RuntimeError):
+                self.gw.invoke_read_batch(
+                    self.gw.resolve("catalog.lookup"),
+                    [(self.ctx, {"item": 1}), (self.ctx, {"item": 2})])
+        after = self.db.conn.execute(
+            "SELECT COUNT(*) FROM activity").fetchone()[0]
+        self.assertEqual(after, before)
+
+    def test_batch_rejects_mutating_contracts(self):
+        self.gw.register(self.write_contract())
+        with self.assertRaises(GatewayError):
+            self.gw.invoke_read_batch(
+                self.gw.resolve("fs.write.handler"),
+                [(self.ctx, {"path": str(self.root / "x"), "content": "x"})])

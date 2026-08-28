@@ -75,8 +75,17 @@ class TestSameVolumeStaging(unittest.TestCase):
     def test_build_works_with_vault_on_other_drive(self):
         """Vault on D: while system temp is on C: — staging is created beside
         the vault so the atomic rename never crosses volumes."""
-        vault_root = ROOT / ".tmp-wiki-voltest"
-        shutil.rmtree(vault_root, ignore_errors=True)
+        # Use a fresh D:-local directory so a failed prior run cannot leave an
+        # open SQLite handle or stale WAL files that poison the next test.
+        # The stability worktree itself can be read-only to a sandboxed test
+        # process.  Keep the vault on the same D: project volume, but place
+        # the unique scratch directory in the writable primary checkout.
+        scratch_parent = ROOT.parent / "AgentOS"
+        if not scratch_parent.is_dir():
+            scratch_parent = ROOT
+        vault_root = Path(tempfile.mkdtemp(
+            prefix=".tmp-wiki-voltest-", dir=str(scratch_parent)))
+        db = None
         try:
             db = open_db(vault_root / "t.db")
             _seed(db, "goal_VOL")
@@ -89,8 +98,9 @@ class TestSameVolumeStaging(unittest.TestCase):
                 (wb.wiki / "_generated").glob("*.md"))}
             self.assertEqual(h1, h2, "rebuild changed files")
             self.assertGreater(len(h1), 0)
-            db.conn.close()
         finally:
+            if db is not None:
+                db.conn.close()
             shutil.rmtree(vault_root, ignore_errors=True)
 
 

@@ -10,6 +10,7 @@ silently discarded.
 from __future__ import annotations
 
 import random
+import queue
 import threading
 import time
 from dataclasses import dataclass, field
@@ -153,6 +154,105 @@ class OpenLoopRunner:
         dispatch_loop_end = time.perf_counter_ns()
         for thread in worker_threads:
             thread.join(timeout=300.0)
+        drain_end = time.perf_counter_ns()
+        return OpenLoopResult(
+            observations=[obs for obs in observations if obs is not None],
+            schedule_origin_ns=origin,
+            last_completion_ns=last_completion[0],
+            not_started=not_started,
+            drain_s=round((drain_end - dispatch_loop_end) / 1e9, 6),
+        )
+
+    def run_batched(
+            self, schedule: list[int], *, dispatch_batch_fn,
+            max_batch_size: int = 32,
+            batch_window_s: float = 0.01) -> OpenLoopResult:
+        """Dispatch arrivals through a bounded group-commit queue.
+
+        The producer follows the precomputed schedule and never waits for a
+        completion.  A single coordinator drains bounded batches; saturation
+        is surfaced as NOT_STARTED rather than hidden by backpressure.
+        ``dispatch_batch_fn`` receives indexes and returns one
+        ``(outcome, detail)`` pair per index in the same order.
+        """
+        if max_batch_size < 1:
+            raise ValueError("max_batch_size must be >= 1")
+        if batch_window_s < 0:
+            raise ValueError("batch_window_s must be >= 0")
+
+        origin = time.perf_counter_ns()
+        observations: list[Observation | None] = [None] * len(schedule)
+        pending: queue.Queue = queue.Queue(maxsize=max(1, self.max_inflight))
+        sentinel = object()
+        not_started = 0
+        last_completion: list[int | None] = [None]
+
+        def coordinator() -> None:
+            stop_after_batch = False
+            while True:
+                item = pending.get()
+                if item is sentinel:
+                    return
+                batch = [int(item)]
+                deadline = time.perf_counter() + batch_window_s
+                while len(batch) < max_batch_size:
+                    remaining = deadline - time.perf_counter()
+                    if remaining <= 0:
+                        break
+                    try:
+                        item = pending.get(timeout=remaining)
+                    except queue.Empty:
+                        break
+                    if item is sentinel:
+                        stop_after_batch = True
+                        break
+                    batch.append(int(item))
+
+                dispatch_start = time.perf_counter_ns()
+                for index in batch:
+                    obs = observations[index]
+                    assert obs is not None
+                    obs.dispatch_abs_ns = dispatch_start
+                try:
+                    outcomes = list(dispatch_batch_fn(batch))
+                    if len(outcomes) != len(batch):
+                        raise ValueError(
+                            "dispatch_batch_fn returned a different result count")
+                except Exception as exc:  # scenario boundary, fail every item
+                    outcomes = [("ERROR", {"error": str(exc)[:120]})
+                                for _ in batch]
+                completion = time.perf_counter_ns()
+                for index, (outcome, detail) in zip(batch, outcomes):
+                    obs = observations[index]
+                    assert obs is not None
+                    obs.completion_abs_ns = completion
+                    obs.outcome = str(outcome)
+                    obs.service_ns = completion - dispatch_start
+                    obs.detail = dict(detail or {})
+                last_completion[0] = completion
+                if stop_after_batch:
+                    return
+
+        worker = threading.Thread(target=coordinator, daemon=True)
+        worker.start()
+        for index, offset_ns in enumerate(schedule):
+            target_ns = origin + offset_ns
+            delay = target_ns - time.perf_counter_ns()
+            if delay > 0:
+                time.sleep(delay / 1e9)
+            observations[index] = Observation(
+                index=index, scheduled_offset_ns=offset_ns)
+            try:
+                pending.put_nowait(index)
+            except queue.Full:
+                not_started += 1
+                observations[index].outcome = "NOT_STARTED"
+                observations[index].detail = {
+                    "reason": "batch_queue_saturated"}
+
+        dispatch_loop_end = time.perf_counter_ns()
+        pending.put(sentinel)
+        worker.join(timeout=300.0)
         drain_end = time.perf_counter_ns()
         return OpenLoopResult(
             observations=[obs for obs in observations if obs is not None],

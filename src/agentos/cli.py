@@ -27,7 +27,8 @@ from .evidence_pack import build as build_evidence
 from .gates import Evaluator, Gates
 from .gateway import ApprovalRequired, RunContext, ToolContract, ToolGateway
 from .journal import Journal
-from .research import run_research_plan
+from .research import (derive_research_key, reconcile_research_duplicates,
+                       run_research_plan)
 from .workers import FakeWorker, StepRequest
 
 DEMO_CONCEPT = """Build a tiny greeting library:
@@ -335,6 +336,15 @@ def main(argv: list[str] | None = None) -> int:
                     help="root directory containing agentos.db and goals/")
     rp.add_argument("--workspace-root", default=None,
                     help="trusted repository root for verified local sources; defaults to cwd")
+    rr = sub.add_parser("research-reconcile")
+    rr.add_argument("--db", required=True,
+                    help="root directory containing agentos.db and goals/")
+    rr.add_argument("--research-key", default=None,
+                    help="reconcile one complete research revision lineage")
+    rr.add_argument("--topic", default=None,
+                    help="reconcile campaigns with this exact topic")
+    rr.add_argument("--apply", action="store_true",
+                    help="journal-cancel selected duplicate/obsolete goals")
     for verb in ("wiki-build", "wiki-check", "wiki-status"):
         w = sub.add_parser(verb)
         w.add_argument("--db", default=None,
@@ -379,7 +389,8 @@ def main(argv: list[str] | None = None) -> int:
             result = _call_quietly(run_research_plan, db, root, a.topic,
                                    a.bundle,
                                    workspace_root=Path(
-                                       a.workspace_root or Path.cwd()).resolve())
+                                       a.workspace_root or Path.cwd()).resolve(),
+                                   research_key=derive_research_key(a.topic, a.bundle))
         except Exception as exc:
             _emit_json({"status": "fail", "summary": "research-plan error",
                         "next_actions": [f"{type(exc).__name__}: {exc}"],
@@ -390,6 +401,35 @@ def main(argv: list[str] | None = None) -> int:
         # research evaluation, but it never transitions an AgentOS goal to
         # release ACCEPTED.
         return 0 if result.get("status") in {"pass", "pass_with_limits"} else 1
+
+    if a.cmd == "research-reconcile":
+        has_key = bool(a.research_key and a.research_key.strip())
+        has_topic = bool(a.topic and a.topic.strip())
+        if (a.research_key is not None and a.topic is not None) or (
+                a.apply and has_key == has_topic):
+            _emit_json({
+                "status": "fail",
+                "summary": ("exactly one selector is required for apply"
+                             if a.apply else "research-key and topic are mutually exclusive"),
+                "next_actions": ["provide exactly one --research-key or --topic"],
+            })
+            return 2
+        db = None
+        try:
+            root = Path(a.db).resolve()
+            db = open_db(root / "agentos.db")
+            result = _call_quietly(
+                reconcile_research_duplicates, db,
+                research_key=a.research_key, topic=a.topic, apply=a.apply)
+        except Exception as exc:
+            _emit_json({"status": "fail", "summary": "research-reconcile error",
+                        "next_actions": [f"{type(exc).__name__}: {exc}"]})
+            return 1
+        finally:
+            if db is not None:
+                db.conn.close()
+        _emit_json(result)
+        return 1 if result.get("errors") else 0
 
     if a.cmd == "demo":
         try:

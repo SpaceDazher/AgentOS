@@ -1,7 +1,7 @@
 {
   "schema": "agentos.scenario-manifest/v1",
   "manifest_id": "SLOQUAL-001-scenarios",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "extends": ["S1-002"],
   "security_gate_refs": ["S1-008"],
   "workload_engine": {
@@ -9,7 +9,9 @@
     "latency_reference": "scheduled send time on time.perf_counter_ns (monotonic)",
     "decomposition": ["queue_wait_ms = dispatch_start - scheduled_send", "service_ms = completion - dispatch_start", "end_to_end_ms = completion - scheduled_send"],
     "loss_accounting": "dropped/late/not-started requests are counted and reported; never silently dropped",
-    "allow_deny_mix": "seeded 90% allow / 10% deny (S1-002 compatible)"
+    "allow_deny_mix": "seeded 90% allow / 10% deny (S1-002 compatible)",
+    "read_batching": "burst phases use one bounded coordinator and atomic group commits of at most 32 read-only policy decisions or 10 ms of arrivals; each request keeps an individual activity row and hash-chained audit event; mutating/dangerous calls are ineligible",
+    "batch_saturation": "the producer never waits for completion; a full bounded queue emits NOT_STARTED and is counted as an error"
   },
   "provider_stub": {
     "transport": "stdlib TCP JSON-lines on 127.0.0.1 ephemeral port",
@@ -21,7 +23,7 @@
     {"id": "warm_steady_state", "required": true, "duration_s": 30, "rate_events_per_second": 34, "warmup_events": 100, "measures": ["throughput", "latency_end_to_end_ms", "error_rate", "availability", "queue_wait_ms", "db_transaction_latency_ms", "audit_journal_latency_ms"]},
     {"id": "sustained_load", "required": true, "min_duration_s": 21600, "pilot_duration_s": 900, "rate_events_per_second": 34, "warmup_window_s": 60, "measures": ["throughput", "latency_end_to_end_ms", "availability", "error_rate", "db_transaction_latency_ms", "audit_journal_latency_ms"], "scale_note": "PASS at required scale only with >=6h continuous run; pilot runs contribute PASS_WITH_LIMITS evidence"},
     {"id": "soak", "required": true, "min_duration_s": 86400, "pilot_duration_s": 1200, "rate_events_per_second": 10, "sample_interval_s": 60, "measures": ["memory_rss_bytes", "db_size_bytes", "latency_end_to_end_ms", "availability"], "scale_note": ">=24h required for full credit"},
-    {"id": "burst", "required": true, "base_rate_events_per_second": 34, "burst_multiplier": 10, "burst_rate_events_per_second": 340, "burst_duration_s": 30, "cooldown_duration_s": 30, "warmup_events": 100, "measures": ["latency_end_to_end_ms", "error_rate", "queue_wait_ms"]},
+    {"id": "burst", "required": true, "base_rate_events_per_second": 34, "burst_multiplier": 10, "burst_rate_events_per_second": 340, "burst_duration_s": 30, "cooldown_duration_s": 30, "warmup_events": 100, "read_batch_max_size": 32, "read_batch_window_ms": 10, "read_batch_scope": "read effect_class only; authorization+handler+activity+audit share one transaction", "measures": ["latency_end_to_end_ms", "error_rate", "queue_wait_ms"]},
     {"id": "queue_backpressure", "required": true, "saturating_rate_events_per_second": 400, "duration_s": 60, "max_inflight": 5000, "measures": ["queue_depth_max", "queue_wait_ms", "dropped_requests", "drain_time_seconds"], "functional_gate": "system applies backpressure without unbounded memory or lost confirmed transitions and drains afterwards"},
     {"id": "provider_full_outage", "required": true, "duration_s": 60, "rate_events_per_second": 20, "fault": {"mode": "full_outage", "window_s": [15, 35]}, "measures": ["error_rate(injected vs non-injected windows)", "availability(non-injected)", "recovery_time_seconds"]},
     {"id": "provider_degraded", "required": true, "duration_s": 90, "rate_events_per_second": 20, "fault": {"mode": "mixed", "mix": {"timeout": 0.2, "empty_response": 0.2, "rate_limited": 0.2}}, "measures": ["external_provider_failure_rate_fraction", "error_rate", "fail_closed_behavior"]},
@@ -37,5 +39,5 @@
   ],
   "long_scenario_policy": "Long-duration scenarios (sustained_load >=6h, soak >=24h) are NOT part of the unit-test suite and are executed only via explicit runner invocation with --duration override.",
   "seed_policy": "seeds [11,22,33,44,55]; scenario seed = base_seed*100000 + scenario_index*1000 + repetition",
-  "runner_version_min": "1.0.0"
+  "runner_version_min": "2.1.0"
 }

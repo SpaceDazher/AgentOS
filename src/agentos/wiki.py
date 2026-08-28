@@ -11,9 +11,9 @@ from __future__ import annotations
 
 import gc
 import json
+import os
 import re
 import shutil
-import tempfile
 import time
 import uuid
 from dataclasses import dataclass, field
@@ -53,6 +53,139 @@ def _rename_with_retry(source: Path, target: Path) -> None:
                 raise
             gc.collect()
             time.sleep(min(0.05 * (2 ** attempt), 0.25))
+
+
+class WikiBuildBusy(RuntimeError):
+    """The vault is already being rebuilt by another owner."""
+
+
+_BUILD_LOCK_NAME = ".wiki-build.lock"
+_BUILD_LOCK_STALE_SECONDS = 3600.0
+
+
+def _process_is_alive(pid: int) -> bool:
+    """Best-effort local PID liveness check used only for stale lock recovery."""
+    if pid <= 0:
+        return False
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        # The process exists but belongs to another user.  Treat it as live;
+        # deleting its ownership marker would be unsafe.
+        return True
+    except OSError:
+        return False
+    return True
+
+
+def _read_build_lock(path: Path) -> dict[str, object] | None:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        pid = int(payload["pid"])
+        token = str(payload["token"])
+        created_at = float(payload["created_at"])
+    except (OSError, TypeError, ValueError, KeyError, json.JSONDecodeError):
+        return None
+    if pid <= 0 or not token or created_at <= 0:
+        return None
+    return {"pid": pid, "token": token, "created_at": created_at}
+
+
+class _WikiBuildLock:
+    """Portable cross-process ownership for a vault projection build.
+
+    ``O_EXCL`` makes acquisition atomic on Windows and POSIX.  A live owner
+    is never removed.  A valid marker whose PID has exited can be reclaimed;
+    malformed markers are reclaimed only after an age guard, so a concurrent
+    writer's short metadata-write window fails closed.
+    """
+
+    def __init__(self, vault: Path):
+        self.path = vault / _BUILD_LOCK_NAME
+        self.token = uuid.uuid4().hex
+        self.acquired = False
+
+    def _reclaim_stale(self, owner: dict[str, object] | None) -> bool:
+        if owner is not None:
+            if _process_is_alive(int(owner["pid"])):
+                return False
+        else:
+            try:
+                age = time.time() - self.path.stat().st_mtime
+            except OSError:
+                return False
+            if age < _BUILD_LOCK_STALE_SECONDS:
+                return False
+        stale = self.path.with_name(
+            f"{self.path.name}.stale-{uuid.uuid4().hex}")
+        try:
+            # Rename, rather than unlink, wins a race between two reclaimers:
+            # only one can move the exact lock path to its private tombstone.
+            os.replace(self.path, stale)
+        except FileNotFoundError:
+            return True
+        except OSError:
+            return False
+        try:
+            stale.unlink()
+        except FileNotFoundError:
+            pass
+        return True
+
+    def acquire(self) -> None:
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        payload = json.dumps({
+            "pid": os.getpid(),
+            "token": self.token,
+            "created_at": time.time(),
+        }, sort_keys=True)
+        for _ in range(8):
+            try:
+                fd = os.open(str(self.path), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            except FileExistsError:
+                owner = _read_build_lock(self.path)
+                if owner is not None and _process_is_alive(int(owner["pid"])):
+                    raise WikiBuildBusy(
+                        f"wiki vault is busy: {self.path}")
+                if not self._reclaim_stale(owner):
+                    raise WikiBuildBusy(
+                        f"wiki build ownership is unavailable: {self.path}")
+                continue
+            try:
+                with os.fdopen(fd, "w", encoding="utf-8") as stream:
+                    stream.write(payload)
+                    stream.flush()
+                    os.fsync(stream.fileno())
+            except Exception:
+                try:
+                    self.path.unlink()
+                except OSError:
+                    pass
+                raise
+            self.acquired = True
+            return
+        raise WikiBuildBusy(f"wiki vault lock contention: {self.path}")
+
+    def release(self) -> None:
+        if not self.acquired:
+            return
+        owner = _read_build_lock(self.path)
+        if owner is not None and owner["token"] == self.token:
+            try:
+                self.path.unlink()
+            except FileNotFoundError:
+                pass
+        self.acquired = False
+
+    def __enter__(self):
+        self.acquire()
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        self.release()
+        return False
 
 
 @dataclass
@@ -152,8 +285,63 @@ class WikiBuilder:
         self.root = Path(repo_root)
         self.wiki = Path(wiki_dir) if wiki_dir else self.root / "wiki"
 
+    def _stale_staging_dirs(self) -> list[Path]:
+        """Return only direct, real staging directories owned by this vault."""
+        if not self.wiki.is_dir():
+            return []
+        vault = self.wiki.resolve()
+        out: list[Path] = []
+        for path in self.wiki.glob(".wiki-stage-*"):
+            try:
+                if (path.is_symlink() or not path.is_dir()
+                        or path.resolve().parent != vault):
+                    continue
+            except OSError:
+                continue
+            out.append(path)
+        return sorted(out)
+
+    def _cleanup_stale_staging_dirs(self) -> int:
+        """Remove crash leftovers, never arbitrary vault entries."""
+        removed = 0
+        for path in self._stale_staging_dirs():
+            shutil.rmtree(path)
+            removed += 1
+        return removed
+
+    def _make_staging_dir(self) -> Path:
+        """Create a same-volume staging directory with vault inheritance.
+
+        ``tempfile.mkdtemp`` deliberately creates an owner-only directory on
+        Windows.  Renaming its child into the live vault preserves that ACL,
+        making the generated projection unreadable to sandboxed/checker
+        processes even when the vault grants them read access.  A unique
+        ordinary mkdir inherits the vault ACL while retaining collision-safe
+        same-volume staging semantics.
+        """
+        for _ in range(8):
+            stage = self.wiki / f".wiki-stage-{uuid.uuid4().hex}"
+            try:
+                stage.mkdir()
+                return stage
+            except FileExistsError:
+                continue
+        raise RuntimeError("could not allocate unique wiki staging directory")
+
     # -- build ---------------------------------------------------------------
     def build(self) -> dict:
+        # Ownership is acquired before stale staging cleanup.  Without this
+        # boundary a second process could remove the first process's active
+        # staging tree while it is still rendering notes.
+        self.wiki.mkdir(parents=True, exist_ok=True)
+        with _WikiBuildLock(self.wiki):
+            return self._build_locked()
+
+    def _build_locked(self) -> dict:
+        # A killed process can leave a complete/partial staging tree beside
+        # the vault.  It is never canonical, so remove only exact staging
+        # names before creating the next one.
+        self._cleanup_stale_staging_dirs()
         for d in VAULT_DIRS:
             (self.wiki / d).mkdir(parents=True, exist_ok=True)
         c = self.db.conn
@@ -163,8 +351,7 @@ class WikiBuilder:
         # projection.
         # R7: staging MUST live beside the vault — rename() across volumes
         # (C: temp -> D: vault) fails with OSError EXDEV.
-        self._staging = Path(tempfile.mkdtemp(prefix=".wiki-stage-",
-                                              dir=str(self.wiki)))
+        self._staging = self._make_staging_dir()
 
         # Redaction before any content reaches the vault (R5/R7): applied to
         # EVERY untrusted text field via the _note writer itself, so no field
@@ -213,10 +400,25 @@ class WikiBuilder:
         has_research_schema = c.execute(
             "SELECT 1 FROM sqlite_master WHERE type='table' AND name='research_campaign'"
         ).fetchone()
-        research_campaigns = c.execute(
-            "SELECT id, goal_id, topic, thresholds_json, manifest_sha256,"
-            " created_at FROM research_campaign ORDER BY created_at, id"
-        ).fetchall() if has_research_schema else []
+        has_series_schema = c.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='research_series'"
+        ).fetchone()
+        if has_research_schema and has_series_schema:
+            research_campaigns = c.execute(
+                "SELECT rc.id, rc.goal_id, rc.topic, rc.thresholds_json,"
+                " rc.manifest_sha256, rc.created_at, rs.research_key,"
+                " rs.revision, rs.supersedes_campaign_id"
+                " FROM research_campaign rc LEFT JOIN research_series rs"
+                " ON rs.campaign_id=rc.id ORDER BY rc.created_at, rc.id"
+            ).fetchall()
+        else:
+            research_campaigns = c.execute(
+                "SELECT id, goal_id, topic, thresholds_json, manifest_sha256,"
+                " created_at FROM research_campaign ORDER BY created_at, id"
+            ).fetchall() if has_research_schema else []
+        # Keep a uniform mapping interface for the optional series metadata;
+        # sqlite3.Row intentionally does not implement Mapping.get().
+        research_campaigns = [dict(row) for row in research_campaigns]
         home = _note(
             "_generated/Home.md",
             {"id": "home", "type": "index", "title": "AgentOS Vault",
@@ -347,10 +549,14 @@ class WikiBuilder:
                  "status": "current", "goal_id": gid,
                  "created_at": campaign["created_at"], "updated_at": campaign["created_at"]},
                 "Research campaign metadata; no retrieved source body is projected.",
-                [f"Backlink: [[goal-{gid}]]",
-                 f"Topic: {campaign['topic']}",
-                 f"Manifest SHA-256: {campaign['manifest_sha256']}",
-                 f"Thresholds: {canonical_json(thresholds)}",
+                 [f"Backlink: [[goal-{gid}]]",
+                  f"Topic: {campaign['topic']}",
+                  f"Manifest SHA-256: {campaign['manifest_sha256']}",
+                  *([f"Research key: {campaign['research_key']}",
+                     f"Revision: {campaign['revision']}",
+                     f"Supersedes campaign: {campaign['supersedes_campaign_id']}"]
+                    if campaign.get('research_key') else []),
+                  f"Thresholds: {canonical_json(thresholds)}",
                  "",
                  "## Sources",
                  *([f"- [[research-source-{s['id']}|{s['id']}]]"
@@ -585,7 +791,44 @@ class WikiBuilder:
     # -- check -----------------------------------------------------------------
     def check(self) -> dict:
         issues: list[CheckIssue] = []
-        md_files = sorted(self.wiki.rglob("*.md"))
+        generated = self.wiki / GENERATED_DIR
+        if not self.wiki.is_dir():
+            issues.append(CheckIssue(
+                "missing_generated_projection", str(self.wiki),
+                "wiki vault does not exist; run wiki-build"))
+        elif not generated.is_dir():
+            issues.append(CheckIssue(
+                "missing_generated_projection", GENERATED_DIR,
+                "generated projection directory does not exist; run wiki-build"))
+        else:
+            try:
+                # pathlib.rglob can appear empty on Windows when traversal is
+                # denied by an inherited/protected ACL. Probe the canonical
+                # generated directory explicitly so inaccessible != clean.
+                with os.scandir(generated) as entries:
+                    next(entries, None)
+            except OSError as exc:
+                issues.append(CheckIssue(
+                    "inaccessible_projection", GENERATED_DIR,
+                    f"generated projection cannot be read: {type(exc).__name__}: {exc}"))
+            try:
+                home_ok = (generated / "Home.md").is_file()
+            except OSError:
+                home_ok = False
+            if not home_ok:
+                issues.append(CheckIssue(
+                    "missing_generated_projection", f"{GENERATED_DIR}/Home.md",
+                    "canonical Home note is absent or unreadable; run wiki-build"))
+        stale_staging = self._stale_staging_dirs()
+        for path in stale_staging:
+            rel = str(path.relative_to(self.wiki)).replace("\\", "/")
+            issues.append(CheckIssue(
+                "stale_staging_dir", rel,
+                "incomplete wiki-build staging directory; run wiki-build to clean it"))
+        stale_roots = set(stale_staging)
+        md_files = sorted(
+            p for p in self.wiki.rglob("*.md")
+            if not any(root in p.parents for root in stale_roots))
         ids: dict[str, str] = {}
         links: list[tuple[str, str]] = []   # (source note, target name)
 

@@ -279,6 +279,74 @@ class ToolGateway:
             raise MemoryScopeViolation(f"memory {memory_id} belongs to another scope")
         return dict(row)
 
+    def invoke_read_batch(
+            self, contract: ToolContract,
+            calls: list[tuple[RunContext, dict]]) -> list[dict]:
+        """Execute a bounded batch of read-class calls with one audit commit.
+
+        This is the burst-safe gateway path: policy and schema checks remain
+        per request, while activity rows and their hash-chained audit events
+        commit atomically as one group.  Mutating/dangerous contracts are
+        deliberately rejected because their idempotency, approval and fencing
+        semantics require the ordinary per-call pipeline.
+        """
+        if not calls:
+            return []
+        resolved = self.resolve(contract.name, contract.version)
+        if resolved.identity != contract.identity:
+            raise GatewayError(
+                f"contract identity mismatch after re-resolve "
+                f"({resolved.identity} != {contract.identity})")
+        if resolved.effect_class != "read":
+            raise GatewayError("invoke_read_batch accepts read contracts only")
+
+        prepared: list[tuple[RunContext, dict, str, str]] = []
+        for ctx, supplied_args in calls:
+            args = self.validate_args(resolved, dict(supplied_args))
+            canon = canonical_json(args)
+            activity_id = new_id("activity")
+            prepared.append((ctx, args, canon, activity_id))
+
+        results: list[dict] = []
+        with self.db.tx() as conn:
+            for ctx, args, canon, activity_id in prepared:
+                # Authorization, local read handler and durable decision share
+                # one policy snapshot.  A concurrent revocation writer cannot
+                # commit between the capability check and this audit record.
+                status = "SUCCEEDED"
+                digest = None
+                detail: dict = {}
+                if (resolved.required_capability
+                        and resolved.required_capability not in ctx.capabilities):
+                    status = "DENIED"
+                else:
+                    try:
+                        result = (resolved.handler(**args)
+                                  if resolved.handler is not None
+                                  else {"echo": args})
+                        digest = sha256_text(canonical_json(result))
+                    except Exception as exc:  # known handler failure
+                        status = "FAILED"
+                        detail = {"error": str(exc)[:300]}
+                conn.execute(
+                    "INSERT INTO activity(id, run_id, op_name, tool_identity,"
+                    " args_canonical_json, effect_class, status, result_digest,"
+                    " detail_json) VALUES (?,?,?,?,?,?,?,?,?)",
+                    (activity_id, ctx.run_id, resolved.name,
+                     resolved.identity, canon, resolved.effect_class, status,
+                     digest, canonical_json(detail)))
+                self.j._append_event_locked(
+                    conn, ctx.goal_id, f"run:{ctx.run_id}",
+                    f"tool.{status.lower()}",
+                    {"activity_id": activity_id, "op": resolved.identity,
+                     "digest": digest}, mirror_external=False)
+                results.append({
+                    "ok": status == "SUCCEEDED", "status": status,
+                    "activity_id": activity_id, "digest": digest,
+                })
+        self.j.mirror_committed_anchor()
+        return results
+
     # -- main invocation pipeline ------------------------------------------------------
     def invoke(self, ctx: RunContext, contract: ToolContract, args: dict,
                idempotency_key: str | None = None,
@@ -305,16 +373,23 @@ class ToolGateway:
             d = dict(detail or {})
             if fence is not None:
                 d["fence"] = fence
-            self.db.conn.execute(
-                "INSERT INTO activity(id, run_id, op_name, tool_identity,"
-                " args_canonical_json, effect_class, status, result_digest,"
-                " detail_json) VALUES (?,?,?,?,?,?,?,?,?)",
-                (activity_id, ctx.run_id, contract.name, op_key, canon,
-                 contract.effect_class, status, digest, canonical_json(d)))
-            self.j.append_event(ctx.goal_id, f"run:{ctx.run_id}",
-                                f"tool.{status.lower()}",
-                                {"activity_id": activity_id, "op": op_key,
-                                 "digest": digest})
+            # The activity row and its audit event are one durable fact.  A
+            # process or disk failure must never leave either half committed.
+            # Besides preserving that invariant, one transaction avoids a
+            # second fsync on the latency-sensitive gateway path.
+            with self.db.tx() as conn:
+                conn.execute(
+                    "INSERT INTO activity(id, run_id, op_name, tool_identity,"
+                    " args_canonical_json, effect_class, status, result_digest,"
+                    " detail_json) VALUES (?,?,?,?,?,?,?,?,?)",
+                    (activity_id, ctx.run_id, contract.name, op_key, canon,
+                     contract.effect_class, status, digest, canonical_json(d)))
+                self.j._append_event_locked(
+                    conn, ctx.goal_id, f"run:{ctx.run_id}",
+                    f"tool.{status.lower()}",
+                    {"activity_id": activity_id, "op": op_key,
+                     "digest": digest}, mirror_external=False)
+            self.j.mirror_committed_anchor()
             return {"ok": status in ("SUCCEEDED", "RECONCILED_SUCCEEDED"),
                     "status": status, "activity_id": activity_id, "digest": digest}
 

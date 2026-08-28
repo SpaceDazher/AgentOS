@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import sys
 import tempfile
 import sqlite3
@@ -86,6 +87,14 @@ class FixtureBuilder:
         path = self.ticket / "slo-contract.json"
         path.write_text(json.dumps(contract), encoding="utf-8")
         self.contract_hash = freeze_contract(path)
+        scenario_path = self.ticket / "scenario-manifest.json"
+        scenario_path.write_text(json.dumps({
+            "schema": "agentos.scenario-manifest/v1",
+            "manifest_id": "TEST-scenarios",
+            "version": "test-1",
+        }), encoding="utf-8")
+        self.scenario_hash = hashlib.sha256(
+            scenario_path.read_bytes()).hexdigest()
 
     @staticmethod
     def _contract_fixture() -> dict:
@@ -147,10 +156,13 @@ class FixtureBuilder:
                 bad_commit_for: str | None = None,
                 revocation_trials_default: int = 105,
                 env_capacity_mapping: dict | None = None,
-                wrong_env_hash_for: str | None = None):
+                wrong_env_hash_for: str | None = None,
+                wrong_scenario_manifest_for: str | None = None):
         run_dir = self.root / "work" / run_id
         manifest = capture(repo_root=self.root, work_root=run_dir,
                            db_path=None,
+                           input_files=[self.ticket / "slo-contract.json",
+                                        self.ticket / "scenario-manifest.json"],
                            capacity_mapping=(
                                env_capacity_mapping
                                if env_capacity_mapping is not None
@@ -205,6 +217,10 @@ class FixtureBuilder:
                     "schema": "agentos.sloqual-result/v1",
                     "runner_version": RUNNER_VERSION,
                     "run_id": run_id, "scenario_id": scenario, "seed": seed,
+                    "scenario_manifest_version": "test-1",
+                    "scenario_manifest_sha256": (
+                        "0" * 64 if wrong_scenario_manifest_for == scenario
+                        else self.scenario_hash),
                     "commit_sha": (
                         ("f" * 40) if bad_commit_for == scenario else ("a" * 40)),
                     "contract_sha256": (
@@ -260,6 +276,15 @@ class ComparatorGateTest(unittest.TestCase):
         result = run_compare(self.builder)
         self.assertTrue(any(r.startswith("contract-modified-after-launch")
                             for r in result["fail_conditions"]))
+
+    def test_scenario_manifest_mismatch_rejected(self):
+        self.builder.add_run(
+            "run-A", wrong_scenario_manifest_for="burst")
+        self.builder.add_run("run-B")
+        result = run_compare(self.builder)
+        self.assertTrue(any(
+            r.startswith("scenario-manifest-mismatch:run-A:burst")
+            for r in result["fail_conditions"]))
         self.assertEqual(result["verdict"], "FAIL")
 
     def test_revocation_over_limit_fails(self):

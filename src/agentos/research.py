@@ -11,6 +11,9 @@ import hashlib
 import json
 import re
 import os
+import shutil
+import sqlite3
+import time
 from pathlib import Path, PureWindowsPath
 from types import MappingProxyType
 from typing import Any, Mapping
@@ -66,10 +69,49 @@ DEFAULT_CONFIG: Mapping[str, Any] = MappingProxyType({
 _HEX64 = re.compile(r"\A[0-9a-fA-F]{64}\Z")
 _LOWER_HEX64 = re.compile(r"\A[0-9a-f]{64}\Z")
 _URI_SCHEMES = {"http", "https"}
+_RESEARCH_LOCK_TTL_SECONDS = 3600
+_CANCELLABLE_GOAL_STATUSES = frozenset({
+    "DRAFT", "ACTIVE", "GATE_PENDING", "REJECTED", "ESCALATED",
+})
 
 
 class ResearchValidationError(ValueError):
     """Raised only by the strict helper APIs; the public runner fails closed."""
+
+
+class _ResearchReuse(Exception):
+    """Internal signal carrying the winner of an idempotent race."""
+
+    def __init__(self, row: Mapping[str, Any]):
+        super().__init__("research series already contains this manifest")
+        self.row = dict(row)
+
+
+def derive_research_key(topic: Any, bundle: Any = None,
+                        research_key: Any = None) -> str:
+    """Return a bounded host-controlled identity for a research campaign.
+
+    CLI bundle paths use their parent directory (``S1-002``) so retries from
+    the same ticket are naturally idempotent.  Programmatic callers without a
+    path get a topic-derived key; the manifest still determines revisions.
+    Explicit keys are accepted only in a conservative identifier alphabet so
+    they cannot become filesystem paths or SQL fragments.
+    """
+    candidate = research_key
+    if candidate is None and isinstance(bundle, (str, os.PathLike)):
+        try:
+            parent = Path(bundle).resolve().parent.name.strip()
+        except (OSError, ValueError):
+            parent = ""
+        candidate = parent
+    if candidate is None or not str(candidate).strip():
+        candidate = "topic-" + sha256_text(_as_text(topic).strip().casefold())[:32]
+    candidate = _as_text(candidate).strip()
+    if re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}", candidate):
+        return candidate
+    # Invalid explicit/path-derived values are not used verbatim.  Hashing
+    # preserves stable identity while keeping the key outside path syntax.
+    return "research-" + sha256_text(candidate)[:32]
 
 
 def _as_text(value: Any) -> str:
@@ -838,16 +880,312 @@ def research_chain_hash(db, goal_id: str) -> str:
     return _chain_hash(db, goal_id)
 
 
+def _series_exact(db, research_key: str, manifest: str):
+    latest = _series_latest(db, research_key)
+    if latest is None or latest["manifest_sha256"] != manifest:
+        return None
+    return latest
+
+
+def _series_latest(db, research_key: str):
+    return db.conn.execute(
+        "SELECT id, research_key, revision, campaign_id, goal_id, topic,"
+        " manifest_sha256, supersedes_campaign_id, created_at"
+        " FROM research_series WHERE research_key=?"
+        " ORDER BY revision DESC LIMIT 1", (research_key,)
+    ).fetchone()
+
+
+def _retire_older_research_revisions(
+        db, root: Path, research_key: str, latest_revision: int) -> int:
+    """Cancel every older cancellable revision through the state machine.
+
+    Retirement is deliberately a separate, retryable host transaction from
+    campaign creation.  A failed cancellation leaves evidence intact and is
+    reported fail-closed; a later exact reuse can safely invoke this function
+    again and converge the lineage to one active revision.
+    """
+    rows = db.conn.execute(
+        "SELECT rs.revision, rs.campaign_id, rs.goal_id, g.status"
+        " FROM research_series rs JOIN goal g ON g.id=rs.goal_id"
+        " WHERE rs.research_key=? AND rs.revision<?"
+        " ORDER BY rs.revision, rs.campaign_id", (research_key, latest_revision)
+    ).fetchall()
+    if not rows:
+        return 0
+    machine = Engine(db, root).m
+    cancelled = 0
+    for row in rows:
+        if row["status"] not in _CANCELLABLE_GOAL_STATUSES:
+            continue
+        try:
+            machine.cancel_superseded_goal(
+                row["goal_id"],
+                payload={"superseded_by_research_key": research_key,
+                         "latest_revision": latest_revision,
+                         "superseded_revision": row["revision"],
+                         "superseded_by_campaign": None},
+            )
+            cancelled += 1
+        except Exception:
+            # Another owner may have completed the idempotent transition after
+            # our read.  Only an actually remaining cancellable state blocks.
+            current = db.conn.execute(
+                "SELECT status FROM goal WHERE id=?", (row["goal_id"],)
+            ).fetchone()
+            if current and current["status"] in _CANCELLABLE_GOAL_STATUSES:
+                raise ResearchValidationError(
+                    f"could not retire revision {row['revision']}"
+                    f" for research key '{research_key}'")
+
+    remaining = db.conn.execute(
+        "SELECT rs.revision, rs.goal_id, g.status"
+        " FROM research_series rs JOIN goal g ON g.id=rs.goal_id"
+        " WHERE rs.research_key=? AND rs.revision<?"
+        " AND g.status IN ('DRAFT','ACTIVE','GATE_PENDING','REJECTED','ESCALATED')"
+        " ORDER BY rs.revision", (research_key, latest_revision)
+    ).fetchall()
+    if remaining:
+        details = ", ".join(
+            f"r{row['revision']}:{row['goal_id']}={row['status']}"
+            for row in remaining)
+        raise ResearchValidationError(
+            f"research supersession retirement incomplete for '{research_key}':"
+            f" {details}")
+    return cancelled
+
+
+def _release_research_lock(db, research_key: str, owner_token: str) -> None:
+    with db.tx() as c:
+        c.execute("DELETE FROM research_series_lock"
+                  " WHERE research_key=? AND owner_token=?",
+                  (research_key, owner_token))
+
+
+def _reserve_research_key(db, research_key: str, manifest: str):
+    """Reserve a key or return an already committed exact revision.
+
+    The reservation is deliberately short-lived and host-owned.  SQLite's
+    ``BEGIN IMMEDIATE`` serializes the check/insert, so a concurrent first run
+    cannot create two goals.  A caller that loses the race waits for the
+    winner's immutable series row and then reuses it.
+    """
+    existing = _series_exact(db, research_key, manifest)
+    if existing:
+        return None, existing
+    owner = new_id("rlock")
+    deadline = time.monotonic() + 30.0
+    while True:
+        try:
+            with db.tx() as c:
+                existing = c.execute(
+                    "SELECT id, research_key, revision, campaign_id, goal_id,"
+                    " topic, manifest_sha256, supersedes_campaign_id, created_at"
+                    " FROM research_series WHERE research_key=?"
+                    " ORDER BY revision DESC LIMIT 1", (research_key,)
+                ).fetchone()
+                if existing and existing["manifest_sha256"] == manifest:
+                    return None, existing
+                # A terminated host process cannot release its reservation.
+                # Expire only rows older than the bounded campaign window;
+                # active callers remain protected by the unique key lock.
+                c.execute(
+                    "DELETE FROM research_series_lock WHERE research_key=?"
+                    " AND created_at < strftime('%Y-%m-%dT%H:%M:%fZ', 'now',"
+                    " '-' || ? || ' seconds')",
+                    (research_key, _RESEARCH_LOCK_TTL_SECONDS),
+                )
+                c.execute(
+                    "INSERT INTO research_series_lock(research_key, owner_token)"
+                    " VALUES (?,?)", (research_key, owner))
+            return owner, None
+        except Exception as exc:
+            # Only a unique reservation conflict is retryable.  Other database
+            # errors must retain their fail-closed behavior.
+            if not isinstance(exc, sqlite3.IntegrityError):
+                raise
+            existing = _series_exact(db, research_key, manifest)
+            if existing:
+                return None, existing
+            if time.monotonic() >= deadline:
+                raise ResearchValidationError(
+                    f"research key '{research_key}' is busy; retry safely") from exc
+            time.sleep(0.05)
+
+
+def _json_or(value: Any, default: Any) -> Any:
+    try:
+        return json.loads(value or "")
+    except (TypeError, json.JSONDecodeError):
+        return default
+
+
+def _existing_campaign_result(db, root: Path, series_row: Mapping[str, Any],
+                              *, reused: bool = True) -> dict[str, Any]:
+    """Build the same JSON shape as a fresh run without appending evidence."""
+    # Exact reuse is also the recovery path for a prior revision whose
+    # post-commit retirement was interrupted.  Repair all older cancellable
+    # goals before exposing the canonical result; a remaining active older
+    # goal raises and therefore fails closed at the public runner boundary.
+    _retire_older_research_revisions(
+        db, root, str(series_row["research_key"]), int(series_row["revision"]))
+    goal_id = series_row["goal_id"]
+    campaign_id = series_row["campaign_id"]
+    campaign = db.conn.execute(
+        "SELECT config_json, thresholds_json FROM research_campaign WHERE id=?",
+        (campaign_id,)).fetchone()
+    latest = db.conn.execute(
+        "SELECT * FROM research_evaluation WHERE campaign_id=?"
+        " ORDER BY evaluation_version DESC, id DESC LIMIT 1", (campaign_id,)
+    ).fetchone()
+    sources = [dict(r) for r in db.conn.execute(
+        "SELECT id, canonical_uri, title, source_type, content_sha256,"
+        " verification_status, verifier, verification_method"
+        " FROM research_source WHERE campaign_id=? AND goal_id=? ORDER BY id",
+        (campaign_id, goal_id))]
+    claims = []
+    for row in db.conn.execute(
+            "SELECT id, text, claim_class FROM research_claim"
+            " WHERE campaign_id=? AND goal_id=? ORDER BY id",
+            (campaign_id, goal_id)):
+        claim = dict(row)
+        claim["source_ids"] = [r["source_id"] for r in db.conn.execute(
+            "SELECT source_id FROM research_claim_source"
+            " WHERE claim_id=? AND goal_id=? ORDER BY source_id",
+            (claim["id"], goal_id))]
+        claims.append(claim)
+    artifacts = [dict(r) for r in db.conn.execute(
+        "SELECT id, kind, artifact_name, version, content_sha256, storage_path,"
+        " claim_refs_json, producer FROM research_artifact"
+        " WHERE campaign_id=? AND goal_id=? ORDER BY kind, version, id",
+        (campaign_id, goal_id))]
+    for artifact in artifacts:
+        artifact["claim_refs"] = _json_or(artifact.pop("claim_refs_json", "[]"), [])
+    evaluation = None
+    status = "needs_input"
+    reasons: list[Any] = []
+    limitations: list[Any] = []
+    next_actions: list[Any] = []
+    chain = _chain_hash(db, goal_id)
+    if latest:
+        evaluation = dict(latest)
+        reasons = _json_or(evaluation.pop("reasons_json", "[]"), [])
+        limitations = _json_or(evaluation.pop("limitations_json", "[]"), [])
+        details = _json_or(evaluation.pop("details_json", "{}"), {})
+        next_actions = list(details.get("next_actions", [])) if isinstance(details, Mapping) else []
+        evaluation["reasons"] = reasons
+        evaluation["limitations"] = limitations
+        evaluation["details"] = details
+        status = evaluation["result"]
+        chain = evaluation["artifact_chain_hash"]
+    config = _json_or(campaign["config_json"] if campaign else "{}", {})
+    thresholds = _json_or(campaign["thresholds_json"] if campaign else "{}", {})
+    goal_status = db.conn.execute(
+        "SELECT status FROM goal WHERE id=?", (goal_id,)).fetchone()[0]
+    result = {
+        "status": status,
+        "summary": ("reused canonical research evaluation"
+                     if reused else "deterministic research evaluation recorded"),
+        "next_actions": next_actions,
+        "goal_id": goal_id,
+        "campaign_id": campaign_id,
+        "research_key": series_row["research_key"],
+        "revision": series_row["revision"],
+        "reused": reused,
+        "sources": sources,
+        "claims": claims,
+        "artifacts": artifacts,
+        "evaluation": evaluation,
+        "artifact_chain_hash": chain,
+        "goal_status": goal_status,
+        "release_accepted": False,
+        "thresholds": {
+            "min_source_count": thresholds.get("min_source_count",
+                                               config.get("min_source_count")),
+            "min_verified_ratio": thresholds.get("min_verified_ratio",
+                                                  config.get("min_verified_ratio")),
+        },
+    }
+    return _attach_research_outputs(db, root, goal_id, result)
+
+
 def _persist_campaign(db, root: Path, topic: str, config: Mapping[str, Any], manifest: str,
                       normalized: Mapping[str, Any],
-                      bundle_proposal: Mapping[str, Any] | None = None
+                      bundle_proposal: Mapping[str, Any] | None = None,
+                      *, research_key: str | None = None,
+                      lock_token: str | None = None
                       ) -> tuple[str, list[dict[str, Any]]]:
+    """Create one campaign and clean up only its failed host-owned attempt."""
+    key = research_key or derive_research_key(topic)
+    attempt_token = new_id("research_attempt")
+    try:
+        return _persist_campaign_body(
+            db, root, topic, config, manifest, normalized, bundle_proposal,
+            research_key=key, lock_token=lock_token,
+            attempt_token=attempt_token)
+    except Exception:
+        # The body handles errors after its transaction starts.  This outer
+        # boundary covers create/refine/activate/plan failures that occur
+        # before that inner boundary and also handles a reuse race after a new
+        # Goal was already materialized.
+        try:
+            _release_research_lock(db, key, lock_token) if lock_token else None
+        except Exception:
+            pass
+        new_goals = []
+        try:
+            for row in db.conn.execute(
+                    "SELECT id, status, constraints_json FROM goal"):
+                try:
+                    constraints = json.loads(row["constraints_json"] or "{}")
+                except (TypeError, json.JSONDecodeError):
+                    constraints = {}
+                if constraints.get("research_attempt_token") == attempt_token:
+                    new_goals.append(row)
+        except Exception:
+            new_goals = []
+        machine = Engine(db, root).m
+        for row in new_goals:
+            # A committed campaign is not a partial attempt.  In particular,
+            # preserve a new revision if only post-commit retirement failed;
+            # exact retry will repair its older lineage.
+            committed = db.conn.execute(
+                "SELECT 1 FROM research_series WHERE goal_id=?", (row["id"],)
+            ).fetchone()
+            if committed:
+                continue
+            if row["status"] in _CANCELLABLE_GOAL_STATUSES:
+                try:
+                    machine.cancel_superseded_goal(
+                        row["id"],
+                        payload={"reason": "research persistence failed",
+                                 "research_key": key},
+                    )
+                except Exception:
+                    pass
+            # This is the exact newly-created Goal subtree; canonical DB rows
+            # and all neighboring goal directories remain untouched.
+            shutil.rmtree(root / "goals" / row["id"] / "research",
+                          ignore_errors=True)
+        raise
+
+
+def _persist_campaign_body(db, root: Path, topic: str, config: Mapping[str, Any], manifest: str,
+                           normalized: Mapping[str, Any],
+                           bundle_proposal: Mapping[str, Any] | None = None,
+                           *, research_key: str | None = None,
+                           lock_token: str | None = None,
+                           attempt_token: str | None = None
+                           ) -> tuple[str, list[dict[str, Any]]]:
     campaign_id = new_id("rcamp")
+    key = research_key or derive_research_key(topic)
     engine = Engine(db, root)
     goal_id = engine.create_goal(
         topic,
         actor="research-planner",
-        constraints={"research_workflow": "agentos.research.v1", "topic": topic},
+        constraints={"research_workflow": "agentos.research.v1",
+                     "topic": topic,
+                     "research_attempt_token": attempt_token},
     )
     engine.refine_spec(
         goal_id,
@@ -882,7 +1220,30 @@ def _persist_campaign(db, root: Path, topic: str, config: Mapping[str, Any], man
     if bundle_proposal:
         # Keep the proposal auditable without allowing it to become authority.
         persisted_config["untrusted_bundle_proposal"] = dict(bundle_proposal)
-    with db.tx() as c:
+    supersedes_campaign_id: str | None = None
+    supersedes_goal_id: str | None = None
+    revision = 1
+    try:
+        # The reservation acquired by run_research_plan serializes this
+        # lookup with all other writers for the same key.  Keep the exact
+        # unique constraint as a second line of defense for old callers.
+        db.conn.execute("BEGIN IMMEDIATE")
+        c = db.conn
+        exact = c.execute(
+            "SELECT id, research_key, revision, campaign_id, goal_id, topic,"
+            " manifest_sha256, supersedes_campaign_id, created_at"
+            " FROM research_series WHERE research_key=?"
+            " ORDER BY revision DESC LIMIT 1", (key,)).fetchone()
+        if exact and exact["manifest_sha256"] == manifest:
+            raise _ResearchReuse(dict(exact))
+        previous = c.execute(
+            "SELECT campaign_id, goal_id, revision FROM research_series"
+            " WHERE research_key=? ORDER BY revision DESC LIMIT 1", (key,)
+        ).fetchone()
+        if previous:
+            supersedes_campaign_id = previous["campaign_id"]
+            supersedes_goal_id = previous["goal_id"]
+            revision = int(previous["revision"]) + 1
         c.execute(
             "INSERT INTO research_campaign(id, goal_id, topic, config_json,"
             " thresholds_json, manifest_sha256) VALUES (?,?,?,?,?,?)",
@@ -901,6 +1262,21 @@ def _persist_campaign(db, root: Path, topic: str, config: Mapping[str, Any], man
                              "required_artifacts": config["required_artifacts"]}),
              manifest, canonical_json(persisted_config)),
         )
+        c.execute(
+            "INSERT INTO research_series(id, research_key, revision, campaign_id,"
+            " goal_id, topic, manifest_sha256, supersedes_campaign_id)"
+            " VALUES (?,?,?,?,?,?,?,?)",
+            (new_id("rseries"), key, revision, campaign_id, goal_id, topic,
+             manifest, supersedes_campaign_id),
+        )
+        if supersedes_campaign_id:
+            c.execute(
+                "INSERT INTO relation_assertion(id, src_type, src_id, rel,"
+                " dst_type, dst_id, asserter) VALUES (?,?,?,?,?,?,?)",
+                (new_id("rel"), "research_campaign", campaign_id,
+                 "SUPERSEDES", "research_campaign", supersedes_campaign_id,
+                 "research-planner"),
+            )
         for source in normalized["sources"]:
             c.execute(
                 "INSERT INTO research_source(id, campaign_id, goal_id,"
@@ -959,6 +1335,27 @@ def _persist_campaign(db, root: Path, topic: str, config: Mapping[str, Any], man
                 "storage_path": str(path), "claim_refs": list(artifact["claim_ids"]),
                 "producer": artifact["producer"] or "system",
             })
+        # The lock is only coordination state; never leave it behind after a
+        # successful canonical write.  A failure path releases it below.
+        if lock_token:
+            c.execute("DELETE FROM research_series_lock"
+                      " WHERE research_key=? AND owner_token=?",
+                      (key, lock_token))
+        db.conn.execute("COMMIT")
+    except Exception:
+        db.conn.rollback()
+        if lock_token:
+            try:
+                _release_research_lock(db, key, lock_token)
+            except Exception:
+                pass
+        raise
+
+    if supersedes_goal_id:
+        # This is deliberately a state-machine transition, not a raw SQL
+        # UPDATE.  The helper retires every older cancellable revision and
+        # fails closed if one remains active.
+        _retire_older_research_revisions(db, root, key, revision)
     return goal_id, artifact_rows
 
 
@@ -1108,7 +1505,8 @@ def _attach_research_outputs(db, root: Path, goal_id: str,
 
 def run_research_plan(db, root_dir: str | Path, topic: str,
                       bundle: Any = None, config: Mapping[str, Any] | None = None,
-                      *, workspace_root: str | Path | None = None) -> dict[str, Any]:
+                      *, workspace_root: str | Path | None = None,
+                      research_key: str | None = None) -> dict[str, Any]:
     """Run one bounded research campaign and return a JSON-safe result.
 
     ``db`` may be an open :class:`agentos.db.Database`; callers needing a
@@ -1130,6 +1528,7 @@ def run_research_plan(db, root_dir: str | Path, topic: str,
     if topic_errors:
         return {"status": "fail", "summary": "research input validation failed",
                 "next_actions": topic_errors, "artifacts": []}
+    series_key = derive_research_key(topic_text, bundle, research_key)
     loaded, load_errors, missing = _load_bundle(bundle)
     if missing:
         # A scaffold is useful for a caller preparing input, but it never
@@ -1143,12 +1542,19 @@ def run_research_plan(db, root_dir: str | Path, topic: str,
         if manifest_errors:
             return {"status": "fail", "summary": "invalid research manifest",
                     "next_actions": manifest_errors, "artifacts": []}
+        lock_token = None
         try:
+            lock_token, existing = _reserve_research_key(
+                db, series_key, manifest)
+            if existing:
+                return _existing_campaign_result(db, root, existing)
             goal_id, artifact_rows = _persist_campaign(db, root, topic_text,
                                                        config_norm, manifest,
                                                        {"sources": [], "claims": [],
                                                         "artifacts": {}, "audit": {}},
-                                                       _bundle_config_proposal(loaded))
+                                                       _bundle_config_proposal(loaded),
+                                                       research_key=series_key,
+                                                       lock_token=lock_token)
         except Exception as exc:
             return {"status": "fail", "summary": "research scaffold failed",
                     "next_actions": [f"repair scaffold persistence: {exc}"],
@@ -1161,6 +1567,10 @@ def run_research_plan(db, root_dir: str | Path, topic: str,
             "goal_id": goal_id,
             "campaign_id": db.conn.execute(
                 "SELECT id FROM research_campaign WHERE goal_id=?", (goal_id,)).fetchone()[0],
+            "research_key": series_key,
+            "revision": db.conn.execute(
+                "SELECT revision FROM research_series WHERE goal_id=?", (goal_id,)
+            ).fetchone()[0],
         }
 
     errors = list(load_errors)
@@ -1178,14 +1588,58 @@ def run_research_plan(db, root_dir: str | Path, topic: str,
         return {"status": "fail", "summary": "research bundle validation failed",
                 "next_actions": list(dict.fromkeys(errors)), "artifacts": []}
 
+    lock_token = None
+    reuse_row: dict[str, Any] | None = None
+    resumed_existing = False
     try:
-        goal_id, artifact_rows = _persist_campaign(
-            db, root, topic_text, config_norm, manifest, normalized,
-            _bundle_config_proposal(loaded or {}))
+        lock_token, existing = _reserve_research_key(db, series_key, manifest)
+        if existing:
+            reuse_row = dict(existing)
+        else:
+            goal_id, artifact_rows = _persist_campaign(
+                db, root, topic_text, config_norm, manifest, normalized,
+                _bundle_config_proposal(loaded or {}),
+                research_key=series_key, lock_token=lock_token)
+    except _ResearchReuse as reuse:
+        reuse_row = dict(reuse.row)
     except Exception as exc:
         return {"status": "fail", "summary": "research persistence failed",
                 "next_actions": [f"repair research persistence: {type(exc).__name__}: {exc}"],
                 "artifacts": []}
+
+    if reuse_row is not None:
+        try:
+            _retire_older_research_revisions(
+                db, root, str(reuse_row["research_key"]),
+                int(reuse_row["revision"]))
+            recorded = db.conn.execute(
+                "SELECT 1 FROM research_evaluation WHERE campaign_id=? LIMIT 1",
+                (reuse_row["campaign_id"],)).fetchone()
+            if recorded:
+                return _existing_campaign_result(db, root, reuse_row)
+            # Persistence committed but the deterministic evaluation did not
+            # (for example, supersession retirement was interrupted). Resume
+            # the missing append-only evaluation on the same Goal/campaign;
+            # never fabricate another revision for an identical latest input.
+            goal_id = reuse_row["goal_id"]
+            artifact_rows = []
+            for row in db.conn.execute(
+                    "SELECT id, kind, artifact_name, version, content_sha256,"
+                    " storage_path, claim_refs_json, producer"
+                    " FROM research_artifact WHERE campaign_id=? AND goal_id=?"
+                    " ORDER BY kind, version, id",
+                    (reuse_row["campaign_id"], goal_id)):
+                artifact = dict(row)
+                artifact["claim_refs"] = _json_or(
+                    artifact.pop("claim_refs_json", "[]"), [])
+                artifact_rows.append(artifact)
+            resumed_existing = True
+        except Exception as exc:
+            return {"status": "fail",
+                    "summary": "research recovery failed",
+                    "next_actions": [
+                        f"repair research recovery: {type(exc).__name__}: {exc}"],
+                    "artifacts": []}
 
     failures, next_actions = _evaluation_checks(normalized, config_norm)
     result_kind = ("pass_with_limits"
@@ -1205,6 +1659,9 @@ def run_research_plan(db, root_dir: str | Path, topic: str,
     claims = [{k: c[k] for k in ("id", "text", "claim_class", "source_ids")}
               for c in normalized["claims"]]
     campaign_id = evaluation["campaign_id"]
+    series = db.conn.execute(
+        "SELECT research_key, revision FROM research_series WHERE campaign_id=?",
+        (campaign_id,)).fetchone()
     result = {
         "status": evaluation["result"],
         "summary": ("deterministic research evaluation passed with limits"
@@ -1215,6 +1672,9 @@ def run_research_plan(db, root_dir: str | Path, topic: str,
         "next_actions": next_actions,
         "goal_id": goal_id,
         "campaign_id": campaign_id,
+        "research_key": series["research_key"] if series else series_key,
+        "revision": series["revision"] if series else 1,
+        "reused": resumed_existing,
         "sources": sources,
         "claims": claims,
         "artifacts": artifacts,
@@ -1241,13 +1701,15 @@ class ResearchPlanner:
 
     def run(self, topic: str, bundle: Any = None,
             config: Mapping[str, Any] | None = None, *,
-            workspace_root: str | Path | None = None) -> dict[str, Any]:
+            workspace_root: str | Path | None = None,
+            research_key: str | None = None) -> dict[str, Any]:
         merged = dict(self.config)
         if config:
             merged.update(dict(config))
         return run_research_plan(self.db, self.root_dir, topic, bundle,
                                  merged if merged else None,
-                                 workspace_root=workspace_root)
+                                 workspace_root=workspace_root,
+                                 research_key=research_key)
 
     plan = run
 
@@ -1259,7 +1721,8 @@ def research_plan(topic: str, bundle: Any = None, *, db=None,
                   db_path: str | Path | None = None,
                   root_dir: str | Path | None = None,
                   config: Mapping[str, Any] | None = None,
-                  workspace_root: str | Path | None = None) -> dict[str, Any]:
+                  workspace_root: str | Path | None = None,
+                  research_key: str | None = None) -> dict[str, Any]:
     """Path-level convenience API usable without invoking the CLI."""
     owned = None
     if db is None:
@@ -1274,10 +1737,142 @@ def research_plan(topic: str, bundle: Any = None, *, db=None,
             root = root.parent
     try:
         return run_research_plan(db, root, topic, bundle, config,
-                                 workspace_root=workspace_root)
+                                 workspace_root=workspace_root,
+                                 research_key=research_key)
     finally:
         if owned is not None:
             owned.conn.close()
+
+
+def reconcile_research_duplicates(db, *, research_key: str | None = None,
+                                  topic: str | None = None,
+                                  apply: bool = False) -> dict[str, Any]:
+    """Preview or journal-cancel historical research duplicates.
+
+    A ``research_key`` selects one complete revision lineage: the newest
+    revision wins regardless of manifest, and every older cancellable Goal is
+    retired.  An exact ``topic`` retains the older duplicate-by-topic-and-
+    manifest behavior.  Apply is intentionally selector-bound and never
+    deletes canonical evidence.
+    """
+    key_value = str(research_key).strip() if research_key is not None else None
+    topic_value = str(topic) if topic is not None else None
+    if (research_key is not None and not key_value) or (
+            topic is not None and not topic_value.strip()):
+        raise ValueError("research reconcile selector must be non-empty")
+    key_selected = key_value is not None
+    topic_selected = topic_value is not None
+    if key_selected and topic_selected:
+        raise ValueError("exactly one research_key or topic selector is allowed")
+    if apply and not (key_selected or topic_selected):
+        raise ValueError(
+            "reconcile apply requires an explicit research_key or exact topic")
+
+    duplicate_groups: list[dict[str, Any]] = []
+    candidates: list[dict[str, Any]] = []
+    winner_by_goal: dict[str, str] = {}
+    if key_selected:
+        rows = [dict(row) for row in db.conn.execute(
+            "SELECT c.id campaign_id, c.goal_id, c.topic, c.manifest_sha256,"
+            " c.created_at, g.status, rs.revision, rs.research_key"
+            " FROM research_series rs"
+            " JOIN research_campaign c ON c.id=rs.campaign_id"
+            " JOIN goal g ON g.id=rs.goal_id"
+            " WHERE rs.research_key=? ORDER BY rs.revision, c.id",
+            (key_value,))]
+        if len(rows) >= 2:
+            winner = rows[-1]
+            old_cancellable = [
+                row for row in rows[:-1]
+                if row["status"] in _CANCELLABLE_GOAL_STATUSES]
+            duplicate_groups.append({
+                "research_key": key_value,
+                "winner_revision": winner["revision"],
+                "winner_campaign_id": winner["campaign_id"],
+                "winner_goal_id": winner["goal_id"],
+                "candidate_revisions": [row["revision"] for row in old_cancellable],
+                "candidate_goal_ids": [row["goal_id"] for row in old_cancellable],
+                "manifest_sha256s": [row["manifest_sha256"] for row in rows],
+            })
+            candidates.extend(old_cancellable)
+            for row in old_cancellable:
+                winner_by_goal[row["goal_id"]] = winner["campaign_id"]
+    else:
+        clauses: list[str] = []
+        params: list[Any] = []
+        if topic_selected:
+            clauses.append("c.topic=?")
+            params.append(topic_value)
+        where = (" WHERE " + " AND ".join(clauses)) if clauses else ""
+        rows = [dict(row) for row in db.conn.execute(
+            "SELECT c.id campaign_id, c.goal_id, c.topic, c.manifest_sha256,"
+            " c.created_at, g.status FROM research_campaign c"
+            " JOIN goal g ON g.id=c.goal_id" + where +
+            " ORDER BY c.topic, c.manifest_sha256, c.created_at, c.id", params)]
+        grouped: dict[tuple[str, str], list[dict[str, Any]]] = {}
+        for row in rows:
+            grouped.setdefault((row["topic"], row["manifest_sha256"]), []).append(row)
+        for (group_topic, manifest), members in grouped.items():
+            if len(members) < 2:
+                continue
+            winner = members[-1]
+            old_active = [row for row in members[:-1] if row["status"] == "ACTIVE"]
+            duplicate_groups.append({
+                "topic": group_topic,
+                "manifest_sha256": manifest,
+                "winner_campaign_id": winner["campaign_id"],
+                "winner_goal_id": winner["goal_id"],
+                "candidate_goal_ids": [row["goal_id"] for row in old_active],
+            })
+            candidates.extend(old_active)
+            for row in old_active:
+                winner_by_goal[row["goal_id"]] = winner["campaign_id"]
+
+    cancelled = 0
+    errors: list[str] = []
+    if apply:
+        db_root = Path(getattr(db, "path", ".")).resolve()
+        if db_root.suffix:
+            db_root = db_root.parent
+        machine = Engine(db, db_root).m
+        for row in candidates:
+            try:
+                machine.cancel_superseded_goal(
+                    row["goal_id"],
+                    payload={"reason": "research lineage reconciliation",
+                             "winner_campaign_id": winner_by_goal[row["goal_id"]],
+                             "research_key": key_value,
+                             "manifest_sha256": row["manifest_sha256"]},
+                )
+                cancelled += 1
+            except Exception as exc:
+                current = db.conn.execute(
+                    "SELECT status FROM goal WHERE id=?", (row["goal_id"],)
+                ).fetchone()
+                if current and current["status"] in _CANCELLABLE_GOAL_STATUSES:
+                    errors.append(f"{row['goal_id']}: {type(exc).__name__}: {exc}")
+        if key_selected:
+            remaining = db.conn.execute(
+                "SELECT rs.revision, rs.goal_id, g.status"
+                " FROM research_series rs JOIN goal g ON g.id=rs.goal_id"
+                " WHERE rs.research_key=?"
+                " AND rs.revision < (SELECT MAX(revision) FROM research_series"
+                " WHERE research_key=?)"
+                " AND g.status IN ('DRAFT','ACTIVE','GATE_PENDING','REJECTED','ESCALATED')",
+                (key_value, key_value)).fetchall()
+            if remaining:
+                errors.append(
+                    "research lineage still has cancellable predecessors: "
+                    + ", ".join(f"r{row['revision']}:{row['goal_id']}"
+                                for row in remaining))
+    return {
+        "mode": "apply" if apply else "dry-run",
+        "groups": duplicate_groups,
+        "candidates": len(candidates),
+        "cancelled": cancelled,
+        "errors": errors,
+        "destructive_deletes": 0,
+    }
 
 
 def fixture_bundle(topic: str = "offline fixture") -> dict[str, Any]:
@@ -1343,7 +1938,8 @@ __all__ = [
     "FLOW", "PLATFORM_SECTIONS", "MAX_BUNDLE_FILE_BYTES", "MAX_SOURCES",
     "MAX_CLAIMS", "MAX_BODY_BYTES", "MAX_URI_CHARS",
     "MAX_SOURCE_TITLE_CHARS", "MAX_SOURCE_TYPE_CHARS", "MAX_CLAIM_TEXT_CHARS",
-    "ResearchValidationError", "evaluate_research",
+    "ResearchValidationError", "evaluate_research", "derive_research_key",
+    "reconcile_research_duplicates",
     "ResearchPlanner", "ResearchWorkflow", "research_chain_hash", "research_plan",
     "run_research_plan", "fixture_bundle",
     "offline_fixture_bundle", "build_offline_fixture_bundle",

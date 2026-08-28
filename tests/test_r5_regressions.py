@@ -199,6 +199,36 @@ class TestRealWorktreeCampaign(unittest.TestCase):
                 holdout_fn=lambda wt, seed: {"passed": True})
         self.assertIn("drill-only", str(cm.exception))
 
+    def test_apply_cmd_requires_kernel_sandbox_outside_drill_mode(self):
+        from agentos.autoresearch import AutoresearchError
+        with self.assertRaises(AutoresearchError) as cm:
+            self.ar.run_campaign(
+                self._manifest(),
+                [{"hypothesis": "subprocess", "candidate_ref": "cmd",
+                  "apply_cmd": ["python", "-c", "print('candidate')"]}],
+                goal_id="goal_AR",
+                dev_eval_fn=lambda wt, seed: 0.4,
+                holdout_fn=lambda wt, seed: {"passed": True})
+        self.assertIn("kernel sandbox", str(cm.exception))
+
+    def test_docker_sandbox_is_networkless_readonly_and_digest_pinned(self):
+        from agentos.autoresearch import AutoresearchError, DockerSandbox
+        with self.assertRaises(AutoresearchError):
+            DockerSandbox(image="python:3.11",
+                          executable="C:/tools/docker.exe")
+        sandbox = DockerSandbox(
+            image="python@sha256:" + "a" * 64,
+            executable="C:/tools/docker.exe")
+        cmd = sandbox.build_command(
+            ["python", "candidate.py"], Path("C:/worktree"))
+        self.assertIn("--network", cmd)
+        self.assertIn("none", cmd)
+        self.assertIn("--read-only", cmd)
+        self.assertIn("--cap-drop", cmd)
+        self.assertIn("no-new-privileges", cmd)
+        self.assertIn("type=bind,src=C:\\worktree,dst=/workspace,rw", cmd)
+        self.assertEqual(cmd[-2:], ["python", "candidate.py"])
+
     def test_out_of_scope_change_quarantines_campaign(self):
         def apply(wt: Path):
             # candidate tries to modify a FROZEN eval file -> host catches it

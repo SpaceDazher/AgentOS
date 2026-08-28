@@ -39,7 +39,8 @@ class Journal:
     # -- append (must be called inside an open transaction) --------------------
     def _append_event_locked(self, conn: sqlite3.Connection, goal_id: str | None,
                              actor: str, event_type: str,
-                             payload: dict[str, Any]) -> str:
+                             payload: dict[str, Any], *,
+                             mirror_external: bool = True) -> str:
         last = conn.execute(
             "SELECT goal_id, actor, event_type, payload_json, prev_event_sha256"
             " FROM audit_event ORDER BY seq DESC LIMIT 1"
@@ -64,13 +65,29 @@ class Journal:
         # An attacker rewriting both audit_event and audit_anchor must also
         # notice and rewrite this file; a periodic off-host copy of it gives
         # true external anchoring (see GAP_REGISTER).
+        if mirror_external:
+            self._write_anchor_file(new_seq, digest)
+        return digest
+
+    def _write_anchor_file(self, seq: int, digest: str) -> None:
         try:
             anchor_file = Path(self.db.path).parent / "audit_anchor.head"
             anchor_file.parent.mkdir(parents=True, exist_ok=True)
-            anchor_file.write_text(f"{new_seq} {digest}\n", encoding="utf-8")
+            anchor_file.write_text(f"{seq} {digest}\n", encoding="utf-8")
         except OSError:
             pass  # read-only DB location: in-DB anchor still maintained
-        return digest
+
+    def mirror_committed_anchor(self) -> None:
+        """Refresh the local mirror from the committed in-DB anchor.
+
+        Batch writers call this once after their transaction instead of once
+        per event.  The database anchor remains updated for every event.
+        """
+        row = self.db.conn.execute(
+            "SELECT head_digest, last_seq FROM audit_anchor WHERE id=1"
+        ).fetchone()
+        if row and row["head_digest"] is not None and row["last_seq"] is not None:
+            self._write_anchor_file(int(row["last_seq"]), str(row["head_digest"]))
 
     def append_event(self, goal_id: str | None, actor: str, event_type: str,
                      payload: dict[str, Any]) -> None:

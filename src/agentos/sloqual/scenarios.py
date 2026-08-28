@@ -100,6 +100,22 @@ def _authorize_dispatch(handle, ctx, resolved, index: int):
         return "ERROR", {"error": str(exc)[:120]}
 
 
+def _authorize_dispatch_batch(handle, allowed_ctx, denied_ctx, resolved,
+                              indexes: list[int], denied_pool: set[int]):
+    """Burst path: preserve per-request policy checks with group commit."""
+    calls = [
+        (denied_ctx if index in denied_pool else allowed_ctx,
+         {"resource": "workspace/demo", "action": "read"})
+        for index in indexes
+    ]
+    results = handle.gateway.invoke_read_batch(resolved, calls)
+    return [
+        (("SUCCEEDED" if result.get("ok") else result.get("status", "ERROR")),
+         {"activity_id": result.get("activity_id")})
+        for result in results
+    ]
+
+
 UNEXPECTED_FAILURE_OUTCOMES = {"FAILED", "SQLITE_BUSY", "STALE_OWNER_DENIED", "ERROR"}
 
 
@@ -379,6 +395,8 @@ def scenario_burst(cfg: ScenarioConfig, seed: int) -> dict:
     burst_rate = base * cfg.override("burst", "burst_multiplier", 10)
     burst_s = cfg.override("burst", "burst_duration_s", 30.0)
     phase_s = cfg.override("burst", "phase_duration_s", 30.0)
+    batch_window_s = cfg.override("burst", "batch_window_ms", 10.0) / 1000.0
+    max_batch_size = int(cfg.override("burst", "max_batch_size", 32))
     handle = H.build_runtime(cfg.scenario_dir("burst", seed))
     subject = f"burst-{seed}"
     ctx = H.ledger_subject_context(handle, subject=subject)
@@ -398,9 +416,12 @@ def scenario_burst(cfg: ScenarioConfig, seed: int) -> dict:
         schedule = build_schedule(count=count, rate_events_per_second=rate,
                                   seed=seed + phase_index * 101)
         denied_pool = _split_allow_deny(count, seed)
-        result = OpenLoopRunner(max_inflight=2048).run(
-            schedule, dispatch_fn=lambda i: _authorize_dispatch(
-                handle, denied_ctx if i in denied_pool else ctx, resolved, i))
+        result = OpenLoopRunner(max_inflight=2048).run_batched(
+            schedule,
+            dispatch_batch_fn=lambda indexes: _authorize_dispatch_batch(
+                handle, ctx, denied_ctx, resolved, indexes, denied_pool),
+            max_batch_size=max_batch_size,
+            batch_window_s=batch_window_s)
         summary = summarize_open_loop(result, seed=seed,
                                       tag=f"burst.{phase_name}",
                                       denied_pool_indexes=denied_pool)

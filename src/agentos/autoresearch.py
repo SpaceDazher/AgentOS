@@ -23,6 +23,7 @@ import sys
 import tempfile
 import time
 import types
+from dataclasses import dataclass
 from pathlib import Path
 
 from .gateway import GatewayError
@@ -31,6 +32,59 @@ from .ids import new_id
 
 class AutoresearchError(GatewayError):
     pass
+
+
+@dataclass(frozen=True)
+class DockerSandbox:
+    """Concrete kernel/container boundary for production candidate code.
+
+    The image must be digest-pinned.  Candidate code receives only a writable
+    bind mount of its isolated worktree; the container root is read-only,
+    networking and Linux capabilities are disabled, and process/memory limits
+    are explicit.  Docker/Podman itself is trusted host infrastructure.
+    """
+
+    image: str
+    executable: str
+    memory_bytes: int = 1_073_741_824
+    pids_limit: int = 64
+
+    def __post_init__(self) -> None:
+        if not re.fullmatch(r"[^\s]+@sha256:[0-9a-fA-F]{64}", self.image):
+            raise AutoresearchError(
+                "sandbox image must be pinned by sha256 digest")
+        if not Path(self.executable).is_absolute():
+            raise AutoresearchError(
+                "sandbox executable must be an absolute trusted-host path")
+        if self.memory_bytes < 64 * 1024 * 1024 or self.pids_limit < 1:
+            raise AutoresearchError("invalid sandbox resource limits")
+
+    def build_command(self, argv: list[str], worktree: Path) -> list[str]:
+        source = str(worktree)
+        if any(ch in source for ch in (",", "\n", "\r")):
+            raise AutoresearchError("worktree path cannot be encoded safely")
+        return [
+            self.executable, "run", "--rm",
+            "--network", "none",
+            "--read-only",
+            "--cap-drop", "ALL",
+            "--security-opt", "no-new-privileges",
+            "--pids-limit", str(self.pids_limit),
+            "--memory", str(self.memory_bytes),
+            "--mount", f"type=bind,src={source},dst=/workspace,rw",
+            "--workdir", "/workspace",
+            "--env", "AGENTOS_WORKTREE=/workspace",
+            "--env", "PYTHONPATH=/workspace",
+            self.image,
+            *argv,
+        ]
+
+    def run(self, argv: list[str], worktree: Path, timeout: float):
+        host_env = {"SYSTEMROOT": os.environ.get("SYSTEMROOT", "")}
+        return subprocess.run(
+            self.build_command(argv, worktree),
+            cwd=str(worktree), env=host_env,
+            capture_output=True, text=True, timeout=timeout)
 
 
 STOP_REASONS = (
@@ -313,7 +367,8 @@ class Autoresearch:
     def run_campaign(self, manifest: FrozenManifest,
                      scenarios: list[dict], dev_eval_fn,
                      holdout_fn=None, *, goal_id: str | None = None,
-                     drill_mode: bool = False) -> list[dict]:
+                     drill_mode: bool = False,
+                     sandbox: DockerSandbox | None = None) -> list[dict]:
         """Real pipeline (R6): per scenario create a worktree, run the
         candidate's apply SCRIPT in an ISOLATED SUBPROCESS (cwd=worktree —
         the host process is never exposed to candidate code), verify scope +
@@ -334,6 +389,11 @@ class Autoresearch:
             raise AutoresearchError(
                 "in-process apply callbacks are drill-only; use apply_cmd"
                 " for production campaigns")
+        if any(sc.get("apply_cmd") for sc in scenarios) and not drill_mode:
+            if not isinstance(sandbox, DockerSandbox):
+                raise AutoresearchError(
+                    "production apply_cmd requires a configured kernel "
+                    "sandbox; stripped subprocess execution is drill-only")
         campaign_id = self.create_campaign(manifest, "autoresearch",
                                            goal_id=goal_id)
         results = []
@@ -359,20 +419,20 @@ class Autoresearch:
                     sc["apply"](wt)
                     apply_called = True
                 elif sc.get("apply_cmd"):
-                    # R7: candidate code runs in an isolated SUBPROCESS whose
-                    # cwd IS the worktree and whose environment is reduced to
-                    # the worktree itself — no host env, no host paths. The
-                    # host never imports or calls candidate code.
-                    clean_env = {
-                        "PATH": "", "SYSTEMROOT": os.environ.get(
-                            "SYSTEMROOT", ""),
-                        "AGENTOS_WORKTREE": str(wt),
-                        "PYTHONPATH": str(wt),
-                    }
-                    proc = subprocess.run(
-                        [*sc["apply_cmd"]], cwd=str(wt), env=clean_env,
-                        capture_output=True, text=True,
-                        timeout=manifest.hard_constraints.get("timeout_s", 600))
+                    timeout = manifest.hard_constraints.get("timeout_s", 600)
+                    if drill_mode:
+                        clean_env = {
+                            "PATH": "", "SYSTEMROOT": os.environ.get(
+                                "SYSTEMROOT", ""),
+                            "AGENTOS_WORKTREE": str(wt),
+                            "PYTHONPATH": str(wt),
+                        }
+                        proc = subprocess.run(
+                            [*sc["apply_cmd"]], cwd=str(wt), env=clean_env,
+                            capture_output=True, text=True, timeout=timeout)
+                    else:
+                        assert sandbox is not None
+                        proc = sandbox.run([*sc["apply_cmd"]], wt, timeout)
                     if proc.returncode != 0:
                         infra_fail = True
                         sc["stderr_excerpt"] = (proc.stderr or "")[-300:]

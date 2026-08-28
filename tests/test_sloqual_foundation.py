@@ -18,6 +18,7 @@ from agentos.journal import Journal  # noqa: E402
 from agentos.sloqual import contract as sq_contract  # noqa: E402
 from agentos.sloqual import environment as sq_environment  # noqa: E402
 from agentos.sloqual import revocation as sq_revocation  # noqa: E402
+from agentos.sloqual.openloop import OpenLoopRunner, build_schedule  # noqa: E402
 from agentos.sloqual.stats import (  # noqa: E402
     MetricRecord, bootstrap_ci, percentile_nearest_rank, proportion_record,
     sufficient_power, wilson_interval)
@@ -227,6 +228,34 @@ class EnvironmentManifestTest(unittest.TestCase):
             h1 = sq_environment.manifest_hash(manifest)
             h2 = sq_environment.manifest_hash(manifest)
             self.assertEqual(h1, h2)
+
+
+class OpenLoopBatchTest(unittest.TestCase):
+    def test_scheduled_requests_are_dispatched_in_bounded_batches(self):
+        schedule = build_schedule(
+            count=100, rate_events_per_second=10_000, seed=19,
+            fixed_rate=True)
+        batch_sizes = []
+
+        def dispatch_batch(indexes):
+            batch_sizes.append(len(indexes))
+            return [("SUCCEEDED", {"index": i}) for i in indexes]
+
+        result = OpenLoopRunner(max_inflight=128).run_batched(
+            schedule, dispatch_batch_fn=dispatch_batch,
+            max_batch_size=16, batch_window_s=0.001)
+
+        self.assertEqual(len(result.observations), 100)
+        self.assertEqual(result.not_started, 0)
+        self.assertTrue(batch_sizes)
+        self.assertLessEqual(max(batch_sizes), 16)
+        self.assertEqual(sum(batch_sizes), 100)
+        self.assertTrue(all(o.outcome == "SUCCEEDED"
+                            for o in result.observations))
+        self.assertTrue(all(
+            o.dispatch_abs_ns >= result.schedule_origin_ns
+            + o.scheduled_offset_ns
+            for o in result.observations))
 
 
 if __name__ == "__main__":

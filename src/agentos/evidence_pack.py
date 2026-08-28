@@ -79,6 +79,19 @@ def build(db, root_dir: str | Path, goal_id: str) -> dict:
     research = None
     if research_campaign:
         campaign = dict(research_campaign)
+        has_series_schema = c.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='research_series'"
+        ).fetchone()
+        series = c.execute(
+            "SELECT research_key, revision, supersedes_campaign_id"
+            " FROM research_series WHERE campaign_id=?",
+            (campaign["id"],)).fetchone() if has_series_schema else None
+        if series:
+            campaign.update({
+                "research_key": series["research_key"],
+                "revision": series["revision"],
+                "supersedes_campaign_id": series["supersedes_campaign_id"],
+            })
         for key in ("config_json", "thresholds_json"):
             raw = campaign.pop(key, "{}") or "{}"
             try:
