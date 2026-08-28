@@ -57,5 +57,42 @@ class TestAvailability(unittest.TestCase):
             DshAgentWorker()
 
 
+class TestAsciiTransport(unittest.TestCase):
+    """The dsh boot pipeline corrupts non-ASCII argv (measured: cp1251
+    mojibake), so the wire prompt must be ASCII; violations fail loudly."""
+
+    def test_template_is_ascii_single_line(self):
+        from agentos.dsh_worker import PROMPT_TEMPLATE_ASCII
+        PROMPT_TEMPLATE_ASCII.encode("ascii")
+        self.assertNotIn("\n", PROMPT_TEMPLATE_ASCII)
+
+    def test_non_ascii_title_fails_loudly(self):
+        from agentos.workers import StepRequest
+        w = DshAgentWorker.__new__(DshAgentWorker)
+        w.bin = "dsh.cmd"
+        w.profile = "headless"
+        w.timeout_s = 1
+        res = w.step(StepRequest(
+            task_id="t", run_id="r", goal_id="g", title="реализуй задачу",
+            definition_of_done="d", inputs={}, workspace_path=".",
+            step=0, checkpoint=None, context_packet_text=""))
+        self.assertFalse(res.ok)
+        self.assertIn("ASCII", res.note)
+
+    def test_ascii_prompt_passes_guard(self):
+        from agentos.workers import StepRequest
+        w = DshAgentWorker.__new__(DshAgentWorker)
+        w.bin = "definitely-not-a-real-binary-xyz"
+        w.profile = "headless"
+        w.timeout_s = 1
+        res = w.step(StepRequest(
+            task_id="t", run_id="r", goal_id="g", title="add task",
+            definition_of_done="d", inputs={}, workspace_path=".",
+            step=0, checkpoint=None, context_packet_text=""))
+        # guard passed -> launch attempted -> typed launch failure
+        self.assertFalse(res.ok)
+        self.assertEqual(res.fail_class, "worker_unavailable")
+
+
 if __name__ == "__main__":
     unittest.main()

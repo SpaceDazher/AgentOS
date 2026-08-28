@@ -10,14 +10,15 @@ contract первого прогона нарушен (packs per-episode отс�
 
 ## Ближний круг (без изменения архитектуры)
 
-0. **Autoresearch на реальных LLM-эпизодах** — каркас готов и ПОДКЛЮЧЁН к
-    агент-генератору: `apply_host` (host-owned генератор кандидата) в
-    `autoresearch.py` + `eval/run_autoresearch.py` (воркер спавнится,
-    объявленные эффекты раскладываются в worktree, дальше штатные
-    scope/frozen-проверки, dev-эвалы, обязательный holdout, решение);
-    детерминированные дриллы KEEP/DISCARD/QUARANTINED/CRASH — в
-    `tests/test_autoresearch_agent.py`. Осталось: фактический прогон кампании
-    с реальным эпизодом (dsh/hermes) и бюджетом.
+0. ~~Autoresearch на реальных LLM-эпизодах~~ **ВЫПОЛНЕНО**: `apply_host`
+   (host-owned генератор кандидата) в `autoresearch.py` + CLI
+   `eval/run_autoresearch.py`; первая живая кампания с реальным dsh-эпизодом
+   завершилась **KEEP** (baseline_dev 0.6 → candidate_dev 0.0, обязательный
+   holdout пройден; сырой эпизод в `candidate-episodes/`). Попутно измерены и
+   задокументированы транспортные ограничения dsh (cp1251-перекодировка
+   не-ASCII argv; доставляется только первая строка) — промпт однострочный
+   ASCII, нарушения отбиваются typed-ошибкой; `dsh-output.txt` вынесен из
+   worktree (`raw_dir`), чтобы evidence адаптера не ломал scope-проверку.
 1. ~~GitHub remote + push~~ **ВЫПОЛНЕНО**: remote подключён
    (SpaceDazher/AgentOS), рабочая ветка `agent/dsh-adaptation` запушена;
    CI-матрица сработает на PR.

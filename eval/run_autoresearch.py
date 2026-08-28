@@ -20,6 +20,7 @@ import hashlib
 import importlib.util
 import json
 import sys
+import time
 from pathlib import Path
 
 _REPO = Path(__file__).resolve().parent.parent
@@ -83,8 +84,23 @@ def build_manifest(budget: int = 3):
 
 
 # -- host-owned candidate generation --------------------------------------------
+def _stash_raw(stash_dir: Path | None, raw_output_ref) -> None:
+    """Best-effort provenance: keep the raw (untrusted) episode output —
+    the worktree is removed by the campaign runner after recording."""
+    if not (stash_dir and raw_output_ref and Path(raw_output_ref).exists()):
+        return
+    try:
+        stash_dir.mkdir(parents=True, exist_ok=True)
+        stamp = time.strftime("%Y%m%d-%H%M%S")
+        (stash_dir / f"{stamp}-raw.txt").write_bytes(
+            Path(raw_output_ref).read_bytes())
+    except OSError:
+        pass  # provenance is best-effort; never blocks the campaign
+
+
 def generate_candidate(wt: Path, worker, hypothesis: str,
-                       dod: str, timeout_s: int) -> dict:
+                       dod: str, timeout_s: int,
+                       stash_dir: Path | None = None) -> dict:
     """Spawn ONE worker episode scoped to the worktree; replay its DECLARED
     effects into the worktree. Host code only — the agent never gets
     authority; the campaign verifies the resulting bytes afterwards."""
@@ -100,6 +116,7 @@ def generate_candidate(wt: Path, worker, hypothesis: str,
             context_packet_text=packet))
     except Exception as e:  # noqa: BLE001 — provider crash => CRASH class
         return {"crash": f"{type(e).__name__}: {e}"}
+    _stash_raw(stash_dir, res.raw_output_ref)
     if not res.ok:
         return {"crash": f"worker failed: {res.fail_class}: {res.note[:200]}"}
     written = []
@@ -111,13 +128,14 @@ def generate_candidate(wt: Path, worker, hypothesis: str,
     return {"files": written}
 
 
-def make_apply_host(worker, timeout_s: int, hypothesis: str):
+def make_apply_host(worker, timeout_s: int, hypothesis: str,
+                    stash_dir: Path | None = None):
     def apply_host(wt: Path) -> dict:
         info = generate_candidate(
             wt, worker, hypothesis,
             dod=f"write exactly one module {CANDIDATE_REL} implementing "
                 f"add(a,b) for the cases in the packet",
-            timeout_s=timeout_s)
+            timeout_s=timeout_s, stash_dir=stash_dir)
         if info.get("crash"):
             # provider/worker failure => infrastructure failure => CRASH
             raise RuntimeError(info["crash"])
@@ -155,7 +173,8 @@ def holdout_fn(wt, seed: int = 0) -> dict:
 
 
 # -- worker factory -----------------------------------------------------------------
-def build_worker(kind: str, timeout_s: int, mode: str = "good"):
+def build_worker(kind: str, timeout_s: int, mode: str = "good",
+                 raw_dir: Path | None = None):
     if kind == "fake":
         impl = {"good": GOOD_IMPL, "broken": BROKEN_IMPL,
                 "partial": PARTIAL_IMPL}[mode]
@@ -163,7 +182,10 @@ def build_worker(kind: str, timeout_s: int, mode: str = "good"):
                             "outputs": {"files": {CANDIDATE_REL: impl}}}])
     if kind == "dsh":
         from agentos.dsh_worker import DshAgentWorker
-        return DshAgentWorker(timeout_s=timeout_s)
+        # raw episode output goes OUTSIDE the isolated worktree so adapter
+        # evidence never trips the campaign's scope verification
+        return DshAgentWorker(timeout_s=timeout_s,
+                              raw_dir=str(raw_dir) if raw_dir else None)
     if kind == "hermes":
         from agentos.hermes_worker import HermesAgentWorker
         return HermesAgentWorker(timeout_s=timeout_s)
@@ -198,14 +220,16 @@ def main(argv=None) -> int:
         print(json.dumps({"error": "frozen eval/corpus hashes changed"}))
         return 1
 
-    worker = build_worker(args.worker, args.timeout, args.mode)
+    worker = build_worker(args.worker, args.timeout, args.mode,
+                          raw_dir=root / "worker-raw")
     results = ar.run_campaign(
         manifest,
         scenarios=[{
             "hypothesis": args.hypothesis,
             "candidate_ref": f"{args.worker}:{args.mode}",
             "apply_host": make_apply_host(worker, args.timeout,
-                                          args.hypothesis),
+                                          args.hypothesis,
+                                          stash_dir=root / "candidate-episodes"),
             "noise_floor": 0.02,
         }],
         dev_eval_fn=dev_eval_fn,
