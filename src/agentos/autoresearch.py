@@ -141,9 +141,14 @@ class Autoresearch:
 
     Production candidates use ``apply_cmd`` in a stripped-environment
     subprocess rooted at an isolated worktree. Direct ``apply(worktree)``
-    callbacks are available only in explicit drill mode. Scope and frozen
-    integrity are verified from disk by the host afterwards; this is not a
-    kernel filesystem/network sandbox.
+    callbacks are available only in explicit drill mode. A third, host-owned
+    path is ``apply_host(worktree) -> dict``: a callable that runs IN THE HOST
+    but is host code, not candidate code (e.g. it spawns a worker agent and
+    replays its DECLARED effects into the worktree). Candidate authorship is
+    still confined the same way afterwards: scope + frozen verification reads
+    the worktree from disk, so whatever wrote the bytes does not matter.
+    Scope and frozen integrity are verified from disk by the host afterwards;
+    this is not a kernel filesystem/network sandbox.
     """
 
     def __init__(self, db, root_dir: str | Path, stage_evals,
@@ -333,7 +338,7 @@ class Autoresearch:
         if any(sc.get("apply") is not None for sc in scenarios) and not drill_mode:
             raise AutoresearchError(
                 "in-process apply callbacks are drill-only; use apply_cmd"
-                " for production campaigns")
+                " or apply_host for production campaigns")
         campaign_id = self.create_campaign(manifest, "autoresearch",
                                            goal_id=goal_id)
         results = []
@@ -376,12 +381,24 @@ class Autoresearch:
                     if proc.returncode != 0:
                         infra_fail = True
                         sc["stderr_excerpt"] = (proc.stderr or "")[-300:]
+                elif sc.get("apply_host"):
+                    # Host-owned candidate generator (e.g. spawn a worker
+                    # agent and replay its DECLARED effects into the
+                    # worktree). The callable is HOST code; candidate
+                    # authorship is judged afterwards by disk verification
+                    # (scope + frozen pins), never by trust here.
+                    sc["apply_host"](wt)
+                    apply_called = True
                 scope_ok, violations = self._verify_scope_and_frozen(
                     manifest, wt, before)
             except Exception as e:  # noqa: BLE001 — crash => CRASH
                 infra_fail = True
                 sc["stderr_excerpt"] = str(e)[:200]
-                scope_ok, violations = False, [f"apply failed: {e}"]
+                # An apply crash is an INFRASTRUCTURE failure (ADR-0008:
+                # provider failures are CRASH-classed and never counted as
+                # capability signal). Scope was not verified this round —
+                # record that fact without inventing a scope violation.
+                scope_ok, violations = False, []
             if infra_fail and not violations:
                 infra_streak += 1
                 spent += 1

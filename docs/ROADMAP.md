@@ -10,10 +10,14 @@ contract первого прогона нарушен (packs per-episode отс�
 
 ## Ближний круг (без изменения архитектуры)
 
-0. **Autoresearch на реальных LLM-эпизодах** — каркас готов (ADR-0008,
-   `autoresearch.py`, детерминированная fake-кампания); следующий шаг —
-   подключить реального candidate-генератора с бюджетом (на этом хосте
-   Hermes-CLI отсутствует — путь через `dsh_worker.DshAgentWorker`).
+0. **Autoresearch на реальных LLM-эпизодах** — каркас готов и ПОДКЛЮЧЁН к
+    агент-генератору: `apply_host` (host-owned генератор кандидата) в
+    `autoresearch.py` + `eval/run_autoresearch.py` (воркер спавнится,
+    объявленные эффекты раскладываются в worktree, дальше штатные
+    scope/frozen-проверки, dev-эвалы, обязательный holdout, решение);
+    детерминированные дриллы KEEP/DISCARD/QUARANTINED/CRASH — в
+    `tests/test_autoresearch_agent.py`. Осталось: фактический прогон кампании
+    с реальным эпизодом (dsh/hermes) и бюджетом.
 1. ~~GitHub remote + push~~ **ВЫПОЛНЕНО**: remote подключён
    (SpaceDazher/AgentOS), рабочая ветка `agent/dsh-adaptation` запушена;
    CI-матрица сработает на PR.
