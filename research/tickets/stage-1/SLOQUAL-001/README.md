@@ -77,7 +77,8 @@ contract v1.0.5: runs `sloqual-final-a11-20260826` and
 the 200 ms limit. Both runs passed the S1-008 revocation gate and reported
 zero mandatory invariant violations.
 
-Contract v1.0.6 and scenario manifest v1.1.0 describe a bounded read-only
+Contract v1.0.6, scenario manifest v1.1.0, and runner/comparator v2.1.1
+describe a bounded read-only
 batch path that preserves per-request policy, handler, activity, and audit
 semantics while reducing SQLite group-commit contention. Engineering probes
 are promising but are **not qualification evidence**. A new complete A/B

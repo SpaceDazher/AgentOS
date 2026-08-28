@@ -644,6 +644,16 @@ def compare(ticket_dir: Path, run_ids: list[str], *, work_root: Path,
     for comp in rerun_summary.get("comparisons", []):
         if not isinstance(comp, dict):
             continue
+        if comp.get("flagged"):
+            delta_name = ("absolute_diff" if "absolute_diff" in comp
+                          else "relative_diff")
+            limits.append(
+                "rerun-divergence-unexplained:"
+                f"{comp.get('sli')}@{comp.get('scope')}:"
+                f"{delta_name}={comp.get(delta_name)}:"
+                f"tolerance={comp.get('tolerance')}")
+            continue
+        # Compatibility with legacy scenario-shaped comparisons.
         for label, cell in comp.items():
             if isinstance(cell, dict) and cell.get("flagged"):
                 limits.append(

@@ -18,7 +18,7 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-RUNNER_VERSION = "2.1.0"
+RUNNER_VERSION = "2.1.1"
 
 _SECRET_MARKERS = ("token", "secret", "password", "api_key", "apikey")
 

@@ -457,6 +457,17 @@ class ComparatorGateTest(unittest.TestCase):
         self.assertGreater(warm["rerun"], 0.0)
         self.assertIn("flagged", warm)
 
+    def test_contract_matrix_divergence_adds_limit(self):
+        self.builder.add_run("run-A", revocation_max_ms=40.0)
+        self.builder.add_run("run-B", revocation_max_ms=400.0)
+        result = run_compare(self.builder)
+        self.assertTrue(any(
+            item.startswith(
+                "rerun-divergence-unexplained:"
+                "revocation_enforcement_latency_ms@revocation_under_load:")
+            for item in result["limits"]), result["limits"])
+        self.assertEqual(result["verdict"], "PASS_WITH_LIMITS")
+
     def test_phase_qualifier_selects_only_named_phase(self):
         from agentos.sloqual import compare as _cmp
 

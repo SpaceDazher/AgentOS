@@ -54,7 +54,7 @@ def generate_markdown(ticket_dir: Path) -> str:
     rerun = compare["rerun_comparison"]
     lines.append("\n## Independent rerun comparison\n")
     lines.append(f"- status: {rerun.get('status')} · "
-                 f"gross divergences (>50% relative diff): "
+                 f"divergences flagged by frozen contract tolerances: "
                  f"**{rerun.get('gross_divergences', 'n/a')}**\n")
     lines.append("Interpretation: PASS requires every proof complete; "
                  "PASS_WITH_LIMITS itemizes exactly which production-grade "
