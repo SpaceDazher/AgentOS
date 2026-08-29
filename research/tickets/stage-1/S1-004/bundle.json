@@ -1,0 +1,603 @@
+{
+  "config": {
+    "min_source_count": 8,
+    "min_verified_ratio": 1.0,
+    "required_artifacts": [
+      "research_plan",
+      "source_registry",
+      "feature_catalog",
+      "architecture_models",
+      "mental_model",
+      "ontology",
+      "mathematical_model",
+      "synthesis_and_gaps",
+      "independent_audit",
+      "platform_plan",
+      "progress"
+    ]
+  },
+  "sources": [
+    {
+      "id": "SRC-06",
+      "canonical_uri": "https://local.agentos.invalid/DeepeekHarness/research/60_mathematical_model.md",
+      "title": "Agent Hub Mathematical Model (S7 verification properties)",
+      "source_type": "mathematical invariants source",
+      "content": "Section 7 defines INV1-INV6 (identity separation, single scope, attenuation, no orphan promotion, revocation monotonicity, budget conservation), the SAF set (committed decision has outbox event; redelivery never creates a second local effect receipt; unknown external outcome goes to reconciliation; grant state changes only through approve/revoke/expire/exhaust) and the LIVE set (owner-approved grant activates within one scheduler tick; crash between transition and publish is recovered by replay), plus the deterministic-simulation acceptance of 10^6 operations. Section 9 limitation 4 marks verification as a design obligation. Evidence and design input only; the document is not executed.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-004-local-hash-review",
+      "verification_method": "external-path-sha256-and-section-review",
+      "verifier_provenance": {
+        "method": "external-path-sha256-and-section-review",
+        "verified_at": "2026-08-29",
+        "external_path_at_review": "D:/Project/DeepeekHarness/research/60_mathematical_model.md",
+        "external_file_sha256_at_review": "9933ae4cfd1bfbcb9bb2d6d872b0f621d9d75d7fcf8d7e6389422b08c3189a9f",
+        "scope_note": "INV/SAF/LIVE definitions consumed verbatim as the property map."
+      }
+    },
+    {
+      "id": "SRC-05",
+      "canonical_uri": "https://local.agentos.invalid/DeepeekHarness/research/50_ontology.md",
+      "title": "Agent Hub Ontology v2 (lifecycles and I2-I5)",
+      "source_type": "ontology lifecycle source",
+      "content": "Section 2 defines invariants I2 (monotonic attenuation), I3 (single scope), I5 (delegation budget conservation: deriving a child atomically reserves its budget on the parent ledger; spent plus outstanding child reservations never exceeds the parent allocation, including concurrent derive). Section 3.1 fixes the DelegationGrant lifecycle (proposed->denied/active; active->revoked/expired/exhausted) and 3.2 the KnowledgeAssertion promotion gate. The deny admission edge is documented as part of the allowed transition set alongside SRC-06 S7 approve/revoke/expire/exhaust.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-004-local-hash-review",
+      "verification_method": "external-path-sha256-and-section-review",
+      "verifier_provenance": {
+        "method": "external-path-sha256-and-section-review",
+        "verified_at": "2026-08-29",
+        "external_path_at_review": "D:/Project/DeepeekHarness/research/50_ontology.md",
+        "external_file_sha256_at_review": "156c8b4425a597ce2be020a1471e1c32817294d6c70abab76bd94215472fa508",
+        "scope_note": "Lifecycle edges and budget conservation consumed as the model contract."
+      }
+    },
+    {
+      "id": "SRC-03",
+      "canonical_uri": "https://local.agentos.invalid/DeepeekHarness/research/30_architecture_models.md",
+      "title": "Agent Hub Architecture Models (effect semantics)",
+      "source_type": "architecture/effect semantics source",
+      "content": "Defines the transactional state store with SQL/application invariants, the effect pipeline (local commit -> durable outbox -> publish -> local effect receipt), event sourcing [H3], durable execution [H8], idempotency and reconciliation requirements [H4][H6], and the lease/recovery semantics mirrored by the simulator's crash injection.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-004-local-hash-review",
+      "verification_method": "external-path-sha256-and-section-review",
+      "verifier_provenance": {
+        "method": "external-path-sha256-and-section-review",
+        "verified_at": "2026-08-29",
+        "external_path_at_review": "D:/Project/DeepeekHarness/research/30_architecture_models.md",
+        "external_file_sha256_at_review": "46fa41dddb3b85bd07a681d04a35b1ac7b572cb3a9f6a3983a01c792f82c6b23",
+        "scope_note": "Outbox/delivery/reconciliation semantics consumed as the design contract under test."
+      }
+    },
+    {
+      "id": "SRC-07",
+      "canonical_uri": "https://local.agentos.invalid/DeepeekHarness/research/70_synthesis_and_gaps.md",
+      "title": "Agent Hub Synthesis and Gaps",
+      "source_type": "gap register",
+      "content": "Records G-10 (verification obligations) and the limitation that formal specs are written in the MVP phase with only the property list fixed in research; consumed as the constraint that this ticket's models are research evidence, not production conformance.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-004-local-hash-review",
+      "verification_method": "external-path-sha256-and-section-review",
+      "verifier_provenance": {
+        "method": "external-path-sha256-and-section-review",
+        "verified_at": "2026-08-29",
+        "external_path_at_review": "D:/Project/DeepeekHarness/research/70_synthesis_and_gaps.md",
+        "external_file_sha256_at_review": "029eb11344b7f8175e223fb6336d094d39de939790f4700e17afdd4514c0cc40",
+        "scope_note": "Scope constraint: models are research evidence."
+      }
+    },
+    {
+      "id": "SRC-08",
+      "canonical_uri": "https://local.agentos.invalid/DeepeekHarness/research/80_independent_audit.md",
+      "title": "Independent Audit of Agent Hub Research",
+      "source_type": "audit correction history",
+      "content": "Independent audit of the research corpus with the correction ledger; consumed as the provenance style reference for recording verdicts, limits, and superseded evidence.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-004-local-hash-review",
+      "verification_method": "external-path-sha256-and-section-review",
+      "verifier_provenance": {
+        "method": "external-path-sha256-and-section-review",
+        "verified_at": "2026-08-29",
+        "external_path_at_review": "D:/Project/DeepeekHarness/research/80_independent_audit.md",
+        "external_file_sha256_at_review": "90c0eae8fd47eb109e5a14a6a77be833e73a549c863a5e27720975f091b2827f",
+        "scope_note": "Audit style reference."
+      }
+    },
+    {
+      "id": "SRC-09",
+      "canonical_uri": "https://local.agentos.invalid/DeepeekHarness/research/PROGRESS.md",
+      "title": "Agent Hub Research Progress and Correction Ledger",
+      "source_type": "append-only correction ledger",
+      "content": "Rounds journal preserving correction history (e.g. S1-003's PASS_WITH_LIMITS -> PASS promotion with explicit reasons); consumed as the convention for the progress artifact and honest verdict promotion.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-004-local-hash-review",
+      "verification_method": "external-path-sha256-and-section-review",
+      "verifier_provenance": {
+        "method": "external-path-sha256-and-section-review",
+        "verified_at": "2026-08-29",
+        "external_path_at_review": "D:/Project/DeepeekHarness/research/PROGRESS.md",
+        "external_file_sha256_at_review": "3fa19d9016370ec16706eaed7b96f8bb3920e37e1557fc97037f93540ed0ba4c",
+        "scope_note": "Correction-ledger convention."
+      }
+    },
+    {
+      "id": "S1-002-EVIDENCE",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-002/raw-results.json",
+      "title": "S1-002 benchmark/capacity evidence",
+      "source_type": "dependency evidence (S1-002)",
+      "content": "Raw results of the S1-002 workload benchmark (cold/warm throughput, p95/p99, storage per row) that establish the capacity envelope the simulation envelope inherits; used unchanged per the ticket dependency rule.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-004-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-29",
+        "path": "research/tickets/stage-1/S1-002/raw-results.json",
+        "file_sha256": "8cf8e60290d5992f1a495a700b7bc812ccf2ea725c75822a23104c94918d9d3f",
+        "scope_note": "Dependency evidence reused, not modified."
+      }
+    },
+    {
+      "id": "S1-003-EVIDENCE",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-003/comparison-results.json",
+      "title": "S1-003 SHACL/ontology conformance evidence",
+      "source_type": "dependency evidence (S1-003)",
+      "content": "pySHACL versus structural oracle comparison (26/26 agreement) for the lifecycle shapes that S1-004's structural Alloy model encodes as predicates; used unchanged per the ticket dependency rule.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-004-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-29",
+        "path": "research/tickets/stage-1/S1-003/comparison-results.json",
+        "file_sha256": "f5f813ebdd2028ff51a45d8e99f630e90fad90cbe5439eef9292bbf20235d9cc",
+        "scope_note": "Dependency evidence reused, not modified."
+      }
+    },
+    {
+      "id": "S1-004-SIM",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-004/results/simulation/manifest.json",
+      "title": "S1-004 acceptance simulation manifest",
+      "source_type": "simulation measurement",
+      "content": "Acceptance manifest: seeds 11/22/33 x 1,000,000 operations, zero violations across INV1-INV6/SAF1-SAF4/LIVE1-LIVE2, per-seed trace digests, independent rerun reproducing every digest, environment manifest, and module SHA-256 bindings.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-004-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-29",
+        "path": "research/tickets/stage-1/S1-004/results/simulation/manifest.json",
+        "file_sha256": "039528940e17db0c1bafa974dee3b6099729f088f4fd79cfe3c97919bf52e8d8",
+        "scope_note": "Primary simulation evidence (hash-locked)."
+      }
+    },
+    {
+      "id": "S1-004-PROBES",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-004/results/simulation/probes.json",
+      "title": "S1-004 adversarial probe results",
+      "source_type": "adversarial probe measurement",
+      "content": "Deterministic probe results: A crash-after-commit-before-publish replay yields one outbox event, zero receipts at crash, one receipt after replayed delivery, and duplicate-ack suppression (exactly one local effect receipt); B reserve-child-budget -> revoke -> retry shows no over-allocation, reservation release on durable revoke, denied allow through the revoked chain, refused re-reservation, and unknown outcome routed to reconciliation with retry legal only afterwards.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-004-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-29",
+        "path": "research/tickets/stage-1/S1-004/results/simulation/probes.json",
+        "file_sha256": "2b9418592d3a5ad58e68cb40ea7e346892a8e1d9fd83e96734b1d13b65ef93f9",
+        "scope_note": "Adversarial probe evidence (hash-locked)."
+      }
+    },
+    {
+      "id": "S1-004-ALLOY-REPORT",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-004/results/alloy/alloy_report.txt",
+      "title": "S1-004 Alloy engine report",
+      "source_type": "formal engine report (Alloy)",
+      "content": "Full Alloy 5.1.0.201908141853 (sat4j, Java 1.8.0_401) engine output for agentos_structural_v2.als: 2 valid fixtures SAT, 5 near-miss fixtures UNSAT, 5 mutants SAT; v1->v2 correction record included in the model header.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-004-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-29",
+        "path": "research/tickets/stage-1/S1-004/results/alloy/alloy_report.txt",
+        "file_sha256": "dd4433bcfac33e1813295097de1a0188157291a586271c8087257c46d1540d55",
+        "scope_note": "Primary Alloy evidence (hash-locked)."
+      }
+    },
+    {
+      "id": "S1-004-TLA-REPORT",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-004/results/tla/tlc_report.txt",
+      "title": "S1-004 TLC engine report",
+      "source_type": "formal engine report (TLC)",
+      "content": "Full TLC2 2.15 (tla2tools 1.7.0, Java 1.8.0_401) console for agentos_transitions_v1: 271,168 distinct states (903,731 generated) exhaustively explored; 10 invariants hold; LiveDelivery temporal property holds under weak fairness; completion marker 'Model checking completed. No error has been found.'",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-004-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-29",
+        "path": "research/tickets/stage-1/S1-004/results/tla/tlc_report.txt",
+        "file_sha256": "b0b474876f947b5df9da6513c9363721c3d59b491ae78cc524e4b05dde086e6c",
+        "scope_note": "Primary TLC evidence (hash-locked)."
+      }
+    },
+    {
+      "id": "S1-004-FORMAL-SUMMARY",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-004/results/formal_summary.json",
+      "title": "S1-004 formal verdict summary",
+      "source_type": "formal verdict summary",
+      "content": "Machine-readable verdict summary binding both engine runs: Alloy expectation matrix (Valid=SAT, NearMiss=UNSAT, Mutant=SAT) with no problems, and TLC completion with state counters and model bounds.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-004-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-29",
+        "path": "research/tickets/stage-1/S1-004/results/formal_summary.json",
+        "file_sha256": "ee0df2e5bc1a1c55b611bb187ee10b4e1949a38808ed153d62705122def1cc3c",
+        "scope_note": "Formal verdict binding."
+      }
+    },
+    {
+      "id": "S1-004-ALLOY-MODEL",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-004/alloy/agentos_structural_v2.als",
+      "title": "S1-004 Alloy structural model v2",
+      "source_type": "versioned Alloy model",
+      "content": "Versioned structural model encoding INV1-INV4 as named contract predicates with valid/near-miss/mutant command triples so every UNSAT near-miss is paired with a SAT mutant (non-vacuity). Header records the v1 correction (inverted check semantics and two syntax/type defects).",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-004-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-29",
+        "path": "research/tickets/stage-1/S1-004/alloy/agentos_structural_v2.als",
+        "file_sha256": "eb4144e806b14dd43a8f06b2f0265cdd5bd494a7c3626a6da1fb6abeb345a0bf",
+        "scope_note": "Model under test."
+      }
+    },
+    {
+      "id": "S1-004-TLA-MODEL",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-004/tla/agentos_transitions_v1.tla",
+      "title": "S1-004 TLA+ transition model v1",
+      "source_type": "versioned TLA+ model",
+      "content": "Versioned transition model covering INV5 revocation monotonicity, INV6 budget conservation (including child reservation cover), SAF outbox/receipt/no-blind-retry/state-machine, LIVE activation within one tick, fencing tokens, reconciliation, and the LiveDelivery temporal property under weak fairness.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-004-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-29",
+        "path": "research/tickets/stage-1/S1-004/tla/agentos_transitions_v1.tla",
+        "file_sha256": "281c426db0bedda87fa6834ee2b6493342494b9a6344bacefc9124ba7a13d996",
+        "scope_note": "Model under test."
+      }
+    },
+    {
+      "id": "S1-004-SIM-CODE",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-004/simulator/invariant_simulator.py",
+      "title": "S1-004 deterministic simulator v1.1.0",
+      "source_type": "simulator implementation",
+      "content": "Stdlib-only deterministic simulator: fixed 48-principal/48-grant/128-object bounded world with steady-state recycling, seeded scheduler, fault injection (crash-before-publish, unknown outcomes, timeouts), incremental checks plus periodic global audits, rolling trace window, and counterexample seed-replay reproduction.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-004-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-29",
+        "path": "research/tickets/stage-1/S1-004/simulator/invariant_simulator.py",
+        "file_sha256": "2ff7bc8b62e11c2b2c0021d673d68225cbcab9f373e678a6da5db1f2002259c8",
+        "scope_note": "Simulator under test (hash-locked by the manifest)."
+      }
+    },
+    {
+      "id": "S1-004-TESTS",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/tests/test_s1_004_regressions.py",
+      "title": "S1-004 regression suite",
+      "source_type": "regression tests with negative mutations",
+      "content": "13 regression tests: recorded-evidence integrity (manifest hashes, rerun reproduction, formal summary), small-envelope live runs, determinism, both probes, 12 negative mutations (one per invariant) each detected, no-false-positive controls on the valid path, and deterministic counterexample seed-replay.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-004-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-29",
+        "path": "tests/test_s1_004_regressions.py",
+        "file_sha256": "39fc078ab7190be5dfd71b18f42430f7e3efa27ce1f3e5efcb6ca33f13168dc1",
+        "scope_note": "Regression suite (hash-locked)."
+      }
+    },
+    {
+      "id": "F10-ALLOY",
+      "canonical_uri": "https://alloytools.org/",
+      "title": "Alloy 6 / Alloy analyzer documentation",
+      "source_type": "formal-method reference",
+      "content": "Alloy is a bounded structural specification language analyzed by SAT solving (kodkod/Sat4j). S1-004 uses Alloy 5.1.0.201908141853 (jar sha256 a3b43e8ec9967947aea2d5101bd96b3c4eb0d81eb3dc9bba41cc9649349c690a) with the bundled pure-Java sat4j solver on a Java 8 JRE. Bounded scopes per command; results are bounded checks, not unbounded proofs.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-004-standard-identity-review",
+      "verification_method": "canonical-site-identity-and-local-jar-hash-review",
+      "verifier_provenance": {
+        "method": "canonical-site-identity-and-local-jar-hash-review",
+        "verified_at": "2026-08-29",
+        "executed_artifact": "research/tickets/stage-1/S1-004/tools/alloy.jar",
+        "executed_artifact_sha256": "a3b43e8ec9967947aea2d5101bd96b3c4eb0d81eb3dc9bba41cc9649349c690a",
+        "scope_note": "Engine identity pinned by jar hash; no network execution at verification time."
+      }
+    },
+    {
+      "id": "F11-TLA",
+      "canonical_uri": "https://lamport.azurewebsites.net/tla/tla.html",
+      "title": "The TLA+ Home Page (Lamport) and TLA+ Tools",
+      "source_type": "formal-method reference",
+      "content": "TLA+ is a temporal specification language; TLC performs exhaustive bounded model checking of safety invariants and temporal properties under fairness. S1-004 executes TLC2 2.15 from tla2tools 1.7.0 (jar sha256 8cce75caa1e59d0b0483bb8fb881ba33825edce8b2d98aba59d66ce685dd3d1a), the newest release runnable on the host's Java 8 JRE; the current 2.0 build requires Java 11+ and was not executed.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-004-standard-identity-review",
+      "verification_method": "canonical-site-identity-and-local-jar-hash-review",
+      "verifier_provenance": {
+        "method": "canonical-site-identity-and-local-jar-hash-review",
+        "verified_at": "2026-08-29",
+        "executed_artifact": "research/tickets/stage-1/S1-004/tools/tla2tools-1.7.0.jar",
+        "executed_artifact_sha256": "8cce75caa1e59d0b0483bb8fb881ba33825edce8b2d98aba59d66ce685dd3d1a",
+        "scope_note": "Engine identity pinned by jar hash; runtime compatibility documented in results/ENVIRONMENT.md."
+      }
+    }
+  ],
+  "claims": [
+    {
+      "id": "c1-alloy-executed",
+      "claim_class": "fact",
+      "text": "Measured: the real Alloy engine (5.1.0.201908141853, sat4j, Java 1.8.0_401) executed agentos_structural_v2.als and returned 12 verdicts: 2 valid fixtures SAT, 5 near-miss fixtures UNSAT (INV1-INV4 hold within declared scopes), and 5 mutants SAT (non-vacuity).",
+      "source_ids": [
+        "S1-004-ALLOY-REPORT",
+        "S1-004-FORMAL-SUMMARY",
+        "S1-004-ALLOY-MODEL",
+        "F10-ALLOY"
+      ]
+    },
+    {
+      "id": "c2-tlc-executed",
+      "claim_class": "fact",
+      "text": "Measured: TLC2 2.15 (tla2tools 1.7.0, Java 1.8.0_401) exhaustively explored the bounded transition model: 271,168 distinct states (903,731 generated) with all 10 invariants (TypeOk, budget conservation, child-budget cover, revocation monotonicity, outbox completeness, receipt consistency, no-blind-retry, grant state machine, activation within one tick, fence monotonicity) holding, and the LiveDelivery temporal property holding under weak fairness.",
+      "source_ids": [
+        "S1-004-TLA-REPORT",
+        "S1-004-FORMAL-SUMMARY",
+        "S1-004-TLA-MODEL",
+        "F11-TLA"
+      ]
+    },
+    {
+      "id": "c3-sim-acceptance",
+      "claim_class": "fact",
+      "text": "Measured: the deterministic simulator executed the required acceptance envelope, seeds 11/22/33 x 1,000,000 operations each (wall time 113.0s/104.4s/85.0s), with zero violations across INV1-INV6, SAF1-SAF4, LIVE1-LIVE2 and complete invariant counter tables; seed 11 measurements: 17,972 committed decisions, 12,980 effect receipts, 687 crash injections matched by 687 outbox replays, 7,605 unknown outcomes matched by 7,605 reconciliations, 245 global audits.",
+      "source_ids": [
+        "S1-004-SIM",
+        "S1-004-SIM-CODE"
+      ]
+    },
+    {
+      "id": "c4-rerun-reproduced",
+      "claim_class": "fact",
+      "text": "Measured: an independent rerun of every acceptance seed reproduced the exact trace digest (a442d5a91d00f5ffd610..., d5a0b746a5788976e096..., 9c036361233cff1bba0c...), satisfying the reproducibility criterion.",
+      "source_ids": [
+        "S1-004-SIM"
+      ]
+    },
+    {
+      "id": "c5-probes-pass",
+      "claim_class": "fact",
+      "text": "Measured: both adversarial probes pass deterministically. Probe A: crash after local commit before publish replays to exactly one outbox event, one local effect receipt, and duplicate acks suppressed. Probe B: reserve-child-budget -> revoke -> retry shows no over-allocation, descendant reservation release on durable revoke, denied allow through the revoked chain, refused re-reservation, and the unknown outcome routed to reconciliation with retry legal only after reconciliation resolved it.",
+      "source_ids": [
+        "S1-004-PROBES",
+        "S1-004-SIM-CODE"
+      ]
+    },
+    {
+      "id": "c6-regressions",
+      "claim_class": "fact",
+      "text": "Measured: the 13-test regression suite passes (0.6s): every one of the 12 contract mutations (INV1-INV6, SAF1-SAF4, LIVE1, LIVE2) is detected by the corresponding detector, the same crafted sequences without mutations produce no false positives, recorded manifest hashes match disk bytes, and a long random run under the INV2 mutation fails closed.",
+      "source_ids": [
+        "S1-004-TESTS",
+        "S1-004-SIM-CODE"
+      ]
+    },
+    {
+      "id": "c7-sim-stdlib",
+      "claim_class": "fact",
+      "text": "Structural fact: the simulator is stdlib-only (no third-party imports; a single random.Random(seed) drives all decisions; no wall-clock or dict-order dependence), version 1.1.0, SHA-256 2ff7bc8b62e11c2b2c0021d673d68225cbcab9f373e678a6da5db1f2002259c8, so Core AgentOS gains no mandatory dependency.",
+      "source_ids": [
+        "S1-004-SIM-CODE",
+        "S1-004-SIM"
+      ]
+    },
+    {
+      "id": "c8-coverage-map",
+      "claim_class": "fact",
+      "text": "Coverage fact: every required property is exercised by at least one executed engine: INV1-INV4 by Alloy valid/near-miss/mutant triples and the simulator audits; INV5/INV6 and SAF1-SAF4 by TLC invariants and simulator checks; LIVE1/LIVE2 by the TLC ActivationWithinOneTick invariant, LiveDelivery fairness property, and simulator crash-replay probe.",
+      "source_ids": [
+        "S1-004-ALLOY-MODEL",
+        "S1-004-TLA-MODEL",
+        "S1-004-SIM",
+        "SRC-06"
+      ]
+    },
+    {
+      "id": "c9-stale-ack-zero",
+      "claim_class": "fact",
+      "text": "Measurement fact: the stale-ack fencing counter is zero in all random acceptance runs by construction - a receipted decision is terminal in the delivery contract, so no further publish can follow; fencing behavior is instead evidenced deterministically by probe A's duplicate-ack suppression and the SAF2 negative mutation (a stale ack creating a second receipt is detected).",
+      "source_ids": [
+        "S1-004-SIM",
+        "S1-004-PROBES",
+        "S1-004-TESTS"
+      ]
+    },
+    {
+      "id": "c10-contract-alignment",
+      "claim_class": "inference",
+      "text": "Inference: the model contract aligns with the sources. The grant state machine follows SRC-05 S3.1 including the deny admission edge, documented explicitly alongside the SRC-06 S7 approve/revoke/expire/exhaust set; the budget ledger implements I5 with child reservations covered by the parent ledger; reconciliation-ack records the local effect receipt exactly once. No ownership or budget divergence was found.",
+      "source_ids": [
+        "S1-004-TLA-MODEL",
+        "S1-004-SIM-CODE",
+        "SRC-05",
+        "SRC-06"
+      ]
+    },
+    {
+      "id": "c11-bounded-liveness",
+      "claim_class": "inference",
+      "text": "Inference: both LIVE claims hold as bounded executable evidence - TLC checked ActivationWithinOneTick over all 271,168 states and LiveDelivery under weak fairness, and the simulator replays every crash-injected decision within one scheduler tick (687/759/712 replays for 687/759/712 crashes). Unbounded liveness is out of scope by design and remains a design obligation.",
+      "source_ids": [
+        "S1-004-TLA-REPORT",
+        "S1-004-SIM",
+        "SRC-06"
+      ]
+    },
+    {
+      "id": "c12-obligation-impl",
+      "claim_class": "assumption",
+      "text": "Design obligation: production components must preserve the modeled contract - one-tick activation and crash replay, transactional outbox append, idempotent effect receipts, and mandatory reconciliation for unknown outcomes. The bounded models and simulator are acceptance evidence for the design, not tests of deployed code; no production consensus, arbitrary LLM behavior, or unbounded verification is claimed.",
+      "source_ids": [
+        "SRC-06",
+        "SRC-03",
+        "SRC-07"
+      ]
+    },
+    {
+      "id": "c13-obligation-limits",
+      "claim_class": "assumption",
+      "text": "Design obligation (limits): Alloy scopes are 3-5 atoms per command; the TLC model bounds are 2 grants, 1 decision, Alloc=3, MaxTick=4, MaxPub=2; the simulator models a bounded 48-grant world. These are bounded checks inside the ticket's declared scope, not unbounded proofs, and larger envelopes need re-running the same reproducible commands.",
+      "source_ids": [
+        "S1-004-ALLOY-REPORT",
+        "S1-004-TLA-REPORT",
+        "SRC-06"
+      ]
+    },
+    {
+      "id": "c14-target",
+      "claim_class": "target",
+      "text": "Research target: decide whether the invariant set (INV1-INV6, SAF1-SAF4) plus bounded LIVE evidence and the deterministic simulation envelope are sufficient acceptance evidence for the platform design, and record which liveness claims remain design obligations.",
+      "source_ids": [
+        "SRC-06",
+        "SRC-07",
+        "S1-004-FORMAL-SUMMARY",
+        "S1-004-SIM"
+      ]
+    }
+  ],
+  "artifacts": {
+    "research_plan": {
+      "producer": "agentos-s1-004-producer",
+      "claim_refs": [
+        "c14-target",
+        "c8-coverage-map",
+        "c13-obligation-limits"
+      ],
+      "content": "# Question\nCan bounded Alloy/TLA+ models and a seeded deterministic scheduler exercise\nINV1-INV6, outbox delivery, fencing, effect receipts, reconciliation, and\ncrash recovery without a safety violation?\n\n# Method\nThree executed evidence layers over one shared property map: (1) a versioned\nAlloy model for structural properties with valid/near-miss/mutant command\ntriples; (2) a versioned TLA+ model for transitions checked exhaustively by\nTLC including a liveness property under weak fairness; (3) a stdlib-only\nseeded simulator with fault injection, global audits, negative mutations,\nand deterministic adversarial probes.\n\n# Scope\nIdentity separation, single scope, attenuation, no orphan promotion,\nrevocation monotonicity, budget conservation, transactional outbox,\nidempotent receipts, fencing, mandatory reconciliation, grant state machine,\nbounded liveness. Non-scope: arbitrary LLM behavior, production consensus,\nunbounded model checking, treating the planned spec as a passed\nimplementation test.\n\n# Claims separation\nSourced facts and measurements are claim_class fact (c1-c9); interpretation\nis inference (c10-c11); design obligations and limits are assumption\n(c12-c13); the decision question is the target (c14).\n\n# Limits\nBounded scopes only (Alloy 3-5 atoms; TLC 2 grants/1 decision/Alloc=3/\nMaxTick=4/MaxPub=2; simulator 48-grant bounded world). Engines and every\nartifact are hash-locked in results/ENVIRONMENT.md. Verdict claims never\nexceed the recorded evidence.\n"
+    },
+    "source_registry": {
+      "producer": "agentos-s1-004-producer",
+      "claim_refs": [
+        "c1-alloy-executed",
+        "c3-sim-acceptance"
+      ],
+      "content": "# Sources\n| ID | Class | Verification | Role |\n|---|---|---|---|\n| SRC-06 | mathematical invariants | external path + SHA-256 review | INV/SAF/LIVE property definitions |\n| SRC-05 | ontology lifecycle | external path + SHA-256 review | grant/KA lifecycles, I2-I5 |\n| SRC-03 | architecture/effect semantics | external path + SHA-256 review | outbox/receipt/reconciliation contract |\n| SRC-07 | gap register | external path + SHA-256 review | verification-as-obligation constraint |\n| SRC-08 | audit correction history | external path + SHA-256 review | verdict provenance style |\n| SRC-09 | correction ledger | external path + SHA-256 review | progress convention |\n| S1-002-EVIDENCE | dependency evidence | repo path + SHA-256 binding | capacity envelope (reused unchanged) |\n| S1-003-EVIDENCE | dependency evidence | repo path + SHA-256 binding | lifecycle shapes conformance (reused unchanged) |\n| S1-004-SIM | simulation measurement | repo path + SHA-256 binding | acceptance manifest |\n| S1-004-PROBES | probe measurement | repo path + SHA-256 binding | adversarial probes |\n| S1-004-ALLOY-REPORT | formal engine report | repo path + SHA-256 binding | Alloy engine output |\n| S1-004-TLA-REPORT | formal engine report | repo path + SHA-256 binding | TLC engine output |\n| S1-004-FORMAL-SUMMARY | formal verdict summary | repo path + SHA-256 binding | engine verdict binding |\n| S1-004-ALLOY-MODEL | versioned model | repo path + SHA-256 binding | structural model v2 |\n| S1-004-TLA-MODEL | versioned model | repo path + SHA-256 binding | transition model v1 |\n| S1-004-SIM-CODE | simulator implementation | repo path + SHA-256 binding | stdlib-only simulator v1.1.0 |\n| S1-004-TESTS | regression suite | repo path + SHA-256 binding | 13 tests incl. 12 negative mutations |\n| F10-ALLOY | formal-method reference | canonical site + jar hash | engine identity (Alloy 5.1.0) |\n| F11-TLA | formal-method reference | canonical site + jar hash | engine identity (TLC2 2.15 / tla2tools 1.7.0) |\n\n# Verification rules\nLocal repo sources bind verifier_provenance.path + file_sha256; the\nresearch-plan runtime re-verifies the binding against disk bytes and fails\nclosed on mismatch. External research docs record\nexternal_path_at_review + external_file_sha256_at_review at review time.\nEngine identities are pinned by executed jar hashes.\n"
+    },
+    "feature_catalog": {
+      "producer": "agentos-s1-004-producer",
+      "claim_refs": [
+        "c8-coverage-map",
+        "c10-contract-alignment"
+      ],
+      "content": "# Contract features\n| Feature | Evidence | Consumer | Status |\n|---|---|---|---|\n| identity separation (INV1) | Alloy near-miss UNSAT + mutant SAT; simulator detector | authorization design, S1-007 | evidenced (bounded) |\n| single scope (INV2) | Alloy near-miss UNSAT + mutant SAT; simulator detector | workspace isolation, S1-007/S1-016 | evidenced (bounded) |\n| attenuation (INV3) | Alloy near-miss UNSAT + mutant SAT; simulator detector | delegation, S1-008 | evidenced (bounded) |\n| no orphan promotion (INV4) | Alloy near-miss UNSAT + mutant SAT; simulator detector | knowledge gate S1-011 | evidenced (bounded) |\n| revocation monotonicity (INV5) | TLC invariant; simulator allow() guard | revocation propagation S1-008 | evidenced (bounded) |\n| budget conservation (INV6) | TLC invariant + child cover; simulator ledger checks | delegation budget, S1-008 | evidenced (bounded) |\n| transactional outbox (SAF1) | TLC invariant committed = outbox; simulator atomic append | effect pipeline | evidenced (bounded) |\n| idempotent effect receipts (SAF2) | TLC receipt consistency; probe A duplicate-ack suppression; SAF2 mutation | effect pipeline | evidenced (bounded) |\n| mandatory reconciliation (SAF3) | TLC no-blind-retry; probe B; SAF3 mutation | delivery UX, S1-006 | evidenced (bounded) |\n| grant state machine (SAF4) | TLC transition consistency; simulator transition table | delegation lifecycle | evidenced (bounded) |\n| activation within one tick (LIVE1) | TLC invariant + WF(TickAct); simulator LIVE1 audit | scheduler design | bounded trace + implementation obligation |\n| crash replay (LIVE2) | TLC LiveDelivery; probe A; simulator replay audit | durable execution S1-006 | bounded trace + implementation obligation |\n| fencing tokens | TLC FenceMonotone; simulator token ledger; SAF2 mutation | multi-worker delivery | evidenced (bounded) |\n\n# Hypothesis traceability\nH3 (event sourcing) and H8 (durable execution) semantics are exercised by\nthe crash/replay layer; H4/H6 (delivery idempotency/reconciliation) by the\noutbox/reconciliation layer (SRC-03). G-10 verification obligations\n(SRC-07) are discharged at research level only.\n"
+    },
+    "architecture_models": {
+      "producer": "agentos-s1-004-producer",
+      "claim_refs": [
+        "c10-contract-alignment",
+        "c12-obligation-impl"
+      ],
+      "content": "# Modeled architecture\nLocal transaction: authorize() (allow) commits the decision and appends the\noutbox event in one atomic step (SAF1). The publisher drains the durable\noutbox: publish assigns a fencing token and puts the delivery in flight;\nthe external outcome resolves to ack (effect receipt recorded exactly once,\nkeyed by decision), definitive nack (terminal), or unknown. Unknown and\ntimed-out deliveries must enter reconciliation; a resolved-nack may be\nretried; a resolved-ack records the receipt idempotently. Crashes between\ncommit and publish lose nothing durable: the scheduler replay republishes\nwithin one tick.\n\n# Grant and budget layer\nGrant lifecycle per SRC-05 S3.1 (proposed -> denied/active; active ->\nrevoked/expired/exhausted). Deriving a child reserves its budget on the\nparent ledger; spent + reserved <= allocation on every ledger and a child's\noutstanding reservation never exceeds its parent's. Durable revoke or\nexpiry releases the whole reservation chain; allow() is impossible through\na revoked chain (INV5).\n\n# Enforcement placement\nThe modeled contracts are design-level enforcement: the implementation must\nplace them in the transactional core (SQL/application invariants), not in\nportable projections. This matches SRC-03's canonical-store-first stance\nand the S1-003 outcome that SHACL projections stay secondary.\n"
+    },
+    "mental_model": {
+      "producer": "agentos-s1-004-producer",
+      "claim_refs": [
+        "c11-bounded-liveness",
+        "c12-obligation-impl"
+      ],
+      "content": "# Operator model\nAn unknown delivery outcome means \"we do not know if the effect happened\";\nthe system owes the operator a reconciliation outcome, never a silent\nretry. Reconciliation-resolved acks create the same local receipt as direct\nacks, so the operator sees exactly one effect per decision. A crash is\ninvisible: after recovery the outbox looks as if nothing happened (one\nevent, one receipt, no duplicates).\n\n# What operators may rely on\nRevocation is durable and monotonic: nothing in the revoked chain can\nproduce a later allow. Budget is conserved under any interleaving of\nreserve/confirm/cancel/revoke; a child's reservation always has parent\ncover. Approval activation and crash replay are one-tick obligations in the\ndesign; until an implementation proves them on a real scheduler they remain\nlabeled design obligations.\n\n# What operators must not assume\nBounded models do not prove arbitrary-size systems; the simulator models\nthe contract, not deployed code; a PASS here never equals Goal ACCEPTED\n(release gates over evaluator records remain the only acceptance\nauthority).\n"
+    },
+    "ontology": {
+      "producer": "agentos-s1-004-producer",
+      "claim_refs": [
+        "c10-contract-alignment"
+      ],
+      "content": "# Lifecycle semantics consumed\nDelegationGrant (SRC-05 S3.1): proposed -> active (approve) | denied\n(deny, owner rejection at admission); active -> revoked (durable revoke) |\nexpired (TTL) | exhausted (budget consumed). The S1-004 models encode the\ndeny edge explicitly and document it alongside the SRC-06 S7\napprove/revoke/expire/exhaust set; no other transition exists (SAF4).\n\n# KnowledgeAssertion\nPromotion requires at least one evidence record and exactly one\nPromotionActivity (INV4); superseded/revoked are terminal lifecycle states\nhandled by the simulator's ka_lifecycle op.\n\n# Identity and scope\nA principal occupies at most one identity class at a time (INV1: all\ndistinct classes are treated as pairwise incompatible in the model).\nEvery ContentObject has exactly one workspace scope (INV2); moving an\nobject rewrites the single scope rather than adding a second one.\n\n# Budget relationships\nDerive atomically reserves the child budget on the parent ledger (I5);\nthe invariant set checks both ledgers plus the cover relation\nchild_reserved <= parent_reserved.\n"
+    },
+    "mathematical_model": {
+      "producer": "agentos-s1-004-producer",
+      "claim_refs": [
+        "c8-coverage-map",
+        "c13-obligation-limits"
+      ],
+      "content": "# Property definitions (SRC-06 S7, SRC-05 S2)\nINV1: |classes(p)| <= 1 for every principal p.\nINV2: |scopes(co)| = 1 for every live ContentObject.\nINV3: rights(child) subseteq rights(parent) for every derived grant.\nINV4: status(ka) = promoted => |evidence(ka)| >= 1 and |promotions(ka)| = 1.\nINV5: for every decision d, lastAllowTick(d) <= revokedTick(grant(d)) when\nthe grant is durably revoked (no allow-trace after revoke).\nINV6: spent(g) + reserved(g) <= alloc(g), reserved(child) <=\nreserved(parent), remaining(g) = alloc(g) - spent(g) - reserved(g) >= 0.\n\n# SAF predicates\nSAF1: committed = outbox (atomic append contract).\nSAF2: receipts per decision <= 1; receiptToken <= token (fencing).\nSAF3: publishes(d) > 1 => reconcileDone(d) (no blind retry).\nSAF4: every grant transition edge is approve/deny/revoke/expire/exhaust.\n\n# LIVE\nLIVE1: a pending owner approval never outlives one scheduler tick\n(tick - approvedTick > 1 with state proposed is a violation).\nLIVE2: a crashed delivery is replayed within one tick; TLC LiveDelivery:\ncommitted ~> (receipted or definitively nacked) under weak fairness.\n\n# Bounds declared\nAlloy commands use 3-5 atom scopes; TLC constants Alloc=3, MaxTick=4,\nMaxPub=2 over {g1,g2}x{d1}; the simulator uses a 48-grant/48-principal/\n128-object world with steady-state recycling. All results are bounded;\nsensitivity to larger bounds requires re-running the recorded commands.\n"
+    },
+    "synthesis_and_gaps": {
+      "producer": "agentos-s1-004-producer",
+      "claim_refs": [
+        "c3-sim-acceptance",
+        "c9-stale-ack-zero",
+        "c11-bounded-liveness",
+        "c13-obligation-limits"
+      ],
+      "content": "# Result\nPASS_WITH_LIMITS. Both formal engines executed for real: Alloy 5.1.0\nreturned the exact expected 12-command matrix (valid SAT, near-miss UNSAT,\nmutant SAT), and TLC exhausted 271,168 distinct states with all 10\ninvariants and the LiveDelivery liveness property holding. The seeded\nsimulator executed 3 x 1,000,000 operations with zero violations, an\nindependent rerun reproduced every trace digest, and both adversarial\nprobes pass. The 13-test regression suite proves the detectors fire on all\n12 contract mutations with no false positives.\n\n# Gaps\n1. Stale-ack fencing is unreachable in random acceptance runs by\nconstruction (receipted decisions are terminal); it is evidenced\ndeterministically by probe A and the SAF2 mutation instead of a random\nmeasurement (recorded as fact c9, not hidden).\n2. Bounded envelopes only (Alloy 3-5 atoms; TLC 2 grants/1 decision;\nsimulator 48-grant world); larger interleavings are not covered.\n3. The simulator models the design contract, not deployed code; Core\nAgentOS does not yet implement the grant/outbox service.\n4. LIVE1/LIVE2 are bounded traces plus design obligations; unbounded\nliveness is not claimed.\n5. The host runs Java 8 only, pinning tla2tools 1.7.0 (TLC2 2.15); the\n2.0 engine line requires Java 11+ and was not executed.\n\n# Next actions\nPort the detectors as implementation contract tests (S1-006/S1-008);\nextend the TLA+ envelope (multi-decision) before implementation hardening;\nre-run the recorded commands when a newer engine or larger bounds are\navailable.\n"
+    },
+    "independent_audit": {
+      "producer": "agentos-s1-004-independent-verifier",
+      "claim_refs": [
+        "c5-probes-pass",
+        "c6-regressions"
+      ],
+      "content": "# Independent adversarial review (process-separated role)\nThe auditor role re-derived the acceptance claims from the recorded\nartifacts rather than trusting the producer narrative:\n\n1. Engine evidence: results/alloy/alloy_report.txt and\nresults/tla/tlc_report.txt contain the real engine banners (Alloy\nSimpleCLI run over agentos_structural_v2.als; TLC2 Version 2.15 rev\neb3ff99) and the completion marker 'Model checking completed. No error has\nbeen found.' The verdict summary matches the raw reports, including the\n271,168 distinct-state count and 12-command Alloy matrix.\n2. Simulation evidence: results/simulation/manifest.json records seeds\n11/22/33 x 1,000,000 operations with complete, all-zero invariant counters\nand reruns marked REPRODUCED with identical digests; per-seed\nconfig/result/digest files hash-match the manifest entries.\n3. Adversarial checks: both probes pass with explicit per-check booleans;\nthe negative-mutation suite detects all 12 broken-contract variants and\nshows no false positives on the valid path; counterexample reproduction by\nseed replay is byte-identical.\n4. Honesty checks: the stale-ack zero measurement is disclosed with its\nconstruction reason rather than hidden; LIVE obligations and bounded scopes\nare stated as limits; no production-consensus or unbounded-verification\nclaims are made.\n\n# Verdict\npass_with_limits. The evidence satisfies the ticket's acceptance criteria\nwithin their declared bounded scope. Limits are recorded in the audit\nmetadata and must propagate to S1-008/S1-017 consumers.\n"
+    },
+    "platform_plan": {
+      "producer": "agentos-s1-004-producer",
+      "claim_refs": [
+        "c12-obligation-impl",
+        "c13-obligation-limits",
+        "c14-target"
+      ],
+      "content": "# Scope\nAdopt the S1-004 evidence as the acceptance baseline for the platform's\ninvariant set: INV1-INV6 and SAF1-SAF4 are enforced in design contracts\n(Alloy structural predicates, TLA+ transition invariants, simulator\ndetectors), LIVE1/LIVE2 carry bounded traces plus explicit implementation\nobligations. This bundle authorizes no production build and adds no\nmandatory dependency to Core AgentOS.\n\n# Architecture\nKeep the transactional outbox as the canonical delivery contract: local\ncommit and outbox append are atomic; publishing is a separate best-effort\nstep; effect receipts are idempotent per decision and fenced by tokens;\nunknown external outcomes always enter reconciliation; grant state changes\nonly through approve/deny/revoke/expire/exhaust with parent-ledger budget\nconservation (spent + reserved <= allocation, child reservations covered).\n\n# Workstreams\n1. Port the simulator detectors as contract tests for the future grant/outbox\nservice (S1-008 consumes INV5, S1-017 consumes the trace model).\n2. Encode the one-tick activation and crash-replay obligations as explicit\nacceptance criteria in the backend-selection ticket S1-006.\n3. Extend the TLA+ model with multi-decision interleavings before\nimplementation hardening.\n4. Re-run the same reproducible commands on larger envelopes when the\nimplementation exists (seeds and commands are recorded in ENVIRONMENT.md).\n\n# Milestones\nM1: invariant property map and models versioned (done, this bundle).\nM2: acceptance simulation envelope executed and reproduced (done).\nM3: negative-mutation regression suite guarding the detectors (done).\nM4: implementation conformance layer reusing these detectors (future,\nrequires S1-006 backend decision).\n\n# Verification\nVerification equals executed engines and reproducible artifacts: Alloy\n5.1.0.201908141853 with sat4j (12-command expectation matrix), TLC2 2.15\nfrom tla2tools 1.7.0 (271,168 distinct states, 10 invariants, LiveDelivery),\nand the seeded simulator (3 seeds x 1,000,000 operations, rerun-reproduced\ndigests). All commands, versions, bounds, and SHA-256 bindings are recorded\nin results/ENVIRONMENT.md and results/*.json; the regression suite re-verifies\nrecorded hashes against disk.\n\n# Risks\nModel-to-implementation drift is the primary risk: the simulator models the\ncontract, not the future service, so detectors must be ported rather than\nreimplemented. The Java 8 engine pin (tla2tools 1.7.0) ages; a newer engine\nrequires re-running and re-recording evidence. Bounded envelopes may miss\ninterleavings outside the modeled bounds; the stale-ack fencing path is\nunreachable in random runs by construction and is covered only\ndeterministically (probe A, SAF2 mutation).\n\n# Open decisions\nWhether the implementation layer reuses the Python detectors directly or\nre-expresses them in the service test stack (S1-006/S1-008); whether larger\nTLA+ envelopes (multi-decision, multi-grant) become an S1-017 dependency;\nand when LIVE obligations convert from design obligations to executed\nconformance tests.\n"
+    },
+    "progress": {
+      "producer": "agentos-s1-004-producer",
+      "claim_refs": [
+        "c1-alloy-executed",
+        "c2-tlc-executed",
+        "c3-sim-acceptance",
+        "c4-rerun-reproduced"
+      ],
+      "content": "# 2026-08-29\nReviewed SRC-06 S7 (INV/SAF/LIVE), SRC-05 S2-S3 (lifecycles, I2-I5),\nSRC-03 (outbox/receipt semantics), SRC-07/SRC-08/SRC-09 (obligations,\naudit style, correction ledger), and the S1-002/S1-003 dependency evidence\n(reused unchanged). Confirmed Python 3.12.6, Java 1.8.0_401 only; the\npublished tla2tools 2.0 jar requires Java 11+ and cannot run here, so the\nexecuted TLC engine is tla2tools 1.7.0 (TLC2 2.15, jar sha256\n8cce75caa1e59d0b0483bb8fb881ba33825edce8b2d98aba59d66ce685dd3d1a); Alloy\n5.1.0.201908141853 runs with bundled sat4j (jar sha256 a3b43e8ec9967947aea\n2d5101bd96b3c4eb0d81eb3dc9bba41cc9649349c690a).\n\n# 2026-08-29 (corrections during execution, append-only)\n1. alloy/agentos_structural_v1.als: first draft had two Alloy syntax/type\ndefects (declaration-style `no p : S` without a bar, `#(x : S | f)`\ncomprehension spelling, `ka` variable shadowing the PromotionActivity.ka\nfield) and inverted check semantics (`check X { NearMiss }` searches for\ninstances where the near-miss is FALSE, so every check trivially reported a\ncounterexample). Kept as the rejected v1; superseded by v2 with\npredicates + valid/near-miss/mutant triples. Executed v2: 2 SAT valid, 5\nUNSAT near-miss, 5 SAT mutants.\n2. tla/agentos_transitions_v1.tla: missing module terminator, non-ASCII\ncomment characters rejected by the SANY lexer, a mistyped function-arrow\n(`|>` instead of `|->`), an incomplete fairness expression, actions with\nunassigned variables, and an exhaust/exhausted state-vs-transition\nmismatch were each fixed and re-run until TLC reported 'Model checking\ncompleted. No error has been found.' over 271,168 distinct states. Two\ncontract-level corrections: revocation releases descendant reservations\n(SRC-05 I5) and reconciliation-ack records the local effect receipt\nexactly once.\n3. simulator v1.0.0 -> v1.1.0: reserve_child now checks the child's own\nallocation; world recycling (grant re-proposal, object/assertion caps,\nterminal-decision archiving) prevents degenerate no-op runs; delivery was\nrestructured to in-flight attempts with timeout -> unknown ->\nreconciliation (SAF3); the definitive nack no longer resets\nreconcile_done; INV3/SAF4/LIVE2 mutations made reachable; the INV3 mutant\nnow introduces a right outside the parent set (a subset of a superset\nparent can never violate attenuation); the LIVE2 mutant forgets the replay\ninstead of faking it.\n4. Acceptance: seeds 11/22/33 x 1,000,000 operations, 0 violations,\ndigests a442d5a91d00f5ffd610.../d5a0b746a5788976e096.../\n9c036361233cff1bba0c..., reruns REPRODUCED; probes A and B pass;\n13-test regression suite OK. Commands and exit codes recorded in\nresults/ENVIRONMENT.md.\n\n# Limits\nBounded models and simulator-as-contract (not deployed code); Java 8\nengine pin; stale-ack counter zero in random runs by construction\n(covered deterministically); LIVE implementation obligations remain.\n"
+    }
+  },
+  "audit": {
+    "subject_producer": "agentos-s1-004-producer",
+    "auditor": "agentos-s1-004-independent-verifier",
+    "verdict": "pass_with_limits",
+    "limitations": [
+      "Bounded evidence: Alloy scopes are 3-5 atoms per command; the TLC model bounds are 2 grants, 1 decision, Alloc=3, MaxTick=4, MaxPub=2; no unbounded proof is claimed.",
+      "The simulator exercises the design contract (transactional outbox, fencing, reconciliation), not deployed production code; Core AgentOS does not yet implement the grant/outbox service.",
+      "Producer and verifier labels are process-separated roles in one local environment, not external human auditors.",
+      "Executed on a Java 8 JRE with tla2tools 1.7.0 (TLC2 2.15); the current tla2tools 2.0 build requires Java 11+ and was not executed.",
+      "LIVE1/LIVE2 are bounded traces (tick model, simulator replay) plus design obligations for the implementation, not unbounded liveness proofs.",
+      "Stale-ack fencing is zero in random acceptance runs by construction and is evidenced deterministically by probe A duplicate-ack suppression and the SAF2 negative mutation."
+    ],
+    "history": [
+      {
+        "timestamp": "2026-08-29T00:00:00Z",
+        "verdict": "pass_with_limits",
+        "verifier": "agentos-s1-004-independent-verifier",
+        "summary": "Initial S1-004 qualification: Alloy 12-command matrix, TLC 271,168-state exhaustive check with liveness, 3x1,000,000-operation simulated acceptance with reproduced reruns, both probes pass, 12 negative mutations detected.",
+        "limitations": "See limitations; bounded models, simulator models the contract, Java 8 engine pin.",
+        "superseded": false
+      }
+    ]
+  }
+}

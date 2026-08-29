@@ -1,0 +1,34 @@
+{
+  "schema": "agentos.ticket-evaluation-record/v1",
+  "ticket_id": "S1-004",
+  "recorded_at": "2026-08-30T00:12:00Z",
+  "db_root": ".agentos-research/platform-stage-1",
+  "campaign_id": "rcamp_VGW28X77F4N0BJFJ01M17Z45GX",
+  "goal_id": "goal_SPR6S5KYX542BWRS01M17Z45GX",
+  "evaluation_id": "reval_5K6K5YV1H28XWKKP01M17Z45KE",
+  "evaluation_version": 1,
+  "result": "pass_with_limits",
+  "artifact_chain_hash": "e7a7f89fdeb680a2d9fd37b41a6e9f41e4582ee3ed8a5ec6b22e05c67c59980f",
+  "evidence_pack": {
+    "schema": "agentos.evidence-pack/v3",
+    "path": ".agentos-research\\platform-stage-1\\goals\\goal_SPR6S5KYX542BWRS01M17Z45GX\\evidence-pack.json",
+    "sha256": "22cf328e659a302ec78b5b247ce5ca2771c4c6835d5727cea51786fea74ebc57",
+    "chain_fresh": true,
+    "latest_evaluation_valid": true
+  },
+  "wiki_check": {
+    "ok": true,
+    "files": 1429,
+    "links_checked": 4030,
+    "issues": []
+  },
+  "limitations": [
+    "Bounded evidence: Alloy scopes are 3-5 atoms per command; the TLC model bounds are 2 grants, 1 decision, Alloc=3, MaxTick=4, MaxPub=2; no unbounded proof is claimed.",
+    "The simulator exercises the design contract (transactional outbox, fencing, reconciliation), not deployed production code; Core AgentOS does not yet implement the grant/outbox service.",
+    "Producer and verifier labels are process-separated roles in one local environment, not external human auditors.",
+    "Executed on a Java 8 JRE with tla2tools 1.7.0 (TLC2 2.15); the current tla2tools 2.0 build requires Java 11+ and was not executed.",
+    "LIVE1/LIVE2 are bounded traces (tick model, simulator replay) plus design obligations for the implementation, not unbounded liveness proofs.",
+    "Stale-ack fencing is zero in random acceptance runs by construction and is evidenced deterministically by probe A duplicate-ack suppression and the SAF2 negative mutation."
+  ],
+  "note": "research-plan PASS_WITH_LIMITS is a research evaluation; it never sets Goal ACCEPTED (release gate only)"
+}

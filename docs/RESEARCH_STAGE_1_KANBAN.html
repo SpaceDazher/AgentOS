@@ -960,10 +960,24 @@
     let lastDialogTrigger = null;
     let toastTimer = null;
 
+    // Statuses recorded by executed research runs (operator-maintained;
+    // verdict evidence lives in docs/RESEARCH_STAGE_1_TICKETS.md and the
+    // ticket bundle). Users may still move cards locally.
+    // S1-004 -> pass_with_limits (recorded 2026-08-30, evaluation
+    // reval_5K6K5YV1H28XWKKP01M17Z45KE, chain e7a7f89fdeb680a2...).
+    const RECORDED_STATUS = {
+      "S1-004": "closed"
+    };
+
     function defaultState() {
       const value = {};
       ACTIVE_TICKETS.forEach(function (ticket) {
-        value[ticket.id] = ticket.deps.length === 0 ? "ready" : "planned";
+        const recorded = RECORDED_STATUS[ticket.id];
+        if (recorded && MOVABLE_STATUSES.some(function (s) { return s.id === recorded; })) {
+          value[ticket.id] = recorded;
+        } else {
+          value[ticket.id] = ticket.deps.length === 0 ? "ready" : "planned";
+        }
       });
       return value;
     }

@@ -9,7 +9,7 @@ tags:
   - agentos/stage-1
   - agentos/tickets
 created_at: 2026-08-24
-updated_at: 2026-08-24
+updated_at: 2026-08-30
 stage: 1
 status: PLANNING_ONLY
 owner: research-planning
@@ -173,7 +173,7 @@ from a lower wave to a higher wave, and S1-020 is the sole closure sink.
 | S1-001 | W0 | P0 | sources | READY | — | targeted promotion policy for `u` and Z/SV tails |
 | S1-002 | W0 | P0 | capacity | READY | — | benchmark, capacity, storage, and SLO assumptions |
 | S1-003 | W0 | P0 | formal | READY | — | executable SHACL/ontology validation |
-| S1-004 | W1 | P0 | formal | READY | S1-002, S1-003 | bounded formal/simulation checks for INV1–INV6 and delivery safety |
+| S1-004 | W1 | P0 | formal | PASS_WITH_LIMITS | S1-002, S1-003 | bounded formal/simulation checks for INV1–INV6 and delivery safety |
 | S1-005 | W1 | P1 | architecture | READY | S1-002 | QA1 modular monolith versus containers |
 | S1-006 | W2 | P1 | architecture | READY | S1-002, S1-005 | QA2 in-process versus durable execution backend |
 | S1-007 | W2 | P0 | security | READY | S1-003, S1-005 | QA3 retrieval/index scope isolation |
@@ -372,7 +372,21 @@ python -m agentos.cli research-plan --topic "S1-003 executable SHACL and ontolog
 
 ### S1-004 — Alloy/TLA+ and seeded deterministic invariant simulation
 
-- **Status:** `READY`
+- **Status:** `PASS_WITH_LIMITS` — recorded 2026-08-30: goal
+  `goal_SPR6S5KYX542BWRS01M17Z45GX`, evaluation
+  `reval_5K6K5YV1H28XWKKP01M17Z45KE`, artifact chain `e7a7f89f…9980f`,
+  evidence-pack/v3 `chain_fresh=true`, wiki-check ok (1429 files,
+  4030 links, 0 issues). Executed: Alloy 5.1.0.201908141853 (sat4j) over
+  `agentos_structural_v2.als` — 2 valid SAT / 5 near-miss UNSAT / 5 mutant
+  SAT; TLC2 2.15 (tla2tools 1.7.0, Java 8 pin) exhaustive 271,168-state
+  check — 10 invariants + LiveDelivery hold; deterministic simulator —
+  seeds 11/22/33 × 1,000,000 operations, 0 violations of INV1–INV6 and
+  SAF, reruns reproduce all digests; both adversarial probes pass; 13
+  regression tests incl. 12 negative mutations detected. Limits: bounded
+  scopes only; simulator models the design contract, not deployed code;
+  LIVE one-tick activation/replay stays an implementation obligation;
+  stale-ack fencing evidenced deterministically (probe A + SAF2 mutation),
+  not by random runs; process-separated (not external) auditor.
 - **Priority:** `P0`
 - **Wave:** `W1`
 - **Owner:** `formal`

@@ -1,0 +1,44 @@
+AgentOS S1-004 TLA+ transition model run (TLC)
+command: java -cp tools/tla2tools-1.7.0.jar tlc2.TLC -deadlock -config agentos_transitions_v1.cfg agentos_transitions_v1.tla  (run inside a scratch directory containing copies of the module and config)
+engine: TLC2 from tla2tools 1.7.0 (TLC2 Version 2.15), jar sha256=8cce75caa1e59d0b0483bb8fb881ba33825edce8b2d98aba59d66ce685dd3d1a
+spec: tla/agentos_transitions_v1.tla sha256=281c426db0bedda87fa6834ee2b6493342494b9a6344bacefc9124ba7a13d996
+config: tla/agentos_transitions_v1.cfg sha256=e37aa21816ffad387c9fc96123e64b8320db05b692309f53434c8722447f3078
+runtime: java version "1.8.0_401" on Windows-11-10.0.22631-SP0
+-deadlock rationale: bounded-model terminal states (tick = MaxTick or exhausted retry budget publishes = MaxPub) have no enabled action by design; premature parking is ruled out by the LiveDelivery temporal property under weak fairness.
+
+exit_code: 0
+wall_seconds: 44.8
+---- TLC console ----
+TLC2 Version 2.15 of Day Month 20?? (rev: eb3ff99)
+Running breadth-first search Model-Checking with fp 15 and seed -9144599212466142676 with 1 worker on 16 cores with 3580MB heap and 64MB offheap memory (Windows 11 10.0 amd64, Oracle Corporation 1.8.0_401 x86_64, MSBDiskFPSet, DiskStateQueue).
+Parsing file C:\Users\Daniil\AppData\Local\Temp\tmp2ayk2eoa\agentos_transitions_v1.tla
+Parsing file C:\Users\Daniil\AppData\Local\Temp\Integers.tla
+Parsing file C:\Users\Daniil\AppData\Local\Temp\TLC.tla
+Parsing file C:\Users\Daniil\AppData\Local\Temp\Naturals.tla
+Parsing file C:\Users\Daniil\AppData\Local\Temp\Sequences.tla
+Parsing file C:\Users\Daniil\AppData\Local\Temp\FiniteSets.tla
+Semantic processing of module Naturals
+Semantic processing of module Integers
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module TLC
+Semantic processing of module agentos_transitions_v1
+Starting... (2026-08-29 18:53:17)
+Implied-temporal checking--satisfiability problem has 1 branches.
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-08-29 18:53:18.
+Checking temporal properties for the current state space with 24173 total distinct states at (2026-08-29 18:53:21)
+Finished checking temporal properties in 00s at 2026-08-29 18:53:22
+Progress(11) at 2026-08-29 18:53:22: 59 992 states generated (59 992 s/min), 24 174 distinct states found (24 174 ds/min), 11 126 states left on queue.
+Progress(22) at 2026-08-29 18:53:49: 903 731 states generated, 271 168 distinct states found, 0 states left on queue.
+Checking temporal properties for the complete state space with 271168 total distinct states at (2026-08-29 18:53:49)
+Finished checking temporal properties in 11s at 2026-08-29 18:54:00
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+  calculated (optimistic):  val = 9.3E-9
+  based on the actual fingerprints:  val = 4.1E-9
+903731 states generated, 271168 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 22.
+The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 10 and the 95th percentile is 3).
+Finished in 44s at (2026-08-29 18:54:01)

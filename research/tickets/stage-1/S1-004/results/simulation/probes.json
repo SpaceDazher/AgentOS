@@ -1,0 +1,50 @@
+{
+  "all_passed": true,
+  "probes": [
+    {
+      "checks": {
+        "all_counters_zero": true,
+        "crash_cleared_by_replay": true,
+        "outbox_events": 1,
+        "publishes_after_replay_delivery": 1,
+        "publishes_at_crash": 0,
+        "receipts_after_ack": 1,
+        "receipts_after_duplicate_acks": 1,
+        "receipts_at_crash": 0
+      },
+      "counters": {
+        "INV1": 0,
+        "INV2": 0,
+        "INV3": 0,
+        "INV4": 0,
+        "INV5": 0,
+        "INV6": 0,
+        "LIVE1": 0,
+        "LIVE2": 0,
+        "SAF1": 0,
+        "SAF2": 0,
+        "SAF3": 0,
+        "SAF4": 0
+      },
+      "passed": true,
+      "probe": "A_crash_after_commit_before_publish"
+    },
+    {
+      "checks": {
+        "allow_denied_after_revoke": true,
+        "blind_retry_blocked": true,
+        "child_reservation_covered_by_parent": true,
+        "conservation_after_revoke": true,
+        "invariant_counters_zero": true,
+        "over_allocation_after_retry": false,
+        "over_allocation_before_revoke": false,
+        "reservation_retry_accepted_after_revoke": false,
+        "reservations_released_on_revoke": true,
+        "retry_legal_after_reconciliation": true
+      },
+      "passed": true,
+      "probe": "B_reserve_child_revoke_retry"
+    }
+  ],
+  "simulator_version": "1.1.0"
+}
