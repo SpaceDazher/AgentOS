@@ -3,11 +3,13 @@ durable revocation ledger semantics, environment manifest capture."""
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
@@ -17,6 +19,7 @@ from agentos.gateway import CapabilityDenied, ToolContract, ToolGateway  # noqa:
 from agentos.journal import Journal  # noqa: E402
 from agentos.sloqual import contract as sq_contract  # noqa: E402
 from agentos.sloqual import environment as sq_environment  # noqa: E402
+from agentos.sloqual import postprocess as sq_postprocess  # noqa: E402
 from agentos.sloqual import revocation as sq_revocation  # noqa: E402
 from agentos.sloqual.openloop import OpenLoopRunner, build_schedule  # noqa: E402
 from agentos.sloqual.stats import (  # noqa: E402
@@ -256,6 +259,65 @@ class OpenLoopBatchTest(unittest.TestCase):
             o.dispatch_abs_ns >= result.schedule_origin_ns
             + o.scheduled_offset_ns
             for o in result.observations))
+
+
+class PostprocessTest(unittest.TestCase):
+    @staticmethod
+    def _seed_ticket(root: Path) -> Path:
+        ticket = root / "ticket"
+        for run_id in ("run-a", "run-b"):
+            scenario = ticket / "raw" / run_id / "scenario"
+            scenario.mkdir(parents=True)
+            (scenario / "seed-11.json").write_text(
+                json.dumps({"run_id": run_id}), encoding="utf-8")
+            (scenario / "events.jsonl").write_text(
+                json.dumps({"run_id": run_id}) + "\n", encoding="utf-8")
+            (scenario / "pressure.bin").write_bytes(b"reproducible load scratch")
+            (scenario / "scratch.db-wal").write_bytes(b"sqlite scratch")
+        stale = ticket / "traces" / "old-run"
+        stale.mkdir(parents=True)
+        (stale / "stale.jsonl").write_text("{}\n", encoding="utf-8")
+        return ticket
+
+    def test_manifest_is_scoped_to_selected_run_ids(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            ticket = self._seed_ticket(Path(tmp))
+            self.assertEqual(sq_postprocess.main([
+                "--ticket", str(ticket), "--run-ids", "run-a", "run-b"]), 0)
+            manifest = json.loads(
+                (ticket / "artifact-manifest.json").read_text(encoding="utf-8"))
+            paths = [entry["path"] for entry in manifest["artifacts"]]
+            self.assertFalse(any("old-run" in path for path in paths))
+            self.assertFalse(any(path.endswith((".bin", ".db-wal"))
+                                 for path in paths))
+            self.assertTrue(all(
+                path.startswith(("raw/run-a/", "raw/run-b/",
+                                 "traces/run-a/", "traces/run-b/"))
+                for path in paths))
+
+    def test_identical_rebuild_does_not_delete_live_trace_tree(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            ticket = self._seed_ticket(Path(tmp))
+            args = ["--ticket", str(ticket), "--run-ids", "run-a", "run-b"]
+            self.assertEqual(sq_postprocess.main(args), 0)
+            with mock.patch.object(
+                    sq_postprocess.shutil, "rmtree",
+                    side_effect=PermissionError("live trace is locked")):
+                self.assertEqual(sq_postprocess.main(args), 0)
+
+    def test_same_stat_trace_tampering_fails_closed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            ticket = self._seed_ticket(Path(tmp))
+            args = ["--ticket", str(ticket), "--run-ids", "run-a", "run-b"]
+            self.assertEqual(sq_postprocess.main(args), 0)
+            source = ticket / "raw" / "run-a" / "scenario" / "events.jsonl"
+            trace = ticket / "traces" / "run-a" / "scenario" / "events.jsonl"
+            trace.write_bytes(b"x" * source.stat().st_size)
+            source_stat = source.stat()
+            os.utime(trace, ns=(source_stat.st_atime_ns,
+                                source_stat.st_mtime_ns))
+            with self.assertRaisesRegex(RuntimeError, "trace copy differs"):
+                sq_postprocess.main(args)
 
 
 if __name__ == "__main__":

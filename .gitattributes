@@ -1,3 +1,11 @@
 # Frozen evaluator corpora are hashed byte-for-byte. Keep their checkout
 # representation stable across Windows and POSIX hosts.
 evals/fixtures/**/*.json text eol=lf
+
+# Frozen SLO qualification inputs and official evidence are byte-addressed.
+research/tickets/stage-1/SLOQUAL-001/scenario-manifest.json -text -diff
+research/tickets/stage-1/SLOQUAL-001/slo-contract.json -text -diff
+research/tickets/stage-1/SLOQUAL-001/raw/sloqual-final-a13-20260828/** -text -diff
+research/tickets/stage-1/SLOQUAL-001/raw/sloqual-final-b12-20260828-execB/** -text -diff
+research/tickets/stage-1/SLOQUAL-001/traces/sloqual-final-a13-20260828/** -text -diff
+research/tickets/stage-1/SLOQUAL-001/traces/sloqual-final-b12-20260828-execB/** -text -diff
