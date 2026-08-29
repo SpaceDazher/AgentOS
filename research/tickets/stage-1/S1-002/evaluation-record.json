@@ -1,0 +1,32 @@
+{
+  "schema": "agentos.ticket-evaluation-record/v1",
+  "ticket_id": "S1-002",
+  "recorded_at": "2026-08-29T18:11:54Z",
+  "db_root": ".agentos-research/platform-stage-1",
+  "campaign_id": "rcamp_B8C76HY2WSJ5694Q01M179DDQZ",
+  "goal_id": "goal_CF3WM3F9XK34BA4701M179DDQZ",
+  "evaluation_id": "reval_584BN73YBC5Q9DJ101M179DEEP",
+  "evaluation_version": 1,
+  "result": "pass_with_limits",
+  "artifact_chain_hash": "a69b444f71d7f085eff9f7b61870b632ab75c68312495f15680756d6fff0da8a",
+  "evidence_pack": {
+    "schema": "agentos.evidence-pack/v3",
+    "path": ".agentos-research\\platform-stage-1\\goals\\goal_CF3WM3F9XK34BA4701M179DDQZ\\evidence-pack.json",
+    "sha256": "bcf4489358951c8c45a562f2611c379b1657e63179c447d59896a0a027fb9eb4",
+    "chain_fresh": true,
+    "latest_evaluation_valid": true
+  },
+  "wiki_check": {
+    "ok": true,
+    "files": 143,
+    "links_checked": 384,
+    "issues": []
+  },
+  "limitations": [
+    "The benchmark is a short single-process local SQLite/WAL baseline with deterministic arrivals and a small read handler, not production traffic.",
+    "Distributed worker count, external calls, revocation, fan-out, failover, and multi-region behavior remain unverified.",
+    "The auditor role is adversarial and process-separated but not an external human or independently operated model.",
+    "The 20 ms p95 value remains an internal target; no production SLO or customer commitment is authorized."
+  ],
+  "note": "research-plan PASS is a research evaluation; it never sets Goal ACCEPTED (release gate only)"
+}
