@@ -26,7 +26,10 @@ from agentos.wiki import WikiBuilder  # noqa: E402
 
 class TestResearchPlanner(unittest.TestCase):
     def setUp(self):
-        self.root = Path(tempfile.mkdtemp())
+        # resolve() so the root matches how run_research_plan records paths
+        # (on Windows CI, tempfile may return an 8.3 short path such as
+        # C:\Users\RUNNER~1\... which resolve() expands to runneradmin)
+        self.root = Path(tempfile.mkdtemp()).resolve()
         self.db = open_db(self.root / "agentos.db")
 
     def tearDown(self):

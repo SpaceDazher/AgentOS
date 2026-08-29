@@ -1,6 +1,6 @@
 """CLI: single-command demo of the full vertical scenario + utility verbs.
 
-    python -m agentos.cli demo [--worker fake|hermes] [--flaky] [--db PATH]
+    python -m agentos.cli demo [--worker fake|hermes|dsh] [--flaky] [--db PATH]
     python -m agentos.cli evidence --goal GOAL_ID
     python -m agentos.cli research-plan --topic TOPIC --bundle PATH --db ROOT
         [--workspace-root REPO_ROOT]
@@ -129,6 +129,13 @@ def run_demo(worker_kind: str = "fake", flaky: bool = False,
             except Exception as e:
                 return {"error": f"hermes worker unavailable: {e}",
                         "hint": "install hermes CLI or use --worker fake"}
+        elif worker_kind == "dsh":
+            try:
+                from .dsh_worker import DshAgentWorker
+                worker = DshAgentWorker()
+            except Exception as e:
+                return {"error": f"dsh worker unavailable: {e}",
+                        "hint": "install dsh CLI or use --worker fake"}
         else:
             worker = FakeWorker()
     task_id = db.conn.execute(
@@ -320,7 +327,7 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="agentos")
     sub = ap.add_subparsers(dest="cmd", required=True)
     d = sub.add_parser("demo")
-    d.add_argument("--worker", choices=["fake", "hermes"], default="fake")
+    d.add_argument("--worker", choices=["fake", "hermes", "dsh"], default="fake")
     d.add_argument("--flaky", action="store_true",
                    help="scripted first-attempt failure to exercise retry path")
     d.add_argument("--db", default=None, help="root dir for db/workspaces/artifacts")
@@ -339,7 +346,62 @@ def main(argv: list[str] | None = None) -> int:
         w = sub.add_parser(verb)
         w.add_argument("--db", default=None,
                        help="repo root containing agentos.db and wiki/")
+    ae = sub.add_parser("anchor-export",
+                        help="export the audit chain head as an off-host bundle")
+    ae.add_argument("--db", default=None,
+                    help="root directory containing agentos.db")
+    ae.add_argument("--out", required=True,
+                    help="path of the anchor bundle JSON to write (off-host)")
+    av = sub.add_parser("anchor-verify",
+                        help="verify an exported anchor bundle against a DB copy")
+    av.add_argument("--bundle", required=True,
+                    help="bundle produced by anchor-export")
+    av.add_argument("--db", default=None,
+                    help="root directory containing agentos.db to check against")
+    am = sub.add_parser("anchor-mirror",
+                        help="idempotently mirror the anchor head to an off-host directory")
+    am.add_argument("--db", default=None,
+                    help="root directory containing agentos.db")
+    am.add_argument("--dest", required=True,
+                    help="destination directory (git repo / synced folder)")
     a = ap.parse_args(argv)
+
+    if a.cmd == "anchor-export":
+        from .anchor import AnchorExportError, export_anchor
+        try:
+            root = Path(a.db or ".").resolve()
+            db = open_db(root / "agentos.db")
+            bundle = _call_quietly(export_anchor, db, Path(a.out))
+        except Exception as exc:
+            _emit_json({"error": f"{type(exc).__name__}: {exc}"})
+            return 1
+        _emit_json({"status": "ok", "out": str(Path(a.out)),
+                    "last_seq": bundle["state"]["last_seq"],
+                    "head_digest": bundle["state"]["head_digest"],
+                    "schema": bundle["schema"]})
+        return 0
+    if a.cmd == "anchor-verify":
+        from .anchor import verify_bundle
+        try:
+            root = Path(a.db or ".").resolve()
+            db = open_db(root / "agentos.db")
+            report = _call_quietly(verify_bundle, Path(a.bundle), db)
+        except Exception as exc:
+            _emit_json({"error": f"{type(exc).__name__}: {exc}"})
+            return 1
+        _emit_json(report)
+        return 0 if report.get("ok") else 1
+    if a.cmd == "anchor-mirror":
+        from .anchor import mirror_anchor
+        try:
+            root = Path(a.db or ".").resolve()
+            db = open_db(root / "agentos.db")
+            result = _call_quietly(mirror_anchor, db, Path(a.dest))
+        except Exception as exc:
+            _emit_json({"error": f"{type(exc).__name__}: {exc}"})
+            return 1
+        _emit_json(result)
+        return 0
 
     if a.cmd == "wiki-build":
         from .wiki import WikiBuilder

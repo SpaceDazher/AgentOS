@@ -30,6 +30,13 @@ Key properties:
 - **Transactional journal** — every guarded state transition commits its row
   change and its audit event in *one* SQLite transaction (`journal.py`). Audit
   rows form a SHA-256 hash chain; `journal.full_chain_check()` detects tampering.
+- **Off-host anchoring** — `anchor.py` exports a self-checking
+  `agentos.anchor-export/v1` bundle with the chain head for storage outside the
+  host (git/object storage/synced folder); `anchor-verify` re-checks bundle
+  integrity, per-seq historical binding, and the full chain of any DB copy.
+  `anchor-mirror` maintains an idempotent off-host mirror (immutable
+  content-addressed bundles + append-only history + `latest.json` pointer);
+  `scripts/anchor-mirror-task.ps1` registers an hourly Windows task for it.
 - **SQLite via atomic migrations** — schema is created by running
   `src/agentos/migrations/*.sql`; each migration and its marker commit or roll
   back together, and the historical interrupted-0010 rebuild is recoverable.
@@ -60,6 +67,14 @@ PYTHONPATH=src python -m agentos.cli evidence --goal ID --db DIR
 PYTHONPATH=src python -m agentos.cli research-plan \
   --topic "a platform question" --bundle research-bundle.json --db DIR
 
+# Off-host audit anchoring: export the chain head, verify it against any copy:
+PYTHONPATH=src python -m agentos.cli anchor-export --db DIR --out anchor-snapshot.json
+PYTHONPATH=src python -m agentos.cli anchor-verify --bundle anchor-snapshot.json --db DIR
+
+# Idempotent off-host mirror (immutable bundles + append-only history):
+PYTHONPATH=src python -m agentos.cli anchor-mirror --db DIR --dest /path/to/offsite
+# hourly scheduled task (Windows): scripts/anchor-mirror-task.ps1 -Repo ... -Db ... -Dest ...
+
 # Failure-path test suite:
 python -m unittest discover -s tests
 ```
@@ -87,6 +102,7 @@ To drive tasks with a real agent instead of the fake worker:
 
 ```bash
 PYTHONPATH=src python -m agentos.cli demo --worker hermes   # requires `hermes` on PATH
+PYTHONPATH=src python -m agentos.cli demo --worker dsh      # requires `dsh` on PATH (DeepSeek Harness)
 ```
 
 ### Research-to-platform-plan contract
@@ -158,6 +174,13 @@ StepResult`). The engine sees only the protocol — providers are swappable:
   parsing a final `AGENTOS_RESULT {...}` line. Worker output is treated as
   **untrusted data**: if `hermes` is missing, it fails with a typed
   `WorkerUnavailable` reason. Tests never require it.
+- **`DshAgentWorker`** (`dsh_worker.py`) — optional adapter that drives the
+  local DeepSeek Harness CLI (`dsh --profile headless <prompt>`: answer one
+  task, print, exit) over the same effects-channel protocol, reusing the
+  Hermes block parser verbatim. It exists so this checkout can be exercised
+  by a DeepSeek-Harness-based agent without any other provider installed.
+  Output is untrusted data; `dsh` missing ⇒ typed `WorkerUnavailable`.
+  Tests never require it.
 
 ### ToolGateway pipeline
 

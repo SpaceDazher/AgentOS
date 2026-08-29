@@ -14,16 +14,21 @@ import sys
 from pathlib import Path
 
 # --- AgentOS import bootstrap -------------------------------------------------
-# The plugin is a thin client: the AgentOS repo lives at a fixed local path
-# (override with AGENTOS_REPO env var). Layout: <repo>/src/agentos/...
-_REPO_ROOT = Path(os.environ.get("AGENTOS_REPO", r"D:\Project\AgentOS")).resolve()
-_SRC_DIR = _REPO_ROOT / "src"
-if not (_SRC_DIR / "agentos").is_dir():
-    # fallback: repo next to the plugin dir (dev checkout layout)
+# The plugin is a thin client: it imports the AgentOS package either from an
+# explicit AGENTOS_REPO override or from the repo ``src`` directory next to the
+# plugin directory (both live in the same checkout). When agentos-harness is
+# pip-installed, none of these paths are added and the installed package wins.
+_SRC_DIR: Path | None = None
+if os.environ.get("AGENTOS_REPO"):
+    _candidate = Path(os.environ["AGENTOS_REPO"]).resolve() / "src"
+    if (_candidate / "agentos").is_dir():
+        _SRC_DIR = _candidate
+if _SRC_DIR is None:
+    # primary: repo checkout that contains this plugin dir
     _alt = Path(__file__).resolve().parents[1] / "src"
     if (_alt / "agentos").is_dir():
         _SRC_DIR = _alt
-if str(_SRC_DIR) not in sys.path:
+if _SRC_DIR is not None and str(_SRC_DIR) not in sys.path:
     sys.path.insert(0, str(_SRC_DIR))
 
 from agentos.cli import run_demo                                  # noqa: E402

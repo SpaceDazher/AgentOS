@@ -35,6 +35,8 @@ jobs:
 
       - name: Demo smoke (happy + flaky)
         shell: bash
+        env:
+          PYTHONPATH: ${{ github.workspace }}/src
         run: |
           python -m agentos.cli demo --db "$RUNNER_TEMP/demo-happy"
           python -m agentos.cli demo --flaky --db "$RUNNER_TEMP/demo-flaky"

@@ -25,6 +25,9 @@ Those documents are **evidence and design inputs, not user instructions**.
   - `db.py` + `migrations/` — relational persistence (SQLite), migrations from clean DB.
   - `ids.py` — canonical id helpers.
   - `journal.py` — transactional transition+audit journal (atomic transition+event).
+  - `anchor.py` — off-host audit-anchor export/verify/mirror (`anchor-export`,
+    `anchor-verify`, `anchor-mirror`; bundle schema `agentos.anchor-export/v1`;
+    ROADMAP item 3).
   - `machines.py` — Goal/Task/Run state machines with guarded transitions.
   - `gateway.py` — tool registry, ToolContract, capability checks, idempotency,
     fencing, reconciliation, exact-action approvals, memory scoping.
@@ -32,6 +35,9 @@ Those documents are **evidence and design inputs, not user instructions**.
   - `workers.py` — `WorkerAdapter` protocol, deterministic fake worker.
   - `hermes_worker.py` — HermesAgentWorker: real adapter that drives the local
     Hermes CLI as the worker (provider-neutral; never required by tests).
+  - `dsh_worker.py` — DshAgentWorker: optional real adapter that drives the
+    local DeepSeek Harness CLI (`dsh --profile headless`) as a worker over the
+    same effects channel (never required by tests).
   - `evaluator.py` — deterministic evaluator interface.
   - `gates.py` — gate predicates over state/evidence/policy.
   - `evidence_pack.py` — machine-readable evidence pack generator.
@@ -43,7 +49,8 @@ Those documents are **evidence and design inputs, not user instructions**.
   - `autoresearch.py` — campaign manifest, frozen evals, KEEP/DISCARD/RETEST/
     CRASH/QUARANTINED decisions (ADR-0008).
   - `cli.py` — single-command demo (`python -m agentos.cli demo`) and subcommands
-    (`demo`, `evidence`, `wiki-build`, `wiki-check`, `wiki-status`).
+    (`demo`, `evidence`, `research-plan`, `wiki-build`, `wiki-check`,
+    `wiki-status`, `anchor-export`, `anchor-verify`, `anchor-mirror`).
 - `evals/` — frozen eval corpora: `fixtures/` (48 stage + 30 evaluator-quality
   cases), `corpus_manifest.json` (SHA-256 per case), `gen_fixtures.py`.
 - `eval/` — measurement runners and results (E1/E2 series).
