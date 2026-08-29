@@ -80,4 +80,3 @@ Runs compared: `sloqual-final-a13-20260828`, `sloqual-final-b12-20260828-execB`
 - status: compared · divergences flagged by frozen contract tolerances: **0**
 
 Interpretation: PASS requires every proof complete; PASS_WITH_LIMITS itemizes exactly which production-grade proofs are still missing; any invariant/security failure forces FAIL regardless of latency or throughput.
-
