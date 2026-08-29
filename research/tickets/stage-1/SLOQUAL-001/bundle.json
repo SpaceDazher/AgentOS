@@ -106,7 +106,7 @@
   "claims": [
     {
       "id": "claim-frozen-contract",
-      "text": "SLO contract v1.0.5 was frozen (self-hash stamped) before the authoritative A11/B10 qualification measurements; thresholds cannot change without a new version and a complete new run.",
+      "text": "SLO contract v1.0.6 was frozen with self-hash 4a660709fa06b9b9dc5637eecb5b278c1af686ce64ddadd471338014d307813b before the authoritative A13/B12 qualification measurements; thresholds cannot change without a new version and a complete new run.",
       "claim_class": "fact",
       "source_ids": [
         "SRC-SRE-AVAIL",
@@ -140,7 +140,7 @@
     },
     {
       "id": "claim-production-gap",
-      "text": "The authoritative runs reproducibly violate the burst p95 contract (11918.387 ms main, 11703.608 ms rerun, threshold 200 ms), so the production SLO result is FAIL. The developer workstation is also not quantitatively mapped to the intended production envelope.",
+      "text": "The authoritative A13/B12 runs pass the burst point-estimate contract (21.744 ms versus 200 ms) with zero hard failures, but the warm p95 confidence interval reaches 26.150 ms against 20 ms and the developer workstation is not quantitatively mapped to the intended production envelope; the result is PASS_WITH_LIMITS, not production authorization.",
       "claim_class": "inference",
       "source_ids": [
         "SRC-SQLITE-WAL",
@@ -165,7 +165,7 @@
     },
     {
       "id": "claim-rerun-independence",
-      "text": "The rerun uses a new run id, the same frozen contract and seed policy, a separate executor process and a different scenario ordering. It reproduced the burst failure, but same-host execution limits environmental independence.",
+      "text": "The rerun uses a new run id, the same frozen contract and seed policy, and a separate executor process. Comparator 2.1.1 found zero contract-tolerance divergences, but same-host execution limits environmental independence.",
       "claim_class": "target",
       "source_ids": [
         "SRC-S1-002"
@@ -174,7 +174,7 @@
   ],
   "artifacts": {
     "research_plan": {
-      "content": "# Question\nCan AgentOS control-plane performance, availability, fault tolerance and revocation latency be qualified reproducibly, with pre-registered thresholds and fail-closed evidence handling?\n\n# Method\nFreeze slo-contract v1.0.5; execute 17 manifest-defined scenarios x 5 seeds twice via agentos.sloqual.runner against the real engine/gateway/journal; open-loop arrivals; multi-process fault injection; durable capability ledger for the S1-008 gate; fail-closed comparator emits PASS / PASS_WITH_LIMITS / FAIL.\n\n# Scope\nSingle-host, stdlib-only harness (ADR-0010); provider boundary modeled by a controlled TCP stub; long-run full scale (6h/24h) registered but not executed in this qualification.",
+      "content": "# Question\nCan AgentOS control-plane performance, availability, fault tolerance and revocation latency be qualified reproducibly, with pre-registered thresholds and fail-closed evidence handling?\n\n# Method\nFreeze slo-contract v1.0.6; execute 17 manifest-defined scenarios × 5 seeds twice via agentos.sloqual.runner 2.1.1 against the real engine/gateway/journal; open-loop arrivals; multi-process fault injection; durable capability ledger for the S1-008 gate; fail-closed comparator emits PASS / PASS_WITH_LIMITS / FAIL.\n\n# Scope\nSingle-host, stdlib-only harness (ADR-0010); provider boundary modeled by a controlled TCP stub; long-run full scale (6h/24h) registered but not executed in this qualification.",
       "claim_refs": [
         "claim-frozen-contract",
         "claim-open-loop"
@@ -225,7 +225,7 @@
       "producer": "capacity-session (ox-alpha)"
     },
     "synthesis_and_gaps": {
-      "content": "Authoritative A11/B10 evidence covers 17 scenarios x 5 seeds in each run. Mandatory security/correctness invariants are zero and S1-008 passes 105 trials per run (maximum 2546.742 ms). The production SLO result is FAIL because burst p95 is 11918.387 ms in A11 and 11703.608 ms in B10 versus the 200 ms threshold. Further gaps: warm p95 confidence interval crosses 20 ms; >=6h sustained and >=24h soak were not run; the host is not mapped to a server-class profile; threshold ownership and independent-host repetition remain open.",
+      "content": "Authoritative A13/B12 evidence covers 17 scenarios × 5 seeds in each run on commit af57638. Mandatory security/correctness invariants are zero and S1-008 passes 105 trials per run (maximum 1444.849 ms, zero forbidden effects). Comparator verdict is PASS_WITH_LIMITS with zero hard failures; burst p95 is 21.744 ms versus 200 ms. Remaining gaps: warm p95 CI reaches 26.150 ms against 20 ms; statistical power is insufficient in three scenario families; >=6h sustained and >=24h soak were not run; DB growth stayed below target; the host is not mapped to a server-class profile; threshold ownership and independent-host repetition remain open.",
       "claim_refs": [
         "claim-long-scale",
         "claim-production-gap"
@@ -233,7 +233,7 @@
       "producer": "capacity-session (ox-alpha)"
     },
     "independent_audit": {
-      "content": "A separate executor produced B10 with the same frozen contract and seeds but a different scenario ordering. Comparator binding checks passed for both 85-file runs. Burst p95 failure reproduced within 1.9% (11918.387 ms versus 11703.608 ms). Each run had 105 revocation trials within 5 s and zero forbidden post-revoke effects; all mandatory invariant counters were zero. Same-host execution and revocation summary divergence beyond the contract tolerance remain explicit limitations.",
+      "content": "A separate executor process produced B12 with the same frozen contract and seeds. Comparator binding checks passed for both 85-file runs and found zero divergences beyond frozen contract tolerances. Burst p95 is 21.744 ms in the aggregate, each run had 105 revocation trials within 5 s, zero forbidden post-revoke effects, and all mandatory invariant counters were zero. Same-host execution remains an explicit limitation and is not external independence.",
       "claim_refs": [
         "claim-rerun-independence",
         "claim-comparator-fail-closed"
@@ -241,7 +241,7 @@
       "producer": "independent-rerun-executor (ox-alpha)"
     },
     "platform_plan": {
-      "content": "# Scope\nQualify AgentOS control-plane SLOs reproducibly at pilot scale on the available stand; keep core stdlib-only; never rewrite historical S1-002 evidence; leave S1-003 untouched.\n\n# Architecture\nsrc/agentos/sloqual harness (runner, open-loop engine, provider stub, durable capability ledger, fail-closed comparator, report generator); ticket package under research/tickets/stage-1/SLOQUAL-001 with raw/, traces/, reports/, manifests and SHA-256 artifact index.\n\n# Workstreams\nW1 contract freeze (done, v1.0.5); W2 authoritative A11/B10 execution (done); W3 fail-closed comparison and report (done: FAIL); W4 FLOW-11 registration and wiki validation; W5 diagnose burst queueing and retest under a newly versioned contract only after an architecture change.\n\n# Milestones\nM0 harness + tests green (done); M1 A11 complete (done); M2 independent-executor B10 complete (done); M3 comparator FAIL recorded (done); M4 evidence manifest + research/wiki validation; M5 burst architecture correction and full-scale production-like rerun (open).\n\n# Verification\nComparator re-hashes contract/environment/artifacts; exact AgentOS unit suite; research-plan exit 0; wiki-check ok=true; git diff --check clean.\n\n# Risks\nBurst p95 exceeds the contract by roughly 59x; developer workstation cannot prove production capacity; long-run scale not executed; candidate thresholds await human owner countersignature; same-host rerun limits independence claims.\n\n# Open decisions\nChoose bounded-parallel/backpressure architecture for burst handling; assign SLO owner; provision production-like stand; repeat 6h/24h qualification after remediation.",
+      "content": "# Scope\nQualify AgentOS control-plane SLOs reproducibly at pilot scale on the available stand; keep core stdlib-only; never rewrite historical S1-002 evidence; leave S1-003 untouched.\n\n# Architecture\nsrc/agentos/sloqual harness (runner 2.1.1, open-loop engine, bounded read batching, provider stub, durable capability ledger, fail-closed comparator, report generator); ticket package under research/tickets/stage-1/SLOQUAL-001 with raw/, traces/, reports/, manifests and SHA-256 artifact index.\n\n# Workstreams\nW1 contract freeze (done, v1.0.6); W2 authoritative A13/B12 execution (done); W3 fail-closed comparison and report (done: PASS_WITH_LIMITS); W4 FLOW-11 registration and wiki validation; W5 production-scale proof.\n\n# Milestones\nM0 harness + tests green (done); M1 A13 complete (done); M2 separate-executor B12 complete (done); M3 comparator PASS_WITH_LIMITS recorded with 41 limits (done); M4 evidence manifest + research/wiki validation; M5 production-profile mapping, statistical-power closure and 6h/24h qualification (open).\n\n# Verification\nComparator re-hashes contract/environment/artifacts and gates contract-tolerance divergences; exact AgentOS unit suite; research-plan exit 0; wiki-check ok=true; git diff --check clean.\n\n# Risks\nWarm p95 confidence crosses the contract; developer workstation cannot prove production capacity; long-run scale not executed; candidate thresholds await human owner countersignature; same-host rerun limits independence claims; kernel sandbox runtime is unavailable on this host.\n\n# Open decisions\nAssign SLO owner; provision production-like stand and container runtime; increase power for fault scenarios; repeat 6h/24h qualification and independent-host execution.",
       "claim_refs": [
         "claim-production-gap",
         "claim-long-scale"
@@ -249,7 +249,7 @@
       "producer": "capacity-session (ox-alpha)"
     },
     "progress": {
-      "content": "2026-08-27: qualification pipeline completed under contract v1.0.5 (SHA-256 698bd8943f00f4cfe2c21fcbe150f219c569766ad4a86d71e2537d5dd9e622f7). A11 and independently executed B10 each produced 85 scenario-seed results and 105 revocation trials. Comparator verdict is FAIL: burst p95 11918.387 ms and 11703.608 ms against 200 ms. All mandatory invariant counters are zero; S1-008 passed. Evidence manifest, report and traces were assembled. Production authorization remains denied pending burst remediation and a production-like full-scale rerun.",
+      "content": "2026-08-28: qualification pipeline completed under contract v1.0.6 (SHA-256 4a660709fa06b9b9dc5637eecb5b278c1af686ce64ddadd471338014d307813b), runner/comparator 2.1.1 and commit af57638. A13 and separately executed B12 each produced 85 scenario-seed results and 105 revocation trials. Comparator verdict is PASS_WITH_LIMITS with zero hard failures and 41 explicit limits; burst p95 21.744 ms against 200 ms; warm p95 CI crosses 20 ms. All mandatory invariant counters are zero; S1-008 passed with max 1444.849 ms. Evidence manifest, report and traces were assembled. Production authorization remains withheld pending the itemized production-scale proofs.",
       "claim_refs": [
         "claim-frozen-contract",
         "claim-long-scale"
@@ -262,11 +262,11 @@
     "auditor": "independent-rerun-executor (ox-alpha)",
     "verdict": "pass_with_limits",
     "limitations": [
-      "The measured product verdict is FAIL: burst p95 was 11918.387 ms in A11 and 11703.608 ms in B10 versus the 200 ms contract.",
+      "The measured product verdict is PASS_WITH_LIMITS: zero hard failures, with 41 itemized limits.",
       "The developer workstation is not a quantitatively mapped production stand.",
       "Sustained and soak scenarios were executed at pilot duration, not the registered 6 h and 24 h scale.",
-      "Warm p95 point estimate passed but its 95% confidence interval crossed the 20 ms threshold.",
-      "The rerun used a separate executor and order but the same physical host; revocation summary divergence exceeded the configured rerun tolerance.",
+      "Warm p95 point estimate passed but its 95% confidence interval reached 26.150 ms and crossed the 20 ms threshold.",
+      "The rerun used a separate executor process but the same physical host; comparator 2.1.1 found zero contract-tolerance divergences, but external independence is unproven.",
       "Candidate thresholds still require a named human SLO owner and countersignature."
     ]
   }

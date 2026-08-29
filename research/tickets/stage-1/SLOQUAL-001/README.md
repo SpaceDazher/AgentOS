@@ -1,6 +1,6 @@
 # SLOQUAL-001 — Production-like SLO qualification (extends S1-002)
 
-Status: **REQUALIFICATION READY · v1.0.6 series pending** · Owner role:
+Status: **COMPLETE · PASS_WITH_LIMITS** · Owner role:
 `capacity` (co-owner `security` for the S1-008 gate) · Human threshold
 countersignature: **PENDING**
 
@@ -71,18 +71,17 @@ proofs itemized by the comparator; any invariant or security violation is
 
 ## Current outcome
 
-The last completed qualification remains the historical **FAIL** under
-contract v1.0.5: runs `sloqual-final-a11-20260826` and
-`sloqual-final-b10-20260826-execB` reproduced burst p95 near 11.8 s against
-the 200 ms limit. Both runs passed the S1-008 revocation gate and reported
-zero mandatory invariant violations.
+The authoritative qualification under contract v1.0.6, scenario manifest
+v1.1.0, and runner/comparator v2.1.1 is complete. Runs
+`sloqual-final-a13-20260828` and
+`sloqual-final-b12-20260828-execB` each contain 17 scenarios × 5 seeds and
+105 revocation trials, all stamped with implementation commit `af57638`.
 
-Contract v1.0.6, scenario manifest v1.1.0, and runner/comparator v2.1.1
-describe a bounded read-only
-batch path that preserves per-request policy, handler, activity, and audit
-semantics while reducing SQLite group-commit contention. Engineering probes
-are promising but are **not qualification evidence**. A new complete A/B
-series, stamped with one clean implementation commit, is required before the
-current verdict can change. Even a successful local series is capped at
-`PASS_WITH_LIMITS` until the production-like profile, long-duration runs,
-human SLO ownership, and external independent rerun are proven.
+The fail-closed comparator reports `PASS_WITH_LIMITS`: zero hard failures,
+zero mandatory security/correctness violations, burst p95 **21.744 ms**
+against 200 ms, and S1-008 maximum **1444.849 ms** against 5000 ms with zero
+forbidden post-revoke effects. Full `PASS` remains blocked by the warm p95
+confidence interval crossing 20 ms, insufficient power in three fault/soak
+scenario families, pilot durations and DB scale, absent production-profile
+mapping, pending human SLO ownership, and same-host rather than external
+independent execution. The exact 41 limits are in `reports/REPORT.md`.
