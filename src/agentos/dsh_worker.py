@@ -19,13 +19,9 @@ import subprocess
 import sys
 from pathlib import Path
 
-from .hermes_worker import (HermesAgentWorker, _JobObject,
-                            _sandbox_kwargs)
+from .hermes_worker import (HermesAgentWorker, WorkerUnavailable,
+                            _JobObject, _sandbox_kwargs)
 from .workers import StepRequest, StepResult
-
-
-class WorkerUnavailable(RuntimeError):
-    pass
 
 
 # ASCII transport template. MEASURED CONSTRAINTS (live probes + campaigns):
