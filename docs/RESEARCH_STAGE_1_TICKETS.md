@@ -464,24 +464,27 @@ python -m agentos.cli research-plan --topic "S1-004 Alloy TLA plus seeded determ
 
 ### S1-005 — QA1 runtime topology: modular monolith versus containers
 
-- **Status:** `PASS_WITH_LIMITS` — corrective round R1 recorded
-  2026-08-30 (research revision 3): goal
-  `goal_A3D0T8BVQ67K2B9H01M18K3A21`, evaluation
-  `reval_NRE4BJYQBRBYR65Z01M18K3A54`, artifact chain `c13f2b77…9fc60`,
-  tracked evidence-pack/v3 `chain_fresh=true` published at
-  `results/evidence/`. Decision: modular monolith (3.72 vs containers
-  2.07 normalized under the frozen rubric, hash-bound); sensitivity 218
-  deterministic runs with zero flips and zero ties (exact integer weight
-  compositions, ties are indeterminate); probe A (unsafe split) rejected
-  on frozen hard constraints regardless of score — the rule now rejects
-  ANY candidate (review R1 finding 1); probe B (incomplete monolith)
-  rejected as INCOMPLETE; three identical failure scenarios under a
-  strict schema with INV/SAF/LIVE references; measured boundary costs
-  with semantically validated responses. Limits: same-host measurements
-  only; containers restart/recovery is an unknown cell (bounded in
-  sensitivity S3); no production deployment or availability claims; split
-  triggers are symbolic until the S1-002 follow-up benchmark wires
-  measurable conditions.
+- **Status:** `PASS_WITH_LIMITS` - corrective round R2 recorded
+  2026-08-30 (research revision 4): goal
+  `goal_JKSZDJ4GWBR0ZPAB01M19YTD2Y`, evaluation
+  `reval_81GB4MDXW9ZWWRSN01M19YTD5M`, artifact chain
+  `fe58d05c776c28be...`, tracked content-addressed evidence-pack/v3
+  `chain_fresh=true` at `results/evidence/`. Decision: modular monolith
+  (3.72 vs containers 2.07 normalized under the frozen rubric,
+  hash-bound); sensitivity 218 deterministic runs with zero flips and
+  zero ties; every S2 weight vector persisted with its total and
+  SHA-256 (digest verified on read); hard-constraint violations reject
+  ANY candidate (positive verdict requires both topologies valid);
+  evidence refs resolve only via hash-bound registry ids or repository
+  paths (free-form authority removed); claim classification enforced
+  harness-side; failure scenarios under a strict production schema with
+  non-empty typed branches and INV/SAF/LIVE references; experiments
+  re-executed as a fresh subprocess per bundle build with commit/
+  environment/output-sha binding and semantically validated responses;
+  IPC child handles closed with terminate/kill fallback (no
+  ResourceWarning). Limits: same-host measurements only; containers
+  restart/recovery unknown (bounded in sensitivity S3); no production
+  claims; split triggers symbolic until the follow-up benchmark.
 - **Priority:** `P1`
 - **Wave:** `W1`
 - **Owner:** `architecture`

@@ -131,7 +131,9 @@ for line in sys.stdin:
 def measure_pipe_child(rounds: int, mode: str = "ok",
                        payload: dict | None = None) -> dict:
     """Measured pipe transport with strict response-semantics validation;
-    negative modes (corrupt/crash) exist for fail-closed tests."""
+    negative modes (corrupt/crash) exist for fail-closed tests. All pipe
+    handles are closed and the child is reaped (terminate -> kill on
+    timeout) so no descriptor leaks (review R2, finding F5)."""
     child = CHILD_SOURCE.replace("{sim_dir}", sim_dir()).replace(
         "{mode}", mode)
     proc = subprocess.Popen(
@@ -163,8 +165,21 @@ def measure_pipe_child(rounds: int, mode: str = "ok",
             done += k
         elapsed = (time.perf_counter() - t0) / rounds
     finally:
-        proc.stdin.close()
-        proc.wait(timeout=10)
+        for handle in (proc.stdin, proc.stdout):
+            try:
+                if handle is not None:
+                    handle.close()
+            except OSError:
+                pass
+        try:
+            proc.wait(timeout=10)
+        except subprocess.TimeoutExpired:
+            proc.terminate()
+            try:
+                proc.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                proc.wait(timeout=5)
     if proc.returncode != 0:
         raise RuntimeError(
             f"child process exited {proc.returncode}; transport is not healthy")
@@ -219,8 +234,22 @@ def measure_pipe(payload: dict, rounds: int) -> float:
                 "responses")
         return (time.perf_counter() - t0) / rounds
     finally:
-        proc.stdin.close()
-        if proc.wait(timeout=10) != 0:
+        for handle in (proc.stdin, proc.stdout):
+            try:
+                if handle is not None:
+                    handle.close()
+            except OSError:
+                pass
+        try:
+            proc.wait(timeout=10)
+        except subprocess.TimeoutExpired:
+            proc.terminate()
+            try:
+                proc.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                proc.wait(timeout=5)
+        if proc.returncode != 0:
             raise RuntimeError("child process exited non-zero")
 
 
@@ -432,10 +461,26 @@ def tempfile_dir():
     return _Ctx()
 
 
-def main() -> dict:
+def _git_commit() -> str | None:
+    try:
+        out = subprocess.run(
+            ["git", "rev-parse", "HEAD"], capture_output=True, text=True,
+            timeout=30)
+        return out.stdout.strip() or None
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+
+
+def main(out_path: str | None = None) -> dict:
     result = {"schema": "agentos.s1-005.boundary-experiments/v1",
               "python": sys.version.split()[0],
               "platform": platform.platform(),
+              "environment": {
+                  "python_full": sys.version,
+                  "platform": platform.platform(),
+                  "processor": platform.processor(),
+              },
+              "commit": _git_commit(),
               "experiments": {}}
     for name, payload in (("small_512b", SMALL_PAYLOAD),
                           ("large_16kb", LARGE_PAYLOAD)):
@@ -449,9 +494,29 @@ def main() -> dict:
         }
     with tempfile_dir() as tmp:
         result["experiments"]["sqlite_multi_writer"] = experiment_sqlite(tmp)
-    print(json.dumps(result, indent=2))
+    # output_sha256 covers the canonical payload WITHOUT the self-hash field
+    # so the written file is verifiable on read (review R2, finding F1)
+    payload = {k: v for k, v in result.items() if k != "output_sha256"}
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"),
+                           ensure_ascii=False).encode()
+    result["output_sha256"] = hashlib.sha256(canonical).hexdigest()
+    text = json.dumps(result, indent=2) + "\n"
+    if out_path:
+        Path(out_path).write_text(text, encoding="utf-8", newline="\n")
+        written = json.loads(Path(out_path).read_text(encoding="utf-8"))
+        payload2 = {k: v for k, v in written.items() if k != "output_sha256"}
+        canonical2 = json.dumps(payload2, sort_keys=True, separators=(",", ":"),
+                                ensure_ascii=False).encode()
+        if hashlib.sha256(canonical2).hexdigest() != result["output_sha256"]:
+            raise RuntimeError("output digest verification failed on write")
+    else:
+        print(text)
     return result
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--out", default=None)
+    args = ap.parse_args()
+    main(out_path=args.out)

@@ -84,14 +84,13 @@ def validate_rubric(rubric: dict, rubric_path: Path) -> dict:
 
 
 def _evidence_ref_exists(ref: str, ticket_dir: Path) -> bool:
+    """Legacy helper kept for compatibility; strict authority is enforced
+    in _resolve_ref below."""
     if not ref:
         return False
-    if ref == "probe" or ref.startswith("probe "):
-        return True
     path_part = ref.split("#", 1)[0].strip()
     if not _PATHLIKE_RE.match(path_part):
-        # free-form references (e.g. "standard container practice") allowed
-        return True
+        return False
     candidates = [
         ticket_dir / path_part,
         ticket_dir.parents[3] / path_part,
@@ -99,8 +98,69 @@ def _evidence_ref_exists(ref: str, ticket_dir: Path) -> bool:
     return any(c.is_file() or c.is_dir() for c in candidates)
 
 
+def _load_ref_index(ticket_dir: Path) -> dict:
+    """The evidence-ref registry: maps non-path source ids to hash-bound
+    repository files. Free-form references are authority-free and are
+    rejected (review R2, finding F2)."""
+    index_path = ticket_dir / "evidence-ref-index.json"
+    if not index_path.is_file():
+        raise EvalError(
+            f"evidence-ref registry missing: {index_path}")
+    index = load_json(index_path)
+    for ref, binding in index.items():
+        bound = (ticket_dir / binding["path"].replace("/", "\\"))
+        if not bound.is_file():
+            bound = ticket_dir.parents[3] / binding["path"]
+        if not bound.is_file():
+            raise EvalError(
+                f"evidence-ref registry entry {ref!r} binds a missing file: "
+                f"{binding['path']}")
+        digest = sha256_file(bound)
+        if digest != binding.get("sha256"):
+            raise EvalError(
+                f"evidence-ref registry entry {ref!r} digest mismatch for "
+                f"{binding['path']}")
+    return index
+
+
+def _resolve_ref(ref: str, ticket_dir: Path, index: dict,
+                 probe_candidate: bool) -> tuple:
+    """Resolve one evidence ref. Returns (resolved_path|None, kind).
+    Only two authorities exist: hash-bound registry source ids and
+    repository paths that exist on disk. Free-form strings are rejected
+    (review R2, finding F2)."""
+    if not ref or not isinstance(ref, str):
+        raise EvalError(f"empty evidence ref")
+    if ref == "probe":
+        if not probe_candidate:
+            raise EvalError(
+                f"'probe' evidence is only valid on probe candidates")
+        return None, "probe"
+    if ref in index:
+        binding = index[ref]
+        bound = ticket_dir / binding["path"].replace("/", "\\")
+        if not bound.is_file():
+            bound = ticket_dir.parents[3] / binding["path"]
+        if not bound.is_file():
+            raise EvalError(f"evidence ref {ref!r} binds a missing file")
+        if sha256_file(bound) != binding.get("sha256"):
+            raise EvalError(
+                f"evidence ref {ref!r} file digest mismatch")
+        return bound, binding.get("kind", "source")
+    path_part = ref.split("#", 1)[0].strip()
+    if _PATHLIKE_RE.match(path_part):
+        for base in (ticket_dir, ticket_dir.parents[3]):
+            candidate = base / path_part
+            if candidate.is_file() or candidate.is_dir():
+                return candidate, "path"
+    raise EvalError(
+        f"evidence ref {ref!r} is neither a registry source id nor an "
+        "existing repository path (free-form authority is not allowed)")
+
+
 def _validate_cell(cell: dict, dim: str, cid: str, ticket_dir: Path,
-                   known_violations: set) -> None:
+                   known_violations: set, index: dict,
+                   probe_candidate: bool) -> None:
     ctype = cell.get("claim_type")
     if ctype not in CLAIM_TYPES:
         raise EvalError(f"{dim}/{cid}: claim_type {ctype!r} invalid")
@@ -110,9 +170,10 @@ def _validate_cell(cell: dict, dim: str, cid: str, ticket_dir: Path,
     refs = cell.get("evidence_refs")
     if not isinstance(refs, list) or not refs:
         raise EvalError(f"{dim}/{cid}: evidence_refs must be a non-empty list")
+    resolved = []
     for ref in refs:
-        if not isinstance(ref, str) or not _evidence_ref_exists(ref, ticket_dir):
-            raise EvalError(f"{dim}/{cid}: evidence ref does not resolve: {ref!r}")
+        path, kind = _resolve_ref(ref, ticket_dir, index, probe_candidate)
+        resolved.append((ref, path, kind))
     confidence = cell.get("confidence")
     if not isinstance(confidence, (int, float)) or not 0 <= confidence <= 1:
         raise EvalError(f"{dim}/{cid}: confidence must be in [0, 1]")
@@ -132,11 +193,40 @@ def _validate_cell(cell: dict, dim: str, cid: str, ticket_dir: Path,
         score = cell.get("score")
         if not isinstance(score, int) or not 0 <= score <= 4:
             raise EvalError(f"{dim}/{cid}: score {score!r} outside 0..4")
+    # claim classification is enforced harness-side (review R2, finding F2):
+    # a measurement claim needs a hash-bound measurement artifact; a fact
+    # claim needs an implementation/source artifact. Unknown-to-scored
+    # transitions therefore require new canonical evidence by construction.
+    def satisfies(kind_or_loc):
+        for _, path, kind in resolved:
+            if kind == kind_or_loc:
+                return True
+            if kind == "path" and path is not None:
+                parts = [x.lower() for x in path.parts]
+                if kind_or_loc == "measurement" and "results" in parts                         and "s1-005" in parts:
+                    return True
+                if kind_or_loc == "implementation" and (
+                        "src" in parts or "adr" in parts or "spec" in parts
+                        or "tests" in parts):
+                    return True
+        return False
+
+    if ctype == "measurement":
+        if not satisfies("measurement"):
+            raise EvalError(
+                f"{dim}/{cid}: measurement claim requires a hash-bound "
+                "measurement artifact in evidence_refs")
+    if ctype == "fact":
+        if not (satisfies("implementation") or satisfies("source")):
+            raise EvalError(
+                f"{dim}/{cid}: fact claim requires an implementation or "
+                "source artifact in evidence_refs")
 
 
 def validate_matrix(matrix: dict, rubric: dict, rubric_sha: str,
                     ticket_dir: Path) -> tuple:
     """Returns (scoring_candidates, rejections, rejected_real)."""
+    index = _load_ref_index(ticket_dir)
     if matrix.get("rubric_sha256") != rubric_sha:
         raise EvalError(
             "matrix rubric hash mismatch: weights changed after scoring "
@@ -172,7 +262,8 @@ def validate_matrix(matrix: dict, rubric: dict, rubric_sha: str,
                 raise EvalError(
                     f"dimension {dim['dimension']}: missing cell for {cid}")
             _validate_cell(cells[cid], dim["dimension"], cid, ticket_dir,
-                           known_violations)
+                           known_violations, index,
+                           bool(candidates[cid].get("probe")))
 
     scoring = list(real)
     rejections = {"A": [], "B": []}
@@ -322,6 +413,14 @@ def sensitivity(matrix: dict, weights: dict, scoring: list) -> dict:
         record(win, tie, {"kind": "S2_random", "run": i,
                           "weights_sha256": digest})
         results["s2_vector_digests"].append(digest)
+        results.setdefault("s2_runs", []).append({
+            "run": i,
+            "weights": vector_map,
+            "total": total,
+            "weights_sha256": digest,
+            "winner": win,
+            "indeterminate": tie,
+        })
 
     for label, fill in (("pessimistic_0", 0), ("optimistic_4", 4)):
         fill_map = {cid: fill for cid in scoring}
@@ -329,6 +428,11 @@ def sensitivity(matrix: dict, weights: dict, scoring: list) -> dict:
         win, tie = winner_of(scores)
         record(win, tie, {"kind": "S3_unknown", "bounds": label})
 
+    for run in results.get("s2_runs", []):
+        digest = hashlib.sha256(
+            json.dumps(run["weights"], sort_keys=True).encode()).hexdigest()
+        if digest != run["weights_sha256"] or run["total"] != total:
+            raise EvalError("persisted S2 vector failed digest verification")
     results["base_winner"] = base_winner
     results["total_weight"] = total
     return results
@@ -350,23 +454,61 @@ def validate_scenarios(scenarios: dict) -> None:
                       "recovery_path", "observable_artifacts",
                       "stop_condition", "invariant_impact"):
             value = sc.get(field)
-            if value is None or value == "" or value == [] or value == {}:
-                raise EvalError(f"scenario {sid}: field {field} is empty")
+            if value is None:
+                raise EvalError(f"scenario {sid}: field {field} is missing")
+            _reject_empty(value, f"scenario {sid}.{field}")
         for topology in ("monolith", "containers"):
-            for field in ("authoritative_state_owner", "allowed_transitions",
-                          "recovery_path", "invariant_impact"):
-                branch = sc[field]
-                if not isinstance(branch, dict) or topology not in branch:
-                    raise EvalError(
-                        f"scenario {sid}: {field} missing {topology} branch")
-            impact = json.dumps(sc["invariant_impact"][topology])
+            owner = sc["authoritative_state_owner"].get(topology)
+            if not isinstance(owner, str) or not owner.strip():
+                raise EvalError(
+                    f"scenario {sid}: authoritative_state_owner.{topology} "
+                    "must be a non-empty string")
+            transitions = sc["allowed_transitions"].get(topology)
+            if not isinstance(transitions, list):
+                raise EvalError(
+                    f"scenario {sid}: allowed_transitions.{topology} must be "
+                    "a non-empty list of strings")
+            _reject_empty(transitions,
+                          f"scenario {sid}.allowed_transitions.{topology}")
+            recovery = sc["recovery_path"].get(topology)
+            if not isinstance(recovery, str) or not recovery.strip():
+                raise EvalError(
+                    f"scenario {sid}: recovery_path.{topology} must be a "
+                    "non-empty string")
+            impact = sc["invariant_impact"].get(topology)
+            if not isinstance(impact, str) or not impact.strip():
+                raise EvalError(
+                    f"scenario {sid}: invariant_impact.{topology} must be a "
+                    "non-empty string")
             if not INVARIANT_REF_RE.search(impact):
                 raise EvalError(
                     f"scenario {sid}: invariant impact for {topology} does "
                     "not reference INV/SAF/LIVE")
-        if not sc["observable_artifacts"]:
-            raise EvalError(f"scenario {sid}: no observable artifacts")
+        artifacts = sc["observable_artifacts"]
+        if not isinstance(artifacts, list):
+            raise EvalError(
+                f"scenario {sid}: observable_artifacts must be a list")
+        _reject_empty(artifacts, f"scenario {sid}.observable_artifacts")
+        _reject_empty(sc["stop_condition"], f"scenario {sid}.stop_condition")
 
+
+def _reject_empty(value, where: str) -> None:
+    """Recursively forbid empty strings, lists and dicts (review R2 F3)."""
+    if isinstance(value, str):
+        if not value.strip():
+            raise EvalError(f"{where}: empty string")
+    elif isinstance(value, list):
+        if not value:
+            raise EvalError(f"{where}: empty list")
+        for i, item in enumerate(value):
+            _reject_empty(item, f"{where}[{i}]")
+    elif isinstance(value, dict):
+        if not value:
+            raise EvalError(f"{where}: empty dict")
+        for k, v in value.items():
+            if not str(k).strip():
+                raise EvalError(f"{where}: empty key")
+            _reject_empty(v, f"{where}.{k}")
 
 def validate_experiments(experiments: dict) -> None:
     if not str(experiments.get("schema", "")).startswith(
@@ -460,6 +602,8 @@ def evaluate(ticket_dir: Path, out_dir: Path) -> dict:
             "random_runs": SENSITIVITY_RANDOM_RUNS,
             "s2_all_sums_valid": sens["s2_all_sums_valid"],
             "s2_vector_digests": sens["s2_vector_digests"],
+            "s2_runs": sens.get("s2_runs", []),
+            "total_weight": sens.get("total_weight"),
         },
         "verdict": verdict,
         "reasons": reasons,

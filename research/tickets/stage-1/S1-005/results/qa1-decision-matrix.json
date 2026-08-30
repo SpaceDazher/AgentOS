@@ -286,7 +286,7 @@
           "score": 1,
           "confidence": 0.5,
           "evidence_refs": [
-            "standard container practice"
+            "SRC-03 §9 QA1"
           ],
           "statement": "Требуются orchestrator, service discovery, distributed tracing, управление образами — новый operational surface без MVP-необходимости.",
           "limitation": "количественная стоимость операций не измерялась"
@@ -363,10 +363,9 @@
           "score": 4,
           "confidence": 0.5,
           "evidence_refs": [
-            "ADR-0002 (Postgres note)",
+            "ADR-0002",
             "ADR-0003",
-            "src/agentos/gateway.py",
-            "S1-005 platform_plan"
+            "src/agentos/gateway.py"
           ],
           "statement": "Логические плоскости уже разделены (execution/assurance/governance); выделение контейнера позже = вынос существующего модуля за process boundary с теми же контрактами; migration trigger сформулирован в platform_plan."
         },
@@ -375,7 +374,7 @@
           "score": 2,
           "confidence": 0.5,
           "evidence_refs": [
-            "standard practice",
+            "SPEC",
             "SRC-07 §5"
           ],
           "statement": "Преждевременный split повышает стоимость возврата (распределённые контракты, сетевые протоколы уже в критическом пути)."

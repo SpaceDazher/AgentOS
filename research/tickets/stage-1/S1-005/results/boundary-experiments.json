@@ -2,41 +2,47 @@
   "schema": "agentos.s1-005.boundary-experiments/v1",
   "python": "3.12.6",
   "platform": "Windows-11-10.0.22631-SP0",
+  "environment": {
+    "python_full": "3.12.6 (tags/v3.12.6:a4a2d2b, Sep  6 2024, 20:11:23) [MSC v.1940 64 bit (AMD64)]",
+    "platform": "Windows-11-10.0.22631-SP0",
+    "processor": "Intel64 Family 6 Model 154 Stepping 3, GenuineIntel"
+  },
+  "commit": "ea9e73c433de6db5a04b5a467bd285da9e956fe1",
   "experiments": {
     "small_512b": {
       "rounds": 2000,
-      "in_process_us": 3.59,
-      "pipe_process_us": 16.52,
-      "tcp_localhost_us": 23.76,
+      "in_process_us": 5.7,
+      "pipe_process_us": 24.84,
+      "tcp_localhost_us": 28.05,
       "response_semantics_validated": true
     },
     "large_16kb": {
       "rounds": 300,
-      "in_process_us": 48.71,
-      "pipe_process_us": 162.87,
-      "tcp_localhost_us": 104.97,
+      "in_process_us": 54.93,
+      "pipe_process_us": 184.35,
+      "tcp_localhost_us": 125.14,
       "response_semantics_validated": true
     },
     "sqlite_multi_writer": {
       "single_writer": {
         "writers": 1,
         "transactions": 800,
-        "seconds": 0.019,
-        "txns_per_second": 42588.1
+        "seconds": 0.023,
+        "txns_per_second": 34918.3
       },
       "two_writers": {
         "writers": 2,
         "transactions": 800,
-        "seconds": 0.271,
-        "txns_per_second": 2949.6,
+        "seconds": 0.311,
+        "txns_per_second": 2571.0,
         "writer_results": [
           {
             "busy": 0,
-            "seconds": 0.0134810000017751
+            "seconds": 0.014428200025577098
           },
           {
             "busy": 0,
-            "seconds": 0.036611099989386275
+            "seconds": 0.03580129996407777
           }
         ],
         "note": "two writer processes contending for the write lock"
@@ -44,5 +50,6 @@
       "committed_rows_complete": true,
       "serialized_writes": true
     }
-  }
+  },
+  "output_sha256": "12474f64ff1e64724de29e045401f5aed59bfcbe8218f53e5431a03567192671"
 }
