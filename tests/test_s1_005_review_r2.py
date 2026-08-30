@@ -220,8 +220,11 @@ class F5PipeHandleTests(TestCase):
 class F1F6BundleBuilderBehaviorTests(TestCase):
     def test_run_experiments_overwrites_fabricated_file(self):
         """A fabricated boundary-experiments.json must be replaced by a
-        fresh subprocess run (finding 1: no publishing of saved results)."""
-        out = S1005 / "results" / "boundary-experiments.json"
+        fresh subprocess run (finding 1: no publishing of saved results).
+        Runs in a TemporaryDirectory: unit tests must never modify tracked
+        evidence (review R3, finding 1)."""
+        import tempfile
+        out = Path(tempfile.mkdtemp()) / "boundary-experiments.json"
         fabricated = {
             "schema": "agentos.s1-005.boundary-experiments/v1",
             "experiments": {
@@ -240,7 +243,7 @@ class F1F6BundleBuilderBehaviorTests(TestCase):
         }
         out.write_text(json.dumps(fabricated, indent=2), encoding="utf-8")
         import make_bundle
-        fresh = make_bundle.run_experiments()
+        fresh = make_bundle.run_experiments(out_path=out)
         on_disk = json.loads(out.read_text(encoding="utf-8"))
         self.assertNotEqual(on_disk["experiments"]["small_512b"]["rounds"],
                             fabricated["experiments"]["small_512b"]["rounds"])
@@ -251,74 +254,110 @@ class F1F6BundleBuilderBehaviorTests(TestCase):
         self.assertIn("commit", fresh)
         self.assertIn("environment", fresh)
 
-    def test_run_evaluator_rejects_nonzero_exit(self):
-        def fake_cmd():
-            return [sys.executable, "-c",
-                    "import sys; sys.stderr.write('boom'); sys.exit(2)"]
-        with self.assertRaises(SystemExit):
-            ev_run = make_bundle_module().run_evaluator(command_factory=fake_cmd)
-
-    def test_run_evaluator_rejects_malformed_output(self):
-        sens = S1005 / "results" / "sensitivity-analysis.json"
-        script = (
-            "import pathlib, sys;"
-            "p = pathlib.Path(r'%s');"
-            "p.write_text('not json at all', encoding='utf-8')"
-        ) % sens
-        saved = sens.read_bytes()
-
-        def fake_cmd():
-            return [sys.executable, "-c", script]
-        try:
-            with self.assertRaises(SystemExit):
-                make_bundle_module().run_evaluator(command_factory=fake_cmd)
-        finally:
-            sens.write_bytes(saved)
-
-    def test_run_evaluator_rejects_schema_mismatch(self):
-        script = ("import json, pathlib, sys;"
-                  "p = pathlib.Path(r'%s');"
-                  "doc = json.loads(p.read_text(encoding='utf-8'));"
-                  "doc['schema'] = 'agentos.something.else/v9';"
-                  "p.write_text(json.dumps(doc), encoding='utf-8')")
-        sens = S1005 / "results" / "sensitivity-analysis.json"
-        script = script % sens
-        saved = sens.read_bytes()
-
-        def fake_cmd():
-            return [sys.executable, "-c", script]
-        try:
-            with self.assertRaises(SystemExit):
-                make_bundle_module().run_evaluator(command_factory=fake_cmd)
-        finally:
-            sens.write_bytes(saved)
-
-    def test_stale_saved_sensitivity_cannot_produce_verdict(self):
-        """The builder must run the evaluator even when a saved sensitivity
-        result exists; removing the evaluator's ability to write must fail
-        the build instead of reusing the saved verdict. The production
-        evaluator is re-run afterwards to restore the deleted file."""
+    def _run_fake_evaluator(self, body: str) -> dict:
+        """Run the production run_evaluator with a controlled fake
+        executable (dependency injection). Fresh-write semantics are
+        mandatory: the saved sensitivity output is deleted first, and the
+        production evaluator regenerates it afterwards with the ORIGINAL
+        run nonce so the file is byte-identical to its prior state."""
+        import make_bundle
+        orig_nonce = make_bundle._LAST_RUN_NONCE
         saved = (S1005 / "results" / "sensitivity-analysis.json").read_text(
             encoding="utf-8")
+        make_bundle._LAST_RUN_NONCE = "review-r2-test-nonce"
 
-        def fake_cmd():
-            # an evaluator impostor that writes nothing (no fresh output)
-            return [sys.executable, "-c", "pass"]
+        def command_factory():
+            nonce = make_bundle._LAST_RUN_NONCE
+            body_n = body.replace("%NONCE%", nonce)
+            return [sys.executable, "-c", body_n]
+        try:
+            return make_bundle.run_evaluator(
+                command_factory=command_factory,
+                experiments_path=S1005 / "results" / "boundary-experiments.json",
+                experiments_sha="0" * 64,
+                expected_commit="0" * 40,
+                run_nonce="review-r2-test-nonce")
+        finally:
+            import os as _os
+            saved_doc = json.loads(saved)
+            env = dict(_os.environ)
+            if saved_doc.get("run_nonce"):
+                env["AGENTOS_RUN_NONCE"] = saved_doc["run_nonce"]
+            else:
+                env.pop("AGENTOS_RUN_NONCE", None)
+            subprocess.run(
+                [sys.executable, str(S1005 / "evaluator.py"),
+                 "--ticket", str(S1005), "--out", str(S1005 / "results")],
+                check=True, capture_output=True, timeout=600, env=env)
+            make_bundle._LAST_RUN_NONCE = orig_nonce
+            assert (S1005 / "results" / "sensitivity-analysis.json").read_text(
+                encoding="utf-8") == saved
 
-        import make_bundle
+    def test_run_evaluator_rejects_nonzero_exit(self):
         with self.assertRaises(SystemExit):
-            make_bundle.run_evaluator(command_factory=fake_cmd,
-                                      expect_fresh_write=True)
-        self.assertFalse(
-            (S1005 / "results" / "sensitivity-analysis.json").is_file(),
-            "stale saved result must not survive a fresh-write run")
-        subprocess.run(
-            [sys.executable, str(S1005 / "evaluator.py"),
-             "--ticket", str(S1005), "--out", str(S1005 / "results")],
-            check=True, capture_output=True, timeout=600)
-        restored = (S1005 / "results" / "sensitivity-analysis.json").read_text(
+            self._run_fake_evaluator(
+                "import sys; sys.stderr.write('boom'); sys.exit(2)")
+
+    def test_run_evaluator_rejects_malformed_output(self):
+        with self.assertRaises(SystemExit):
+            self._run_fake_evaluator(
+                "import sys; sys.stdout.write('not json at all')")
+
+    def test_run_evaluator_rejects_nonce_mismatch(self):
+        with self.assertRaises(SystemExit):
+            self._run_fake_evaluator(
+                "import json, sys; sys.stdout.write(json.dumps({"
+                "'schema': 'agentos.s1-005.evaluation/v1',"
+                "'verdict': 'PASS_WITH_LIMITS',"
+                "'run_nonce': 'WRONG'}))")
+
+    def test_run_evaluator_accepts_fresh_correct_output(self):
+        result = self._run_fake_evaluator(
+            "import json, os, sys; nonce = os.environ.get('AGENTOS_RUN_NONCE');"
+            "sys.stdout.write(json.dumps({"
+            "'schema': 'agentos.s1-005.evaluation/v1',"
+            "'verdict': 'PASS_WITH_LIMITS',"
+            "'run_nonce': nonce,"
+            "'sensitivity': {'stable': True, 's2_all_sums_valid': True}}))")
+        self.assertEqual(result.get("run_nonce"), "review-r2-test-nonce")
+
+    def test_stale_saved_sensitivity_cannot_produce_verdict(self):
+        """An impostor that writes NOTHING must fail: the saved verdict
+        cannot be published (fresh-write semantics are mandatory, review
+        R3 finding 2)."""
+        import make_bundle
+        orig_nonce = make_bundle._LAST_RUN_NONCE
+        saved = (S1005 / "results" / "sensitivity-analysis.json").read_text(
             encoding="utf-8")
-        self.assertEqual(restored, saved)
+        make_bundle._LAST_RUN_NONCE = "review-r2-stale-nonce"
+
+        def command_factory():
+            return [sys.executable, "-c", "pass"]
+        try:
+            with self.assertRaises(SystemExit):
+                make_bundle.run_evaluator(
+                    command_factory=command_factory,
+                    experiments_path=S1005 / "results" / "boundary-experiments.json",
+                    experiments_sha="0" * 64,
+                    expected_commit="0" * 40,
+                    run_nonce="review-r2-stale-nonce")
+        finally:
+            import os as _os
+            saved_doc = json.loads(saved)
+            env = dict(_os.environ)
+            if saved_doc.get("run_nonce"):
+                env["AGENTOS_RUN_NONCE"] = saved_doc["run_nonce"]
+            else:
+                env.pop("AGENTOS_RUN_NONCE", None)
+            subprocess.run(
+                [sys.executable, str(S1005 / "evaluator.py"),
+                 "--ticket", str(S1005), "--out", str(S1005 / "results")],
+                check=True, capture_output=True, timeout=600, env=env)
+            make_bundle._LAST_RUN_NONCE = orig_nonce
+        self.assertNotEqual(
+            (S1005 / "results" / "sensitivity-analysis.json").read_text(
+                encoding="utf-8"),
+            saved)
 
     def test_make_bundle_verifies_commit_and_digest_binding(self):
         recorded = ev.load_json(S1005 / "results" / "boundary-experiments.json")

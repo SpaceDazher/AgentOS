@@ -13,9 +13,12 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
+
+from experiments import validate_experiment_result
 
 ROOT = Path(__file__).resolve().parents[4]
 TICKET = Path(__file__).resolve().parents[0]
@@ -52,21 +55,35 @@ def local_source(sid, title, source_type, content, rel_path, note):
     }
 
 
-def run_evaluator(command_factory=None, expect_fresh_write: bool = False) -> dict:
-    """Run the deterministic evaluator as a subprocess and require a
-    fresh, schema-correct, positive-verdict sensitivity result.
+_LAST_RUN_NONCE = None
 
-    expect_fresh_write: when set, the saved sensitivity file is removed
-    before the run so a no-op impostor cannot leave a stale result behind
-    (review R2, finding F6)."""
+
+def run_evaluator(*, experiments_path: Path, experiments_sha: str,
+                  expected_commit: str, run_nonce: str,
+                  command_factory=None) -> dict:
+    """command_factory is an optional test seam: when provided it returns
+    the evaluator command to execute (controlled fake executable); in
+    production it is None and the real evaluator runs."""
+    global _LAST_RUN_NONCE
+    if not run_nonce:
+        raise SystemExit("run nonce must be a non-empty fresh-run identifier")
+    _LAST_RUN_NONCE = run_nonce
+    """Run the deterministic evaluator as a subprocess against the frozen
+    experiment artifact (review R3, findings 2-4). The old sensitivity
+    output is always removed first: a stale saved verdict can never be
+    published. The fresh output must carry this run's nonce."""
     sensitivity_path = TICKET / "results" / "sensitivity-analysis.json"
-    if expect_fresh_write and sensitivity_path.exists():
+    if sensitivity_path.exists():
         sensitivity_path.unlink()
+    env = dict(os.environ, AGENTOS_RUN_NONCE=run_nonce)
     command = (command_factory() if command_factory else
                [sys.executable, str(TICKET / "evaluator.py"),
-                "--ticket", str(TICKET), "--out", str(TICKET / "results")])
+                "--ticket", str(TICKET), "--out", str(TICKET / "results"),
+                "--experiments", str(experiments_path),
+                "--experiments-sha", experiments_sha,
+                "--expected-commit", expected_commit])
     proc = subprocess.run(command, capture_output=True, text=True,
-                          timeout=600)
+                          timeout=600, env=env)
     if proc.returncode != 0:
         raise SystemExit(
             f"evaluator failed (exit {proc.returncode}):\n"
@@ -81,6 +98,10 @@ def run_evaluator(command_factory=None, expect_fresh_write: bool = False) -> dic
         raise SystemExit(f"evaluator output is malformed JSON: {exc}")
     if result.get("schema") != "agentos.s1-005.evaluation/v1":
         raise SystemExit("evaluator output schema mismatch")
+    if result.get("run_nonce") != run_nonce:
+        raise SystemExit(
+            "evaluator output is not from this run (nonce mismatch); a "
+            "stale saved verdict cannot be published")
     if result.get("verdict") not in ("PASS", "PASS_WITH_LIMITS"):
         raise SystemExit(
             f"evaluator verdict {result.get('verdict')!r} is not publishable")
@@ -91,41 +112,20 @@ def run_evaluator(command_factory=None, expect_fresh_write: bool = False) -> dic
 
 
 def validate_experiments_data(data: dict) -> dict:
-    """Strict validation of experiment output (review R2, finding F1):
-    exact schema, environment/commit binding, rounds, response-semantics
-    validation and the serialization property."""
-    if data.get("schema") != "agentos.s1-005.boundary-experiments/v1":
-        raise SystemExit(
-            "boundary experiments schema mismatch (exact schema required)")
-    for field in ("commit", "environment"):
-        if not data.get(field):
-            raise SystemExit(f"boundary experiments missing {field} binding")
-    exps = data["experiments"]
-    for key in ("small_512b", "large_16kb", "sqlite_multi_writer"):
-        if key not in exps:
-            raise SystemExit(f"boundary experiments missing {key}")
-    for key in ("small_512b", "large_16kb"):
-        block = exps[key]
-        if block.get("response_semantics_validated") is not True:
-            raise SystemExit(f"{key}: response semantics were not validated")
-        rounds = block.get("rounds")
-        if not isinstance(rounds, int) or rounds <= 0:
-            raise SystemExit(f"{key}: rounds missing or non-positive")
-        for transport in ("in_process_us", "pipe_process_us",
-                          "tcp_localhost_us"):
-            value = block.get(transport)
-            if not isinstance(value, (int, float)) or value <= 0:
-                raise SystemExit(f"{key}.{transport} missing or non-positive")
-        if not block["in_process_us"] < block["pipe_process_us"]:
-            raise SystemExit(
-                f"{key}: in-process must be faster than a process boundary")
-    e2 = exps["sqlite_multi_writer"]
-    if e2.get("committed_rows_complete") is not True:
-        raise SystemExit("E2 serialization property not demonstrated")
-    single = e2["single_writer"]["txns_per_second"]
-    multi = e2["two_writers"]["txns_per_second"]
-    if not (single > 0 and multi > 0 and multi < single):
-        raise SystemExit("E2 multi-writer must be slower than single writer")
+    """Delegate to THE shared strict validator in experiments.py (review
+    R3, finding 5); plus the run-environment binding (clean committed
+    tree matching the current HEAD, review R3, finding 4)."""
+    import subprocess as sp
+    try:
+        head = sp.run(["git", "rev-parse", "HEAD"], capture_output=True,
+                      text=True, timeout=30).stdout.strip()
+    except (OSError, sp.TimeoutExpired):
+        head = None
+    try:
+        validate_experiment_result(data, expected_commit=head,
+                                   verify_script_hashes=True)
+    except ValueError as exc:
+        raise SystemExit(str(exc))
     return data
 
 
@@ -195,8 +195,18 @@ def _main() -> None:
 # Review R1 finding 2: the bundle must not self-assign a verdict. The
 # evaluator runs as a subprocess and its output is the single source of the
 # verdict, scores and recommendation recorded below.
-    eval_result = run_evaluator()
+    # review R3, findings 3-4: experiments run FIRST, are validated and
+    # frozen, and the evaluator scores exactly that artifact digest.
     experiments_data = run_experiments()
+    experiments_sha = hashlib.sha256(
+        (TICKET / "results" / "boundary-experiments.json")
+        .read_bytes()).hexdigest()
+    eval_result = run_evaluator(
+        experiments_path=TICKET / "results" / "boundary-experiments.json",
+        experiments_sha=experiments_sha,
+        expected_commit=experiments_data["commit"],
+        run_nonce=f"s1-005-{experiments_data['commit'][:12]}-"
+                  f"{hashlib.sha256(experiments_sha.encode()).hexdigest()[:12]}")
     VERDICT = eval_result["verdict"].lower()
     WINNER = eval_result["winner"]
     SCORES = eval_result["scores_normalized"]
@@ -297,12 +307,19 @@ def _main() -> None:
                      "Implementation contract facts."),
         local_source("S1-005-EXPERIMENTS", "S1-005 boundary experiments",
                      "measurement",
-                     "Measured boundary costs: policy-decision round trip "
-                     "in-process 4.86 us vs pipe 25.71 us vs localhost TCP "
-                     "18.20 us (512B payload); 16KB payload 37.77/207.89/168.03 "
-                     "us; canonical SQLite single writer 20,587 tx/s vs two "
-                     "writer processes 1,694 tx/s (12x degradation, zero busy "
-                     "errors, all committed rows complete). Same-host, bounded.",
+                     f"Measured boundary costs (committed tree "
+                     f"{experiments_data['commit'][:12]}, dirty="
+                     f"{experiments_data['dirty']}): policy-decision round "
+                     f"trip in-process {E1S['in_process_us']} us vs pipe "
+                     f"{E1S['pipe_process_us']} us vs localhost TCP "
+                     f"{E1S['tcp_localhost_us']} us (512B payload); 16KB "
+                     f"payload {E1L['in_process_us']}/"
+                     f"{E1L['pipe_process_us']}/{E1L['tcp_localhost_us']} us; "
+                     f"canonical SQLite single writer "
+                     f"{E2['single_writer']['txns_per_second']} tx/s vs two "
+                     f"writer processes "
+                     f"{E2['two_writers']['txns_per_second']} tx/s; all "
+                     "committed rows complete. Same-host, bounded.",
                      "research/tickets/stage-1/S1-005/results/boundary-experiments.json",
                      "Primary measurement evidence (hash-locked)."),
         local_source("S1-005-RUBRIC", "S1-005 frozen rubric",

@@ -342,8 +342,39 @@ class F2F3BundleAndPackTests(TestCase):
         self.assertIn("returncode", source)
 
     def test_experiments_validated_before_bundle(self):
-        source = (S1005 / "make_bundle.py").read_text(encoding="utf-8")
-        self.assertIn("committed_rows_complete", source)
+        """Behavioral: the bundle builder's experiment validator must
+        reject a fabricated minimal result (review R2 F6; review R3 F5
+        supersede the source-text check with a behavioral one)."""
+        import make_bundle
+        fabricated = {
+            "schema": "agentos.s1-005.boundary-experiments/v1",
+            "commit": "0" * 40, "tree_sha": "0" * 40, "dirty": False,
+            "environment": {"python": "3.12"},
+            "script_hashes": {},
+            "output_sha256": "0" * 64,
+            "experiments": {
+                "small_512b": {"rounds": 10, "in_process_us": 0.1,
+                               "pipe_process_us": 0.2,
+                               "tcp_localhost_us": 0.3,
+                               "response_semantics_validated": True,
+                               "validated_counts": {"a": 10}},
+                "large_16kb": {"rounds": 10, "in_process_us": 1.0,
+                               "pipe_process_us": 2.0,
+                               "tcp_localhost_us": 3.0,
+                               "response_semantics_validated": True,
+                               "validated_counts": {"a": 10}},
+                "sqlite_multi_writer": {
+                    "single_writer": {"writers": 1, "transactions": 2,
+                                      "seconds": 0.1, "txns_per_second": 99},
+                    "two_writers": {"writers": 2, "transactions": 2,
+                                    "seconds": 0.2, "txns_per_second": 98,
+                                    "writer_results": [{"busy": 0}, {"busy": 0}]},
+                    "committed_rows_complete": True,
+                    "serialized_writes": True},
+            },
+        }
+        with self.assertRaises(SystemExit):
+            make_bundle.validate_experiments_data(fabricated)
 
     def test_evidence_pack_tracked_and_bound(self):
         record = ev.load_json(S1005 / "evaluation-record.json")

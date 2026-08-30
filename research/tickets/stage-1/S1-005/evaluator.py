@@ -26,9 +26,12 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import random
 import re
 from pathlib import Path
+
+from experiments import validate_experiment_result
 
 CLAIM_TYPES = {"fact", "measurement", "inference", "assumption", "unknown"}
 MIN_DIMENSIONS = 8
@@ -510,41 +513,76 @@ def _reject_empty(value, where: str) -> None:
                 raise EvalError(f"{where}: empty key")
             _reject_empty(v, f"{where}.{k}")
 
-def validate_experiments(experiments: dict) -> None:
-    if not str(experiments.get("schema", "")).startswith(
-            "agentos.s1-005.boundary-experiments/"):
-        raise EvalError("boundary experiments schema mismatch")
-    exps = experiments.get("experiments", {})
-    for key in ("small_512b", "large_16kb", "sqlite_multi_writer"):
-        if key not in exps:
-            raise EvalError(f"boundary experiments missing {key}")
-    for key in ("small_512b", "large_16kb"):
-        block = exps[key]
-        for transport in ("in_process_us", "pipe_process_us", "tcp_localhost_us"):
-            value = block.get(transport)
-            if not isinstance(value, (int, float)) or value <= 0:
-                raise EvalError(f"{key}.{transport} missing or non-positive")
-        if not block["in_process_us"] < block["pipe_process_us"]:
+def validate_experiments(experiments: dict, *,
+                         expected_commit: str | None = None,
+                         verify_script_hashes: bool = False) -> None:
+    """Delegate to THE single shared strict validator (review R3, F5);
+    no weaker local copy is allowed."""
+    try:
+        validate_experiment_result(
+            experiments, expected_commit=expected_commit,
+            verify_script_hashes=verify_script_hashes)
+    except ValueError as exc:
+        raise EvalError(str(exc)) from exc
+
+
+def _enforce_host_classification(matrix: dict, host: dict) -> None:
+    """Review R3, finding 6: the host-owned classification freezes
+    claim_type, score, confidence and evidence_refs for every candidate x
+    dimension. Matrix cells are candidate narrative; score inputs are
+    host-authoritative. Any deviation (including reclassifying an unknown
+    cell with unrelated-but-valid evidence) is rejected."""
+    cells = {(d["dimension"], cid): cell
+             for d in matrix["matrix"] for cid, cell in d["cells"].items()}
+    for key, frozen in host.get("cells", {}).items():
+        cell = cells.get(tuple(key.split("|")))
+        if cell is None:
+            raise EvalError(f"host classification key {key!r} has no cell")
+        for field in ("claim_type", "score", "confidence"):
+            if cell.get(field) != frozen.get(field):
+                raise EvalError(
+                    f"{key}: {field} deviates from the frozen host "
+                    f"classification (matrix={cell.get(field)!r} "
+                    f"host={frozen.get(field)!r})")
+        frozen_refs = sorted(frozen.get("evidence_refs", []))
+        cell_refs = sorted(cell.get("evidence_refs", []))
+        if frozen_refs != cell_refs:
             raise EvalError(
-                f"{key}: in-process must be faster than a process boundary")
-    e2 = exps["sqlite_multi_writer"]
-    if e2.get("committed_rows_complete") is not True:
-        raise EvalError("E2 committed rows are not complete; serialization "
-                        "property not demonstrated")
-    single = e2["single_writer"]["txns_per_second"]
-    multi = e2["two_writers"]["txns_per_second"]
-    if not (single > 0 and multi > 0 and multi < single):
-        raise EvalError("E2 multi-writer must be slower than single writer")
+                f"{key}: evidence_refs deviate from the frozen host "
+                "classification")
 
 
-def evaluate(ticket_dir: Path, out_dir: Path) -> dict:
+def evaluate(ticket_dir: Path, out_dir: Path, *,
+             experiments_path: Path | None = None,
+             experiments_sha: str | None = None,
+             expected_commit: str | None = None,
+             run_nonce: str | None = None,
+             host_classification: dict | None = None) -> dict:
     rubric = load_json(ticket_dir / "rubric.json")
     rubric_sha = sha256_file(ticket_dir / "rubric.json")
     weights = validate_rubric(rubric, ticket_dir / "rubric.json")
     matrix = load_json(out_dir / "qa1-decision-matrix.json")
     scenarios = load_json(out_dir / "failure-scenarios.json")
-    experiments = load_json(out_dir / "boundary-experiments.json")
-    validate_experiments(experiments)
+    # experiments binding (review R3, findings 3-5): the evaluator scores
+    # EXACTLY the frozen experiment artifact named by the caller and
+    # verifies its byte digest before use.
+    if experiments_path is None:
+        experiments_path = out_dir / "boundary-experiments.json"
+    experiments = load_json(experiments_path)
+    if experiments_sha:
+        actual = hashlib.sha256(
+            Path(experiments_path).read_bytes()).hexdigest()
+        if actual != experiments_sha:
+            raise EvalError(
+                f"experiments digest mismatch: {actual} != {experiments_sha}")
+    validate_experiments(experiments, expected_commit=expected_commit,
+                         verify_script_hashes=True)
+    # host-owned classification (review R3, finding 6): the frozen
+    # classification per candidate x dimension is authoritative; a matrix
+    # cell that deviates is rejected.
+    host = host_classification or load_json(
+        ticket_dir / "host-classification.json")
+    _enforce_host_classification(matrix, host)
     validate_scenarios(scenarios)
     scoring, rejections, rejected_real = validate_matrix(
         matrix, rubric, rubric_sha, ticket_dir)
@@ -582,6 +620,11 @@ def evaluate(ticket_dir: Path, out_dir: Path) -> dict:
     result = {
         "schema": "agentos.s1-005.evaluation/v1",
         "rubric_sha256": rubric_sha,
+        "run_nonce": run_nonce,
+        "experiments_binding": {
+            "path": Path(experiments_path).name,
+            "sha256": sha256_file(Path(experiments_path)),
+        },
         "scores_normalized": {cid: round(s, 4) if s is not None else None
                               for cid, s in scores.items()},
         "used_weight": meta["used_weight"],
@@ -618,12 +661,23 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--ticket", default=".")
     parser.add_argument("--out", default="results")
+    parser.add_argument("--experiments", default=None,
+                        help="frozen boundary-experiments artifact to score")
+    parser.add_argument("--experiments-sha", default=None,
+                        help="sha256 of the frozen experiments artifact")
+    parser.add_argument("--expected-commit", default=None)
     args = parser.parse_args(argv)
     ticket_dir = Path(args.ticket).resolve()
     out_dir = (ticket_dir / args.out).resolve() if not Path(args.out).is_absolute() \
         else Path(args.out)
     try:
-        result = evaluate(ticket_dir, out_dir)
+        result = evaluate(
+            ticket_dir, out_dir,
+            experiments_path=(Path(args.experiments).resolve()
+                              if args.experiments else None),
+            experiments_sha=args.experiments_sha,
+            expected_commit=args.expected_commit,
+            run_nonce=os.environ.get("AGENTOS_RUN_NONCE"))
     except EvalError as exc:
         print(json.dumps({"verdict": "FAIL", "error": str(exc)}, indent=2))
         return 1

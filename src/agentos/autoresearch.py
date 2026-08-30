@@ -190,6 +190,29 @@ def CampaignManifest(**kw) -> FrozenManifest:  # noqa: N802
     return make_manifest(**kw)
 
 
+def _skip_inaccessible_entries(directory: str,
+                               names: list[str]) -> list[str]:
+    """copytree ignore-callback: skip entries that cannot be listed.
+
+    A live workspace can contain generated artifacts locked by another
+    sandbox identity (e.g. an unreadable wiki projection directory): such
+    entries cannot be copied and are not part of the mutable candidate
+    surface. Everything accessible is copied unchanged."""
+    import os
+    skipped = []
+    for name in names:
+        full = os.path.join(directory, name)
+        try:
+            if os.path.isdir(full):
+                with os.scandir(full):
+                    pass
+            else:
+                os.stat(full)
+        except OSError:
+            skipped.append(name)
+    return skipped
+
+
 class Autoresearch:
     """Campaign runner.
 
@@ -304,7 +327,8 @@ class Autoresearch:
             for item in ("src", "evals", "spec"):
                 srcp = self.repo_source / item
                 if srcp.exists():
-                    shutil.copytree(srcp, wt / item, dirs_exist_ok=True)
+                    shutil.copytree(srcp, wt / item, dirs_exist_ok=True,
+                                    ignore=_skip_inaccessible_entries)
         return wt
 
     @staticmethod

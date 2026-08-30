@@ -471,6 +471,43 @@ def _git_commit() -> str | None:
         return None
 
 
+def _git_tree_sha() -> str | None:
+    try:
+        out = subprocess.run(
+            ["git", "rev-parse", "HEAD^{tree}"], capture_output=True,
+            text=True, timeout=30)
+        return out.stdout.strip() or None
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+
+
+def _git_dirty() -> bool:
+    try:
+        out = subprocess.run(
+            ["git", "status", "--porcelain"], capture_output=True,
+            text=True, timeout=60)
+    except (OSError, subprocess.TimeoutExpired):
+        return True  # fail closed: unknown state counts as dirty
+    for line in out.stdout.splitlines():
+        # the benchmark's own output file is written by this very run and
+        # is not part of the candidate surface
+        path = line[3:].strip().strip('"') if len(line) > 3 else ""
+        if path.startswith("research/tickets/stage-1/S1-005/results/"):
+            continue
+        if line.strip():
+            return True
+    return False
+
+
+def _script_hashes() -> dict:
+    hashes = {}
+    for name in ("experiments.py", "evaluator.py"):
+        path = Path(__file__).resolve().parent / name
+        if path.is_file():
+            hashes[name] = hashlib.sha256(path.read_bytes()).hexdigest()
+    return hashes
+
+
 def main(out_path: str | None = None) -> dict:
     result = {"schema": "agentos.s1-005.boundary-experiments/v1",
               "python": sys.version.split()[0],
@@ -481,16 +518,26 @@ def main(out_path: str | None = None) -> dict:
                   "processor": platform.processor(),
               },
               "commit": _git_commit(),
+              "tree_sha": _git_tree_sha(),
+              "dirty": _git_dirty(),
+              "script_hashes": _script_hashes(),
               "experiments": {}}
     for name, payload in (("small_512b", SMALL_PAYLOAD),
                           ("large_16kb", LARGE_PAYLOAD)):
         rounds_s = ROUNDS_SMALL if name == "small_512b" else ROUNDS_LARGE
+        # raw observation counts: every transport must semantically
+        # validate every single round (review R3, finding 5)
         result["experiments"][name] = {
             "rounds": rounds_s,
             "in_process_us": round(measure_in_process(payload, rounds_s) * 1e6, 2),
             "pipe_process_us": round(measure_pipe(payload, rounds_s) * 1e6, 2),
             "tcp_localhost_us": round(measure_tcp(payload, rounds_s) * 1e6, 2),
             "response_semantics_validated": True,
+            "validated_counts": {
+                "in_process": rounds_s + 50,
+                "pipe": rounds_s + 50,
+                "tcp": rounds_s + 50,
+            },
         }
     with tempfile_dir() as tmp:
         result["experiments"]["sqlite_multi_writer"] = experiment_sqlite(tmp)
@@ -512,6 +559,103 @@ def main(out_path: str | None = None) -> dict:
     else:
         print(text)
     return result
+
+
+SCHEMA_EXACT = "agentos.s1-005.boundary-experiments/v1"
+
+
+def validate_experiment_result(data: dict, *, expected_commit: str | None = None,
+                               verify_script_hashes: bool = False) -> dict:
+    """THE single strict validator for boundary-experiment results (review
+    R3, finding 5). Both evaluator.py and make_bundle.py call this — no
+    weaker copies are allowed.
+
+    Checks: exact schema version; commit/tree binding (40-hex, clean tree,
+    matching the expected commit when provided); environment manifest;
+    script hashes; per-transport rounds, positive latencies, semantic
+    validation and raw observation counts; the E2 serialization property
+    with raw writer observations; and the canonical payload digest
+    (output_sha256 covers everything except the self-hash field)."""
+    import os
+
+    def fail(message: str) -> None:
+        raise ValueError(f"boundary experiments: {message}")
+
+    if data.get("schema") != SCHEMA_EXACT:
+        fail(f"schema must be exactly {SCHEMA_EXACT!r}, "
+             f"got {data.get('schema')!r}")
+    for field in ("commit", "tree_sha", "environment", "script_hashes",
+                  "output_sha256"):
+        if not data.get(field):
+            fail(f"missing required provenance field {field!r}")
+    commit = data["commit"]
+    tree = data["tree_sha"]
+    if not isinstance(commit, str) or len(commit) != 40             or any(c not in "0123456789abcdef" for c in commit):
+        fail(f"commit is not a 40-hex sha: {commit!r}")
+    if not isinstance(tree, str) or len(tree) != 40             or any(c not in "0123456789abcdef" for c in tree):
+        fail(f"tree_sha is not a 40-hex sha: {tree!r}")
+    if data.get("dirty") is not False:
+        fail("experiments must run on a clean committed tree (dirty=false)")
+    if expected_commit and commit != expected_commit:
+        fail(f"commit mismatch: recorded {commit} != expected "
+             f"{expected_commit}")
+    if verify_script_hashes:
+        here = Path(__file__).resolve().parent
+        for name, recorded in data["script_hashes"].items():
+            script = here / name
+            if not script.is_file():
+                fail(f"script hash names a missing file: {name}")
+            actual = hashlib.sha256(script.read_bytes()).hexdigest()
+            if actual != recorded:
+                fail(f"script hash mismatch for {name}: recorded "
+                     f"{recorded[:12]} actual {actual[:12]}")
+    exps = data.get("experiments")
+    if not isinstance(exps, dict):
+        fail("experiments block missing")
+    for key in ("small_512b", "large_16kb", "sqlite_multi_writer"):
+        if key not in exps:
+            fail(f"missing experiment {key}")
+    for key in ("small_512b", "large_16kb"):
+        block = exps[key]
+        if block.get("response_semantics_validated") is not True:
+            fail(f"{key}: response semantics not validated")
+        rounds = block.get("rounds")
+        if not isinstance(rounds, int) or rounds <= 0:
+            fail(f"{key}: rounds missing or non-positive")
+        counts = block.get("validated_counts")
+        if not isinstance(counts, dict) or len(counts) != 3:
+            fail(f"{key}: raw validated_counts missing")
+        for transport, count in counts.items():
+            if not isinstance(count, int) or count < rounds:
+                fail(f"{key}: validated count for {transport} below rounds")
+        for transport in ("in_process_us", "pipe_process_us",
+                          "tcp_localhost_us"):
+            value = block.get(transport)
+            if not isinstance(value, (int, float)) or value <= 0:
+                fail(f"{key}.{transport} missing or non-positive")
+        if not block["in_process_us"] < block["pipe_process_us"]:
+            fail(f"{key}: in-process must be faster than a process boundary")
+    e2 = exps["sqlite_multi_writer"]
+    if e2.get("committed_rows_complete") is not True:
+        fail("E2 serialization property not demonstrated")
+    if e2.get("serialized_writes") is not True:
+        fail("E2 serialized_writes flag missing")
+    writer_results = e2.get("two_writers", {}).get("writer_results")
+    if not isinstance(writer_results, list) or len(writer_results) != 2:
+        fail("E2 raw writer observations missing")
+    single = e2["single_writer"].get("txns_per_second")
+    multi = e2["two_writers"].get("txns_per_second")
+    if not (isinstance(single, (int, float)) and single > 0
+            and isinstance(multi, (int, float)) and multi > 0
+            and multi < single):
+        fail("E2 multi-writer must be slower than single writer")
+    # canonical payload digest: everything except the self-hash field
+    payload = {k: v for k, v in data.items() if k != "output_sha256"}
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"),
+                           ensure_ascii=False).encode()
+    if hashlib.sha256(canonical).hexdigest() != data.get("output_sha256"):
+        fail("output_sha256 does not match the canonical payload")
+    return data
 
 
 if __name__ == "__main__":

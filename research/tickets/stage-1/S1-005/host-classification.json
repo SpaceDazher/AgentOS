@@ -1,0 +1,156 @@
+{
+  "schema": "agentos.s1-005.host-classification/v1",
+  "note": "Host-owned frozen classification per candidate x dimension. The matrix is candidate narrative; these score inputs are authoritative and any deviation is rejected by the evaluator (review R3, finding 6). Frozen 2026-08-30 from the evaluated matrix of research revision 4.",
+  "cells": {
+    "policy_boundary|monolith": {
+      "claim_type": "fact",
+      "score": 4,
+      "confidence": 0.9,
+      "evidence_refs": [
+        "src/agentos/gateway.py",
+        "ADR-0002",
+        "spec/SPEC.md#1",
+        "S1-004 SAF"
+      ]
+    },
+    "policy_boundary|containers": {
+      "claim_type": "inference",
+      "score": 2,
+      "confidence": 0.5,
+      "evidence_refs": [
+        "results/boundary-experiments.json#E2",
+        "SRC-03 §3"
+      ]
+    },
+    "atomic_transition_audit|monolith": {
+      "claim_type": "fact",
+      "score": 4,
+      "confidence": 0.9,
+      "evidence_refs": [
+        "src/agentos/journal.py",
+        "ADR-0002",
+        "tests/test_security.py",
+        "S1-004 SAF1"
+      ]
+    },
+    "atomic_transition_audit|containers": {
+      "claim_type": "inference",
+      "score": 2,
+      "confidence": 0.5,
+      "evidence_refs": [
+        "results/boundary-experiments.json#E2",
+        "S1-004 SAF1"
+      ]
+    },
+    "failure_isolation|monolith": {
+      "claim_type": "fact",
+      "score": 2,
+      "confidence": 0.9,
+      "evidence_refs": [
+        "ADR-0005",
+        "src/agentos/workers.py",
+        "spec/SPEC.md#residual-risk"
+      ]
+    },
+    "failure_isolation|containers": {
+      "claim_type": "inference",
+      "score": 3,
+      "confidence": 0.5,
+      "evidence_refs": [
+        "SRC-03 §9 QA1"
+      ]
+    },
+    "restart_recovery_reconciliation|monolith": {
+      "claim_type": "fact",
+      "score": 4,
+      "confidence": 0.9,
+      "evidence_refs": [
+        "src/agentos/engine.py#recover_expired_runs",
+        "src/agentos/gateway.py#ReconciliationRequired",
+        "S1-004 LIVE1/LIVE2",
+        "tests/test_crash_retry.py"
+      ]
+    },
+    "restart_recovery_reconciliation|containers": {
+      "claim_type": "unknown",
+      "score": null,
+      "confidence": 0.0,
+      "evidence_refs": [
+        "results/ENVIRONMENT.md"
+      ]
+    },
+    "determinism_simulation|monolith": {
+      "claim_type": "fact",
+      "score": 4,
+      "confidence": 0.9,
+      "evidence_refs": [
+        "adr/ADR-0005-unified-process.md",
+        "research/tickets/stage-1/S1-004/results/simulation/manifest.json",
+        "tests/"
+      ]
+    },
+    "determinism_simulation|containers": {
+      "claim_type": "inference",
+      "score": 2,
+      "confidence": 0.5,
+      "evidence_refs": [
+        "SRC-03 §9 QA1 [H17]"
+      ]
+    },
+    "operational_complexity|monolith": {
+      "claim_type": "fact",
+      "score": 4,
+      "confidence": 0.9,
+      "evidence_refs": [
+        "ADR-0002",
+        "ADR-0005",
+        "adr/README.md"
+      ]
+    },
+    "operational_complexity|containers": {
+      "claim_type": "inference",
+      "score": 1,
+      "confidence": 0.5,
+      "evidence_refs": [
+        "SRC-03 §9 QA1"
+      ]
+    },
+    "latency_serialization|monolith": {
+      "claim_type": "measurement",
+      "score": 4,
+      "confidence": 0.7,
+      "evidence_refs": [
+        "results/boundary-experiments.json#E1",
+        "S1-002 raw-results"
+      ]
+    },
+    "latency_serialization|containers": {
+      "claim_type": "measurement",
+      "score": 2,
+      "confidence": 0.7,
+      "evidence_refs": [
+        "results/boundary-experiments.json#E1",
+        "results/boundary-experiments.json#E2"
+      ]
+    },
+    "migration_reversibility|monolith": {
+      "claim_type": "inference",
+      "score": 4,
+      "confidence": 0.5,
+      "evidence_refs": [
+        "ADR-0002",
+        "ADR-0003",
+        "src/agentos/gateway.py"
+      ]
+    },
+    "migration_reversibility|containers": {
+      "claim_type": "inference",
+      "score": 2,
+      "confidence": 0.5,
+      "evidence_refs": [
+        "SPEC",
+        "SRC-07 §5"
+      ]
+    }
+  }
+}
