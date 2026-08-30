@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import locale
 import platform
 import re
 import shutil
@@ -28,6 +29,43 @@ from pathlib import Path
 
 ALLOY_MAIN_CLASS = "edu.mit.csail.sdg.alloy4whole.SimpleCLI"
 TLC_MAIN_CLASS = "tlc2.TLC"
+CONSOLE_ENCODING = locale.getpreferredencoding(False)
+
+EXPECTED_ALLOY_COMMANDS = {
+    "Run ValidDerivedGrantAndPromotion for 4 but exactly 2 Grant, "
+    "exactly 2 Right, exactly 1 IdentityMembership": "SAT",
+    "Run ValidProposedWithoutPromotion for 3": "SAT",
+    "Run NearMissDualIdentity for 4": "UNSAT",
+    "Run NearMissTwoScopes for 3": "UNSAT",
+    "Run NearMissRightsExpansion for 4 but exactly 2 Grant, "
+    "exactly 2 Right": "UNSAT",
+    "Run NearMissPromotedWithoutEvidence for 4": "UNSAT",
+    "Run NearMissPromotedWrongActivityCount for 4": "UNSAT",
+    "Run MutantDualIdentity for 4": "SAT",
+    "Run MutantTwoScopes for 3": "SAT",
+    "Run MutantRightsExpansion for 4 but exactly 2 Grant, "
+    "exactly 2 Right": "SAT",
+    "Run MutantPromotedWithoutEvidence for 4": "SAT",
+    "Run MutantPromotedWrongActivityCount for 4": "SAT",
+}
+
+REQUIRED_TLC_INVARIANTS = {
+    "TypeOk", "BudgetConservation", "ChildBudgetConsistency",
+    "RevocationMonotonicity", "OutboxCompleteness", "ReceiptConsistency",
+    "NoBlindRetry", "GrantStateMachine", "ActivationWithinOneTick",
+    "FenceMonotone",
+}
+REQUIRED_TLC_PROPERTIES = {"LiveDelivery"}
+REQUIRED_TLC_CONFIG_LINES = {
+    "SPECIFICATION Spec",
+    "Grants = {g1, g2}",
+    "Root = g1",
+    "Child = g2",
+    "Decisions = {d1}",
+    "Alloc = 3",
+    "MaxTick = 4",
+    "MaxPub = 2",
+}
 
 
 def sha256_file(path: Path) -> str:
@@ -44,8 +82,121 @@ def fail(message: str) -> None:
 
 
 def java_version() -> str:
-    out = subprocess.run(["java", "-version"], capture_output=True, text=True)
+    out = subprocess.run(
+        ["java", "-version"], capture_output=True, text=True,
+        encoding=CONSOLE_ENCODING, errors="strict")
     return (out.stderr or out.stdout).splitlines()[0].strip()
+
+
+def validate_alloy_execution(returncode: int, body: str) -> dict:
+    """Validate an Alloy report against the exact frozen command matrix."""
+    if returncode != 0:
+        raise ValueError(f"Alloy exited non-zero: {returncode}")
+    verdicts = []
+    for match in re.finditer(
+            r'Executing "(Run|Check) ([^"]+)"\n(.*?)(?=Executing|\Z)',
+            body, re.S):
+        kind, name, block = match.group(1), match.group(2), match.group(3)
+        if "Instance found. Predicate is consistent." in block:
+            verdict = "SAT"
+        elif "No instance found. Predicate may be inconsistent." in block:
+            verdict = "UNSAT"
+        elif "Counterexample found. Assertion is invalid." in block:
+            verdict = "COUNTEREXAMPLE"
+        elif "No counterexample found. Assertion may be valid." in block:
+            verdict = "NO_COUNTEREXAMPLE"
+        else:
+            verdict = "UNRECOGNIZED"
+        verdicts.append({"command": f"{kind} {name}", "verdict": verdict})
+
+    names = [item["command"] for item in verdicts]
+    duplicate_names = sorted({name for name in names if names.count(name) > 1})
+    missing = sorted(set(EXPECTED_ALLOY_COMMANDS) - set(names))
+    unexpected = sorted(set(names) - set(EXPECTED_ALLOY_COMMANDS))
+    problems = []
+    if duplicate_names:
+        problems.append(f"duplicate commands: {duplicate_names}")
+    if missing:
+        problems.append(f"missing commands: {missing}")
+    if unexpected:
+        problems.append(f"unexpected commands: {unexpected}")
+    if len(verdicts) != len(EXPECTED_ALLOY_COMMANDS):
+        problems.append(
+            f"command count {len(verdicts)} != {len(EXPECTED_ALLOY_COMMANDS)}")
+    for item in verdicts:
+        expected = EXPECTED_ALLOY_COMMANDS.get(item["command"])
+        if expected is not None and item["verdict"] != expected:
+            problems.append(
+                f"{item['command']}: expected {expected}, "
+                f"got {item['verdict']}")
+    if problems:
+        raise ValueError("; ".join(problems))
+    return {
+        "commands": verdicts,
+        "expectation_problems": [],
+        "verdict": "PASS",
+    }
+
+
+def validate_tlc_execution(returncode: int, console: str, cfg_text: str) -> dict:
+    """Require the frozen invariant/property set and temporal verification."""
+    if returncode != 0:
+        raise ValueError(f"TLC exited non-zero: {returncode}")
+    invariants = re.findall(r"^\s*INVARIANT\s+(\S+)\s*$", cfg_text, re.M)
+    properties = re.findall(r"^\s*PROPERTY\s+(\S+)\s*$", cfg_text, re.M)
+    if len(invariants) != len(set(invariants)):
+        raise ValueError("TLC config contains duplicate invariants")
+    if set(invariants) != REQUIRED_TLC_INVARIANTS:
+        raise ValueError(
+            "TLC config invariant set mismatch: "
+            f"expected={sorted(REQUIRED_TLC_INVARIANTS)} actual={sorted(invariants)}")
+    if len(properties) != len(set(properties)):
+        raise ValueError("TLC config contains duplicate properties")
+    if set(properties) != REQUIRED_TLC_PROPERTIES:
+        raise ValueError(
+            "TLC config property set mismatch: "
+            f"expected={sorted(REQUIRED_TLC_PROPERTIES)} actual={sorted(properties)}")
+    normalized_lines = {
+        re.sub(r"\s+", " ", line.strip())
+        for line in cfg_text.splitlines() if line.strip()
+    }
+    missing_config = sorted(REQUIRED_TLC_CONFIG_LINES - normalized_lines)
+    if missing_config:
+        raise ValueError(f"TLC config bound/spec mismatch: {missing_config}")
+
+    completed = bool(re.search(
+        r"Model checking completed\. No error has been found\.", console))
+
+    def last_count(phrase: str) -> int | None:
+        matches = re.findall(
+            r"([\d\u00a0\u202f,]+)\s+" + re.escape(phrase), console)
+        if not matches:
+            return None
+        digits = re.sub(r"\D", "", matches[-1])
+        return int(digits) if digits else None
+
+    states = last_count("distinct states found")
+    generated = last_count("states generated")
+    temporal = bool(re.search(r"Finished checking temporal properties", console))
+    if not completed:
+        raise ValueError("TLC report lacks a no-error completion marker")
+    if not states or not generated:
+        raise ValueError("TLC report lacks positive state counters")
+    if not temporal:
+        raise ValueError("TLC report lacks temporal verification marker")
+    return {
+        "completed_no_error": True,
+        "distinct_states": states,
+        "states_generated": generated,
+        "temporal_properties_checked": True,
+        "verified_invariants": sorted(REQUIRED_TLC_INVARIANTS),
+        "verified_properties": sorted(REQUIRED_TLC_PROPERTIES),
+        "verdict": "PASS",
+        "model_bounds": {
+            "grants": "{g1, g2}", "decisions": "{d1}", "alloc": 3,
+            "max_tick": 4, "max_publishes": 2,
+        },
+    }
 
 
 def run_alloy(ticket: Path, out_dir: Path) -> dict:
@@ -67,6 +218,7 @@ def run_alloy(ticket: Path, out_dir: Path) -> dict:
         f"jar sha256={sha256_file(jar)}",
         f"model: alloy/agentos_structural_v2.als sha256={sha256_file(model)}",
         f"runtime: {java_version()} on {platform.platform()}",
+        f"console_encoding: {CONSOLE_ENCODING} (strict decoding)",
         f"java_property: -Dsat4j=yes (pure-java SAT solver, bundled sat4j)",
         "note: SimpleCLI hardcodes placeholder solve timings (12345ms) in "
         "its reporter; verdict lines are authoritative.",
@@ -76,13 +228,15 @@ def run_alloy(ticket: Path, out_dir: Path) -> dict:
     proc = subprocess.run(
         ["java", "-Dsat4j=yes", "-cp", str(jar), ALLOY_MAIN_CLASS,
          str(model)],
-        capture_output=True, text=True, cwd=str(ticket), timeout=3600)
+        capture_output=True, text=True, encoding=CONSOLE_ENCODING,
+        errors="strict",
+        cwd=str(ticket), timeout=3600)
     elapsed = time.time() - t0
     tmp = ticket / ".alloy.tmp"
     if not tmp.is_file():
         fail("alloy report .alloy.tmp was not produced; java stderr:\n"
              + (proc.stderr or proc.stdout or "<empty>"))
-    body = tmp.read_text(encoding="utf-8", errors="replace")
+    body = tmp.read_text(encoding="utf-8", errors="strict")
     report_lines.append(f"exit_code: {proc.returncode}")
     report_lines.append(f"wall_seconds: {elapsed:.1f}")
     report_lines.append("---- engine report (.alloy.tmp) ----")
@@ -91,43 +245,12 @@ def run_alloy(ticket: Path, out_dir: Path) -> dict:
     out.write_text("\n".join(report_lines).rstrip("\n") + "\n",
                    encoding="utf-8", newline="\n")
 
-    verdicts = []
-    for m in re.finditer(r'Executing "(Run|Check) ([^"]+)"\n(.*?)(?=Executing|\Z)',
-                         body, re.S):
-        kind, name, block = m.group(1), m.group(2), m.group(3)
-        if "Instance found. Predicate is consistent." in block:
-            verdict = "SAT"
-        elif "No instance found. Predicate may be inconsistent." in block:
-            verdict = "UNSAT"
-        elif "Counterexample found. Assertion is invalid." in block:
-            verdict = "COUNTEREXAMPLE"
-        elif "No counterexample found. Assertion may be valid." in block:
-            verdict = "NO_COUNTEREXAMPLE"
-        else:
-            verdict = "UNRECOGNIZED"
-        verdicts.append({"command": f"{kind} {name}", "verdict": verdict})
-    if not verdicts or any(v["verdict"] == "UNRECOGNIZED" for v in verdicts):
-        fail(f"alloy verdicts not recognizable: {verdicts}")
-
-    # expected matrix: Valid* SAT, NearMiss* UNSAT, Mutant* SAT
-    problems = []
-    for v in verdicts:
-        name = v["command"]
-        if name.startswith("Run Valid") and v["verdict"] != "SAT":
-            problems.append(f"{name}: expected SAT, got {v['verdict']}")
-        if name.startswith("Run NearMiss") and v["verdict"] != "UNSAT":
-            problems.append(f"{name}: expected UNSAT, got {v['verdict']}")
-        if name.startswith("Run Mutant") and v["verdict"] != "SAT":
-            problems.append(f"{name}: expected SAT, got {v['verdict']}")
-    expected = {
-        "commands": verdicts,
-        "expectation_problems": problems,
-        "verdict": "PASS" if not problems else "FAIL",
-    }
+    try:
+        expected = validate_alloy_execution(proc.returncode, body)
+    except ValueError as exc:
+        fail(str(exc))
     (out_dir / "alloy_verdicts.json").write_text(
         json.dumps(expected, indent=2), encoding="utf-8")
-    if problems:
-        fail(f"alloy expectation matrix violated: {problems}")
     return expected
 
 
@@ -152,6 +275,7 @@ def run_tla(ticket: Path, out_dir: Path) -> dict:
         f"spec: tla/agentos_transitions_v1.tla sha256={sha256_file(spec)}",
         f"config: tla/agentos_transitions_v1.cfg sha256={sha256_file(cfg)}",
         f"runtime: {java_version()} on {platform.platform()}",
+        f"console_encoding: {CONSOLE_ENCODING} (strict decoding)",
         "-deadlock rationale: bounded-model terminal states (tick = MaxTick "
         "or exhausted retry budget publishes = MaxPub) have no enabled "
         "action by design; premature parking is ruled out by the "
@@ -163,6 +287,7 @@ def run_tla(ticket: Path, out_dir: Path) -> dict:
         shutil.copy(cfg, Path(td) / cfg.name)
         t0 = time.time()
         proc = subprocess.run(command, capture_output=True, text=True,
+                              encoding=CONSOLE_ENCODING, errors="strict",
                               cwd=td, timeout=7200)
         elapsed = time.time() - t0
         console = proc.stdout + "\n" + proc.stderr
@@ -175,35 +300,11 @@ def run_tla(ticket: Path, out_dir: Path) -> dict:
     out.write_text("\n".join(report_lines).rstrip("\n") + "\n",
                    encoding="utf-8", newline="\n")
 
-    if proc.returncode != 0:
-        fail(f"TLC exited non-zero: see {out}")
-    completed = re.search(r"Model checking completed\. No error has been found\.",
-                          console)
-    # TLC progress lines use locale group separators (e.g. U+202F); take the
-    # final occurrence of each counter and strip separators.
-    def last_count(phrase):
-        matches = re.findall(
-            r"([\d\u00a0\u202f,]+)\s+" + re.escape(phrase), console)
-        if not matches:
-            return None
-        digits = re.sub(r"\D", "", matches[-1])
-        return int(digits) if digits else None
-    states = last_count("distinct states found")
-    generated = last_count("states generated")
-    temporal = re.search(r"Finished checking temporal properties", console)
-    if not completed or not states:
-        fail("TLC report lacks a completion marker")
-    result = {
-        "completed_no_error": bool(completed),
-        "distinct_states": states,
-        "states_generated": generated,
-        "temporal_properties_checked": bool(temporal),
-        "verdict": "PASS",
-        "model_bounds": {
-            "grants": "{g1, g2}", "decisions": "{d1}", "alloc": 3,
-            "max_tick": 4, "max_publishes": 2,
-        },
-    }
+    try:
+        result = validate_tlc_execution(
+            proc.returncode, console, cfg.read_text(encoding="utf-8"))
+    except ValueError as exc:
+        fail(f"{exc}: see {out}")
     (out_dir / "tlc_verdicts.json").write_text(
         json.dumps(result, indent=2), encoding="utf-8")
     return result

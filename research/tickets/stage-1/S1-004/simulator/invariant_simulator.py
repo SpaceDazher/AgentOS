@@ -15,8 +15,8 @@ Design contract (must stay aligned with the sources and the TLA+ model in
 - INV5 revocation monotonicity: no allow() trace for a grant after its
   durable revoke.
 - INV6 budget conservation: spent + reserved <= allocation on every grant
-  ledger at all times, and a child's outstanding reservation never exceeds
-  its parent's outstanding reservation (SRC-05 §2 I5).
+  ledger at all times, and the sum of all immediate child reservations never
+  exceeds the parent's outstanding reservation (SRC-05 §2 I5).
 - SAF1 every committed decision has exactly one outbox event (atomic with
   the local commit — transactional outbox).
 - SAF2 redelivery/replay never creates a second local effect receipt
@@ -56,7 +56,7 @@ __all__ = [
     "replay_violation", "run_probes",
 ]
 
-SIMULATOR_VERSION = "1.1.0"
+SIMULATOR_VERSION = "1.2.0"
 
 INVARIANT_IDS = (
     "INV1", "INV2", "INV3", "INV4", "INV5", "INV6",
@@ -192,16 +192,20 @@ class Simulator:
             if self.ka_status[ka] == "promoted":
                 if not self.ka_evidence[ka] or self.ka_promotions[ka] != 1:
                     self._raise("INV4", f"assertion {ka} promoted invalidly")
-        # INV6: budget conservation + child reservation cover
+        # INV6: budget conservation + aggregate child reservation cover
+        child_totals = {g: 0 for g in self.grant_ids}
         for g in self.grant_ids:
             if self.g_spent[g] + self.g_reserved[g] > self.g_alloc[g]:
                 self._raise("INV6", f"grant {g} over-allocated")
             parent = self.g_parent.get(g)
-            if parent is not None and self.g_reserved[g] > self.g_reserved[parent]:
+            if parent is not None:
+                child_totals[parent] += self.g_reserved[g]
+        for parent, child_total in child_totals.items():
+            if child_total > self.g_reserved[parent]:
                 self._raise(
                     "INV6",
-                    f"child {g} reservation {self.g_reserved[g]} exceeds "
-                    f"parent {parent} reservation {self.g_reserved[parent]}")
+                    f"children of {parent} reserve {child_total}, exceeding "
+                    f"parent reservation {self.g_reserved[parent]}")
         # SAF1/SAF2/SAF3 over the decision table
         for d, rec in self.decisions.items():
             if rec["committed"] != (rec["outbox_event"] is not None):
@@ -368,9 +372,18 @@ class Simulator:
             # reservation is released from its parent's ledger (SRC-05 S.2
             # I5: authority and budget derive from the parent).
             if new in ("revoked", "expired"):
+                released_children = 0
                 for h in self.grant_ids:
                     if self.g_parent.get(h) == g and self.g_reserved[h] > 0:
+                        released_children += self.g_reserved[h]
                         self.g_reserved[h] = 0
+                if released_children:
+                    if self.g_reserved[g] < released_children:
+                        self._raise(
+                            "INV6",
+                            f"grant {g} ledger under-covers child release of "
+                            f"{released_children}")
+                    self.g_reserved[g] -= released_children
                 parent = self.g_parent.get(g)
                 if parent is not None and self.g_reserved[g] > 0:
                     if self.g_reserved[parent] >= self.g_reserved[g]:
@@ -928,24 +941,30 @@ def probe_reserve_revoke_retry():
     sim.op_tick()
     assert sim.g_state[parent] == "active" and sim.g_state[child] == "active", \
         "probe B: chain not activated"
-    # 1. reserve child budget against the parent ledger (INV6 / I5)
-    sim.g_reserved[parent] += 2
-    sim.g_reserved[child] += 2
+    # 1. reserve through the real operation (INV6 / I5)
+    sim.op_reserve_child()
     overalloc_before = (sim.g_spent[parent] + sim.g_reserved[parent]
                         > sim.g_alloc[parent])
-    child_covered = sim.g_reserved[child] <= sim.g_reserved[parent]
+    child_covered = sum(
+        sim.g_reserved[g] for g in sim.grant_ids
+        if sim.g_parent.get(g) == parent) <= sim.g_reserved[parent]
     # 2. durable revoke of the parent; descendant reservations are released
     sim._set_grant_state(parent, "revoked")
     reservations_released = sim.g_reserved[child] == 0
     conservation_after_revoke = (sim.g_spent[parent] + sim.g_reserved[parent]
                                  <= sim.g_alloc[parent])
-    # 3. allow() through the revoked parent chain must be impossible
-    allow_denied = not sim._active_chain(child)
-    # 4. re-reserving the child budget against the revoked parent is refused
+    # 3. real allow() through the revoked parent chain must produce no decision
+    decisions_before = len(sim.decisions)
+    sim.op_allow()
+    allow_denied = len(sim.decisions) == decisions_before
+    # 4. real reserve operation must refuse the revoked parent chain
+    reservations_before_retry = (
+        sim.g_reserved[parent], sim.g_reserved[child])
+    sim.op_reserve_child()
+    reservations_after_retry = (
+        sim.g_reserved[parent], sim.g_reserved[child])
     retry_reservation_accepted = (
-        sim.g_state[parent] == "active"
-        and sim.g_spent[parent] + sim.g_reserved[parent] + 2
-        <= sim.g_alloc[parent])
+        reservations_after_retry != reservations_before_retry)
     overalloc_after = (sim.g_spent[parent] + sim.g_reserved[parent]
                        > sim.g_alloc[parent])
     # 5. unknown external outcome routes to reconciliation, not blind retry:
@@ -955,37 +974,24 @@ def probe_reserve_revoke_retry():
     sim._pending_activation.append(unrelated_root)
     sim.op_tick()
     assert sim.g_state[unrelated_root] == "active", "probe B: second root missing"
-    blind_retry_blocked = None
-    retry_after_reconcile_ok = None
-    d = sim._next_decision
-    sim._next_decision += 1
-    sim.decisions[d] = {
-        "grant": unrelated_root, "committed": True, "outbox_event": d,
-        "estate": "pending", "publishes": 0, "token": 0,
-        "inflight_token": None, "receipt_token": None, "receipts": 0,
-        "reconcile_done": False, "fence_stale": 0,
-        "commit_tick": sim.tick, "crashed": False,
-    }
+    sim.op_allow()
+    d = max(sim.decisions)
     rec = sim.decisions[d]
-    if True:
-        rec["publishes"] += 1
-        rec["token"] += 1
-        rec["estate"] = "unknown"          # external outcome unknown
-        # the SAF3 guard rejects a second publish while unresolved
-        try:
-            if rec["publishes"] >= 1 and not rec["reconcile_done"]:
-                sim.counters["SAF3"] += 1
-                raise Violation("SAF3", sim.step, "blind retry detected")
-        except Violation:
-            sim.counters["SAF3"] -= 1      # probe-internal check, not a finding
-            blind_retry_blocked = True
-        # correct path: reconcile first, then the retry becomes legal
-        sim.reconciliations += 1
-        rec["estate"] = "reconciling"
-        rec["reconcile_done"] = True
-        rec["estate"] = "nacked"
-        rec["publishes"] += 1              # legal retry after reconciliation
-        retry_after_reconcile_ok = rec["publishes"] == 2 and rec["reconcile_done"]
+    sim.op_publish()
+    sim.op_delivery_timeout()
+    publishes_before_blind_retry = rec["publishes"]
+    sim.op_publish()
+    blind_retry_blocked = (
+        rec["estate"] == "unknown"
+        and rec["publishes"] == publishes_before_blind_retry == 1)
+    sim.op_reconcile()                     # unknown -> reconciling
+    sim.rng = random.Random(0)              # one-item choice then 0.758 => nack
+    sim.op_reconcile()                     # reconciling -> nacked
+    sim.op_retry_after_reconcile()         # nacked -> pending
+    sim.op_publish()                       # legal second publish
+    retry_after_reconcile_ok = (
+        rec["publishes"] == 2 and rec["reconcile_done"]
+        and rec["estate"] == "inflight")
     sim.audit()
     counters_zero = all(sim.counters[inv] == 0 for inv in INVARIANT_IDS)
     passed = (not overalloc_before and child_covered and reservations_released
@@ -1007,6 +1013,7 @@ def probe_reserve_revoke_retry():
                 "blind_retry_blocked": blind_retry_blocked,
                 "retry_legal_after_reconciliation": retry_after_reconcile_ok,
                 "invariant_counters_zero": counters_zero,
+                "actual_operation_counts": dict(sorted(sim.op_counts.items())),
             }}
 
 

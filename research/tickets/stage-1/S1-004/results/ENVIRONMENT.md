@@ -16,8 +16,9 @@ reproduce the evidence byte-for-byte.
   64-Bit Server VM), Windows 11 10.0 (amd64), host `Daniil`.
 - The currently published tla2tools **2.0** build requires Java 11+
   (class file 55) and cannot run on this host; the executed engine is the
-  1.7.0 release, which is Java-8 compatible. The download URL and hash of
-  the executed jar are pinned above.
+  1.7.0 release, which is Java-8 compatible. The executed artifact and its
+  hash are pinned above; acquisition provenance is not claimed by this local
+  runtime record.
 - Alloy solver: `sat4j` (pure Java, bundled), selected with `-Dsat4j=yes`.
   SimpleCLI's default solver path (`/zweb/sat/mem`) is broken by design on
   non-MIT infrastructure; `-Dsat4j=yes` avoids it.
@@ -58,10 +59,11 @@ java -cp tools/tla2tools-1.7.0.jar tlc2.TLC -deadlock -config agentos_transition
 
 ## Deterministic simulator (stdlib-only)
 
-- Module: `simulator/invariant_simulator.py` v1.1.0 — no third-party
+- Module: `simulator/invariant_simulator.py` v1.2.0 — no third-party
   dependencies; deterministic via a single `random.Random(seed)`
   (Mersenne Twister); no wall-clock or dict-order dependence.
-- Driver: `simulator/run_acceptance.py` (acceptance + independent rerun),
+- Driver: `simulator/run_acceptance.py` (acceptance + fresh-interpreter
+  subprocess rerun),
   `simulator/run_formal.py` (engine orchestration).
 - Module hashes at execution time are recorded in
   `results/simulation/manifest.json` (`module_sha256`) — they are the
@@ -71,14 +73,15 @@ java -cp tools/tla2tools-1.7.0.jar tlc2.TLC -deadlock -config agentos_transition
 
 ```powershell
 $env:PYTHONPATH = "research/tickets/stage-1/S1-004/simulator"
-python research/tickets/stage-1/S1-004/simulator/run_acceptance.py `
+py -3.12 research/tickets/stage-1/S1-004/simulator/run_acceptance.py `
   --out research/tickets/stage-1/S1-004/results/simulation
 ```
 
 - Envelope: seeds `11, 22, 33` × 1,000,000 operations, global audit every
   4,096 operations plus a terminal audit.
 - Result: **PASS** — zero violations of INV1–INV6, SAF1–SAF4, LIVE1–LIVE2;
-  independent rerun reproduced the exact trace digest of every seed
+  a fresh Python interpreter subprocess with stripped environment reproduced
+  the exact trace digest of every seed
   (`results/simulation/manifest.json`, `runs[*].trace_digest`,
   `reruns[*].digest_match=true`).
 - Per-seed artifacts: `results/simulation/seed-<seed>/{config.json,
@@ -87,7 +90,7 @@ python research/tickets/stage-1/S1-004/simulator/run_acceptance.py `
 ### Formal driver command
 
 ```powershell
-python research/tickets/stage-1/S1-004/simulator/run_formal.py `
+py -3.12 research/tickets/stage-1/S1-004/simulator/run_formal.py `
   --ticket research/tickets/stage-1/S1-004
 ```
 
@@ -95,12 +98,16 @@ python research/tickets/stage-1/S1-004/simulator/run_formal.py `
 
 - empty operation series → abort (`run_acceptance.py`);
 - requested ops below the 1,000,000 acceptance floor → abort;
-- missing seed / incomplete invariant counter table / empty trace digest →
-  abort;
-- engine verdict line missing or unrecognized → abort (`run_formal.py`);
-- Alloy expectation matrix (Valid=SAT, NearMiss=UNSAT, Mutant=SAT)
-  violated → abort;
-- rerun digest mismatch → abort.
+- fewer than three distinct seeds / incomplete invariant counter table /
+  empty or malformed trace digest → abort; reruns cannot be skipped;
+- engine non-zero exit, missing/unrecognized verdict, duplicate, missing, or
+  extra Alloy command → abort (`run_formal.py`);
+- Alloy execution must match the exact frozen 12-command verdict matrix;
+- TLC execution must include the exact 10-invariant + `LiveDelivery` config,
+  positive state counters, no-error completion, and temporal-check marker;
+- rerun digest mismatch → abort;
+- either adversarial probe failure → abort; the probes artifact is SHA-bound
+  in the acceptance manifest.
 
 ## Known environment limitations
 
@@ -108,5 +115,6 @@ python research/tickets/stage-1/S1-004/simulator/run_formal.py `
   Alloy/TLC drivers shell out instead of compiling Java helpers.
 - `SimpleCLI` reports placeholder solve timings (`12345ms`); verdict lines
   are authoritative (documented in the report header).
-- TLC progress counters use locale group separators; `run_formal.py`
-  normalizes them when extracting the final state counts.
+- TLC progress counters use locale group separators; `run_formal.py` strictly
+  decodes the recorded system console encoding (`cp1251` on this host) and
+  normalizes separators when extracting the final state counts.

@@ -98,9 +98,10 @@ python -m agentos.cli research-plan --topic "S1-004 Alloy TLA plus seeded determ
 ## Финальные проверки
 
 ```powershell
-python -m unittest discover -s tests -v
-python -m evals.gen_fixtures --check
-python -m agentos.cli wiki-check
+py -3.12 -m unittest discover -s tests -v
+py -3.12 -m evals.gen_fixtures --check
+$env:PYTHONPATH = "src"
+py -3.12 -m agentos.cli wiki-check --db ".agentos-research/platform-stage-1"
 git diff --check
 ```
 

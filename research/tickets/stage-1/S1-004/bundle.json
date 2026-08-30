@@ -158,7 +158,7 @@
       "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-004/results/simulation/manifest.json",
       "title": "S1-004 acceptance simulation manifest",
       "source_type": "simulation measurement",
-      "content": "Acceptance manifest: seeds 11/22/33 x 1,000,000 operations, zero violations across INV1-INV6/SAF1-SAF4/LIVE1-LIVE2, per-seed trace digests, independent rerun reproducing every digest, environment manifest, and module SHA-256 bindings.",
+      "content": "Acceptance manifest: seeds 11/22/33 x 1,000,000 operations, zero violations across INV1-INV6/SAF1-SAF4/LIVE1-LIVE2, per-seed trace digests, fresh-interpreter subprocess rerun reproducing every digest, environment provenance, and module SHA-256 bindings.",
       "verification_status": "verified",
       "verifier": "agentos-s1-004-local-hash-review",
       "verification_method": "host-file-sha256-binding",
@@ -166,7 +166,7 @@
         "method": "host-file-sha256-binding",
         "verified_at": "2026-08-29",
         "path": "research/tickets/stage-1/S1-004/results/simulation/manifest.json",
-        "file_sha256": "039528940e17db0c1bafa974dee3b6099729f088f4fd79cfe3c97919bf52e8d8",
+        "file_sha256": "71ef39b89dc624a38a5a498f8dfe52da50e79a5e537f7226f8170b97962990b1",
         "scope_note": "Primary simulation evidence (hash-locked)."
       }
     },
@@ -183,7 +183,7 @@
         "method": "host-file-sha256-binding",
         "verified_at": "2026-08-29",
         "path": "research/tickets/stage-1/S1-004/results/simulation/probes.json",
-        "file_sha256": "2b9418592d3a5ad58e68cb40ea7e346892a8e1d9fd83e96734b1d13b65ef93f9",
+        "file_sha256": "9d5416cded8b3924491e2b080ba9574bc1a6844f9f3e9bad2997532a9b8f8d1a",
         "scope_note": "Adversarial probe evidence (hash-locked)."
       }
     },
@@ -200,7 +200,7 @@
         "method": "host-file-sha256-binding",
         "verified_at": "2026-08-29",
         "path": "research/tickets/stage-1/S1-004/results/alloy/alloy_report.txt",
-        "file_sha256": "dd4433bcfac33e1813295097de1a0188157291a586271c8087257c46d1540d55",
+        "file_sha256": "6fbd313b1ac001a98358284a03ef45428cceecf1097ff6f1b5a8a20eb6beb1c1",
         "scope_note": "Primary Alloy evidence (hash-locked)."
       }
     },
@@ -217,7 +217,7 @@
         "method": "host-file-sha256-binding",
         "verified_at": "2026-08-29",
         "path": "research/tickets/stage-1/S1-004/results/tla/tlc_report.txt",
-        "file_sha256": "b0b474876f947b5df9da6513c9363721c3d59b491ae78cc524e4b05dde086e6c",
+        "file_sha256": "fa48d2d204fdd8d6fd9af3651a6eca2b0437e97d75c99bc036681711267af83c",
         "scope_note": "Primary TLC evidence (hash-locked)."
       }
     },
@@ -234,7 +234,7 @@
         "method": "host-file-sha256-binding",
         "verified_at": "2026-08-29",
         "path": "research/tickets/stage-1/S1-004/results/formal_summary.json",
-        "file_sha256": "ee0df2e5bc1a1c55b611bb187ee10b4e1949a38808ed153d62705122def1cc3c",
+        "file_sha256": "25fbf397d06ca082f1eed43a0dd19bb37cf1c06cbf8c02eef372e4ce6e29e80a",
         "scope_note": "Formal verdict binding."
       }
     },
@@ -275,7 +275,7 @@
     {
       "id": "S1-004-SIM-CODE",
       "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-004/simulator/invariant_simulator.py",
-      "title": "S1-004 deterministic simulator v1.1.0",
+      "title": "S1-004 deterministic simulator v1.2.0",
       "source_type": "simulator implementation",
       "content": "Stdlib-only deterministic simulator: fixed 48-principal/48-grant/128-object bounded world with steady-state recycling, seeded scheduler, fault injection (crash-before-publish, unknown outcomes, timeouts), incremental checks plus periodic global audits, rolling trace window, and counterexample seed-replay reproduction.",
       "verification_status": "verified",
@@ -285,8 +285,42 @@
         "method": "host-file-sha256-binding",
         "verified_at": "2026-08-29",
         "path": "research/tickets/stage-1/S1-004/simulator/invariant_simulator.py",
-        "file_sha256": "2ff7bc8b62e11c2b2c0021d673d68225cbcab9f373e678a6da5db1f2002259c8",
+        "file_sha256": "3b4f11666880535f654c335e1b88fa1377ac5e9ae075ef570e317b2492f9be62",
         "scope_note": "Simulator under test (hash-locked by the manifest)."
+      }
+    },
+    {
+      "id": "S1-004-FORMAL-RUNNER",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-004/simulator/run_formal.py",
+      "title": "S1-004 fail-closed formal runner",
+      "source_type": "formal execution harness",
+      "content": "Runner requiring process exit 0, the exact 12-command Alloy matrix, the exact bounded TLC config, positive state counters, no-error completion, and temporal verification marker.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-004-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-29",
+        "path": "research/tickets/stage-1/S1-004/simulator/run_formal.py",
+        "file_sha256": "7f2973573b7c670cfb9a667fce20c1328aac3f09a1b61e856358c8f8d1c32785",
+        "scope_note": "Formal evidence authority implementation."
+      }
+    },
+    {
+      "id": "S1-004-ACCEPTANCE-RUNNER",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-004/simulator/run_acceptance.py",
+      "title": "S1-004 fail-closed acceptance runner",
+      "source_type": "simulation execution harness",
+      "content": "Runner requiring three distinct million-operation seeds, complete zero invariant counters, mandatory fresh-interpreter subprocess reruns, matching digests, and both adversarial probes.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-004-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-29",
+        "path": "research/tickets/stage-1/S1-004/simulator/run_acceptance.py",
+        "file_sha256": "6a36cd98d81062508ab6a4c4dde4df2bcbb2afb75a191f9636e0c4a2c77e6203",
+        "scope_note": "Simulation evidence authority implementation."
       }
     },
     {
@@ -294,7 +328,7 @@
       "canonical_uri": "https://local.agentos.invalid/AgentOS/tests/test_s1_004_regressions.py",
       "title": "S1-004 regression suite",
       "source_type": "regression tests with negative mutations",
-      "content": "13 regression tests: recorded-evidence integrity (manifest hashes, rerun reproduction, formal summary), small-envelope live runs, determinism, both probes, 12 negative mutations (one per invariant) each detected, no-false-positive controls on the valid path, and deterministic counterexample seed-replay.",
+      "content": "13 baseline regression tests: recorded-evidence integrity (manifest hashes, rerun reproduction, formal summary), small-envelope live runs, determinism, both probes, 12 negative mutations (one per invariant) each detected, no-false-positive controls on the valid path, and deterministic counterexample seed-replay.",
       "verification_status": "verified",
       "verifier": "agentos-s1-004-local-hash-review",
       "verification_method": "host-file-sha256-binding",
@@ -304,6 +338,23 @@
         "path": "tests/test_s1_004_regressions.py",
         "file_sha256": "39fc078ab7190be5dfd71b18f42430f7e3efa27ce1f3e5efcb6ca33f13168dc1",
         "scope_note": "Regression suite (hash-locked)."
+      }
+    },
+    {
+      "id": "S1-004-FAIL-CLOSED-TESTS",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/tests/test_s1_004_fail_closed.py",
+      "title": "S1-004 corrective fail-closed suite",
+      "source_type": "corrective regression tests",
+      "content": "11 adversarial regression tests added after review: exact Alloy matrix and exit status, TLC temporal/config authority, three distinct acceptance seeds, subprocess rerun failures, aggregate INV6 child cover, real-operation Probe B, and tracked evidence snapshot binding.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-004-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-29",
+        "path": "tests/test_s1_004_fail_closed.py",
+        "file_sha256": "35a73d53e1ee622cab1f64496d282ef9d0fb13ffe1ca3c10acb7ddda89c8fd53",
+        "scope_note": "Corrective review suite (hash-locked)."
       }
     },
     {
@@ -350,6 +401,7 @@
         "S1-004-ALLOY-REPORT",
         "S1-004-FORMAL-SUMMARY",
         "S1-004-ALLOY-MODEL",
+        "S1-004-FORMAL-RUNNER",
         "F10-ALLOY"
       ]
     },
@@ -361,24 +413,27 @@
         "S1-004-TLA-REPORT",
         "S1-004-FORMAL-SUMMARY",
         "S1-004-TLA-MODEL",
+        "S1-004-FORMAL-RUNNER",
         "F11-TLA"
       ]
     },
     {
       "id": "c3-sim-acceptance",
       "claim_class": "fact",
-      "text": "Measured: the deterministic simulator executed the required acceptance envelope, seeds 11/22/33 x 1,000,000 operations each (wall time 113.0s/104.4s/85.0s), with zero violations across INV1-INV6, SAF1-SAF4, LIVE1-LIVE2 and complete invariant counter tables; seed 11 measurements: 17,972 committed decisions, 12,980 effect receipts, 687 crash injections matched by 687 outbox replays, 7,605 unknown outcomes matched by 7,605 reconciliations, 245 global audits.",
+      "text": "Measured: simulator v1.2.0 executed the required acceptance envelope, seeds 11/22/33 x 1,000,000 operations each, with zero violations across INV1-INV6, SAF1-SAF4, LIVE1-LIVE2 and complete invariant counter tables. INV6 now audits the aggregate reservation of all immediate children against the parent ledger.",
       "source_ids": [
         "S1-004-SIM",
-        "S1-004-SIM-CODE"
+        "S1-004-SIM-CODE",
+        "S1-004-ACCEPTANCE-RUNNER"
       ]
     },
     {
       "id": "c4-rerun-reproduced",
       "claim_class": "fact",
-      "text": "Measured: an independent rerun of every acceptance seed reproduced the exact trace digest (a442d5a91d00f5ffd610..., d5a0b746a5788976e096..., 9c036361233cff1bba0c...), satisfying the reproducibility criterion.",
+      "text": "Measured: a fresh Python interpreter subprocess with a stripped environment reran every acceptance seed and reproduced its exact trace digest. This is process-isolated reproduction on the same host, not an off-host audit.",
       "source_ids": [
-        "S1-004-SIM"
+        "S1-004-SIM",
+        "S1-004-ACCEPTANCE-RUNNER"
       ]
     },
     {
@@ -393,16 +448,17 @@
     {
       "id": "c6-regressions",
       "claim_class": "fact",
-      "text": "Measured: the 13-test regression suite passes (0.6s): every one of the 12 contract mutations (INV1-INV6, SAF1-SAF4, LIVE1, LIVE2) is detected by the corresponding detector, the same crafted sequences without mutations produce no false positives, recorded manifest hashes match disk bytes, and a long random run under the INV2 mutation fails closed.",
+      "text": "Measured: the 24-test S1-004 regression suite passes: every one of the 12 contract mutations (INV1-INV6, SAF1-SAF4, LIVE1, LIVE2) is detected by the corresponding detector, the same crafted sequences without mutations produce no false positives, recorded manifest hashes match disk bytes, and a long random run under the INV2 mutation fails closed.",
       "source_ids": [
         "S1-004-TESTS",
+        "S1-004-FAIL-CLOSED-TESTS",
         "S1-004-SIM-CODE"
       ]
     },
     {
       "id": "c7-sim-stdlib",
       "claim_class": "fact",
-      "text": "Structural fact: the simulator is stdlib-only (no third-party imports; a single random.Random(seed) drives all decisions; no wall-clock or dict-order dependence), version 1.1.0, SHA-256 2ff7bc8b62e11c2b2c0021d673d68225cbcab9f373e678a6da5db1f2002259c8, so Core AgentOS gains no mandatory dependency.",
+      "text": "Structural fact: the simulator is stdlib-only (no third-party imports; a single random.Random(seed) drives all decisions; no wall-clock or dict-order dependence), version 1.2.0, SHA-256 3b4f11666880535f654c335e1b88fa1377ac5e9ae075ef570e317b2492f9be62, so Core AgentOS gains no mandatory dependency.",
       "source_ids": [
         "S1-004-SIM-CODE",
         "S1-004-SIM"
@@ -498,7 +554,7 @@
         "c1-alloy-executed",
         "c3-sim-acceptance"
       ],
-      "content": "# Sources\n| ID | Class | Verification | Role |\n|---|---|---|---|\n| SRC-06 | mathematical invariants | external path + SHA-256 review | INV/SAF/LIVE property definitions |\n| SRC-05 | ontology lifecycle | external path + SHA-256 review | grant/KA lifecycles, I2-I5 |\n| SRC-03 | architecture/effect semantics | external path + SHA-256 review | outbox/receipt/reconciliation contract |\n| SRC-07 | gap register | external path + SHA-256 review | verification-as-obligation constraint |\n| SRC-08 | audit correction history | external path + SHA-256 review | verdict provenance style |\n| SRC-09 | correction ledger | external path + SHA-256 review | progress convention |\n| S1-002-EVIDENCE | dependency evidence | repo path + SHA-256 binding | capacity envelope (reused unchanged) |\n| S1-003-EVIDENCE | dependency evidence | repo path + SHA-256 binding | lifecycle shapes conformance (reused unchanged) |\n| S1-004-SIM | simulation measurement | repo path + SHA-256 binding | acceptance manifest |\n| S1-004-PROBES | probe measurement | repo path + SHA-256 binding | adversarial probes |\n| S1-004-ALLOY-REPORT | formal engine report | repo path + SHA-256 binding | Alloy engine output |\n| S1-004-TLA-REPORT | formal engine report | repo path + SHA-256 binding | TLC engine output |\n| S1-004-FORMAL-SUMMARY | formal verdict summary | repo path + SHA-256 binding | engine verdict binding |\n| S1-004-ALLOY-MODEL | versioned model | repo path + SHA-256 binding | structural model v2 |\n| S1-004-TLA-MODEL | versioned model | repo path + SHA-256 binding | transition model v1 |\n| S1-004-SIM-CODE | simulator implementation | repo path + SHA-256 binding | stdlib-only simulator v1.1.0 |\n| S1-004-TESTS | regression suite | repo path + SHA-256 binding | 13 tests incl. 12 negative mutations |\n| F10-ALLOY | formal-method reference | canonical site + jar hash | engine identity (Alloy 5.1.0) |\n| F11-TLA | formal-method reference | canonical site + jar hash | engine identity (TLC2 2.15 / tla2tools 1.7.0) |\n\n# Verification rules\nLocal repo sources bind verifier_provenance.path + file_sha256; the\nresearch-plan runtime re-verifies the binding against disk bytes and fails\nclosed on mismatch. External research docs record\nexternal_path_at_review + external_file_sha256_at_review at review time.\nEngine identities are pinned by executed jar hashes.\n"
+      "content": "# Sources\n| ID | Class | Verification | Role |\n|---|---|---|---|\n| SRC-06 | mathematical invariants | external path + SHA-256 review | INV/SAF/LIVE property definitions |\n| SRC-05 | ontology lifecycle | external path + SHA-256 review | grant/KA lifecycles, I2-I5 |\n| SRC-03 | architecture/effect semantics | external path + SHA-256 review | outbox/receipt/reconciliation contract |\n| SRC-07 | gap register | external path + SHA-256 review | verification-as-obligation constraint |\n| SRC-08 | audit correction history | external path + SHA-256 review | verdict provenance style |\n| SRC-09 | correction ledger | external path + SHA-256 review | progress convention |\n| S1-002-EVIDENCE | dependency evidence | repo path + SHA-256 binding | capacity envelope (reused unchanged) |\n| S1-003-EVIDENCE | dependency evidence | repo path + SHA-256 binding | lifecycle shapes conformance (reused unchanged) |\n| S1-004-SIM | simulation measurement | repo path + SHA-256 binding | acceptance manifest |\n| S1-004-PROBES | probe measurement | repo path + SHA-256 binding | adversarial probes |\n| S1-004-ALLOY-REPORT | formal engine report | repo path + SHA-256 binding | Alloy engine output |\n| S1-004-TLA-REPORT | formal engine report | repo path + SHA-256 binding | TLC engine output |\n| S1-004-FORMAL-SUMMARY | formal verdict summary | repo path + SHA-256 binding | engine verdict binding |\n| S1-004-ALLOY-MODEL | versioned model | repo path + SHA-256 binding | structural model v2 |\n| S1-004-TLA-MODEL | versioned model | repo path + SHA-256 binding | transition model v1 |\n| S1-004-SIM-CODE | simulator implementation | repo path + SHA-256 binding | stdlib-only simulator v1.2.0 |\n| S1-004-FORMAL-RUNNER | formal execution harness | repo path + SHA-256 binding | exact matrix/config fail-closed authority |\n| S1-004-ACCEPTANCE-RUNNER | simulation execution harness | repo path + SHA-256 binding | mandatory subprocess reruns |\n| S1-004-TESTS | regression suite | repo path + SHA-256 binding | 13 baseline tests incl. 12 negative mutations |\n| S1-004-FAIL-CLOSED-TESTS | corrective regression suite | repo path + SHA-256 binding | 11 fail-closed review regressions |\n| F10-ALLOY | formal-method reference | canonical site + jar hash | engine identity (Alloy 5.1.0) |\n| F11-TLA | formal-method reference | canonical site + jar hash | engine identity (TLC2 2.15 / tla2tools 1.7.0) |\n\n# Verification rules\nLocal repo sources bind verifier_provenance.path + file_sha256; the\nresearch-plan runtime re-verifies the binding against disk bytes and fails\nclosed on mismatch. External research docs record\nexternal_path_at_review + external_file_sha256_at_review at review time.\nEngine identities are pinned by executed jar hashes.\n"
     },
     "feature_catalog": {
       "producer": "agentos-s1-004-producer",
@@ -537,7 +593,7 @@
         "c8-coverage-map",
         "c13-obligation-limits"
       ],
-      "content": "# Property definitions (SRC-06 S7, SRC-05 S2)\nINV1: |classes(p)| <= 1 for every principal p.\nINV2: |scopes(co)| = 1 for every live ContentObject.\nINV3: rights(child) subseteq rights(parent) for every derived grant.\nINV4: status(ka) = promoted => |evidence(ka)| >= 1 and |promotions(ka)| = 1.\nINV5: for every decision d, lastAllowTick(d) <= revokedTick(grant(d)) when\nthe grant is durably revoked (no allow-trace after revoke).\nINV6: spent(g) + reserved(g) <= alloc(g), reserved(child) <=\nreserved(parent), remaining(g) = alloc(g) - spent(g) - reserved(g) >= 0.\n\n# SAF predicates\nSAF1: committed = outbox (atomic append contract).\nSAF2: receipts per decision <= 1; receiptToken <= token (fencing).\nSAF3: publishes(d) > 1 => reconcileDone(d) (no blind retry).\nSAF4: every grant transition edge is approve/deny/revoke/expire/exhaust.\n\n# LIVE\nLIVE1: a pending owner approval never outlives one scheduler tick\n(tick - approvedTick > 1 with state proposed is a violation).\nLIVE2: a crashed delivery is replayed within one tick; TLC LiveDelivery:\ncommitted ~> (receipted or definitively nacked) under weak fairness.\n\n# Bounds declared\nAlloy commands use 3-5 atom scopes; TLC constants Alloc=3, MaxTick=4,\nMaxPub=2 over {g1,g2}x{d1}; the simulator uses a 48-grant/48-principal/\n128-object world with steady-state recycling. All results are bounded;\nsensitivity to larger bounds requires re-running the recorded commands.\n"
+      "content": "# Property definitions (SRC-06 S7, SRC-05 S2)\nINV1: |classes(p)| <= 1 for every principal p.\nINV2: |scopes(co)| = 1 for every live ContentObject.\nINV3: rights(child) subseteq rights(parent) for every derived grant.\nINV4: status(ka) = promoted => |evidence(ka)| >= 1 and |promotions(ka)| = 1.\nINV5: for every decision d, lastAllowTick(d) <= revokedTick(grant(d)) when\nthe grant is durably revoked (no allow-trace after revoke).\nINV6: spent(g) + reserved(g) <= alloc(g), and the sum of all immediate\nchild reservations <= reserved(parent); remaining(g) = alloc(g) - spent(g)\n- reserved(g) >= 0.\n\n# SAF predicates\nSAF1: committed = outbox (atomic append contract).\nSAF2: receipts per decision <= 1; receiptToken <= token (fencing).\nSAF3: publishes(d) > 1 => reconcileDone(d) (no blind retry).\nSAF4: every grant transition edge is approve/deny/revoke/expire/exhaust.\n\n# LIVE\nLIVE1: a pending owner approval never outlives one scheduler tick\n(tick - approvedTick > 1 with state proposed is a violation).\nLIVE2: a crashed delivery is replayed within one tick; TLC LiveDelivery:\ncommitted ~> (receipted or definitively nacked) under weak fairness.\n\n# Bounds declared\nAlloy commands use 3-5 atom scopes; TLC constants Alloc=3, MaxTick=4,\nMaxPub=2 over {g1,g2}x{d1}; the simulator uses a 48-grant/48-principal/\n128-object world with steady-state recycling. All results are bounded;\nsensitivity to larger bounds requires re-running the recorded commands.\n"
     },
     "synthesis_and_gaps": {
       "producer": "agentos-s1-004-producer",
@@ -547,7 +603,7 @@
         "c11-bounded-liveness",
         "c13-obligation-limits"
       ],
-      "content": "# Result\nPASS_WITH_LIMITS. Both formal engines executed for real: Alloy 5.1.0\nreturned the exact expected 12-command matrix (valid SAT, near-miss UNSAT,\nmutant SAT), and TLC exhausted 271,168 distinct states with all 10\ninvariants and the LiveDelivery liveness property holding. The seeded\nsimulator executed 3 x 1,000,000 operations with zero violations, an\nindependent rerun reproduced every trace digest, and both adversarial\nprobes pass. The 13-test regression suite proves the detectors fire on all\n12 contract mutations with no false positives.\n\n# Gaps\n1. Stale-ack fencing is unreachable in random acceptance runs by\nconstruction (receipted decisions are terminal); it is evidenced\ndeterministically by probe A and the SAF2 mutation instead of a random\nmeasurement (recorded as fact c9, not hidden).\n2. Bounded envelopes only (Alloy 3-5 atoms; TLC 2 grants/1 decision;\nsimulator 48-grant world); larger interleavings are not covered.\n3. The simulator models the design contract, not deployed code; Core\nAgentOS does not yet implement the grant/outbox service.\n4. LIVE1/LIVE2 are bounded traces plus design obligations; unbounded\nliveness is not claimed.\n5. The host runs Java 8 only, pinning tla2tools 1.7.0 (TLC2 2.15); the\n2.0 engine line requires Java 11+ and was not executed.\n\n# Next actions\nPort the detectors as implementation contract tests (S1-006/S1-008);\nextend the TLA+ envelope (multi-decision) before implementation hardening;\nre-run the recorded commands when a newer engine or larger bounds are\navailable.\n"
+      "content": "# Result\nPASS_WITH_LIMITS. Both formal engines executed for real: Alloy 5.1.0\nreturned the exact expected 12-command matrix (valid SAT, near-miss UNSAT,\nmutant SAT), and TLC exhausted 271,168 distinct states with all 10\ninvariants and the LiveDelivery liveness property holding. The seeded\nsimulator executed 3 x 1,000,000 operations with zero violations, fresh-\ninterpreter subprocess reruns reproduced every trace digest, and both\nadversarial probes pass through real simulator operations. The 24-test\nS1-004 regression suite proves the detectors fire on all 12 contract\nmutations with no false positives.\n\n# Gaps\n1. Stale-ack fencing is unreachable in random acceptance runs by\nconstruction (receipted decisions are terminal); it is evidenced\ndeterministically by probe A and the SAF2 mutation instead of a random\nmeasurement (recorded as fact c9, not hidden).\n2. Bounded envelopes only (Alloy 3-5 atoms; TLC 2 grants/1 decision;\nsimulator 48-grant world); larger interleavings are not covered.\n3. The simulator models the design contract, not deployed code; Core\nAgentOS does not yet implement the grant/outbox service.\n4. LIVE1/LIVE2 are bounded traces plus design obligations; unbounded\nliveness is not claimed.\n5. The host runs Java 8 only, pinning tla2tools 1.7.0 (TLC2 2.15); the\n2.0 engine line requires Java 11+ and was not executed.\n\n# Next actions\nPort the detectors as implementation contract tests (S1-006/S1-008);\nextend the TLA+ envelope (multi-decision) before implementation hardening;\nre-run the recorded commands when a newer engine or larger bounds are\navailable.\n"
     },
     "independent_audit": {
       "producer": "agentos-s1-004-independent-verifier",
@@ -564,7 +620,7 @@
         "c13-obligation-limits",
         "c14-target"
       ],
-      "content": "# Scope\nAdopt the S1-004 evidence as the acceptance baseline for the platform's\ninvariant set: INV1-INV6 and SAF1-SAF4 are enforced in design contracts\n(Alloy structural predicates, TLA+ transition invariants, simulator\ndetectors), LIVE1/LIVE2 carry bounded traces plus explicit implementation\nobligations. This bundle authorizes no production build and adds no\nmandatory dependency to Core AgentOS.\n\n# Architecture\nKeep the transactional outbox as the canonical delivery contract: local\ncommit and outbox append are atomic; publishing is a separate best-effort\nstep; effect receipts are idempotent per decision and fenced by tokens;\nunknown external outcomes always enter reconciliation; grant state changes\nonly through approve/deny/revoke/expire/exhaust with parent-ledger budget\nconservation (spent + reserved <= allocation, child reservations covered).\n\n# Workstreams\n1. Port the simulator detectors as contract tests for the future grant/outbox\nservice (S1-008 consumes INV5, S1-017 consumes the trace model).\n2. Encode the one-tick activation and crash-replay obligations as explicit\nacceptance criteria in the backend-selection ticket S1-006.\n3. Extend the TLA+ model with multi-decision interleavings before\nimplementation hardening.\n4. Re-run the same reproducible commands on larger envelopes when the\nimplementation exists (seeds and commands are recorded in ENVIRONMENT.md).\n\n# Milestones\nM1: invariant property map and models versioned (done, this bundle).\nM2: acceptance simulation envelope executed and reproduced (done).\nM3: negative-mutation regression suite guarding the detectors (done).\nM4: implementation conformance layer reusing these detectors (future,\nrequires S1-006 backend decision).\n\n# Verification\nVerification equals executed engines and reproducible artifacts: Alloy\n5.1.0.201908141853 with sat4j (12-command expectation matrix), TLC2 2.15\nfrom tla2tools 1.7.0 (271,168 distinct states, 10 invariants, LiveDelivery),\nand the seeded simulator (3 seeds x 1,000,000 operations, rerun-reproduced\ndigests). All commands, versions, bounds, and SHA-256 bindings are recorded\nin results/ENVIRONMENT.md and results/*.json; the regression suite re-verifies\nrecorded hashes against disk.\n\n# Risks\nModel-to-implementation drift is the primary risk: the simulator models the\ncontract, not the future service, so detectors must be ported rather than\nreimplemented. The Java 8 engine pin (tla2tools 1.7.0) ages; a newer engine\nrequires re-running and re-recording evidence. Bounded envelopes may miss\ninterleavings outside the modeled bounds; the stale-ack fencing path is\nunreachable in random runs by construction and is covered only\ndeterministically (probe A, SAF2 mutation).\n\n# Open decisions\nWhether the implementation layer reuses the Python detectors directly or\nre-expresses them in the service test stack (S1-006/S1-008); whether larger\nTLA+ envelopes (multi-decision, multi-grant) become an S1-017 dependency;\nand when LIVE obligations convert from design obligations to executed\nconformance tests.\n"
+      "content": "# Scope\nAdopt the S1-004 evidence as the acceptance baseline for the platform's\ninvariant set: INV1-INV6 and SAF1-SAF4 are enforced in design contracts\n(Alloy structural predicates, TLA+ transition invariants, simulator\ndetectors), LIVE1/LIVE2 carry bounded traces plus explicit implementation\nobligations. This bundle authorizes no production build and adds no\nmandatory dependency to Core AgentOS.\n\n# Architecture\nKeep the transactional outbox as the canonical delivery contract: local\ncommit and outbox append are atomic; publishing is a separate best-effort\nstep; effect receipts are idempotent per decision and fenced by tokens;\nunknown external outcomes always enter reconciliation; grant state changes\nonly through approve/deny/revoke/expire/exhaust with parent-ledger budget\nconservation (spent + reserved <= allocation, child reservations covered).\n\n# Workstreams\n1. Port the simulator detectors as contract tests for the future grant/outbox\nservice (S1-008 consumes INV5, S1-017 consumes the trace model).\n2. Encode the one-tick activation and crash-replay obligations as explicit\nacceptance criteria in the backend-selection ticket S1-006.\n3. Extend the TLA+ model with multi-decision interleavings before\nimplementation hardening.\n4. Re-run the same reproducible commands on larger envelopes when the\nimplementation exists (seeds and commands are recorded in ENVIRONMENT.md).\n\n# Milestones\nM1: invariant property map and models versioned (done, this bundle).\nM2: acceptance simulation envelope executed and reproduced (done).\nM3: negative-mutation regression suite guarding the detectors (done).\nM4: implementation conformance layer reusing these detectors (future,\nrequires S1-006 backend decision).\n\n# Verification\nVerification equals executed engines and reproducible artifacts: Alloy\n5.1.0.201908141853 with sat4j (12-command expectation matrix), TLC2 2.15\nfrom tla2tools 1.7.0 (271,168 distinct states, 10 invariants, LiveDelivery),\nand the seeded simulator (3 seeds x 1,000,000 operations, subprocess-\nrerun-reproduced digests). All commands, versions, bounds, and SHA-256\nbindings are recorded\nin results/ENVIRONMENT.md and results/*.json; the regression suite re-verifies\nrecorded hashes against disk.\n\n# Risks\nModel-to-implementation drift is the primary risk: the simulator models the\ncontract, not the future service, so detectors must be ported rather than\nreimplemented. The Java 8 engine pin (tla2tools 1.7.0) ages; a newer engine\nrequires re-running and re-recording evidence. Bounded envelopes may miss\ninterleavings outside the modeled bounds; the stale-ack fencing path is\nunreachable in random runs by construction and is covered only\ndeterministically (probe A, SAF2 mutation).\n\n# Open decisions\nWhether the implementation layer reuses the Python detectors directly or\nre-expresses them in the service test stack (S1-006/S1-008); whether larger\nTLA+ envelopes (multi-decision, multi-grant) become an S1-017 dependency;\nand when LIVE obligations convert from design obligations to executed\nconformance tests.\n"
     },
     "progress": {
       "producer": "agentos-s1-004-producer",
@@ -574,7 +630,7 @@
         "c3-sim-acceptance",
         "c4-rerun-reproduced"
       ],
-      "content": "# 2026-08-29\nReviewed SRC-06 S7 (INV/SAF/LIVE), SRC-05 S2-S3 (lifecycles, I2-I5),\nSRC-03 (outbox/receipt semantics), SRC-07/SRC-08/SRC-09 (obligations,\naudit style, correction ledger), and the S1-002/S1-003 dependency evidence\n(reused unchanged). Confirmed Python 3.12.6, Java 1.8.0_401 only; the\npublished tla2tools 2.0 jar requires Java 11+ and cannot run here, so the\nexecuted TLC engine is tla2tools 1.7.0 (TLC2 2.15, jar sha256\n8cce75caa1e59d0b0483bb8fb881ba33825edce8b2d98aba59d66ce685dd3d1a); Alloy\n5.1.0.201908141853 runs with bundled sat4j (jar sha256 a3b43e8ec9967947aea\n2d5101bd96b3c4eb0d81eb3dc9bba41cc9649349c690a).\n\n# 2026-08-29 (corrections during execution, append-only)\n1. alloy/agentos_structural_v1.als: first draft had two Alloy syntax/type\ndefects (declaration-style `no p : S` without a bar, `#(x : S | f)`\ncomprehension spelling, `ka` variable shadowing the PromotionActivity.ka\nfield) and inverted check semantics (`check X { NearMiss }` searches for\ninstances where the near-miss is FALSE, so every check trivially reported a\ncounterexample). Kept as the rejected v1; superseded by v2 with\npredicates + valid/near-miss/mutant triples. Executed v2: 2 SAT valid, 5\nUNSAT near-miss, 5 SAT mutants.\n2. tla/agentos_transitions_v1.tla: missing module terminator, non-ASCII\ncomment characters rejected by the SANY lexer, a mistyped function-arrow\n(`|>` instead of `|->`), an incomplete fairness expression, actions with\nunassigned variables, and an exhaust/exhausted state-vs-transition\nmismatch were each fixed and re-run until TLC reported 'Model checking\ncompleted. No error has been found.' over 271,168 distinct states. Two\ncontract-level corrections: revocation releases descendant reservations\n(SRC-05 I5) and reconciliation-ack records the local effect receipt\nexactly once.\n3. simulator v1.0.0 -> v1.1.0: reserve_child now checks the child's own\nallocation; world recycling (grant re-proposal, object/assertion caps,\nterminal-decision archiving) prevents degenerate no-op runs; delivery was\nrestructured to in-flight attempts with timeout -> unknown ->\nreconciliation (SAF3); the definitive nack no longer resets\nreconcile_done; INV3/SAF4/LIVE2 mutations made reachable; the INV3 mutant\nnow introduces a right outside the parent set (a subset of a superset\nparent can never violate attenuation); the LIVE2 mutant forgets the replay\ninstead of faking it.\n4. Acceptance: seeds 11/22/33 x 1,000,000 operations, 0 violations,\ndigests a442d5a91d00f5ffd610.../d5a0b746a5788976e096.../\n9c036361233cff1bba0c..., reruns REPRODUCED; probes A and B pass;\n13-test regression suite OK. Commands and exit codes recorded in\nresults/ENVIRONMENT.md.\n\n# Limits\nBounded models and simulator-as-contract (not deployed code); Java 8\nengine pin; stale-ack counter zero in random runs by construction\n(covered deterministically); LIVE implementation obligations remain.\n"
+      "content": "# 2026-08-29\nReviewed SRC-06 S7 (INV/SAF/LIVE), SRC-05 S2-S3 (lifecycles, I2-I5),\nSRC-03 (outbox/receipt semantics), SRC-07/SRC-08/SRC-09 (obligations,\naudit style, correction ledger), and the S1-002/S1-003 dependency evidence\n(reused unchanged). Confirmed Python 3.12.6, Java 1.8.0_401 only; the\npublished tla2tools 2.0 jar requires Java 11+ and cannot run here, so the\nexecuted TLC engine is tla2tools 1.7.0 (TLC2 2.15, jar sha256\n8cce75caa1e59d0b0483bb8fb881ba33825edce8b2d98aba59d66ce685dd3d1a); Alloy\n5.1.0.201908141853 runs with bundled sat4j (jar sha256 a3b43e8ec9967947aea\n2d5101bd96b3c4eb0d81eb3dc9bba41cc9649349c690a).\n\n# 2026-08-29 (corrections during execution, append-only)\n1. alloy/agentos_structural_v1.als: first draft had two Alloy syntax/type\ndefects (declaration-style `no p : S` without a bar, `#(x : S | f)`\ncomprehension spelling, `ka` variable shadowing the PromotionActivity.ka\nfield) and inverted check semantics (`check X { NearMiss }` searches for\ninstances where the near-miss is FALSE, so every check trivially reported a\ncounterexample). Kept as the rejected v1; superseded by v2 with\npredicates + valid/near-miss/mutant triples. Executed v2: 2 SAT valid, 5\nUNSAT near-miss, 5 SAT mutants.\n2. tla/agentos_transitions_v1.tla: missing module terminator, non-ASCII\ncomment characters rejected by the SANY lexer, a mistyped function-arrow\n(`|>` instead of `|->`), an incomplete fairness expression, actions with\nunassigned variables, and an exhaust/exhausted state-vs-transition\nmismatch were each fixed and re-run until TLC reported 'Model checking\ncompleted. No error has been found.' over 271,168 distinct states. Two\ncontract-level corrections: revocation releases descendant reservations\n(SRC-05 I5) and reconciliation-ack records the local effect receipt\nexactly once.\n3. simulator v1.0.0 -> v1.1.0: reserve_child now checks the child's own\nallocation; world recycling (grant re-proposal, object/assertion caps,\nterminal-decision archiving) prevents degenerate no-op runs; delivery was\nrestructured to in-flight attempts with timeout -> unknown ->\nreconciliation (SAF3); the definitive nack no longer resets\nreconcile_done; INV3/SAF4/LIVE2 mutations made reachable; the INV3 mutant\nnow introduces a right outside the parent set (a subset of a superset\nparent can never violate attenuation); the LIVE2 mutant forgets the replay\ninstead of faking it.\n4. simulator v1.1.0 -> v1.2.0 corrective review: INV6 now sums all child\nreservations; Probe B invokes reserve/allow/publish/timeout/reconcile/retry\noperations instead of editing counters; formal runners require exact Alloy\nand TLC authority; acceptance requires three distinct seeds and always\nreruns each seed in a fresh interpreter subprocess.\n5. Acceptance: seeds 11/22/33 x 1,000,000 operations, 0 violations,\ndigests a442d5a91d00f5ffd610.../d5a0b746a5788976e096.../\n9c036361233cff1bba0c..., reruns REPRODUCED; probes A and B pass;\n24-test S1-004 regression suite OK. Commands and exit codes recorded in\nresults/ENVIRONMENT.md.\n\n# Limits\nBounded models and simulator-as-contract (not deployed code); Java 8\nengine pin; stale-ack counter zero in random runs by construction\n(covered deterministically); LIVE implementation obligations remain.\n"
     }
   },
   "audit": {
@@ -584,7 +640,7 @@
     "limitations": [
       "Bounded evidence: Alloy scopes are 3-5 atoms per command; the TLC model bounds are 2 grants, 1 decision, Alloc=3, MaxTick=4, MaxPub=2; no unbounded proof is claimed.",
       "The simulator exercises the design contract (transactional outbox, fencing, reconciliation), not deployed production code; Core AgentOS does not yet implement the grant/outbox service.",
-      "Producer and verifier labels are process-separated roles in one local environment, not external human auditors.",
+      "Producer and verifier labels, and acceptance reruns, are process-separated in one local environment; they are not off-host or external human audits.",
       "Executed on a Java 8 JRE with tla2tools 1.7.0 (TLC2 2.15); the current tla2tools 2.0 build requires Java 11+ and was not executed.",
       "LIVE1/LIVE2 are bounded traces (tick model, simulator replay) plus design obligations for the implementation, not unbounded liveness proofs.",
       "Stale-ack fencing is zero in random acceptance runs by construction and is evidenced deterministically by probe A duplicate-ack suppression and the SAF2 negative mutation."
@@ -596,6 +652,14 @@
         "verifier": "agentos-s1-004-independent-verifier",
         "summary": "Initial S1-004 qualification: Alloy 12-command matrix, TLC 271,168-state exhaustive check with liveness, 3x1,000,000-operation simulated acceptance with reproduced reruns, both probes pass, 12 negative mutations detected.",
         "limitations": "See limitations; bounded models, simulator models the contract, Java 8 engine pin.",
+        "superseded": true
+      },
+      {
+        "timestamp": "2026-08-30T00:00:00Z",
+        "verdict": "pass_with_limits",
+        "verifier": "agentos-s1-004-independent-verifier",
+        "summary": "Corrective review: exact formal command/property authority, subprocess reruns, aggregate INV6, real-operation Probe B, tracked evidence snapshot.",
+        "limitations": "Same bounded-model, same-host, simulator-as-contract limits remain.",
         "superseded": false
       }
     ]

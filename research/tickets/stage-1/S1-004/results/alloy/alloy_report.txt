@@ -3,11 +3,12 @@ command: java -Dsat4j=yes -cp tools/alloy.jar edu.mit.csail.sdg.alloy4whole.Simp
 engine: Alloy edu.mit.csail.sdg.alloy4whole.SimpleCLI (org.alloytools.alloy.dist), jar sha256=a3b43e8ec9967947aea2d5101bd96b3c4eb0d81eb3dc9bba41cc9649349c690a
 model: alloy/agentos_structural_v2.als sha256=eb4144e806b14dd43a8f06b2f0265cdd5bd494a7c3626a6da1fb6abeb345a0bf
 runtime: java version "1.8.0_401" on Windows-11-10.0.22631-SP0
+console_encoding: cp1251 (strict decoding)
 java_property: -Dsat4j=yes (pure-java SAT solver, bundled sat4j)
 note: SimpleCLI hardcodes placeholder solve timings (12345ms) in its reporter; verdict lines are authoritative.
 
 exit_code: 0
-wall_seconds: 1.5
+wall_seconds: 2.0
 ---- engine report (.alloy.tmp) ----
 
 
@@ -217,7 +218,7 @@ Simplifying the bounds...
    Solver=sat4j Bitwidth=4 MaxSeq=4 Symmetry=20
 Generating the solution...
    1258 vars. 128 primary vars. 2073 clauses. 12345ms.
-   Instance found. Predicate is consistent. 107ms.
+   Instance found. Predicate is consistent. 124ms.
 
    Sig this/Grant scope <= 2
    Sig this/Right scope <= 2
@@ -256,7 +257,7 @@ Simplifying the bounds...
    Solver=sat4j Bitwidth=4 MaxSeq=4 Symmetry=20
 Generating the solution...
    1258 vars. 128 primary vars. 2073 clauses. 12345ms.
-   Instance found. Predicate is consistent. 31ms.
+   Instance found. Predicate is consistent. 32ms.
 
 Executing "Run ValidProposedWithoutPromotion for 3"
    Sig this/KaProposed scope <= 1
@@ -296,7 +297,7 @@ Simplifying the bounds...
    Solver=sat4j Bitwidth=4 MaxSeq=3 Symmetry=20
 Generating the solution...
    1106 vars. 111 primary vars. 1655 clauses. 12345ms.
-   Instance found. Predicate is consistent. 24ms.
+   Instance found. Predicate is consistent. 26ms.
 
    Sig this/KaProposed scope <= 1
    Sig this/KaPromoted scope <= 1
@@ -335,7 +336,7 @@ Simplifying the bounds...
    Solver=sat4j Bitwidth=4 MaxSeq=3 Symmetry=20
 Generating the solution...
    1106 vars. 111 primary vars. 1655 clauses. 12345ms.
-   Instance found. Predicate is consistent. 17ms.
+   Instance found. Predicate is consistent. 32ms.
 
 Executing "Run NearMissDualIdentity for 4"
    Sig this/KaProposed scope <= 1
@@ -375,7 +376,7 @@ Simplifying the bounds...
    Solver=sat4j Bitwidth=4 MaxSeq=4 Symmetry=20
 Generating the solution...
    1994 vars. 176 primary vars. 3342 clauses. 12345ms.
-   No instance found. Predicate may be inconsistent. 37ms.
+   No instance found. Predicate may be inconsistent. 43ms.
 
    Sig this/KaProposed scope <= 1
    Sig this/KaPromoted scope <= 1
@@ -414,7 +415,7 @@ Simplifying the bounds...
    Solver=sat4j Bitwidth=4 MaxSeq=4 Symmetry=20
 Generating the solution...
    1994 vars. 176 primary vars. 3342 clauses. 12345ms.
-   No instance found. Predicate may be inconsistent. 27ms.
+   No instance found. Predicate may be inconsistent. 31ms.
 
 Executing "Run NearMissTwoScopes for 3"
    Sig this/KaProposed scope <= 1
@@ -454,7 +455,7 @@ Simplifying the bounds...
    Solver=sat4j Bitwidth=4 MaxSeq=3 Symmetry=20
 Generating the solution...
    1091 vars. 111 primary vars. 1657 clauses. 12345ms.
-   No instance found. Predicate may be inconsistent. 11ms.
+   No instance found. Predicate may be inconsistent. 6ms.
 
    Sig this/KaProposed scope <= 1
    Sig this/KaPromoted scope <= 1
@@ -493,7 +494,7 @@ Simplifying the bounds...
    Solver=sat4j Bitwidth=4 MaxSeq=3 Symmetry=20
 Generating the solution...
    1091 vars. 111 primary vars. 1657 clauses. 12345ms.
-   No instance found. Predicate may be inconsistent. 10ms.
+   No instance found. Predicate may be inconsistent. 11ms.
 
 Executing "Run NearMissRightsExpansion for 4 but exactly 2 Grant, exactly 2 Right"
    Sig this/Grant scope <= 2
@@ -533,7 +534,7 @@ Simplifying the bounds...
    Solver=sat4j Bitwidth=4 MaxSeq=4 Symmetry=20
 Generating the solution...
    1524 vars. 142 primary vars. 2357 clauses. 12345ms.
-   No instance found. Predicate may be inconsistent. 9ms.
+   No instance found. Predicate may be inconsistent. 18ms.
 
    Sig this/Grant scope <= 2
    Sig this/Right scope <= 2
@@ -572,7 +573,7 @@ Simplifying the bounds...
    Solver=sat4j Bitwidth=4 MaxSeq=4 Symmetry=20
 Generating the solution...
    1524 vars. 142 primary vars. 2357 clauses. 12345ms.
-   No instance found. Predicate may be inconsistent. 15ms.
+   No instance found. Predicate may be inconsistent. 14ms.
 
 Executing "Run NearMissPromotedWithoutEvidence for 4"
    Sig this/KaProposed scope <= 1
@@ -612,7 +613,7 @@ Simplifying the bounds...
    Solver=sat4j Bitwidth=4 MaxSeq=4 Symmetry=20
 Generating the solution...
    1943 vars. 176 primary vars. 3025 clauses. 12345ms.
-   No instance found. Predicate may be inconsistent. 17ms.
+   No instance found. Predicate may be inconsistent. 21ms.
 
    Sig this/KaProposed scope <= 1
    Sig this/KaPromoted scope <= 1
@@ -651,7 +652,7 @@ Simplifying the bounds...
    Solver=sat4j Bitwidth=4 MaxSeq=4 Symmetry=20
 Generating the solution...
    1943 vars. 176 primary vars. 3025 clauses. 12345ms.
-   No instance found. Predicate may be inconsistent. 17ms.
+   No instance found. Predicate may be inconsistent. 18ms.
 
 Executing "Run NearMissPromotedWrongActivityCount for 4"
    Sig this/KaProposed scope <= 1
@@ -691,7 +692,7 @@ Simplifying the bounds...
    Solver=sat4j Bitwidth=4 MaxSeq=4 Symmetry=20
 Generating the solution...
    1982 vars. 176 primary vars. 3188 clauses. 12345ms.
-   No instance found. Predicate may be inconsistent. 19ms.
+   No instance found. Predicate may be inconsistent. 12ms.
 
    Sig this/KaProposed scope <= 1
    Sig this/KaPromoted scope <= 1
@@ -730,7 +731,7 @@ Simplifying the bounds...
    Solver=sat4j Bitwidth=4 MaxSeq=4 Symmetry=20
 Generating the solution...
    1982 vars. 176 primary vars. 3188 clauses. 12345ms.
-   No instance found. Predicate may be inconsistent. 17ms.
+   No instance found. Predicate may be inconsistent. 20ms.
 
 Executing "Run MutantDualIdentity for 4"
    Sig this/KaProposed scope <= 1
@@ -770,7 +771,7 @@ Simplifying the bounds...
    Solver=sat4j Bitwidth=4 MaxSeq=4 Symmetry=20
 Generating the solution...
    1766 vars. 176 primary vars. 3050 clauses. 12345ms.
-   Instance found. Predicate is consistent. 23ms.
+   Instance found. Predicate is consistent. 26ms.
 
    Sig this/KaProposed scope <= 1
    Sig this/KaPromoted scope <= 1
@@ -809,7 +810,7 @@ Simplifying the bounds...
    Solver=sat4j Bitwidth=4 MaxSeq=4 Symmetry=20
 Generating the solution...
    1766 vars. 176 primary vars. 3050 clauses. 12345ms.
-   Instance found. Predicate is consistent. 26ms.
+   Instance found. Predicate is consistent. 27ms.
 
 Executing "Run MutantTwoScopes for 3"
    Sig this/KaProposed scope <= 1
@@ -849,7 +850,7 @@ Simplifying the bounds...
    Solver=sat4j Bitwidth=4 MaxSeq=3 Symmetry=20
 Generating the solution...
    1072 vars. 111 primary vars. 1623 clauses. 12345ms.
-   Instance found. Predicate is consistent. 17ms.
+   Instance found. Predicate is consistent. 14ms.
 
    Sig this/KaProposed scope <= 1
    Sig this/KaPromoted scope <= 1
@@ -888,7 +889,7 @@ Simplifying the bounds...
    Solver=sat4j Bitwidth=4 MaxSeq=3 Symmetry=20
 Generating the solution...
    1072 vars. 111 primary vars. 1623 clauses. 12345ms.
-   Instance found. Predicate is consistent. 15ms.
+   Instance found. Predicate is consistent. 17ms.
 
 Executing "Run MutantRightsExpansion for 4 but exactly 2 Grant, exactly 2 Right"
    Sig this/Grant scope <= 2
@@ -928,7 +929,7 @@ Simplifying the bounds...
    Solver=sat4j Bitwidth=4 MaxSeq=4 Symmetry=20
 Generating the solution...
    1500 vars. 142 primary vars. 2317 clauses. 12345ms.
-   Instance found. Predicate is consistent. 24ms.
+   Instance found. Predicate is consistent. 55ms.
 
    Sig this/Grant scope <= 2
    Sig this/Right scope <= 2
@@ -967,7 +968,7 @@ Simplifying the bounds...
    Solver=sat4j Bitwidth=4 MaxSeq=4 Symmetry=20
 Generating the solution...
    1500 vars. 142 primary vars. 2317 clauses. 12345ms.
-   Instance found. Predicate is consistent. 13ms.
+   Instance found. Predicate is consistent. 34ms.
 
 Executing "Run MutantPromotedWithoutEvidence for 4"
    Sig this/KaProposed scope <= 1
@@ -1007,7 +1008,7 @@ Simplifying the bounds...
    Solver=sat4j Bitwidth=4 MaxSeq=4 Symmetry=20
 Generating the solution...
    1843 vars. 176 primary vars. 2773 clauses. 12345ms.
-   Instance found. Predicate is consistent. 13ms.
+   Instance found. Predicate is consistent. 33ms.
 
    Sig this/KaProposed scope <= 1
    Sig this/KaPromoted scope <= 1
@@ -1046,7 +1047,7 @@ Simplifying the bounds...
    Solver=sat4j Bitwidth=4 MaxSeq=4 Symmetry=20
 Generating the solution...
    1843 vars. 176 primary vars. 2773 clauses. 12345ms.
-   Instance found. Predicate is consistent. 18ms.
+   Instance found. Predicate is consistent. 55ms.
 
 Executing "Run MutantPromotedWrongActivityCount for 4"
    Sig this/KaProposed scope <= 1
@@ -1086,7 +1087,7 @@ Simplifying the bounds...
    Solver=sat4j Bitwidth=4 MaxSeq=4 Symmetry=20
 Generating the solution...
    1882 vars. 176 primary vars. 2936 clauses. 12345ms.
-   Instance found. Predicate is consistent. 19ms.
+   Instance found. Predicate is consistent. 16ms.
 
    Sig this/KaProposed scope <= 1
    Sig this/KaPromoted scope <= 1
@@ -1125,4 +1126,4 @@ Simplifying the bounds...
    Solver=sat4j Bitwidth=4 MaxSeq=4 Symmetry=20
 Generating the solution...
    1882 vars. 176 primary vars. 2936 clauses. 12345ms.
-   Instance found. Predicate is consistent. 12ms.
+   Instance found. Predicate is consistent. 15ms.

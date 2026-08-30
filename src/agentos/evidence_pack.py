@@ -245,4 +245,14 @@ def build(db, root_dir: str | Path, goal_id: str) -> dict:
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / "evidence-pack.json"
     out_path.write_text(canonical_json({"sha256": digest, **pack}), encoding="utf-8")
-    return {"pack": pack, "path": str(out_path), "sha256": digest}
+    file_digest = _sha_bytes(out_path.read_bytes())
+    return {
+        "pack": pack,
+        "path": str(out_path),
+        # Backward-compatible semantic digest: this verifies the canonical
+        # payload after removing its self-hash field.
+        "sha256": digest,
+        "payload_sha256": digest,
+        # Byte-for-byte artifact binding for callers that publish a path.
+        "file_sha256": file_digest,
+    }

@@ -1,6 +1,7 @@
 """Evidence pack: acceptance flag flips at the gate; audit chain; schema keys;
 on-disk sha256 integrity."""
 import json
+import hashlib
 import unittest
 from pathlib import Path
 
@@ -91,6 +92,9 @@ class TestEvidencePack(AgentOSTestCase):
         recomputed = sha256_text(canonical_json(loaded))
         self.assertEqual(stored, recomputed)
         self.assertEqual(res["sha256"], stored)
+        self.assertEqual(res["payload_sha256"], stored)
+        self.assertEqual(
+            res["file_sha256"], hashlib.sha256(path.read_bytes()).hexdigest())
 
 
 if __name__ == "__main__":

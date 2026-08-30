@@ -1484,7 +1484,11 @@ def _attach_research_outputs(db, root: Path, goal_id: str,
         output["wiki"] = {"build": wiki_build, "check": wiki_check}
         output["evidence_pack"] = {
             "path": evidence["path"],
-            "sha256": evidence["sha256"],
+            # A path must be paired with the digest of the bytes at that
+            # path.  Keep the self-hash payload digest separately.
+            "sha256": evidence["file_sha256"],
+            "file_sha256": evidence["file_sha256"],
+            "payload_sha256": evidence["payload_sha256"],
             "schema": evidence["pack"]["schema"],
             "chain_fresh": research_pack.get("chain_fresh", False),
             "latest_evaluation_valid": research_pack.get(

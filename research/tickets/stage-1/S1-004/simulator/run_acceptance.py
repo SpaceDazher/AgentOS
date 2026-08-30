@@ -22,7 +22,9 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import platform
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -59,25 +61,85 @@ def environment_manifest() -> dict:
     }
 
 
+def validate_acceptance_request(seeds: list[int], ops: int) -> None:
+    """Validate the non-negotiable acceptance envelope before any work."""
+    if ops <= 0:
+        raise ValueError("operation series must be non-empty")
+    if ops < ACCEPTANCE_OPS:
+        raise ValueError(
+            f"acceptance requires at least {ACCEPTANCE_OPS} operations per "
+            f"seed, got {ops}")
+    if len(seeds) < len(ACCEPTANCE_SEEDS):
+        raise ValueError(
+            f"acceptance requires at least {len(ACCEPTANCE_SEEDS)} seeds, "
+            f"got {len(seeds)}")
+    if len(set(seeds)) != len(seeds):
+        raise ValueError("acceptance seeds must be distinct")
+
+
+def validate_simulation_result(result: object, seed: int, ops: int) -> dict:
+    """Validate a primary or rerun result without trusting its producer."""
+    if not isinstance(result, dict):
+        raise RuntimeError(f"seed {seed}: simulator output is not an object")
+    if type(result.get("seed")) is not int or result.get("seed") != seed:
+        raise RuntimeError(
+            f"seed {seed}: reported seed is {result.get('seed')!r}")
+    if (type(result.get("operations")) is not int
+            or result.get("operations") != ops):
+        raise RuntimeError(
+            f"seed {seed}: operation count {result.get('operations')!r} != {ops}")
+    counters = result.get("invariant_counters")
+    if not isinstance(counters, dict):
+        raise RuntimeError(f"seed {seed}: invariant counters are missing")
+    missing = [inv for inv in INVARIANT_IDS if inv not in counters]
+    if missing:
+        raise RuntimeError(
+            f"seed {seed}: incomplete invariant counters, missing {missing}")
+    unexpected = sorted(set(counters) - set(INVARIANT_IDS))
+    if unexpected:
+        raise RuntimeError(
+            f"seed {seed}: unexpected invariant counters: {unexpected}")
+    violations = {
+        inv: counters[inv] for inv in INVARIANT_IDS
+        if type(counters[inv]) is not int or counters[inv] != 0
+    }
+    if violations:
+        raise RuntimeError(f"seed {seed}: violations recorded: {violations}")
+    digest = result.get("trace_digest")
+    if not isinstance(digest, str) or len(digest) != 64:
+        raise RuntimeError(f"seed {seed}: invalid trace digest")
+    try:
+        int(digest, 16)
+    except ValueError as exc:
+        raise RuntimeError(f"seed {seed}: non-hex trace digest") from exc
+    op_counts = result.get("op_counts")
+    if not isinstance(op_counts, dict) or not op_counts:
+        raise RuntimeError(f"seed {seed}: empty operation series")
+    malformed_counts = {
+        name: value for name, value in op_counts.items()
+        if not isinstance(name, str) or type(value) is not int or value <= 0
+    }
+    # Internal replay work can emit extra recorded operations during one
+    # externally scheduled step, so the coverage floor is >= ops, not == ops.
+    if malformed_counts or sum(op_counts.values()) < ops:
+        raise RuntimeError(
+            f"seed {seed}: operation counters do not cover at least {ops} "
+            f"operations: malformed={malformed_counts} total="
+            f"{sum(value for value in op_counts.values() if type(value) is int)}")
+    return result
+
+
 def run_seed(seed: int, ops: int, out_dir: Path) -> dict:
     t0 = time.time()
     sim, result = simulate(seed, ops, audit_every=AUDIT_EVERY)
     elapsed = time.time() - t0
 
-    # ---- fail-closed validation of the raw result ----
-    if result["operations"] != ops:
-        fail(f"seed {seed}: operation count {result['operations']} != {ops}")
+    try:
+        validate_simulation_result(result, seed, ops)
+    except RuntimeError as exc:
+        fail(str(exc))
     counters = result["invariant_counters"]
-    missing = [inv for inv in INVARIANT_IDS if inv not in counters]
-    if missing:
-        fail(f"seed {seed}: incomplete invariant counters, missing {missing}")
     violations = {inv: counters[inv] for inv in INVARIANT_IDS if counters[inv]}
-    if violations:
-        fail(f"seed {seed}: violations recorded: {violations}")
-    if not result["trace_digest"]:
-        fail(f"seed {seed}: empty trace digest")
-    if not result["op_counts"]:
-        fail(f"seed {seed}: empty operation series")
 
     seed_dir = out_dir / f"seed-{seed}"
     seed_dir.mkdir(parents=True, exist_ok=True)
@@ -115,9 +177,27 @@ def run_seed(seed: int, ops: int, out_dir: Path) -> dict:
 
 
 def rerun_seed(seed: int, ops: int, expected_digest: str) -> dict:
-    """Independent rerun: a fresh process-level simulator instance must
-    reproduce the exact trace digest of the acceptance run."""
-    sim, result = simulate(seed, ops, audit_every=AUDIT_EVERY)
+    """Reproduce one seed in a new interpreter with a stripped environment."""
+    simulator = Path(invariant_simulator.__file__).resolve()
+    command = [sys.executable, str(simulator), str(seed), str(ops)]
+    child_env = {
+        key: os.environ[key]
+        for key in ("SYSTEMROOT", "WINDIR") if key in os.environ
+    }
+    child_env.update({"PYTHONHASHSEED": "0", "PYTHONIOENCODING": "utf-8"})
+    proc = subprocess.run(
+        command, cwd=str(simulator.parent), env=child_env,
+        capture_output=True, text=True, encoding="utf-8", errors="strict",
+        timeout=3600)
+    if proc.returncode != 0:
+        raise RuntimeError(
+            f"seed {seed}: rerun subprocess exited {proc.returncode}: "
+            f"{proc.stderr.strip() or '<empty stderr>'}")
+    try:
+        result = json.loads(proc.stdout)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(f"seed {seed}: rerun emitted invalid JSON") from exc
+    validate_simulation_result(result, seed, ops)
     matches = result["trace_digest"] == expected_digest
     return {
         "seed": seed,
@@ -126,6 +206,15 @@ def rerun_seed(seed: int, ops: int, expected_digest: str) -> dict:
         "expected_digest": expected_digest,
         "digest_match": matches,
         "verdict": "REPRODUCED" if matches else "DIVERGED",
+        "invariant_counters": result["invariant_counters"],
+        "executor": {
+            "mode": "subprocess",
+            "python_executable": str(Path(sys.executable).resolve()),
+            "python_version": sys.version.split()[0],
+            "simulator_sha256": sha256_file(simulator),
+            "environment_keys": sorted(child_env),
+            "exit_code": proc.returncode,
+        },
     }
 
 
@@ -135,17 +224,12 @@ def main(argv=None):
     parser.add_argument("--ops", type=int, default=ACCEPTANCE_OPS)
     parser.add_argument("--seeds", type=int, nargs="+",
                         default=list(ACCEPTANCE_SEEDS))
-    parser.add_argument("--skip-rerun", action="store_true",
-                        help="skip the independent rerun (not acceptance)")
     args = parser.parse_args(argv)
 
-    if args.ops <= 0:
-        fail("operation series must be non-empty")
-    if not args.seeds:
-        fail("no seeds requested")
-    if args.ops < ACCEPTANCE_OPS:
-        fail(f"acceptance requires at least {ACCEPTANCE_OPS} operations per "
-             f"seed, got {args.ops}")
+    try:
+        validate_acceptance_request(args.seeds, args.ops)
+    except ValueError as exc:
+        fail(str(exc))
 
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -157,16 +241,26 @@ def main(argv=None):
         entries.append(run_seed(seed, args.ops, out_dir))
 
     reruns = []
-    if not args.skip_rerun:
-        for entry in entries:
-            print(f"[rerun] seed {entry['seed']}: reproducing digest ...",
-                  flush=True)
-            reruns.append(rerun_seed(entry["seed"], args.ops,
-                                     entry["trace_digest"]))
+    for entry in entries:
+        print(f"[rerun] seed {entry['seed']}: reproducing digest ...",
+              flush=True)
+        try:
+            reruns.append(rerun_seed(
+                entry["seed"], args.ops, entry["trace_digest"]))
+        except RuntimeError as exc:
+            fail(str(exc))
 
     diverged = [r for r in reruns if not r["digest_match"]]
     if diverged:
         fail(f"rerun diverged for seeds {[r['seed'] for r in diverged]}")
+
+    probes = invariant_simulator.run_probes()
+    failed_probes = [probe["probe"] for probe in probes if not probe["passed"]]
+    if failed_probes:
+        fail(f"adversarial probes failed: {failed_probes}")
+    probes_path = out_dir / "probes.json"
+    probes_path.write_text(
+        json.dumps(probes, indent=2, sort_keys=True), encoding="utf-8")
 
     manifest = {
         "acceptance": {
@@ -178,6 +272,12 @@ def main(argv=None):
         },
         "runs": entries,
         "reruns": reruns,
+        "probes": {
+            "count": len(probes),
+            "all_passed": True,
+            "path": "probes.json",
+            "sha256": sha256_file(probes_path),
+        },
         "environment": environment_manifest(),
         "module_sha256": {
             name: hashlib.sha256(

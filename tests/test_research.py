@@ -57,7 +57,14 @@ class TestResearchPlanner(unittest.TestCase):
             )
         self.assertEqual(result["evidence_pack"]["schema"],
                          "agentos.evidence-pack/v3")
-        self.assertTrue(Path(result["evidence_pack"]["path"]).is_file())
+        evidence_path = Path(result["evidence_pack"]["path"])
+        self.assertTrue(evidence_path.is_file())
+        file_sha = __import__("hashlib").sha256(
+            evidence_path.read_bytes()).hexdigest()
+        self.assertEqual(result["evidence_pack"]["sha256"], file_sha)
+        self.assertEqual(result["evidence_pack"]["file_sha256"], file_sha)
+        self.assertNotEqual(
+            result["evidence_pack"]["payload_sha256"], file_sha)
         self.assertTrue(result["wiki"]["check"]["ok"], result["wiki"])
 
     def test_invalid_uri_and_sha_fail_closed(self):

@@ -373,16 +373,20 @@ python -m agentos.cli research-plan --topic "S1-003 executable SHACL and ontolog
 ### S1-004 — Alloy/TLA+ and seeded deterministic invariant simulation
 
 - **Status:** `PASS_WITH_LIMITS` — recorded 2026-08-30: goal
-  `goal_SPR6S5KYX542BWRS01M17Z45GX`, evaluation
-  `reval_5K6K5YV1H28XWKKP01M17Z45KE`, artifact chain `e7a7f89f…9980f`,
-  evidence-pack/v3 `chain_fresh=true`, wiki-check ok (1429 files,
-  4030 links, 0 issues). Executed: Alloy 5.1.0.201908141853 (sat4j) over
+  `goal_Z9TP87YGTAMDPD9801M18BSRXE`, evaluation
+  `reval_5JJ8C83TCA8CNQ5Q01M18BSRZX`, revision 7, artifact chain
+  `ce1fcfd5…1d349`, evidence-pack/v3 `chain_fresh=true`, wiki-check ok
+  (1787 files, 5008 links, 0 issues). The byte-for-byte pack is tracked at
+  `research/tickets/stage-1/S1-004/results/evidence/evidence-pack-98f6b998909983706ea993e6877b56b003bb64f5228a50559bdb4e01feb98841.json`.
+  Executed: Alloy 5.1.0.201908141853 (sat4j) over
   `agentos_structural_v2.als` — 2 valid SAT / 5 near-miss UNSAT / 5 mutant
   SAT; TLC2 2.15 (tla2tools 1.7.0, Java 8 pin) exhaustive 271,168-state
   check — 10 invariants + LiveDelivery hold; deterministic simulator —
-  seeds 11/22/33 × 1,000,000 operations, 0 violations of INV1–INV6 and
-  SAF, reruns reproduce all digests; both adversarial probes pass; 13
-  regression tests incl. 12 negative mutations detected. Limits: bounded
+  seeds 11/22/33 × 1,000,000 operations plus three fresh-interpreter
+  subprocess reruns (6,000,000 total), 0 violations of INV1–INV6 and SAF,
+  all digests reproduced; both adversarial probes pass through real
+  operations; 24 S1-004 regression tests incl. 12 negative mutations and
+  11 fail-closed review cases pass. Limits: bounded
   scopes only; simulator models the design contract, not deployed code;
   LIVE one-tick activation/replay stays an implementation obligation;
   stale-ack fencing evidenced deterministically (probe A + SAF2 mutation),
