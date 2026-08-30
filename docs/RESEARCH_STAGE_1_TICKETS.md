@@ -170,9 +170,9 @@ from a lower wave to a higher wave, and S1-020 is the sole closure sink.
 
 | ID | Wave | Priority | Owner | Status | Dependencies | Decision focus |
 |---|---|---|---|---|---|---|
-| S1-001 | W0 | P0 | sources | READY | — | targeted promotion policy for `u` and Z/SV tails |
-| S1-002 | W0 | P0 | capacity | READY | — | benchmark, capacity, storage, and SLO assumptions |
-| S1-003 | W0 | P0 | formal | READY | — | executable SHACL/ontology validation |
+| S1-001 | W0 | P0 | sources | PASS_WITH_LIMITS | — | targeted promotion policy for `u` and Z/SV tails |
+| S1-002 | W0 | P0 | capacity | PASS_WITH_LIMITS | — | benchmark, capacity, storage, and SLO assumptions |
+| S1-003 | W0 | P0 | formal | PASS | — | executable SHACL/ontology validation |
 | S1-004 | W1 | P0 | formal | PASS_WITH_LIMITS | S1-002, S1-003 | bounded formal/simulation checks for INV1–INV6 and delivery safety |
 | S1-005 | W1 | P1 | architecture | READY | S1-002 | QA1 modular monolith versus containers |
 | S1-006 | W2 | P1 | architecture | READY | S1-002, S1-005 | QA2 in-process versus durable execution backend |
@@ -199,7 +199,13 @@ the ticket's bounded bundle.
 
 ### S1-001 — Targeted source promotion and verification policy
 
-- **Status:** `READY`
+- **Status:** `PASS_WITH_LIMITS` — aligned 2026-08-30 with the canonical
+  research series (revision 1): goal `goal_DXHSJM6981DBYCTD01M0TDDN5X`,
+  evaluation `reval_1DG5Q6WEAY6A40A901M0TDDN6N`, artifact chain
+  `4f524c48…b01e9`, evidence-pack/v3 `chain_fresh=true`. Limits:
+  process-separated (not external) auditor; frozen 12-record queue only,
+  not the 176 `u` tail; live canonical review without full third-party
+  archiving.
 - **Priority:** `P0`
 - **Wave:** `W0`
 - **Owner:** `sources`
@@ -257,7 +263,16 @@ python -m agentos.cli research-plan --topic "S1-001 targeted source promotion an
 
 ### S1-002 — Benchmark, capacity, storage, and SLO assumptions
 
-- **Status:** `READY`
+- **Status:** `PASS_WITH_LIMITS` — aligned 2026-08-30 with the canonical
+  research series (revision 1): goal `goal_8CTE14C6Q2E1TV8801M0TEN900`,
+  evaluation `reval_N96W6BG39C3TPZZT01M0TEN90T`, artifact chain
+  `c03fe887…b7c4`, evidence-pack/v3 `chain_fresh=true`; SLOQUAL-001
+  qualification recorded separately (`pass_with_limits`,
+  `reval_AN6GAVADQGF8926701M15N67X7`). Limits: short single-process local
+  SQLite/WAL baseline, not production traffic; distributed workers,
+  external calls, revocation, fan-out unverified; process-separated (not
+  external) auditor; 20 ms p95 is an internal target, not a production
+  SLO.
 - **Priority:** `P0`
 - **Wave:** `W0`
 - **Owner:** `capacity`
@@ -316,7 +331,10 @@ python -m agentos.cli research-plan --topic "S1-002 benchmark capacity storage a
 
 ### S1-003 — Executable SHACL and ontology validation
 
-- **Status:** `READY`
+- **Status:** `PASS` — aligned 2026-08-30 with the canonical research
+  series (revision 24): goal `goal_RVX89EP2SEQ94MSZ01M0VAVECK`, evaluation
+  `reval_KHXH2JAY5JFW8YJM01M0VAVEEM`, artifact chain `b9c9e2fb…3157`,
+  evidence-pack/v3 `chain_fresh=true`.
 - **Priority:** `P0`
 - **Wave:** `W0`
 - **Owner:** `formal`
