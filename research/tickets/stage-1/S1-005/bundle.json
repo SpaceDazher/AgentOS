@@ -226,7 +226,7 @@
       "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-005/results/boundary-experiments.json",
       "title": "S1-005 boundary experiments",
       "source_type": "measurement",
-      "content": "Measured boundary costs: policy-decision round trip in-process 4.86 us vs pipe 25.71 us vs localhost TCP 18.20 us (512B payload); 16KB payload 37.77/207.89/168.03 us; canonical SQLite single writer 20,587 tx/s vs two writer processes 1,694 tx/s (12x degradation, zero busy errors, all committed rows complete). Same-host, bounded.",
+      "content": "Measured boundary costs (committed tree 0472ef310d81, dirty=False): policy-decision round trip in-process 4.77 us vs pipe 16.81 us vs localhost TCP 27.25 us (512B payload); 16KB payload 56.03/195.53/106.52 us; canonical SQLite single writer 36751.2 tx/s vs two writer processes 3136.8 tx/s; all committed rows complete. Same-host, bounded.",
       "verification_status": "verified",
       "verifier": "agentos-s1-005-local-hash-review",
       "verification_method": "host-file-sha256-binding",
@@ -234,7 +234,7 @@
         "method": "host-file-sha256-binding",
         "verified_at": "2026-08-30",
         "path": "research/tickets/stage-1/S1-005/results/boundary-experiments.json",
-        "file_sha256": "0a38fee26105ac065c4a58883de60b6c9d350878e7e8da328ea19b3c23bde7c6",
+        "file_sha256": "c75309a92d31e8519a43b12e25cdf270d84c6826691b5a64f6039d5651990d0d",
         "scope_note": "Primary measurement evidence (hash-locked)."
       }
     },
@@ -302,7 +302,7 @@
         "method": "host-file-sha256-binding",
         "verified_at": "2026-08-30",
         "path": "research/tickets/stage-1/S1-005/results/sensitivity-analysis.json",
-        "file_sha256": "5707bf0f99343d52f6d8a9d76100fca7b131b3b7bc6308b2c7c497991256fa94",
+        "file_sha256": "40079c62c01f4dedd6f4cb676b6d3687e0e7144a7d93097102da0632e43e1417",
         "scope_note": "Primary evaluation output (hash-locked)."
       }
     },
@@ -319,7 +319,7 @@
         "method": "host-file-sha256-binding",
         "verified_at": "2026-08-30",
         "path": "research/tickets/stage-1/S1-005/evaluator.py",
-        "file_sha256": "f607fd0c90ca7e209dfa133de37c562af1526bcad0e93a1820270c497d704468",
+        "file_sha256": "902138174759ca503767fbeb1c11148f0c5691655bd4518dd63b31221471336c",
         "scope_note": "Evaluator under test."
       }
     },
@@ -345,7 +345,7 @@
     {
       "id": "c1-experiments",
       "claim_class": "fact",
-      "text": "Measurement: on this host the policy-decision round trip costs 4.15 us in-process versus 17.38 us over a persistent child process pipe and 26.87 us over localhost TCP (512B payload, 2000 rounds); 16KB payloads cost 52.2/196.99/118.77 us respectively. Canonical SQLite: single writer 43780.0 tx/s; two writer processes 2778.9 tx/s (15.8x degradation) with zero busy errors and all committed rows complete (writes serialize correctly). Every transport is semantically validated (exact expected policy decision) and child processes/servers must exit 0.",
+      "text": "Measurement: on this host the policy-decision round trip costs 4.77 us in-process versus 16.81 us over a persistent child process pipe and 27.25 us over localhost TCP (512B payload, 2000 rounds); 16KB payloads cost 56.03/195.53/106.52 us respectively. Canonical SQLite: single writer 36751.2 tx/s; two writer processes 3136.8 tx/s (11.7x degradation) with zero busy errors and all committed rows complete (writes serialize correctly). Every transport is semantically validated (exact expected policy decision) and child processes/servers must exit 0.",
       "source_ids": [
         "S1-005-EXPERIMENTS"
       ]

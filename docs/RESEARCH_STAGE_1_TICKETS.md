@@ -464,27 +464,27 @@ python -m agentos.cli research-plan --topic "S1-004 Alloy TLA plus seeded determ
 
 ### S1-005 — QA1 runtime topology: modular monolith versus containers
 
-- **Status:** `PASS_WITH_LIMITS` - corrective round R2 recorded
-  2026-08-30 (research revision 4): goal
-  `goal_JKSZDJ4GWBR0ZPAB01M19YTD2Y`, evaluation
-  `reval_81GB4MDXW9ZWWRSN01M19YTD5M`, artifact chain
-  `fe58d05c776c28be...`, tracked content-addressed evidence-pack/v3
+- **Status:** `PASS_WITH_LIMITS` - corrective round R3 recorded
+  2026-08-30 (research revision 5, clean committed tree
+  `0472ef310d81...`, dirty=false, experiment/evaluator script hashes
+  bound): goal `goal_H7CZSW08K5AGVDBH01M1A3M2GH`, evaluation
+  `reval_EYJX0N2RVF03W7V001M1A3M2KC`, artifact chain
+  `c1b88bdac06c92d75...`, tracked content-addressed evidence-pack/v3
   `chain_fresh=true` at `results/evidence/`. Decision: modular monolith
   (3.72 vs containers 2.07 normalized under the frozen rubric,
-  hash-bound); sensitivity 218 deterministic runs with zero flips and
-  zero ties; every S2 weight vector persisted with its total and
-  SHA-256 (digest verified on read); hard-constraint violations reject
-  ANY candidate (positive verdict requires both topologies valid);
-  evidence refs resolve only via hash-bound registry ids or repository
-  paths (free-form authority removed); claim classification enforced
-  harness-side; failure scenarios under a strict production schema with
-  non-empty typed branches and INV/SAF/LIVE references; experiments
-  re-executed as a fresh subprocess per bundle build with commit/
-  environment/output-sha binding and semantically validated responses;
-  IPC child handles closed with terminate/kill fallback (no
-  ResourceWarning). Limits: same-host measurements only; containers
-  restart/recovery unknown (bounded in sensitivity S3); no production
-  claims; split triggers symbolic until the follow-up benchmark.
+  hash-bound; scores host-frozen per candidate x dimension);
+  sensitivity 218 deterministic runs with zero flips/ties; every S2
+  weight vector persisted with total and SHA-256; hard-constraint
+  violations reject ANY candidate (positive verdict requires both
+  topologies valid); evidence refs resolve only via hash-bound registry
+  ids or repository snapshots (portable from a clean clone); failure
+  scenarios under a strict production schema with INV/SAF/LIVE
+  references; experiments re-executed before the evaluator against a
+  clean committed tree with commit/tree/script-hash binding and
+  semantically validated responses; evaluator output nonce-bound to the
+  run. Limits: same-host measurements only; containers restart/recovery
+  unknown (bounded in sensitivity S3); no production claims; split
+  triggers symbolic until the follow-up benchmark.
 - **Priority:** `P1`
 - **Wave:** `W1`
 - **Owner:** `architecture`
