@@ -465,26 +465,26 @@ python -m agentos.cli research-plan --topic "S1-004 Alloy TLA plus seeded determ
 ### S1-005 — QA1 runtime topology: modular monolith versus containers
 
 - **Status:** `PASS_WITH_LIMITS` - corrective round R3 recorded
-  2026-08-30 (research revision 5, clean committed tree
-  `0472ef310d81...`, dirty=false, experiment/evaluator script hashes
-  bound): goal `goal_H7CZSW08K5AGVDBH01M1A3M2GH`, evaluation
-  `reval_EYJX0N2RVF03W7V001M1A3M2KC`, artifact chain
-  `c1b88bdac06c92d75...`, tracked content-addressed evidence-pack/v3
+  2026-08-30 (research revision 6; experiments re-executed on the clean
+  committed tree `1348b9d98c78...`, dirty=false, tree and script hashes
+  bound, evaluator nonce-bound to the frozen experiment digest):
+  goal `goal_VJ2YYSZ3HN25KCVW01M1AHBQW2`, evaluation
+  `reval_1BYAM2E8ARGMZKF101M1AHBQYK`, artifact chain
+  `f7e09f6ddc49a41c...`, tracked content-addressed evidence-pack/v3
   `chain_fresh=true` at `results/evidence/`. Decision: modular monolith
-  (3.72 vs containers 2.07 normalized under the frozen rubric,
-  hash-bound; scores host-frozen per candidate x dimension);
-  sensitivity 218 deterministic runs with zero flips/ties; every S2
-  weight vector persisted with total and SHA-256; hard-constraint
-  violations reject ANY candidate (positive verdict requires both
-  topologies valid); evidence refs resolve only via hash-bound registry
-  ids or repository snapshots (portable from a clean clone); failure
-  scenarios under a strict production schema with INV/SAF/LIVE
-  references; experiments re-executed before the evaluator against a
-  clean committed tree with commit/tree/script-hash binding and
-  semantically validated responses; evaluator output nonce-bound to the
-  run. Limits: same-host measurements only; containers restart/recovery
-  unknown (bounded in sensitivity S3); no production claims; split
-  triggers symbolic until the follow-up benchmark.
+  (3.72 vs containers 2.07 normalized under the frozen rubric; scores
+  host-frozen per candidate x dimension); sensitivity 218 deterministic
+  runs with zero flips/ties; every S2 weight vector persisted with
+  total and SHA-256; hard-constraint violations reject ANY candidate
+  (positive verdict requires both topologies valid); evidence refs
+  resolve only via hash-bound registry ids or tracked snapshots
+  (portable from a clean clone); failure scenarios under a strict
+  production schema with INV/SAF/LIVE references; boundary experiments
+  re-executed before the evaluator with semantically validated
+  responses and raw observation counts. Limits: same-host measurements
+  only; containers restart/recovery unknown (bounded in sensitivity
+  S3); no production claims; split triggers symbolic until the
+  follow-up benchmark.
 - **Priority:** `P1`
 - **Wave:** `W1`
 - **Owner:** `architecture`
