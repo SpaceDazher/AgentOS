@@ -19,7 +19,12 @@
     "atomic transition+audit: a guarded state transition and its audit event commit in one transaction (ADR-0002, S1-004 SAF1)",
     "single canonical state owner: exactly one writer of canonical state"
   ],
-  "hard_constraint_rule": "any candidate violating a hard constraint is REJECTED regardless of weighted score",
+  "hard_constraint_ids": [
+    "gateway_only_effects",
+    "atomic_transition_audit",
+    "single_canonical_state_writer"
+  ],
+  "hard_constraint_rule": "any candidate recording any hard-constraint violation is REJECTED regardless of weighted score; if a real candidate is rejected, the evaluation records it and continues with the remaining candidates; if fewer than two real candidates remain, the verdict is FAIL",
   "weights": {
     "policy_boundary": 18,
     "atomic_transition_audit": 18,

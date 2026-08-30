@@ -1,30 +1,21 @@
-"""AgentOS S1-005 — deterministic QA1 evaluator.
+"""AgentOS S1-005 — deterministic QA1 evaluator (corrective revision 2).
 
-Fails closed on:
-- rubric hash mismatch (weights changed after scoring started);
-- missing dimensions (< 8) or missing real candidates (need exactly the two
-  real topologies);
-- incomplete cells (every dimension needs a cell for every real candidate;
-  cells carry claim_type in fact|measurement|inference|assumption|unknown);
-- probe A not rejected: any candidate whose cells record a hard-constraint
-  violation (gateway-only effects, atomic transition+audit, single canonical
-  state owner) MUST be rejected regardless of its weighted score;
-- probe B not rejected: a real candidate (or the recommendation) without a
-  declared failure boundary or deterministic replay interface is INCOMPLETE
-  and cannot win;
-- unknown cells are excluded from the weighted sums and renormalized; they
-  are never mapped to zero, an average, or an advantage; their
-  pessimistic/optimistic bounds are reported;
-- fewer than 3 failure scenarios blocks any positive verdict.
+Review R1 contract (research/tickets/stage-1/S1-005/REVIEW_R1.md):
 
-Sensitivity analysis (deterministic, seeded):
-- S1: every weight perturbed by +-50 percent (16 runs);
-- S2: 200 random weight vectors (random.Random(42), integer weights, sum
-  preserved) drawn AFTER scoring was frozen;
-- S3: unknown cells bounded pessimistically (score 0) and optimistically
-  (score 4);
-- the winner must remain the same in every perturbation, otherwise the
-  verdict is capped at PASS_WITH_LIMITS.
+- hard constraints (frozen ids in the rubric) reject ANY candidate that
+  records a violation, not only probe candidates; fewer than two remaining
+  real candidates is a FAIL;
+- the decision matrix must have unique dimensions matching the rubric
+  exactly (one row per dimension), and every real-candidate cell must carry
+  claim_type, statement, evidence_refs, confidence and a valid score rule;
+  unknown cells are excluded and renormalized, never mapped to a number;
+  path-like evidence refs must exist on disk;
+- failure scenarios need unique ids, non-empty required fields, both
+  topology branches and INV/SAF/LIVE references (enforced here);
+- sensitivity S2 draws EXACT integer compositions of the rubric total
+  (every vector sums to the total), ties are indeterminate (never resolved
+  by insertion order), and every S2 vector is recorded by digest;
+- every S2 vector is validated before scoring.
 
 Usage:
     python evaluator.py --ticket . --out results
@@ -36,6 +27,7 @@ import argparse
 import hashlib
 import json
 import random
+import re
 from pathlib import Path
 
 CLAIM_TYPES = {"fact", "measurement", "inference", "assumption", "unknown"}
@@ -43,6 +35,9 @@ MIN_DIMENSIONS = 8
 MIN_FAILURE_SCENARIOS = 3
 SENSITIVITY_RANDOM_RUNS = 200
 SENSITIVITY_SEED = 42
+INVARIANT_REF_RE = re.compile(r"\b(INV[1-6]|SAF\d|LIVE\d)")
+_PATHLIKE_RE = re.compile(
+    r"^(?:src|docs|adr|spec|tests|research|evals|results)/[^#]*")
 
 
 class EvalError(ValueError):
@@ -57,6 +52,21 @@ def load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def random_composition(total: int, parts: int, rng: random.Random) -> list:
+    """Exact uniform-ish positive integer composition of `total` into
+    `parts` non-negative parts (each >= 1): stars and bars with distinct
+    cut points, so the sum is exact by construction."""
+    if parts < 1 or total < parts:
+        raise ValueError("need total >= parts >= 1")
+    cuts = sorted(rng.sample(range(1, total), parts - 1))
+    result = []
+    prev = 0
+    for cut in cuts + [total]:
+        result.append(cut - prev)
+        prev = cut
+    return result
+
+
 def validate_rubric(rubric: dict, rubric_path: Path) -> dict:
     if not rubric.get("frozen_before_scoring"):
         raise EvalError("rubric was not frozen before scoring")
@@ -67,102 +77,149 @@ def validate_rubric(rubric: dict, rubric_path: Path) -> dict:
         raise EvalError("rubric weights do not sum to weight_sum")
     if not rubric.get("hard_constraints"):
         raise EvalError("rubric must freeze hard constraints")
+    ids = rubric.get("hard_constraint_ids")
+    if not ids or len(ids) != len(set(ids)):
+        raise EvalError("rubric must define unique hard_constraint_ids")
     return weights
 
 
-def validate_matrix(matrix: dict, rubric: dict, rubric_sha: str) -> tuple[dict, dict]:
+def _evidence_ref_exists(ref: str, ticket_dir: Path) -> bool:
+    if not ref:
+        return False
+    if ref == "probe" or ref.startswith("probe "):
+        return True
+    path_part = ref.split("#", 1)[0].strip()
+    if not _PATHLIKE_RE.match(path_part):
+        # free-form references (e.g. "standard container practice") allowed
+        return True
+    candidates = [
+        ticket_dir / path_part,
+        ticket_dir.parents[3] / path_part,
+    ]
+    return any(c.is_file() or c.is_dir() for c in candidates)
+
+
+def _validate_cell(cell: dict, dim: str, cid: str, ticket_dir: Path,
+                   known_violations: set) -> None:
+    ctype = cell.get("claim_type")
+    if ctype not in CLAIM_TYPES:
+        raise EvalError(f"{dim}/{cid}: claim_type {ctype!r} invalid")
+    statement = cell.get("statement")
+    if not isinstance(statement, str) or not statement.strip():
+        raise EvalError(f"{dim}/{cid}: statement must be non-empty")
+    refs = cell.get("evidence_refs")
+    if not isinstance(refs, list) or not refs:
+        raise EvalError(f"{dim}/{cid}: evidence_refs must be a non-empty list")
+    for ref in refs:
+        if not isinstance(ref, str) or not _evidence_ref_exists(ref, ticket_dir):
+            raise EvalError(f"{dim}/{cid}: evidence ref does not resolve: {ref!r}")
+    confidence = cell.get("confidence")
+    if not isinstance(confidence, (int, float)) or not 0 <= confidence <= 1:
+        raise EvalError(f"{dim}/{cid}: confidence must be in [0, 1]")
+    violations = cell.get("hard_constraint_violations") or []
+    for v in violations:
+        if v not in known_violations:
+            raise EvalError(
+                f"{dim}/{cid}: unknown hard constraint id {v!r}")
+    if ctype == "unknown":
+        if cell.get("score") is not None:
+            raise EvalError(
+                f"{dim}/{cid}: unknown cell must not carry a numeric score")
+        if not cell.get("limitation"):
+            raise EvalError(
+                f"{dim}/{cid}: unknown cell must state the missing evidence")
+    else:
+        score = cell.get("score")
+        if not isinstance(score, int) or not 0 <= score <= 4:
+            raise EvalError(f"{dim}/{cid}: score {score!r} outside 0..4")
+
+
+def validate_matrix(matrix: dict, rubric: dict, rubric_sha: str,
+                    ticket_dir: Path) -> tuple:
+    """Returns (scoring_candidates, rejections, rejected_real)."""
     if matrix.get("rubric_sha256") != rubric_sha:
         raise EvalError(
             "matrix rubric hash mismatch: weights changed after scoring "
             f"(expected {rubric_sha})")
     candidates = matrix.get("candidates", {})
-    real = [cid for cid, c in candidates.items() if c.get("is_real_candidate")]
-    if sorted(real) != ["containers", "monolith"]:
-        raise EvalError(f"expected exactly the two real topologies, got {sorted(real)}")
+    real = sorted(cid for cid, c in candidates.items()
+                  if c.get("is_real_candidate"))
+    if real != ["containers", "monolith"]:
+        raise EvalError(f"expected exactly the two real topologies, got {real}")
     if not any(c.get("probe") == "A" for c in candidates.values()):
         raise EvalError("probe A candidate missing")
     if not any(c.get("probe") == "B" for c in candidates.values()):
         raise EvalError("probe B candidate missing")
+    known_violations = set(rubric.get("hard_constraint_ids") or ())
+
     dims = matrix.get("matrix", [])
+    names = [d.get("dimension") for d in dims]
+    if len(names) != len(set(names)):
+        duplicates = sorted({n for n in names if names.count(n) > 1})
+        raise EvalError(f"duplicate dimension rows: {duplicates}")
     rubric_dims = set(rubric["weights"])
-    seen_dims = {d["dimension"] for d in dims}
     if len(dims) < MIN_DIMENSIONS:
         raise EvalError(f"matrix has {len(dims)} dimensions, need >= {MIN_DIMENSIONS}")
-    if seen_dims != rubric_dims:
+    if set(names) != rubric_dims:
         raise EvalError(
-            f"matrix dimensions mismatch: missing={sorted(rubric_dims - seen_dims)} "
-            f"extra={sorted(seen_dims - rubric_dims)}")
-    probe_rejections = {"A": [], "B": []}
+            f"matrix dimensions mismatch: missing={sorted(rubric_dims - set(names))} "
+            f"extra={sorted(set(names) - rubric_dims)}")
+
     for dim in dims:
         cells = dim.get("cells", {})
         for cid in real:
             if cid not in cells:
-                raise EvalError(f"dimension {dim['dimension']}: missing cell for {cid}")
-            cell = cells[cid]
-            ctype = cell.get("claim_type")
-            if ctype not in CLAIM_TYPES:
                 raise EvalError(
-                    f"{dim['dimension']}/{cid}: claim_type {ctype!r} invalid")
-            if ctype == "unknown":
-                if cell.get("score") is not None:
-                    raise EvalError(
-                        f"{dim['dimension']}/{cid}: unknown cell must have null score")
-                if not cell.get("limitation"):
-                    raise EvalError(
-                        f"{dim['dimension']}/{cid}: unknown cell must state "
-                        "the missing evidence")
-            else:
-                score = cell.get("score")
-                if not isinstance(score, int) or not 0 <= score <= 4:
-                    raise EvalError(
-                        f"{dim['dimension']}/{cid}: score {score!r} outside 0..4")
-        for cid, cand in candidates.items():
-            violations = [
-                v for d2 in [cells.get(cid, {})] if d2
-                for v in (d2.get("hard_constraint_violations") or [])
-            ]
-            if violations:
-                probe_rejections.setdefault(cid, violations)
-    # structural rejection rules
+                    f"dimension {dim['dimension']}: missing cell for {cid}")
+            _validate_cell(cells[cid], dim["dimension"], cid, ticket_dir,
+                           known_violations)
+
+    scoring = list(real)
+    rejections = {"A": [], "B": []}
+    rejected_real = {}
     for cid, cand in candidates.items():
-        if cid in real:
-            # a REAL candidate without a declared failure boundary or a
-            # deterministic replay interface makes the evidence itself
-            # incomplete -> fail closed (this is the probe B property
-            # generalized to every real topology)
+        violations = set()
+        for dim in dims:
+            violations.update(
+                dim["cells"].get(cid, {}).get("hard_constraint_violations") or [])
+        if cand.get("probe") == "A":
+            if not violations:
+                raise EvalError(
+                    "probe A candidate does not violate hard constraints; "
+                    "the probe is not constructed")
+            rejections["A"].append(
+                "rejected: violates frozen hard constraints regardless of "
+                f"score ({sorted(violations)})")
+        elif cid in real:
             if cand.get("failure_boundary_ref") is None or \
                     cand.get("deterministic_replay_ref") is None:
                 raise EvalError(
                     f"real candidate {cid} is INCOMPLETE: missing declared "
                     "failure boundary or deterministic replay interface")
-        if cand.get("probe") == "A":
-            if not any(
-                cells.get(cid, {}).get("hard_constraint_violations")
-                for cells in (d["cells"] for d in dims)
-            ):
-                raise EvalError("probe A candidate does not violate hard "
-                                "constraints; the probe is not constructed")
-            probe_rejections["A"].append(
-                "rejected: violates frozen hard constraints regardless of score")
+            if violations:
+                rejected_real[cid] = sorted(violations)
+                scoring.remove(cid)
         if cand.get("probe") == "B":
             if cand.get("failure_boundary_ref") is None or \
                     cand.get("deterministic_replay_ref") is None:
-                probe_rejections["B"].append(
+                rejections["B"].append(
                     "rejected as INCOMPLETE: no declared failure boundary or "
                     "deterministic replay interface")
-    return real, probe_rejections
+    if not scoring:
+        raise EvalError(
+            "all real candidates were rejected for hard-constraint "
+            f"violations: {rejected_real}")
+    return scoring, rejections, rejected_real
 
 
-def weighted_scores(matrix: dict, weights: dict, real: list[str],
-                    unknown_fill: dict | None = None) -> tuple[dict, dict]:
-    """Returns (scores, meta). unknown_fill maps candidate->forced score or
-    None for standard exclusion semantics."""
-    scores = {cid: 0.0 for cid in real}
-    used_weight = {cid: 0.0 for cid in real}
-    unknown_dims = {cid: [] for cid in real}
+def weighted_scores(matrix: dict, weights: dict, scoring: list,
+                    unknown_fill: dict | None = None) -> tuple:
+    scores = {cid: 0.0 for cid in scoring}
+    used_weight = {cid: 0.0 for cid in scoring}
+    unknown_dims = {cid: [] for cid in scoring}
     for dim in matrix["matrix"]:
         w = weights[dim["dimension"]]
-        for cid in real:
+        for cid in scoring:
             cell = dim["cells"][cid]
             if cell["claim_type"] == "unknown":
                 unknown_dims[cid].append(dim["dimension"])
@@ -174,7 +231,7 @@ def weighted_scores(matrix: dict, weights: dict, real: list[str],
             used_weight[cid] += w
     normalized = {
         cid: (scores[cid] / used_weight[cid]) if used_weight[cid] else None
-        for cid in real
+        for cid in scoring
     }
     meta = {
         "unknown_dims": unknown_dims,
@@ -184,72 +241,158 @@ def weighted_scores(matrix: dict, weights: dict, real: list[str],
     return normalized, meta
 
 
-def winner_of(scores: dict) -> str:
+def winner_of(scores: dict) -> tuple:
+    """Returns (winner, tie). Exact ties are INDETERMINATE: None is
+    returned instead of an insertion-order artifact."""
     scored = {cid: s for cid, s in scores.items() if s is not None}
     if not scored:
         raise EvalError("no scored candidates")
-    return max(scored, key=lambda cid: scored[cid])
+    best = max(scored.values())
+    leaders = [cid for cid, s in scored.items() if s == best]
+    if len(leaders) > 1:
+        return None, True
+    return leaders[0], False
 
 
-def sensitivity(matrix: dict, weights: dict, real: list[str]) -> dict:
-    results = {"flips": [], "runs": 0, "stable": True}
-    base_winner = winner_of(weighted_scores(matrix, weights, real)[0])
+def _renormalize_to_total(raw: dict, total: int) -> dict:
+    """Largest-remainder integer apportionment: every weight >= 1 and the
+    sum is exactly `total` (review R1 finding 6)."""
+    names = list(raw)
+    base = {k: 1 for k in names}
+    remaining = total - len(names)
+    raw_sum = sum(raw.values())
+    if raw_sum <= 0:
+        raise EvalError("cannot renormalize non-positive raw weights")
+    shares = {k: remaining * raw[k] / raw_sum for k in names}
+    floors = {k: int(shares[k]) for k in names}
+    for k in names:
+        base[k] += floors[k]
+    leftover = total - sum(base.values())
+    order = sorted(names, key=lambda k: shares[k] - floors[k], reverse=True)
+    for k in order[:leftover]:
+        base[k] += 1
+    if sum(base.values()) != total or any(v < 1 for v in base.values()):
+        raise EvalError("weight renormalization broke the total")
+    return base
 
-    # S1: +-50 percent per weight
-    for dim_name, w in weights.items():
-        for factor, label in ((0.5, "-50%"), (1.5, "+50%")):
-            perturbed = dict(weights)
-            perturbed[dim_name] = max(1, round(w * factor))
-            # renormalize the rest so the sum stays constant
-            rest = [k for k in perturbed if k != dim_name]
-            delta = sum(weights.values()) - sum(perturbed.values())
-            share = sum(perturbed[k] for k in rest)
-            if share:
-                for k in rest:
-                    perturbed[k] = max(1, round(
-                        perturbed[k] + delta * perturbed[k] / share))
-            scores, _ = weighted_scores(matrix, perturbed, real)
-            win = winner_of(scores)
-            results["runs"] += 1
-            if win != base_winner:
-                results["stable"] = False
-                results["flips"].append({
-                    "kind": "S1_weight", "dimension": dim_name,
-                    "perturbation": label, "winner": win})
 
-    # S2: seeded random weight vectors with preserved total
-    rng = random.Random(SENSITIVITY_SEED)
+def sensitivity(matrix: dict, weights: dict, scoring: list) -> dict:
+    results = {"flips": [], "runs": 0, "stable": True, "ties": 0,
+               "s2_all_sums_valid": True, "s2_vector_digests": []}
+    base_winner, _ = winner_of(weighted_scores(matrix, weights, scoring)[0])
     total = sum(weights.values())
     names = list(weights)
-    for i in range(SENSITIVITY_RANDOM_RUNS):
-        cuts = sorted(rng.randrange(1, total) for _ in range(len(names) - 1))
-        parts = []
-        prev = 0
-        for cut in cuts + [total]:
-            parts.append(cut - prev)
-            prev = cut
-        vector = {k: max(1, v) for k, v in zip(names, parts)}
-        scores, _ = weighted_scores(matrix, vector, real)
-        win = winner_of(scores)
-        results["runs"] += 1
-        if win != base_winner:
-            results["stable"] = False
-            results["flips"].append({
-                "kind": "S2_random", "run": i,
-                "weights": vector, "winner": win})
 
-    # S3: unknown bounds
-    for label, fill in (("pessimistic_0", 0), ("optimistic_4", 4)):
-        fill_map = {cid: fill for cid in real}
-        scores, _ = weighted_scores(matrix, weights, real, unknown_fill=fill_map)
-        win = winner_of(scores)
+    def record(win, tie, entry):
         results["runs"] += 1
-        if win != base_winner:
+        if tie:
             results["stable"] = False
-            results["flips"].append({
-                "kind": "S3_unknown", "bounds": label, "winner": win})
+            results["ties"] += 1
+            entry = dict(entry, winner=None, indeterminate=True)
+            results["flips"].append(entry)
+        elif win != base_winner:
+            results["stable"] = False
+            results["flips"].append(dict(entry, winner=win))
+
+    for dim_name, w in weights.items():
+        for factor, label in ((0.5, "-50%"), (1.5, "+50%")):
+            raw = dict(weights)
+            raw[dim_name] = w * factor
+            perturbed = _renormalize_to_total(raw, total)
+            scores, _ = weighted_scores(matrix, perturbed, scoring)
+            win, tie = winner_of(scores)
+            record(win, tie, {"kind": "S1_weight", "dimension": dim_name,
+                              "perturbation": label,
+                              "weights_sha256": hashlib.sha256(
+                                  json.dumps(perturbed, sort_keys=True)
+                                  .encode()).hexdigest()})
+
+    rng = random.Random(SENSITIVITY_SEED)
+    for i in range(SENSITIVITY_RANDOM_RUNS):
+        vector = random_composition(total, len(names), rng)
+        if sum(vector) != total:
+            results["s2_all_sums_valid"] = False
+            raise EvalError("S2 composition does not sum to the rubric total")
+        vector_map = _renormalize_to_total(
+            {k: max(1, v) for k, v in zip(names, vector)}, total)
+        digest = hashlib.sha256(
+            json.dumps(vector_map, sort_keys=True).encode()).hexdigest()
+        scores, _ = weighted_scores(matrix, vector_map, scoring)
+        win, tie = winner_of(scores)
+        record(win, tie, {"kind": "S2_random", "run": i,
+                          "weights_sha256": digest})
+        results["s2_vector_digests"].append(digest)
+
+    for label, fill in (("pessimistic_0", 0), ("optimistic_4", 4)):
+        fill_map = {cid: fill for cid in scoring}
+        scores, _ = weighted_scores(matrix, weights, scoring, unknown_fill=fill_map)
+        win, tie = winner_of(scores)
+        record(win, tie, {"kind": "S3_unknown", "bounds": label})
+
     results["base_winner"] = base_winner
+    results["total_weight"] = total
     return results
+
+
+def validate_scenarios(scenarios: dict) -> None:
+    sc_list = scenarios.get("scenarios", [])
+    if len(sc_list) < MIN_FAILURE_SCENARIOS:
+        raise EvalError(
+            f"failure scenarios {len(sc_list)} < {MIN_FAILURE_SCENARIOS}")
+    ids = set()
+    for sc in sc_list:
+        sid = sc.get("id")
+        if not sid or sid in ids:
+            raise EvalError(f"scenario id missing or duplicated: {sid!r}")
+        ids.add(sid)
+        for field in ("title", "fault_injection", "initial_state",
+                      "authoritative_state_owner", "allowed_transitions",
+                      "recovery_path", "observable_artifacts",
+                      "stop_condition", "invariant_impact"):
+            value = sc.get(field)
+            if value is None or value == "" or value == [] or value == {}:
+                raise EvalError(f"scenario {sid}: field {field} is empty")
+        for topology in ("monolith", "containers"):
+            for field in ("authoritative_state_owner", "allowed_transitions",
+                          "recovery_path", "invariant_impact"):
+                branch = sc[field]
+                if not isinstance(branch, dict) or topology not in branch:
+                    raise EvalError(
+                        f"scenario {sid}: {field} missing {topology} branch")
+            impact = json.dumps(sc["invariant_impact"][topology])
+            if not INVARIANT_REF_RE.search(impact):
+                raise EvalError(
+                    f"scenario {sid}: invariant impact for {topology} does "
+                    "not reference INV/SAF/LIVE")
+        if not sc["observable_artifacts"]:
+            raise EvalError(f"scenario {sid}: no observable artifacts")
+
+
+def validate_experiments(experiments: dict) -> None:
+    if not str(experiments.get("schema", "")).startswith(
+            "agentos.s1-005.boundary-experiments/"):
+        raise EvalError("boundary experiments schema mismatch")
+    exps = experiments.get("experiments", {})
+    for key in ("small_512b", "large_16kb", "sqlite_multi_writer"):
+        if key not in exps:
+            raise EvalError(f"boundary experiments missing {key}")
+    for key in ("small_512b", "large_16kb"):
+        block = exps[key]
+        for transport in ("in_process_us", "pipe_process_us", "tcp_localhost_us"):
+            value = block.get(transport)
+            if not isinstance(value, (int, float)) or value <= 0:
+                raise EvalError(f"{key}.{transport} missing or non-positive")
+        if not block["in_process_us"] < block["pipe_process_us"]:
+            raise EvalError(
+                f"{key}: in-process must be faster than a process boundary")
+    e2 = exps["sqlite_multi_writer"]
+    if e2.get("committed_rows_complete") is not True:
+        raise EvalError("E2 committed rows are not complete; serialization "
+                        "property not demonstrated")
+    single = e2["single_writer"]["txns_per_second"]
+    multi = e2["two_writers"]["txns_per_second"]
+    if not (single > 0 and multi > 0 and multi < single):
+        raise EvalError("E2 multi-writer must be slower than single writer")
 
 
 def evaluate(ticket_dir: Path, out_dir: Path) -> dict:
@@ -258,47 +401,41 @@ def evaluate(ticket_dir: Path, out_dir: Path) -> dict:
     weights = validate_rubric(rubric, ticket_dir / "rubric.json")
     matrix = load_json(out_dir / "qa1-decision-matrix.json")
     scenarios = load_json(out_dir / "failure-scenarios.json")
-    real, probe_rejections = validate_matrix(matrix, rubric, rubric_sha)
+    experiments = load_json(out_dir / "boundary-experiments.json")
+    validate_experiments(experiments)
+    validate_scenarios(scenarios)
+    scoring, rejections, rejected_real = validate_matrix(
+        matrix, rubric, rubric_sha, ticket_dir)
 
-    if len(scenarios.get("scenarios", [])) < MIN_FAILURE_SCENARIOS:
-        raise EvalError(
-            f"failure scenarios {len(scenarios.get('scenarios', []))} < "
-            f"{MIN_FAILURE_SCENARIOS}")
-    for sc in scenarios["scenarios"]:
-        for field in ("fault_injection", "authoritative_state_owner",
-                      "allowed_transitions", "recovery_path",
-                      "observable_artifacts", "stop_condition",
-                      "invariant_impact"):
-            if field not in sc:
-                raise EvalError(f"scenario {sc.get('id')} missing {field}")
-        for cid in ("monolith", "containers"):
-            if cid not in sc["authoritative_state_owner"]:
-                raise EvalError(f"scenario {sc.get('id')} missing {cid}")
-
-    scores, meta = weighted_scores(matrix, weights, real)
-    sens = sensitivity(matrix, weights, real)
+    scores, meta = weighted_scores(matrix, weights, scoring)
+    sens = sensitivity(matrix, weights, scoring)
     winner = sens["base_winner"]
 
-    unknown_all = sorted({d for cid in real for d in meta["unknown_dims"][cid]})
-    winner_unknown = meta["unknown_dims"][winner]
-
+    all_unknown = sorted({d for cid in scoring for d in meta["unknown_dims"][cid]})
     verdict = "PASS"
     reasons = []
-    all_unknown = sorted({d for cid in real for d in meta["unknown_dims"][cid]})
     if all_unknown:
         verdict = "PASS_WITH_LIMITS"
         reasons.append(
             "unknown cells present in the comparison: "
             f"{all_unknown} (excluded and renormalized; winner's cells: "
-            f"{winner_unknown or 'none'}; bounded in sensitivity S3)")
+            f"{meta['unknown_dims'][winner] or 'none'}; bounded in "
+            "sensitivity S3)")
     if not sens["stable"]:
         verdict = "PASS_WITH_LIMITS"
-        reasons.append("winner flipped under sensitivity perturbations; "
-                       "verdict capped per rubric")
-    if probe_rejections.get("A"):
-        reasons.append("probe A rejected: " + "; ".join(probe_rejections["A"]))
-    if probe_rejections.get("B"):
-        reasons.append("probe B rejected: " + "; ".join(probe_rejections["B"]))
+        reasons.append("winner flipped or tied under sensitivity "
+                       "perturbations; verdict capped per rubric")
+    for probe, note in rejections.items():
+        if note:
+            reasons.append(f"probe {probe} rejected: " + "; ".join(note))
+    if rejected_real:
+        # a topology with a hard-constraint violation breaks the comparison:
+        # the remaining candidate cannot receive a positive verdict
+        verdict = "FAIL"
+        reasons.append(
+            "real candidate(s) rejected for hard-constraint violations: "
+            + json.dumps(rejected_real)
+            + " - a positive verdict requires both topologies to be valid")
 
     result = {
         "schema": "agentos.s1-005.evaluation/v1",
@@ -307,18 +444,22 @@ def evaluate(ticket_dir: Path, out_dir: Path) -> dict:
                               for cid, s in scores.items()},
         "used_weight": meta["used_weight"],
         "unknown_dimensions": meta["unknown_dims"],
+        "rejected_real_candidates": rejected_real,
         "winner": winner,
         "recommendation": {
             "topology": winner,
             "name": matrix["candidates"][winner]["name"],
         },
-        "probe_rejections": probe_rejections,
+        "probe_rejections": rejections,
         "sensitivity": {
             "runs": sens["runs"],
             "stable": sens["stable"],
+            "ties": sens["ties"],
             "flips": sens["flips"],
             "seed": SENSITIVITY_SEED,
             "random_runs": SENSITIVITY_RANDOM_RUNS,
+            "s2_all_sums_valid": sens["s2_all_sums_valid"],
+            "s2_vector_digests": sens["s2_vector_digests"],
         },
         "verdict": verdict,
         "reasons": reasons,

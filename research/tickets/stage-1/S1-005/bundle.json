@@ -132,7 +132,7 @@
         "method": "host-file-sha256-binding",
         "verified_at": "2026-08-30",
         "path": "research/tickets/stage-1/S1-002/evaluation-record.json",
-        "file_sha256": "6a6bef58e87c79c7317ad7e5e33a33cea36b936695f85311a9defa5a7ed93fa0",
+        "file_sha256": "757d4e6e82e0ebfc4bb06e5ba1493423a7951b945eabc4ccca994747d604c979",
         "scope_note": "Dependency evidence reused, not modified."
       }
     },
@@ -234,7 +234,7 @@
         "method": "host-file-sha256-binding",
         "verified_at": "2026-08-30",
         "path": "research/tickets/stage-1/S1-005/results/boundary-experiments.json",
-        "file_sha256": "55d381e1ec2048f697b22efc056513d444f82878c7a9e64058c6bf9395af3034",
+        "file_sha256": "1f04cef11d304b6fb2950b0b9ae21870ed67dc50eac8440d4084cc1b0f88d232",
         "scope_note": "Primary measurement evidence (hash-locked)."
       }
     },
@@ -251,7 +251,7 @@
         "method": "host-file-sha256-binding",
         "verified_at": "2026-08-30",
         "path": "research/tickets/stage-1/S1-005/rubric.json",
-        "file_sha256": "1ee27dbb25f4ed00f9d43b526e4ba4507006e45bb4ae7d570cf4346d3308849e",
+        "file_sha256": "ba3bd46472a1cc80ea054a34d74662d29561a509fe394cd3e8c9953ecb71fd6a",
         "scope_note": "Frozen rubric (hash-locked)."
       }
     },
@@ -268,7 +268,7 @@
         "method": "host-file-sha256-binding",
         "verified_at": "2026-08-30",
         "path": "research/tickets/stage-1/S1-005/results/qa1-decision-matrix.json",
-        "file_sha256": "4f2ba6f7a0c45883a102f47a0ca0288a969e6b6fce47bd92fc5784afee063ca9",
+        "file_sha256": "ca49df64f8a10e6721741bedfb43aeb49ae296173b27e2f539cf9363a13d4017",
         "scope_note": "Primary decision evidence (hash-locked)."
       }
     },
@@ -285,7 +285,7 @@
         "method": "host-file-sha256-binding",
         "verified_at": "2026-08-30",
         "path": "research/tickets/stage-1/S1-005/results/failure-scenarios.json",
-        "file_sha256": "57aea97b9e6d340930ad98c5e301753f6bd5ef8a7a582eccae2e40d171b0fc23",
+        "file_sha256": "d516be20a4aad01e1ef5bf0e01aaeeb455e5451befb4df1fcd34bfb3ee0a43cf",
         "scope_note": "Primary scenario evidence (hash-locked)."
       }
     },
@@ -294,7 +294,7 @@
       "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-005/results/sensitivity-analysis.json",
       "title": "S1-005 sensitivity analysis",
       "source_type": "sensitivity analysis",
-      "content": "Deterministic evaluation output: normalized scores (monolith 3.72 vs containers 2.07), winner monolith, 218 sensitivity runs with zero flips, probe rejections, verdict PASS_WITH_LIMITS with explicit reasons.",
+      "content": "Deterministic evaluation output: normalized scores (monolith 3.72 vs containers 2.0682), winner monolith, 218 sensitivity runs with zero flips and zero ties, probe rejections, verdict PASS_WITH_LIMITS with explicit reasons.",
       "verification_status": "verified",
       "verifier": "agentos-s1-005-local-hash-review",
       "verification_method": "host-file-sha256-binding",
@@ -302,7 +302,7 @@
         "method": "host-file-sha256-binding",
         "verified_at": "2026-08-30",
         "path": "research/tickets/stage-1/S1-005/results/sensitivity-analysis.json",
-        "file_sha256": "61aed6d44aa7a93178efe4fd081e4e46ded871a0f0ca350caee512604740b0e6",
+        "file_sha256": "872a9e3e94a7fbced7f317b314f4a238e760a289537b4137d10329197951b4a5",
         "scope_note": "Primary evaluation output (hash-locked)."
       }
     },
@@ -319,7 +319,7 @@
         "method": "host-file-sha256-binding",
         "verified_at": "2026-08-30",
         "path": "research/tickets/stage-1/S1-005/evaluator.py",
-        "file_sha256": "805405c8ed49ac30bac4574ece41dba8462212e202991ca39771502929b68a9c",
+        "file_sha256": "eed558c96931c1202838e4d74ccfb3b003e8a61c166e50d30367fa072c296b7a",
         "scope_note": "Evaluator under test."
       }
     },
@@ -336,7 +336,7 @@
         "method": "host-file-sha256-binding",
         "verified_at": "2026-08-30",
         "path": "tests/test_s1_005_regressions.py",
-        "file_sha256": "8c31cc8cc8f6c23a2458030182332dd0b22a425dba024864cac3d711eda21f1e",
+        "file_sha256": "2c8d7cf24e35685d6921ed8cc5304e6863e7bf199e19a1738b89353984c154b5",
         "scope_note": "Regression suite (hash-locked)."
       }
     }
@@ -345,7 +345,7 @@
     {
       "id": "c1-experiments",
       "claim_class": "fact",
-      "text": "Measurement: on this host the policy-decision round trip costs 4.86 us in-process versus 25.71 us over a persistent child process pipe and 18.20 us over localhost TCP (512B payload); 16KB payloads cost 37.77/207.89/168.03 us respectively (3.7-5.5x). Canonical SQLite: single writer 20,587 tx/s; two writer processes 1,694 tx/s (12x degradation) with zero busy errors and all committed rows complete (writes serialize correctly).",
+      "text": "Measurement: on this host the policy-decision round trip costs 3.59 us in-process versus 16.52 us over a persistent child process pipe and 23.76 us over localhost TCP (512B payload, 2000 rounds); 16KB payloads cost 48.71/162.87/104.97 us respectively. Canonical SQLite: single writer 42588.1 tx/s; two writer processes 2949.6 tx/s (14.4x degradation) with zero busy errors and all committed rows complete (writes serialize correctly). Every transport is semantically validated (exact expected policy decision) and child processes/servers must exit 0.",
       "source_ids": [
         "S1-005-EXPERIMENTS"
       ]
@@ -363,7 +363,7 @@
     {
       "id": "c3-evaluation",
       "claim_class": "fact",
-      "text": "Measured outcome of the frozen rubric: modular monolith 3.72 vs containers 2.07 (normalized; containers renormalized over 88/100 weight because one cell is unknown); winner monolith; 218 deterministic sensitivity runs (16 weight +-50%, 200 seeded random weight vectors, pessimistic/optimistic unknown bounds) with zero winner flips; probe A rejected for violating frozen hard constraints regardless of score; probe B rejected as INCOMPLETE without a failure boundary or deterministic replay interface.",
+      "text": "Measured outcome of the frozen rubric: monolith 3.72 vs containers 2.0682 (normalized; containers renormalized over 88.0/100 weight because one cell is unknown); winner monolith; 218 deterministic sensitivity runs (16 weight +-50%, 200 seeded random weight vectors, pessimistic/optimistic unknown bounds) with zero winner flips and zero ties; every S2 weight vector sums exactly to the rubric total and is recorded by digest; probe A rejected for violating frozen hard constraints regardless of score; probe B rejected as INCOMPLETE without a failure boundary or deterministic replay interface.",
       "source_ids": [
         "S1-005-SENSITIVITY",
         "S1-005-MATRIX",
@@ -496,7 +496,7 @@
         "c4-scenarios",
         "c7-obligation-unknowns"
       ],
-      "content": "# Result\nPASS_WITH_LIMITS. Under the frozen rubric the modular monolith scores 3.72\nversus 2.07 for a contract-preserving container split; the winner is stable\nacross 218 deterministic sensitivity runs (weight perturbations, 200 seeded\nrandom weight vectors, unknown bounds). Both adversarial probes are\nstructurally rejected: the unsafe split (probe A) violates frozen hard\nconstraints regardless of its latency score, and the incomplete monolith\n(probe B) is rejected for lacking a failure boundary and deterministic\nreplay interface. Exactly one recommendation is recorded: the modular\nmonolith, with a bounded split path and measurable triggers.\n\n# Gaps\n1. Containers restart/recovery is an unknown cell (no orchestrator\nmeasurements; production container deployments are out of scope); it is\nexcluded from scoring and bounded in sensitivity S3.\n2. All measurements are same-host; multi-host partition semantics are\nunknown and can only worsen the container case, but are not quantified.\n3. The split trigger thresholds are symbolic until the S1-002 follow-up\nbenchmark wires measurable conditions.\n4. S1-002/S1-004 evidence is PASS_WITH_LIMITS; no production claim is\nderived from it here.\n\n# Next actions\nWire split-trigger conditions into the follow-up benchmark task; when a\ntrigger fires, prototype the state container first and re-run E1/E2 plus a\npartition scenario before any migration decision.\n"
+      "content": "# Result\nPASS_WITH_LIMITS. Under the frozen rubric the modular monolith scores 3.72 versus 2.0682 for a contract-preserving container split; the winner is stable across 218 deterministic sensitivity runs (weight perturbations, seeded random weight vectors, unknown bounds) with zero flips and zero ties. Both adversarial probes are structurally rejected: the unsafe split (probe A) violates frozen hard constraints regardless of its latency score, and the incomplete monolith (probe B) is rejected for lacking a failure boundary and deterministic replay interface. Exactly one recommendation is recorded: the modular monolith, with a bounded split path and measurable triggers.\n# Gaps\n1. Containers restart/recovery is an unknown cell (no orchestrator\nmeasurements; production container deployments are out of scope); it is\nexcluded from scoring and bounded in sensitivity S3.\n2. All measurements are same-host; multi-host partition semantics are\nunknown and can only worsen the container case, but are not quantified.\n3. The split trigger thresholds are symbolic until the S1-002 follow-up\nbenchmark wires measurable conditions.\n4. S1-002/S1-004 evidence is PASS_WITH_LIMITS; no production claim is\nderived from it here.\n\n# Next actions\nWire split-trigger conditions into the follow-up benchmark task; when a\ntrigger fires, prototype the state container first and re-run E1/E2 plus a\npartition scenario before any migration decision.\n"
     },
     "independent_audit": {
       "producer": "agentos-s1-005-independent-verifier",
@@ -542,7 +542,7 @@
         "timestamp": "2026-08-30T05:00:00Z",
         "verdict": "pass_with_limits",
         "verifier": "agentos-s1-005-independent-verifier",
-        "summary": "Initial S1-005 qualification: frozen rubric, 8x4 decision matrix with two structurally rejected adversarial probes, three identical failure scenarios, measured boundary costs, sensitivity analysis stable across 218 runs; recommendation: modular monolith.",
+        "summary": "Initial S1-005 qualification: frozen rubric, 8x4 decision matrix with two structurally rejected adversarial probes, three identical failure scenarios, measured boundary costs, sensitivity analysis stable across 218 runs; recommendation: monolith (3.72 vs 2.0682).",
         "limitations": "See limitations; same-host measurements, unknown multi-host behavior.",
         "superseded": false
       }

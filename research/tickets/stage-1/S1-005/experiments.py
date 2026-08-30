@@ -12,6 +12,9 @@ E1 dispatch_round_trip
     (a) in-process function call, (b) persistent child process over
     stdin/stdout pipes (a container boundary on one host), (c) localhost
     TCP (a container boundary as Docker typically exposes it).
+    Every transport MUST return the exact expected policy decision
+    (semantic validation) and child processes/servers must exit 0; timing
+    without verified semantics is rejected.
 
 E2 sqlite_multi_writer
     Canonical SQLite (WAL) under a single writer versus two concurrent
@@ -21,7 +24,7 @@ E2 sqlite_multi_writer
     canonical state".
 
 Determinism: fixed payload, fixed iteration counts, no randomness. The
-environment manifest is embedded in the result. Results are host-bound
+environment is embedded in the result. Results are host-bound
 measurements, not production SLO claims.
 """
 
@@ -50,6 +53,8 @@ LARGE_PAYLOAD = {
     "op": "evidence.append",
     "tool": "evidence.bulk",
     "goal": "goal_PYZB6RV129EG1NV101M0TSC5WW",
+    "content_sha256": "9f2c6b8e1d4a7f0c3b6e9d2a5c8f1b4e7d0a3c6f9b2e5d8a1c4f7b0e3d6a9c2f",
+    "fence": 18,
     "items": [
         {"artifact": f"src/pkg/module_{i}.py",
          "content_sha256": hashlib.sha256(f"blob{i}".encode()).hexdigest(),
@@ -74,25 +79,156 @@ def policy_decide(request: dict) -> dict:
     return {"allow": ok, "reason": "policy.match" if ok else "policy.deny"}
 
 
+EXPECTED_RESPONSE = {"allow": True, "reason": "policy.match"}
+
+
+def _require_valid_response(response) -> dict:
+    """Strict semantic validation: a measured call must return EXACTLY the
+    expected policy decision, not merely complete quickly."""
+    if not isinstance(response, dict):
+        raise ValueError(f"response is not an object: {response!r}")
+    if response.get("allow") is not EXPECTED_RESPONSE["allow"] or \
+            response.get("reason") != EXPECTED_RESPONSE["reason"]:
+        raise ValueError(f"semantic mismatch: {response!r}")
+    extra = set(response) - {"allow", "reason"}
+    if extra:
+        raise ValueError(f"unexpected response fields: {sorted(extra)}")
+    return response
+
+
+def sim_dir() -> str:
+    return str(Path(__file__).resolve().parent)
+
+
 # ---- E1 child-process worker (persistent pipe transport) -----------------
+# mode "ok"      : normal worker, validates its own responses;
+# mode "corrupt" : returns a semantically wrong response (test only);
+# mode "crash"   : exits non-zero after the first request (test only).
 
 CHILD_SOURCE = r'''
 import json, sys
 sys.path.insert(0, r"{sim_dir}")
-from experiments import policy_decide
+from experiments import policy_decide, _require_valid_response
+mode = "{mode}"
 for line in sys.stdin:
     line = line.strip()
     if not line:
         continue
     request = json.loads(line)
-    sys.stdout.write(json.dumps(policy_decide(request)) + "\n")
+    response = policy_decide(request)
+    if mode == "corrupt":
+        sys.stdout.write(json.dumps({"ok": True}) + "\n")
+    elif mode == "crash":
+        sys.stdout.flush()
+        sys.exit(3)
+    else:
+        _require_valid_response(response)
+        sys.stdout.write(json.dumps(response) + "\n")
     sys.stdout.flush()
 '''
 
 
-def _tcp_server(rounds: int, payload_json: str, ready: "multiprocessing.Event",
+def measure_pipe_child(rounds: int, mode: str = "ok",
+                       payload: dict | None = None) -> dict:
+    """Measured pipe transport with strict response-semantics validation;
+    negative modes (corrupt/crash) exist for fail-closed tests."""
+    child = CHILD_SOURCE.replace("{sim_dir}", sim_dir()).replace(
+        "{mode}", mode)
+    proc = subprocess.Popen(
+        [sys.executable, "-c", child], stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE, text=True, encoding="utf-8")
+    payload = payload or SMALL_PAYLOAD
+    request_json = json.dumps(payload)
+    batch = 16
+    validated = 0
+    elapsed = None
+    try:
+        def roundtrip(n):
+            nonlocal validated
+            for _ in range(n):
+                proc.stdin.write(request_json + "\n")
+            proc.stdin.flush()
+            for _ in range(n):
+                response = json.loads(proc.stdout.readline())
+                _require_valid_response(response)
+                validated += 1
+
+        warm = min(5, rounds)
+        roundtrip(warm)
+        t0 = time.perf_counter()
+        done = warm
+        while done < rounds:
+            k = min(batch, rounds - done)
+            roundtrip(k)
+            done += k
+        elapsed = (time.perf_counter() - t0) / rounds
+    finally:
+        proc.stdin.close()
+        proc.wait(timeout=10)
+    if proc.returncode != 0:
+        raise RuntimeError(
+            f"child process exited {proc.returncode}; transport is not healthy")
+    if validated != rounds:
+        raise RuntimeError(
+            f"semantic validation covered {validated}/{rounds} responses")
+    return {"rounds": rounds, "validated": validated,
+            "child_exit_code": proc.returncode,
+            "seconds_per_call": elapsed}
+
+
+def measure_in_process(payload: dict, rounds: int) -> float:
+    request_json = json.dumps(payload)
+    for _ in range(50):
+        _require_valid_response(policy_decide(json.loads(request_json)))
+    t0 = time.perf_counter()
+    for _ in range(rounds):
+        _require_valid_response(policy_decide(json.loads(request_json)))
+    return (time.perf_counter() - t0) / rounds
+
+
+def measure_pipe(payload: dict, rounds: int) -> float:
+    child = CHILD_SOURCE.replace("{sim_dir}", sim_dir()).replace(
+        "{mode}", "ok")
+    proc = subprocess.Popen(
+        [sys.executable, "-c", child], stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE, text=True, encoding="utf-8")
+    request_json = json.dumps(payload)
+    batch = 16
+    validated = 0
+    try:
+        def roundtrip(n):
+            nonlocal validated
+            for _ in range(n):
+                proc.stdin.write(request_json + "\n")
+            proc.stdin.flush()
+            for _ in range(n):
+                response = json.loads(proc.stdout.readline())
+                _require_valid_response(response)
+                validated += 1
+
+        roundtrip(50)  # warmup
+        t0 = time.perf_counter()
+        done = 0
+        while done < rounds:
+            k = min(batch, rounds - done)
+            roundtrip(k)
+            done += k
+        if validated != rounds + 50:
+            raise RuntimeError(
+                f"semantic validation covered {validated}/{rounds + 50} "
+                "responses")
+        return (time.perf_counter() - t0) / rounds
+    finally:
+        proc.stdin.close()
+        if proc.wait(timeout=10) != 0:
+            raise RuntimeError("child process exited non-zero")
+
+
+def _tcp_server(rounds: int, ready: "multiprocessing.Event",
                 result_q: "multiprocessing.Queue"):
     import socket
+    sys.path.insert(0, sim_dir())
+    from experiments import policy_decide, _require_valid_response
     srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     srv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     srv.bind(("127.0.0.1", 0))
@@ -111,49 +247,13 @@ def _tcp_server(rounds: int, payload_json: str, ready: "multiprocessing.Event",
             while b"\n" in buf and seen < rounds:
                 line, buf = buf.split(b"\n", 1)
                 request = json.loads(line)
-                conn.sendall(json.dumps(policy_decide(request)).encode() + b"\n")
+                response = policy_decide(request)
+                _require_valid_response(response)
+                conn.sendall(json.dumps(response).encode() + b"\n")
                 seen += 1
     finally:
         conn.close()
         srv.close()
-
-
-def measure_in_process(payload: dict, rounds: int) -> float:
-    request_json = json.dumps(payload)
-    # warmup
-    for _ in range(50):
-        policy_decide(json.loads(request_json))
-    t0 = time.perf_counter()
-    for _ in range(rounds):
-        policy_decide(json.loads(request_json))
-    return (time.perf_counter() - t0) / rounds
-
-
-def measure_pipe(payload: dict, rounds: int, sim_dir: str) -> float:
-    child = CHILD_SOURCE.replace("{sim_dir}", sim_dir)
-    proc = subprocess.Popen(
-        [sys.executable, "-c", child], stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE, text=True, encoding="utf-8")
-    request_json = json.dumps(payload)
-    batch = 16
-    try:
-        def roundtrip(n):
-            for _ in range(n):
-                proc.stdin.write(request_json + "\n")
-            proc.stdin.flush()
-            for _ in range(n):
-                proc.stdout.readline()
-        roundtrip(50)  # warmup
-        t0 = time.perf_counter()
-        done = 0
-        while done < rounds:
-            k = min(batch, rounds - done)
-            roundtrip(k)
-            done += k
-        return (time.perf_counter() - t0) / rounds
-    finally:
-        proc.stdin.close()
-        proc.wait(timeout=10)
 
 
 def measure_tcp(payload: dict, rounds: int) -> float:
@@ -161,7 +261,8 @@ def measure_tcp(payload: dict, rounds: int) -> float:
     ready = ctx.Event()
     result_q = ctx.Queue()
     server = ctx.Process(
-        target=_tcp_server, args=(rounds + 50, json.dumps(payload), ready, result_q))
+        target=_tcp_server,
+        args=(rounds + 50, ready, result_q))
     server.start()
     try:
         if not ready.wait(timeout=30):
@@ -172,13 +273,17 @@ def measure_tcp(payload: dict, rounds: int) -> float:
         request_json = json.dumps(payload)
         f = conn.makefile("rwb")
         batch = 16
+        validated = 0
 
         def roundtrip(n):
+            nonlocal validated
             for _ in range(n):
                 f.write(request_json.encode() + b"\n")
             f.flush()
             for _ in range(n):
-                f.readline()
+                response = json.loads(f.readline())
+                _require_valid_response(response)
+                validated += 1
 
         roundtrip(50)  # warmup
         t0 = time.perf_counter()
@@ -188,11 +293,17 @@ def measure_tcp(payload: dict, rounds: int) -> float:
             roundtrip(k)
             done += k
         elapsed = (time.perf_counter() - t0) / rounds
+        if validated != rounds + 50:
+            raise RuntimeError(
+                f"semantic validation covered {validated}/{rounds + 50} "
+                "responses")
         f.close()
         conn.close()
+        server.join(timeout=10)
+        if server.exitcode != 0:
+            raise RuntimeError("tcp server exited non-zero")
         return elapsed
     finally:
-        server.join(timeout=10)
         if server.is_alive():
             server.terminate()
 
@@ -236,6 +347,10 @@ def _run_writer(db_path: str, txns: int, tag: str) -> dict:
     return json.loads(out.stdout.strip().splitlines()[-1])
 
 
+def _spawn_writer(db_path: str, txns: int, tag: str, result_q) -> None:
+    result_q.put(_run_writer(db_path, txns, tag))
+
+
 def experiment_sqlite(tmp: Path) -> dict:
     db_single = tmp / "single.db"
     conn = sqlite3.connect(db_single)
@@ -261,23 +376,27 @@ def experiment_sqlite(tmp: Path) -> dict:
     conn.close()
     ctx = multiprocessing.get_context("spawn")
     result_q = ctx.Queue()
-    w1 = ctx.Process(target=_spawn_writer, args=(str(db_multi), SQLITE_TXNS_PER_WRITER, "a", result_q))
-    w2 = ctx.Process(target=_spawn_writer, args=(str(db_multi), SQLITE_TXNS_PER_WRITER, "b", result_q))
+    w1 = ctx.Process(target=_spawn_writer,
+                     args=(str(db_multi), SQLITE_TXNS_PER_WRITER, "a", result_q))
+    w2 = ctx.Process(target=_spawn_writer,
+                     args=(str(db_multi), SQLITE_TXNS_PER_WRITER, "b", result_q))
     t0 = time.perf_counter()
-    w1.start(); w2.start()
-    w1.join(timeout=600); w2.join(timeout=600)
+    w1.start()
+    w2.start()
+    w1.join(timeout=600)
+    w2.join(timeout=600)
     multi_seconds = time.perf_counter() - t0
     if w1.exitcode != 0 or w2.exitcode != 0:
         raise RuntimeError("multi-writer failed")
     writer_results = [result_q.get(timeout=30), result_q.get(timeout=30)]
 
-    # consistency probe: every committed row is complete
     conn = sqlite3.connect(db_multi)
     rows = conn.execute(
         "SELECT COUNT(*), SUM(length(payload)) FROM kv").fetchone()
     conn.close()
     total_rows = rows[0]
-    ok_rows = total_rows == SQLITE_TXNS_PER_WRITER * 2 and rows[1] == total_rows * 256
+    ok_rows = (total_rows == SQLITE_TXNS_PER_WRITER * 2
+               and rows[1] == total_rows * 256)
     return {
         "single_writer": {
             "writers": 1,
@@ -298,40 +417,40 @@ def experiment_sqlite(tmp: Path) -> dict:
     }
 
 
-def _spawn_writer(db_path: str, txns: int, tag: str, result_q) -> None:
-    result_q.put(_run_writer(db_path, txns, tag))
+def tempfile_dir():
+    import tempfile
+
+    class _Ctx:
+        def __enter__(self):
+            self._tmp = tempfile.TemporaryDirectory()
+            return Path(self._tmp.name)
+
+        def __exit__(self, *exc):
+            self._tmp.cleanup()
+            return False
+
+    return _Ctx()
 
 
 def main() -> dict:
-    sim_dir = str(Path(__file__).resolve().parent)
     result = {"schema": "agentos.s1-005.boundary-experiments/v1",
               "python": sys.version.split()[0],
               "platform": platform.platform(),
               "experiments": {}}
-    for name, payload in (("small_512b", SMALL_PAYLOAD), ("large_16kb", LARGE_PAYLOAD)):
+    for name, payload in (("small_512b", SMALL_PAYLOAD),
+                          ("large_16kb", LARGE_PAYLOAD)):
         rounds_s = ROUNDS_SMALL if name == "small_512b" else ROUNDS_LARGE
         result["experiments"][name] = {
             "rounds": rounds_s,
             "in_process_us": round(measure_in_process(payload, rounds_s) * 1e6, 2),
-            "pipe_process_us": round(measure_pipe(payload, rounds_s, sim_dir) * 1e6, 2),
+            "pipe_process_us": round(measure_pipe(payload, rounds_s) * 1e6, 2),
             "tcp_localhost_us": round(measure_tcp(payload, rounds_s) * 1e6, 2),
+            "response_semantics_validated": True,
         }
     with tempfile_dir() as tmp:
         result["experiments"]["sqlite_multi_writer"] = experiment_sqlite(tmp)
     print(json.dumps(result, indent=2))
     return result
-
-
-def tempfile_dir():
-    import tempfile
-    class _Ctx:
-        def __enter__(self):
-            self._tmp = tempfile.TemporaryDirectory()
-            return Path(self._tmp.name)
-        def __exit__(self, *exc):
-            self._tmp.cleanup()
-            return False
-    return _Ctx()
 
 
 if __name__ == "__main__":

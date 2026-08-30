@@ -37,7 +37,12 @@
         "monolith": "restart процесса -> recover_expired_runs -> replay durable outbox -> ровно один effect receipt (probe A из S1-004)",
         "containers": "restart state-контейнера -> тот же replay внутри контейнера; рестарт других контейнеров не требуется; при раздельном audit — требуется компенсация/реконсиляция, что и есть причина запрета"
       },
-      "observable_artifacts": ["audit_event row", "run checkpoint", "outbox event", "effect receipt"],
+      "observable_artifacts": [
+        "audit_event row",
+        "run checkpoint",
+        "outbox event",
+        "effect receipt"
+      ],
       "stop_condition": "evidence digest идентичен digest-у прогона без крэша",
       "invariant_impact": {
         "monolith": "SAF1 держится by construction; SAF4 не затронут; LIVE2 bounded-выполнено (S1-004)",
@@ -68,11 +73,16 @@
         "monolith": "рестарт процесса -> recover_expired_runs -> продолжение с checkpoint",
         "containers": "рестарт policy-контейнера -> effects возобновляются; все отклонённые за окно effects повторяются worker'ами как declared-idempotent"
       },
-      "observable_artifacts": ["typed gateway error", "run lease", "checkpoint", "idempotent retry"],
+      "observable_artifacts": [
+        "typed gateway error",
+        "run lease",
+        "checkpoint",
+        "idempotent retry"
+      ],
       "stop_condition": "оба runs завершены; ни одного effect вне policy; ни одного потерянного run",
       "invariant_impact": {
         "monolith": "fail-closed тривиален (единый процесс); INV5 не затронут; LIVE1 требует активации в тик — окно недоступности сдвигает тики (обязательство дизайна)",
-        "containers": "fail-closed сохраняется; blast radius отказа policy = все workers (против одного процесса у монолита — на самом деле тот же весь-система, но в контейнерах соблазн 'частичной доступности' выше и должен быть запрещён); restart-латентность unknown"
+        "containers": "fail-closed сохраняется; SAF3 (reconciliation) не затронут; LIVE1 требует активации в тик - окно недоступности policy-контейнера сдвигает тики (обязательство дизайна); LIVE2 replay остаётся обязательностью state-контейнера; INV5 не затронут; restart-латентность policy-контейнера unknown и исключена из scoring"
       }
     },
     {
@@ -98,7 +108,12 @@
         "monolith": "устранение деградации -> продолжение; журнал цел; INV6 conservация ledger не нарушена",
         "containers": "устранение partition -> reconnect + idempotent retry; при multi-host ничего не измерялось (unknown)"
       },
-      "observable_artifacts": ["txns/sec", "busy count", "committed rows complete", "ledger balance"],
+      "observable_artifacts": [
+        "txns/sec",
+        "busy count",
+        "committed rows complete",
+        "ledger balance"
+      ],
       "stop_condition": "spent + reserved <= alloc на всех ledger; ни одной потери транзакции",
       "invariant_impact": {
         "monolith": "INV6 защищён single-writer (измерено 20.6k tx/s)",

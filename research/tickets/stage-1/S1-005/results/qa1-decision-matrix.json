@@ -1,7 +1,7 @@
 {
   "schema": "agentos.s1-005.decision-matrix/v1",
   "ticket": "S1-005",
-  "rubric_sha256": "1ee27dbb25f4ed00f9d43b526e4ba4507006e45bb4ae7d570cf4346d3308849e",
+  "rubric_sha256": "ba3bd46472a1cc80ea054a34d74662d29561a509fe394cd3e8c9953ecb71fd6a",
   "rubric_frozen_before_scoring": true,
   "candidates": {
     "monolith": {
@@ -71,8 +71,8 @@
           ],
           "statement": "Дублированный policy state даёт локальные решения без сетевого hop.",
           "hard_constraint_violations": [
-            "gateway-only effects",
-            "single canonical state owner"
+            "gateway_only_effects",
+            "single_canonical_state_writer"
           ]
         },
         "probeB_incomplete_monolith": {
@@ -121,7 +121,7 @@
           ],
           "statement": "Асинхронный audit ускоряет путь, но ломает atomic transition+audit.",
           "hard_constraint_violations": [
-            "atomic transition+audit"
+            "atomic_transition_audit"
           ]
         },
         "probeB_incomplete_monolith": {
@@ -198,7 +198,9 @@
           "claim_type": "unknown",
           "score": null,
           "confidence": 0.0,
-          "evidence_refs": [],
+          "evidence_refs": [
+            "results/ENVIRONMENT.md"
+          ],
           "statement": "Семантика восстановления та же по контракту, но фактические restart-латентности и поведение оркестратора при недоступности policy/state не измерялись на этом хосте.",
           "limitation": "missing evidence: локальные container-измерения запрещены non-scope тикета (production deployment); нужна будущая measurement-задача"
         },
@@ -230,10 +232,9 @@
           "score": 4,
           "confidence": 0.9,
           "evidence_refs": [
-            "ADR-0005 (tests never require Hermes/ECC)",
-            "S1-004 simulator",
-            "tests/ (310 tests, in-process)",
-            "SRC-03 §9 QA1 [H17]"
+            "adr/ADR-0005-unified-process.md",
+            "research/tickets/stage-1/S1-004/results/simulation/manifest.json",
+            "tests/"
           ],
           "statement": "Детерминированный core: полный suite выполняется in-process; seeded simulation (S1-004) воспроизводима; H17 отмечает упрощение deterministic simulation для монолита."
         },

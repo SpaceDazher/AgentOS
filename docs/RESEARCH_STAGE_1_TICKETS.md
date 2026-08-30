@@ -464,21 +464,24 @@ python -m agentos.cli research-plan --topic "S1-004 Alloy TLA plus seeded determ
 
 ### S1-005 — QA1 runtime topology: modular monolith versus containers
 
-- **Status:** `PASS_WITH_LIMITS` — recorded 2026-08-30: goal
-  `goal_BW951T0DER38F3FQ01M18FE1TA`, evaluation
-  `reval_QXEA3XE48HHEKGB701M18FE1WN`, artifact chain `5f108462…b742f`,
-  evidence-pack/v3 `chain_fresh=true`, wiki-check ok. Decision: modular
-  monolith (3.72 vs containers 2.07 normalized under the frozen rubric);
-  sensitivity 218 deterministic runs with zero winner flips; probe A
-  (unsafe split) rejected on frozen hard constraints regardless of score;
-  probe B (incomplete monolith) rejected as INCOMPLETE; three identical
-  failure scenarios with INV/SAF/LIVE impact; measured boundary costs
-  (dispatch round trip 4.86→25.71/18.20 µs; SQLite multi-writer 12×
-  degradation with preserved serialization). Limits: same-host
-  measurements only; containers restart/recovery is an unknown cell
-  (bounded in sensitivity S3); no production deployment or availability
-  claims; split triggers are symbolic until the S1-002 follow-up benchmark
-  wires measurable conditions.
+- **Status:** `PASS_WITH_LIMITS` — corrective round R1 recorded
+  2026-08-30 (research revision 3): goal
+  `goal_A3D0T8BVQ67K2B9H01M18K3A21`, evaluation
+  `reval_NRE4BJYQBRBYR65Z01M18K3A54`, artifact chain `c13f2b77…9fc60`,
+  tracked evidence-pack/v3 `chain_fresh=true` published at
+  `results/evidence/`. Decision: modular monolith (3.72 vs containers
+  2.07 normalized under the frozen rubric, hash-bound); sensitivity 218
+  deterministic runs with zero flips and zero ties (exact integer weight
+  compositions, ties are indeterminate); probe A (unsafe split) rejected
+  on frozen hard constraints regardless of score — the rule now rejects
+  ANY candidate (review R1 finding 1); probe B (incomplete monolith)
+  rejected as INCOMPLETE; three identical failure scenarios under a
+  strict schema with INV/SAF/LIVE references; measured boundary costs
+  with semantically validated responses. Limits: same-host measurements
+  only; containers restart/recovery is an unknown cell (bounded in
+  sensitivity S3); no production deployment or availability claims; split
+  triggers are symbolic until the S1-002 follow-up benchmark wires
+  measurable conditions.
 - **Priority:** `P1`
 - **Wave:** `W1`
 - **Owner:** `architecture`

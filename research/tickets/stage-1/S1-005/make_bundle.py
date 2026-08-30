@@ -1,5 +1,11 @@
 """Generate research/tickets/stage-1/S1-005/bundle.json (FLOW-11 v1).
 
+Review R1 finding 2: the bundle never self-assigns its verdict. This
+script FIRST runs the deterministic evaluator as a subprocess (requiring
+exit code 0 and a valid, schema-correct sensitivity result), validates
+the boundary experiments file, and only then builds the bundle with the
+verdict, scores and recommendation DERIVED from those outputs.
+
 Run from the repository root:
     py research/tickets/stage-1/S1-005/make_bundle.py
 """
@@ -7,6 +13,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+import subprocess
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[4]
@@ -44,6 +52,47 @@ def local_source(sid, title, source_type, content, rel_path, note):
     }
 
 
+def run_evaluator() -> dict:
+    """Run the deterministic evaluator as a subprocess and require a
+    fresh, schema-correct, positive-verdict sensitivity result."""
+    proc = subprocess.run(
+        [sys.executable, str(TICKET / "evaluator.py"),
+         "--ticket", str(TICKET), "--out", str(TICKET / "results")],
+        capture_output=True, text=True, timeout=600)
+    if proc.returncode != 0:
+        raise SystemExit(
+            f"evaluator failed (exit {proc.returncode}):\n"
+            f"{proc.stdout}\n{proc.stderr}")
+    result = json.loads(
+        (TICKET / "results" / "sensitivity-analysis.json").read_text(
+            encoding="utf-8"))
+    if result.get("schema") != "agentos.s1-005.evaluation/v1":
+        raise SystemExit("evaluator output schema mismatch")
+    if result.get("verdict") not in ("PASS", "PASS_WITH_LIMITS"):
+        raise SystemExit(
+            f"evaluator verdict {result.get('verdict')!r} is not publishable")
+    sens = result.get("sensitivity", {})
+    if not sens.get("stable") or not sens.get("s2_all_sums_valid"):
+        raise SystemExit("sensitivity analysis is not stable/valid")
+    return result
+
+
+def validate_experiments() -> dict:
+    path = TICKET / "results" / "boundary-experiments.json"
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if not str(data.get("schema", "")).startswith(
+            "agentos.s1-005.boundary-experiments/"):
+        raise SystemExit("boundary experiments schema mismatch")
+    exps = data["experiments"]
+    e2 = exps["sqlite_multi_writer"]
+    if e2.get("committed_rows_complete") is not True:
+        raise SystemExit("E2 serialization property not demonstrated")
+    if exps["small_512b"]["in_process_us"] >= \
+            exps["small_512b"]["pipe_process_us"]:
+        raise SystemExit("E1 in-process must be faster than pipe transport")
+    return data
+
+
 def ext_source(sid, title, source_type, content, ext_path, note):
     return {
         "id": sid,
@@ -65,6 +114,21 @@ def ext_source(sid, title, source_type, content, ext_path, note):
 
 
 DH = "D:/Project/DeepeekHarness/research"
+
+# ---- derive evidence-grounded values BEFORE any bundle content is built ---
+# Review R1 finding 2: the bundle must not self-assign a verdict. The
+# evaluator runs as a subprocess and its output is the single source of the
+# verdict, scores and recommendation recorded below.
+eval_result = run_evaluator()
+experiments_data = validate_experiments()
+VERDICT = eval_result["verdict"].lower()
+WINNER = eval_result["winner"]
+SCORES = eval_result["scores_normalized"]
+SENS = eval_result["sensitivity"]
+E1S = experiments_data["experiments"]["small_512b"]
+E1L = experiments_data["experiments"]["large_16kb"]
+E2 = experiments_data["experiments"]["sqlite_multi_writer"]
+S1_RUNS = SENS["runs"] - SENS["random_runs"] - 2
 
 sources = [
     ext_source("SRC-02", "Agent Hub Feature Catalog (EP-01..EP-05, EP-08)",
@@ -193,10 +257,12 @@ sources = [
                  "Primary scenario evidence (hash-locked)."),
     local_source("S1-005-SENSITIVITY", "S1-005 sensitivity analysis",
                  "sensitivity analysis",
-                 "Deterministic evaluation output: normalized scores "
-                 "(monolith 3.72 vs containers 2.07), winner monolith, 218 "
-                 "sensitivity runs with zero flips, probe rejections, "
-                 "verdict PASS_WITH_LIMITS with explicit reasons.",
+                 f"Deterministic evaluation output: normalized scores "
+                 f"(monolith {SCORES['monolith']} vs containers "
+                 f"{SCORES['containers']}), winner {WINNER}, {SENS['runs']} "
+                 "sensitivity runs with zero flips and zero ties, probe "
+                 "rejections, verdict "
+                 f"{VERDICT.upper()} with explicit reasons.",
                  "research/tickets/stage-1/S1-005/results/sensitivity-analysis.json",
                  "Primary evaluation output (hash-locked)."),
     local_source("S1-005-EVALUATOR", "S1-005 deterministic evaluator",
@@ -222,14 +288,20 @@ sources = [
 
 claims = [
     {"id": "c1-experiments", "claim_class": "fact",
-     "text": "Measurement: on this host the policy-decision round trip costs "
-             "4.86 us in-process versus 25.71 us over a persistent child "
-             "process pipe and 18.20 us over localhost TCP (512B payload); "
-             "16KB payloads cost 37.77/207.89/168.03 us respectively "
-             "(3.7-5.5x). Canonical SQLite: single writer 20,587 tx/s; two "
-             "writer processes 1,694 tx/s (12x degradation) with zero busy "
-             "errors and all committed rows complete (writes serialize "
-             "correctly).",
+     "text": "Measurement: on this host the policy-decision round trip "
+             f"costs {E1S['in_process_us']} us in-process versus "
+             f"{E1S['pipe_process_us']} us over a persistent child process "
+             f"pipe and {E1S['tcp_localhost_us']} us over localhost TCP "
+             f"(512B payload, {E1S['rounds']} rounds); 16KB payloads cost "
+             f"{E1L['in_process_us']}/{E1L['pipe_process_us']}/"
+             f"{E1L['tcp_localhost_us']} us respectively. Canonical SQLite: "
+             f"single writer {E2['single_writer']['txns_per_second']} tx/s; "
+             f"two writer processes {E2['two_writers']['txns_per_second']} "
+             f"tx/s ({round(E2['single_writer']['txns_per_second'] / E2['two_writers']['txns_per_second'], 1)}x "
+             "degradation) with zero busy errors and all committed rows "
+             "complete (writes serialize correctly). Every transport is "
+             "semantically validated (exact expected policy decision) and "
+             "child processes/servers must exit 0.",
      "source_ids": ["S1-005-EXPERIMENTS"]},
     {"id": "c2-current-arch", "claim_class": "fact",
      "text": "Implementation fact: the current system is a modular monolith "
@@ -239,15 +311,20 @@ claims = [
              "and deterministic in-process tests.",
      "source_ids": ["ADR-0002", "ADR-0005", "SPEC"]},
     {"id": "c3-evaluation", "claim_class": "fact",
-     "text": "Measured outcome of the frozen rubric: modular monolith 3.72 "
-             "vs containers 2.07 (normalized; containers renormalized over "
-             "88/100 weight because one cell is unknown); winner monolith; "
-             "218 deterministic sensitivity runs (16 weight +-50%, 200 "
-             "seeded random weight vectors, pessimistic/optimistic unknown "
-             "bounds) with zero winner flips; probe A rejected for violating "
-             "frozen hard constraints regardless of score; probe B rejected "
-             "as INCOMPLETE without a failure boundary or deterministic "
-             "replay interface.",
+     "text": f"Measured outcome of the frozen rubric: monolith "
+             f"{SCORES['monolith']} vs containers {SCORES['containers']} "
+             f"(normalized; containers renormalized over "
+             f"{eval_result['used_weight']['containers']}/100 weight because "
+             "one cell is unknown); winner "
+             f"{WINNER}; {SENS['runs']} deterministic sensitivity runs "
+             f"({S1_RUNS} weight +-50%, "
+             f"{SENS['random_runs']} seeded random weight vectors, "
+             "pessimistic/optimistic unknown bounds) with zero winner flips "
+             "and zero ties; every S2 weight vector sums exactly to the "
+             "rubric total and is recorded by digest; probe A rejected for "
+             "violating frozen hard constraints regardless of score; probe B "
+             "rejected as INCOMPLETE without a failure boundary or "
+             "deterministic replay interface.",
      "source_ids": ["S1-005-SENSITIVITY", "S1-005-MATRIX", "S1-005-RUBRIC",
                     "S1-005-EVALUATOR"]},
     {"id": "c4-scenarios", "claim_class": "fact",
@@ -699,6 +776,34 @@ bundle = {
         ],
     },
 }
+
+# ---- derive audit verdict and narrative numbers from executed outputs ----
+# Review R1 finding 2: no hardcoded verdict anywhere in the bundle.
+bundle["audit"]["verdict"] = VERDICT
+bundle["audit"]["history"][0]["verdict"] = VERDICT
+bundle["audit"]["history"][0]["summary"] = (
+    f"Initial S1-005 qualification: frozen rubric, 8x4 decision matrix "
+    f"with two structurally rejected adversarial probes, three identical "
+    f"failure scenarios, measured boundary costs, sensitivity analysis "
+    f"stable across {SENS['runs']} runs; recommendation: {WINNER} "
+    f"({SCORES['monolith']} vs {SCORES['containers']}).")
+
+_syn = artifacts["synthesis_and_gaps"]["content"]
+_old_result = _syn[_syn.index("# Result"):_syn.index("\n# Gaps")]
+_new_result = (
+    f"# Result\n{VERDICT.upper()}. Under the frozen rubric the modular "
+    f"monolith scores {SCORES['monolith']} versus {SCORES['containers']} "
+    "for a contract-preserving container split; the winner is stable across "
+    f"{SENS['runs']} deterministic sensitivity runs (weight perturbations, "
+    "seeded random weight vectors, unknown bounds) with zero flips and zero "
+    "ties. Both adversarial probes are structurally rejected: the unsafe "
+    "split (probe A) violates frozen hard constraints regardless of its "
+    "latency score, and the incomplete monolith (probe B) is rejected for "
+    "lacking a failure boundary and deterministic replay interface. Exactly "
+    "one recommendation is recorded: the modular monolith, with a bounded "
+    "split path and measurable triggers.")
+artifacts["synthesis_and_gaps"]["content"] = _syn.replace(
+    _old_result, _new_result)
 
 out = TICKET / "bundle.json"
 out.write_text(json.dumps(bundle, indent=2, ensure_ascii=False) + "\n",

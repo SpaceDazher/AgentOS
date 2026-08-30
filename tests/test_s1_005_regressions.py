@@ -42,20 +42,23 @@ def _load_fresh() -> tuple[dict, dict, dict, str]:
     return rubric, matrix, scenarios, rubric_sha
 
 
-def _evaluate(rubric, matrix, scenarios, rubric_sha) -> dict:
+def _evaluate(rubric, matrix, scenarios, rubric_sha):
     """Run the evaluator pipeline on in-memory copies."""
     weights = ev.validate_rubric(rubric, S1005 / "rubric.json")
-    real, rejections = ev.validate_matrix(matrix, rubric, rubric_sha)
+    real, rejections, rejected_real = ev.validate_matrix(
+        matrix, rubric, rubric_sha, S1005)
     if len(scenarios.get("scenarios", [])) < ev.MIN_FAILURE_SCENARIOS:
         raise ev.EvalError("too few failure scenarios")
     scores, meta = ev.weighted_scores(matrix, weights, real)
     sens = ev.sensitivity(matrix, weights, real)
     return {
-        "scores": scores,
-        "winner": sens["base_winner"],
-        "stable": sens["stable"],
+        "real": real,
         "rejections": rejections,
-        "unknown": meta["unknown_dims"],
+        "rejected_real": rejected_real,
+        "scores": scores,
+        "meta": meta,
+        "sensitivity": sens,
+        "winner": sens["base_winner"],
     }
 
 
@@ -77,14 +80,14 @@ class PositiveFlowTests(TestCase):
         rubric, matrix, scenarios, sha = _load_fresh()
         result = _evaluate(rubric, matrix, scenarios, sha)
         self.assertEqual(result["winner"], "monolith")
-        self.assertTrue(result["stable"])
+        self.assertTrue(result["sensitivity"]["stable"])
         self.assertEqual(result["scores"]["monolith"], 3.72)
         self.assertGreater(result["scores"]["monolith"],
                            result["scores"]["containers"])
         self.assertIn("A", result["rejections"])
         self.assertIn("B", result["rejections"])
-        self.assertEqual(result["unknown"]["monolith"], [])
-        self.assertEqual(result["unknown"]["containers"],
+        self.assertEqual(result["meta"]["unknown_dims"]["monolith"], [])
+        self.assertEqual(result["meta"]["unknown_dims"]["containers"],
                          ["restart_recovery_reconciliation"])
 
     def test_experiments_recorded(self):
@@ -164,19 +167,16 @@ class NegativeMutationTests(TestCase):
         self.assertIn("missing cell", str(ctx.exception))
 
     def test_unknown_mapped_to_score_fails(self):
+        """An unknown cell that secretly carries a numeric score must be
+        rejected: unknown is never mapped to a number."""
         def mutate(matrix, scenarios):
             for dim in matrix["matrix"]:
                 cell = dim["cells"]["containers"]
                 if cell["claim_type"] == "unknown":
                     cell["score"] = 2
-                    cell["claim_type"] = "inference"
-        # after mutation there is no unknown left; the evaluator must NOT
-        # pass this off as the recorded evidence — the recorded analysis
-        # retains the unknown and the mutation changes the winner inputs
-        rubric, matrix, scenarios, sha = _load_fresh()
-        mutate(matrix, scenarios)
-        result = _evaluate(rubric, matrix, scenarios, sha)
-        self.assertEqual(result["unknown"]["containers"], [])
+        with self.assertRaises(ev.EvalError) as ctx:
+            self._mutated(mutate)
+        self.assertIn("must not carry a numeric score", str(ctx.exception))
 
     def test_unknown_without_limitation_fails(self):
         def mutate(matrix, scenarios):
@@ -221,7 +221,7 @@ class NegativeMutationTests(TestCase):
         broken = copy.deepcopy(scenarios)
         del broken["scenarios"][0]["recovery_path"]
         with self.assertRaises(ev.EvalError) as ctx:
-            ev.validate_matrix(matrix, rubric, sha)
+            ev.validate_matrix(matrix, rubric, sha, S1005)
             if len(broken["scenarios"]) < ev.MIN_FAILURE_SCENARIOS:
                 raise ev.EvalError("too few")
             for sc in broken["scenarios"]:
@@ -234,11 +234,20 @@ class NegativeMutationTests(TestCase):
     def test_sensitivity_deterministic(self):
         rubric, matrix, scenarios, sha = _load_fresh()
         weights = ev.validate_rubric(rubric, S1005 / "rubric.json")
-        real, _ = ev.validate_matrix(matrix, rubric, sha)
+        real, _, _ = ev.validate_matrix(matrix, rubric, sha, S1005)
         s1 = ev.sensitivity(matrix, weights, real)
         s2 = ev.sensitivity(matrix, weights, real)
         self.assertEqual(s1["flips"], s2["flips"])
         self.assertEqual(s1["runs"], s2["runs"])
+        self.assertTrue(s1["s2_all_sums_valid"])
+        self.assertEqual(s1["ties"], 0)
+
+    def test_sensitivity_runner_uses_strict_evaluator(self):
+        rubric, matrix, scenarios, sha = _load_fresh()
+        result = _evaluate(rubric, matrix, scenarios, sha)
+        self.assertTrue(result["sensitivity"]["stable"])
+        self.assertEqual(result["sensitivity"]["ties"], 0)
+        self.assertTrue(result["sensitivity"]["s2_all_sums_valid"])
 
 
 if __name__ == "__main__":  # pragma: no cover
