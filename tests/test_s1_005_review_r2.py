@@ -268,7 +268,10 @@ class F1F6BundleBuilderBehaviorTests(TestCase):
 
         def command_factory():
             nonce = make_bundle._LAST_RUN_NONCE
-            body_n = body.replace("%NONCE%", nonce)
+            body_n = (body
+                      .replace("%NONCE%", nonce)
+                      .replace("%SENS%", str(
+                          S1005 / "results" / "sensitivity-analysis.json")))
             return [sys.executable, "-c", body_n]
         try:
             return make_bundle.run_evaluator(
@@ -301,24 +304,29 @@ class F1F6BundleBuilderBehaviorTests(TestCase):
     def test_run_evaluator_rejects_malformed_output(self):
         with self.assertRaises(SystemExit):
             self._run_fake_evaluator(
-                "import sys; sys.stdout.write('not json at all')")
+                "import pathlib, sys; p = pathlib.Path(r'%SENS%'); "
+                "p.write_text('not json at all', encoding='utf-8')")
 
     def test_run_evaluator_rejects_nonce_mismatch(self):
         with self.assertRaises(SystemExit):
             self._run_fake_evaluator(
-                "import json, sys; sys.stdout.write(json.dumps({"
+                "import json, pathlib, sys; p = pathlib.Path(r'%SENS%'); "
+                "p.write_text(json.dumps({"
                 "'schema': 'agentos.s1-005.evaluation/v1',"
                 "'verdict': 'PASS_WITH_LIMITS',"
-                "'run_nonce': 'WRONG'}))")
+                "'run_nonce': 'WRONG'}), encoding='utf-8')")
 
     def test_run_evaluator_accepts_fresh_correct_output(self):
         result = self._run_fake_evaluator(
-            "import json, os, sys; nonce = os.environ.get('AGENTOS_RUN_NONCE');"
-            "sys.stdout.write(json.dumps({"
+            "import json, os, pathlib, sys;"
+            "nonce = os.environ.get('AGENTOS_RUN_NONCE');"
+            "p = pathlib.Path(r'%SENS%');"
+            "p.write_text(json.dumps({"
             "'schema': 'agentos.s1-005.evaluation/v1',"
             "'verdict': 'PASS_WITH_LIMITS',"
             "'run_nonce': nonce,"
-            "'sensitivity': {'stable': True, 's2_all_sums_valid': True}}))")
+            "'sensitivity': {'stable': True, 's2_all_sums_valid': True}}),"
+            "encoding='utf-8')")
         self.assertEqual(result.get("run_nonce"), "review-r2-test-nonce")
 
     def test_stale_saved_sensitivity_cannot_produce_verdict(self):
@@ -354,7 +362,9 @@ class F1F6BundleBuilderBehaviorTests(TestCase):
                  "--ticket", str(S1005), "--out", str(S1005 / "results")],
                 check=True, capture_output=True, timeout=600, env=env)
             make_bundle._LAST_RUN_NONCE = orig_nonce
-        self.assertNotEqual(
+        # the impostor run failed closed (SystemExit above); the production
+        # restore reproduces the deterministic saved verdict exactly
+        self.assertEqual(
             (S1005 / "results" / "sensitivity-analysis.json").read_text(
                 encoding="utf-8"),
             saved)
