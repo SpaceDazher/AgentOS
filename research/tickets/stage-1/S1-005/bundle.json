@@ -1,0 +1,551 @@
+{
+  "config": {
+    "min_source_count": 8,
+    "min_verified_ratio": 1.0,
+    "required_artifacts": [
+      "research_plan",
+      "source_registry",
+      "feature_catalog",
+      "architecture_models",
+      "mental_model",
+      "ontology",
+      "mathematical_model",
+      "synthesis_and_gaps",
+      "independent_audit",
+      "platform_plan",
+      "progress"
+    ]
+  },
+  "sources": [
+    {
+      "id": "SRC-02",
+      "canonical_uri": "https://local.agentos.invalid/DeepeekHarness/research/20_feature_catalog.md",
+      "title": "Agent Hub Feature Catalog (EP-01..EP-05, EP-08)",
+      "source_type": "feature catalog source",
+      "content": "Defines EP-01..EP-05 and EP-08 features relevant to the QA1 decision: delegation/approvals/quotas (EP-03 F-3.1 atomic child-budget reservation, F-3.3 revocation <=5s), workspaces (EP-04), inter-agent messaging (EP-05), audit/provenance (EP-08). Evidence and design input only.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-005-local-hash-review",
+      "verification_method": "external-path-sha256-and-section-review",
+      "verifier_provenance": {
+        "method": "external-path-sha256-and-section-review",
+        "verified_at": "2026-08-30",
+        "external_path_at_review": "D:/Project/DeepeekHarness/research/20_feature_catalog.md",
+        "external_file_sha256_at_review": "1feb1227b2a129b7c3260d89b50d5bda37fc527c69c26bcc078ce91f86b79e72",
+        "scope_note": "Feature acceptance criteria consumed as topology constraints."
+      }
+    },
+    {
+      "id": "SRC-03",
+      "canonical_uri": "https://local.agentos.invalid/DeepeekHarness/research/30_architecture_models.md",
+      "title": "Agent Hub Architecture Models (QA1)",
+      "source_type": "architecture source",
+      "content": "Section 9 QA1 recommends a modular monolith with hard internal contracts for the MVP and notes it simplifies deterministic simulation [H17]; sections 2 and 6-8 define the planes and effect pipeline. Treated as a design input to be re-derived from evidence, not as authority.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-005-local-hash-review",
+      "verification_method": "external-path-sha256-and-section-review",
+      "verifier_provenance": {
+        "method": "external-path-sha256-and-section-review",
+        "verified_at": "2026-08-30",
+        "external_path_at_review": "D:/Project/DeepeekHarness/research/30_architecture_models.md",
+        "external_file_sha256_at_review": "46fa41dddb3b85bd07a681d04a35b1ac7b572cb3a9f6a3983a01c792f82c6b23",
+        "scope_note": "QA1 design input; re-derived in this ticket."
+      }
+    },
+    {
+      "id": "SRC-06",
+      "canonical_uri": "https://local.agentos.invalid/DeepeekHarness/research/60_mathematical_model.md",
+      "title": "Agent Hub Mathematical Model (S7 properties)",
+      "source_type": "mathematical invariants source",
+      "content": "INV1-INV6/SAF/LIVE property map consumed by the failure scenarios' invariant impact analysis.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-005-local-hash-review",
+      "verification_method": "external-path-sha256-and-section-review",
+      "verifier_provenance": {
+        "method": "external-path-sha256-and-section-review",
+        "verified_at": "2026-08-30",
+        "external_path_at_review": "D:/Project/DeepeekHarness/research/60_mathematical_model.md",
+        "external_file_sha256_at_review": "9933ae4cfd1bfbcb9bb2d6d872b0f621d9d75d7fcf8d7e6389422b08c3189a9f",
+        "scope_note": "Property map for scenario impact analysis."
+      }
+    },
+    {
+      "id": "SRC-07",
+      "canonical_uri": "https://local.agentos.invalid/DeepeekHarness/research/70_synthesis_and_gaps.md",
+      "title": "Agent Hub Synthesis and Gaps (S5 step 2)",
+      "source_type": "gap register",
+      "content": "Step 2 of the recommended next steps constrains the QA1 decision path; consumed as scope constraint.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-005-local-hash-review",
+      "verification_method": "external-path-sha256-and-section-review",
+      "verifier_provenance": {
+        "method": "external-path-sha256-and-section-review",
+        "verified_at": "2026-08-30",
+        "external_path_at_review": "D:/Project/DeepeekHarness/research/70_synthesis_and_gaps.md",
+        "external_file_sha256_at_review": "029eb11344b7f8175e223fb6336d094d39de939790f4700e17afdd4514c0cc40",
+        "scope_note": "Scope constraint."
+      }
+    },
+    {
+      "id": "SRC-08",
+      "canonical_uri": "https://local.agentos.invalid/DeepeekHarness/research/80_independent_audit.md",
+      "title": "Independent Audit of Agent Hub Research (S5)",
+      "source_type": "audit correction history",
+      "content": "Observed verification and audit style reference; consumed as provenance convention.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-005-local-hash-review",
+      "verification_method": "external-path-sha256-and-section-review",
+      "verifier_provenance": {
+        "method": "external-path-sha256-and-section-review",
+        "verified_at": "2026-08-30",
+        "external_path_at_review": "D:/Project/DeepeekHarness/research/80_independent_audit.md",
+        "external_file_sha256_at_review": "90c0eae8fd47eb109e5a14a6a77be833e73a549c863a5e27720975f091b2827f",
+        "scope_note": "Provenance convention."
+      }
+    },
+    {
+      "id": "SRC-09",
+      "canonical_uri": "https://local.agentos.invalid/DeepeekHarness/research/PROGRESS.md",
+      "title": "Agent Hub Research Progress and Correction Ledger",
+      "source_type": "append-only correction ledger",
+      "content": "Correction-history convention for the progress artifact.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-005-local-hash-review",
+      "verification_method": "external-path-sha256-and-section-review",
+      "verifier_provenance": {
+        "method": "external-path-sha256-and-section-review",
+        "verified_at": "2026-08-30",
+        "external_path_at_review": "D:/Project/DeepeekHarness/research/PROGRESS.md",
+        "external_file_sha256_at_review": "3fa19d9016370ec16706eaed7b96f8bb3920e37e1557fc97037f93540ed0ba4c",
+        "scope_note": "Convention."
+      }
+    },
+    {
+      "id": "S1-002-EVIDENCE",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-002/evaluation-record.json",
+      "title": "S1-002 evaluation record",
+      "source_type": "dependency evidence (S1-002)",
+      "content": "Durable evaluation record: pass_with_limits, revision 1, goal_8CTE14C6Q2E1TV8801M0TEN900, evaluation reval_N96W6BG39C3TPZZT01M0TEN90T; capacity envelope (10-100 ev/s, p95, 353.28 B/row) reused within its stated limits (single-process local baseline).",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-005-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-30",
+        "path": "research/tickets/stage-1/S1-002/evaluation-record.json",
+        "file_sha256": "6a6bef58e87c79c7317ad7e5e33a33cea36b936695f85311a9defa5a7ed93fa0",
+        "scope_note": "Dependency evidence reused, not modified."
+      }
+    },
+    {
+      "id": "S1-002-RAW",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-002/raw-results.json",
+      "title": "S1-002 raw benchmark results",
+      "source_type": "dependency measurement (S1-002)",
+      "content": "Raw workload measurements: cold/warm throughput, p95/p99, storage per row on the single-process SQLite baseline.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-005-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-30",
+        "path": "research/tickets/stage-1/S1-002/raw-results.json",
+        "file_sha256": "8cf8e60290d5992f1a495a700b7bc812ccf2ea725c75822a23104c94918d9d3f",
+        "scope_note": "Dependency measurement reused, not modified."
+      }
+    },
+    {
+      "id": "S1-004-EVIDENCE",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-004/evaluation-record.json",
+      "title": "S1-004 evaluation record",
+      "source_type": "dependency evidence (S1-004)",
+      "content": "Durable evaluation record of the corrective revision 7: pass_with_limits; bounded formal evidence (Alloy matrix, TLC 271,168 states) and 3x1,000,000-operation simulated acceptance used only within the declared bounds.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-005-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-30",
+        "path": "research/tickets/stage-1/S1-004/evaluation-record.json",
+        "file_sha256": "89d5a0c0e3c9267cd838f5f5f86557e15e0748e985063235ae5e9a37ec0f9ab1",
+        "scope_note": "Dependency evidence reused, not modified."
+      }
+    },
+    {
+      "id": "ADR-0002",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/adr/ADR-0002-monolith-journal.md",
+      "title": "ADR-0002 monolith, three planes, journal",
+      "source_type": "architecture decision record",
+      "content": "Current accepted decision: one runtime, three logical planes, single SQLite, transition+audit in one transaction; Postgres migration note (connection layer only).",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-005-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-30",
+        "path": "adr/ADR-0002-monolith-journal.md",
+        "file_sha256": "ebf45e4b5998b8dd4ff9656bece5235e73186cf3bf81ed682c73b1a425de903a",
+        "scope_note": "Implementation fact about the current topology."
+      }
+    },
+    {
+      "id": "ADR-0005",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/adr/ADR-0005-unified-process.md",
+      "title": "ADR-0005 unified process",
+      "source_type": "architecture decision record",
+      "content": "Current accepted decision: core, Hermes plugin, Hermes worker and ECC skills as one process; workers are fresh subprocesses with untrusted output; tests never require Hermes/ECC (deterministic core).",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-005-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-30",
+        "path": "adr/ADR-0005-unified-process.md",
+        "file_sha256": "d45eea59e4a5c717d26ef7908e1661e2d25c25aaf59b9ea3177f8ed42eba242b",
+        "scope_note": "Implementation fact: worker isolation already exists."
+      }
+    },
+    {
+      "id": "SPEC",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/spec/SPEC.md",
+      "title": "AgentOS Executable Specification v1.0",
+      "source_type": "system specification",
+      "content": "Product contract, guarantees (transition+audit atomicity, replay-safe retries, approvals non-replayable, untrusted content cannot escalate) and residual risks; section 1 names owning modules.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-005-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-30",
+        "path": "spec/SPEC.md",
+        "file_sha256": "e0b091bf38b7f27e22a4d37eb1b3d000b5154cc3ff64736bd4aea99f0ee4ffbc",
+        "scope_note": "Implementation contract facts."
+      }
+    },
+    {
+      "id": "S1-005-EXPERIMENTS",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-005/results/boundary-experiments.json",
+      "title": "S1-005 boundary experiments",
+      "source_type": "measurement",
+      "content": "Measured boundary costs: policy-decision round trip in-process 4.86 us vs pipe 25.71 us vs localhost TCP 18.20 us (512B payload); 16KB payload 37.77/207.89/168.03 us; canonical SQLite single writer 20,587 tx/s vs two writer processes 1,694 tx/s (12x degradation, zero busy errors, all committed rows complete). Same-host, bounded.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-005-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-30",
+        "path": "research/tickets/stage-1/S1-005/results/boundary-experiments.json",
+        "file_sha256": "55d381e1ec2048f697b22efc056513d444f82878c7a9e64058c6bf9395af3034",
+        "scope_note": "Primary measurement evidence (hash-locked)."
+      }
+    },
+    {
+      "id": "S1-005-RUBRIC",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-005/rubric.json",
+      "title": "S1-005 frozen rubric",
+      "source_type": "frozen rubric",
+      "content": "Weights (8 dimensions, sum 100), 0-4 scale, unknown policy, hard constraints and verdict rules frozen before scoring; sha256 1ee27dbb25f4ed00f9d43b526e4ba4507006e45bb4ae7d570cf4346d3308849e is bound inside the decision matrix.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-005-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-30",
+        "path": "research/tickets/stage-1/S1-005/rubric.json",
+        "file_sha256": "1ee27dbb25f4ed00f9d43b526e4ba4507006e45bb4ae7d570cf4346d3308849e",
+        "scope_note": "Frozen rubric (hash-locked)."
+      }
+    },
+    {
+      "id": "S1-005-MATRIX",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-005/results/qa1-decision-matrix.json",
+      "title": "S1-005 QA1 decision matrix",
+      "source_type": "decision matrix",
+      "content": "8 dimensions x 4 candidates (two real topologies + two adversarial probes); every cell carries evidence refs, claim type, score, confidence and limitations.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-005-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-30",
+        "path": "research/tickets/stage-1/S1-005/results/qa1-decision-matrix.json",
+        "file_sha256": "4f2ba6f7a0c45883a102f47a0ca0288a969e6b6fce47bd92fc5784afee063ca9",
+        "scope_note": "Primary decision evidence (hash-locked)."
+      }
+    },
+    {
+      "id": "S1-005-SCENARIOS",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-005/results/failure-scenarios.json",
+      "title": "S1-005 failure/recovery scenarios",
+      "source_type": "failure scenarios",
+      "content": "Three comparably-specified scenarios (crash between transition and audit/outbox; policy gateway unavailability with active runs; SQLite lock/multi-writer degradation and partition) with fault injection, authoritative state owner, allowed transitions, recovery paths, artifacts, stop conditions and INV/SAF/LIVE impact per topology.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-005-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-30",
+        "path": "research/tickets/stage-1/S1-005/results/failure-scenarios.json",
+        "file_sha256": "57aea97b9e6d340930ad98c5e301753f6bd5ef8a7a582eccae2e40d171b0fc23",
+        "scope_note": "Primary scenario evidence (hash-locked)."
+      }
+    },
+    {
+      "id": "S1-005-SENSITIVITY",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-005/results/sensitivity-analysis.json",
+      "title": "S1-005 sensitivity analysis",
+      "source_type": "sensitivity analysis",
+      "content": "Deterministic evaluation output: normalized scores (monolith 3.72 vs containers 2.07), winner monolith, 218 sensitivity runs with zero flips, probe rejections, verdict PASS_WITH_LIMITS with explicit reasons.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-005-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-30",
+        "path": "research/tickets/stage-1/S1-005/results/sensitivity-analysis.json",
+        "file_sha256": "61aed6d44aa7a93178efe4fd081e4e46ded871a0f0ca350caee512604740b0e6",
+        "scope_note": "Primary evaluation output (hash-locked)."
+      }
+    },
+    {
+      "id": "S1-005-EVALUATOR",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-005/evaluator.py",
+      "title": "S1-005 deterministic evaluator",
+      "source_type": "evaluator implementation",
+      "content": "Stdlib-only deterministic evaluator: rubric-hash binding, structural validation, hard-constraint rejection, probe A/B structural rejection, unknown exclusion with renormalization and bounds, seeded sensitivity analysis.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-005-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-30",
+        "path": "research/tickets/stage-1/S1-005/evaluator.py",
+        "file_sha256": "805405c8ed49ac30bac4574ece41dba8462212e202991ca39771502929b68a9c",
+        "scope_note": "Evaluator under test."
+      }
+    },
+    {
+      "id": "S1-005-TESTS",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/tests/test_s1_005_regressions.py",
+      "title": "S1-005 regression suite",
+      "source_type": "regression tests",
+      "content": "17 tests: positive flow, recorded-evidence binding, deterministic sensitivity, and negative mutations (probe A accepted, probe B promoted, real candidate without failure boundary, missing dimension, missing cell, unknown mapped to score, unknown without limitation, rubric hash tampering, weight tampering, missing scenarios, missing scenario fields).",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-005-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-30",
+        "path": "tests/test_s1_005_regressions.py",
+        "file_sha256": "8c31cc8cc8f6c23a2458030182332dd0b22a425dba024864cac3d711eda21f1e",
+        "scope_note": "Regression suite (hash-locked)."
+      }
+    }
+  ],
+  "claims": [
+    {
+      "id": "c1-experiments",
+      "claim_class": "fact",
+      "text": "Measurement: on this host the policy-decision round trip costs 4.86 us in-process versus 25.71 us over a persistent child process pipe and 18.20 us over localhost TCP (512B payload); 16KB payloads cost 37.77/207.89/168.03 us respectively (3.7-5.5x). Canonical SQLite: single writer 20,587 tx/s; two writer processes 1,694 tx/s (12x degradation) with zero busy errors and all committed rows complete (writes serialize correctly).",
+      "source_ids": [
+        "S1-005-EXPERIMENTS"
+      ]
+    },
+    {
+      "id": "c2-current-arch",
+      "claim_class": "fact",
+      "text": "Implementation fact: the current system is a modular monolith in one process with three logical planes, a single SQLite store, transition+audit committed in one transaction, workers already isolated as fresh subprocesses with untrusted output, and deterministic in-process tests.",
+      "source_ids": [
+        "ADR-0002",
+        "ADR-0005",
+        "SPEC"
+      ]
+    },
+    {
+      "id": "c3-evaluation",
+      "claim_class": "fact",
+      "text": "Measured outcome of the frozen rubric: modular monolith 3.72 vs containers 2.07 (normalized; containers renormalized over 88/100 weight because one cell is unknown); winner monolith; 218 deterministic sensitivity runs (16 weight +-50%, 200 seeded random weight vectors, pessimistic/optimistic unknown bounds) with zero winner flips; probe A rejected for violating frozen hard constraints regardless of score; probe B rejected as INCOMPLETE without a failure boundary or deterministic replay interface.",
+      "source_ids": [
+        "S1-005-SENSITIVITY",
+        "S1-005-MATRIX",
+        "S1-005-RUBRIC",
+        "S1-005-EVALUATOR"
+      ]
+    },
+    {
+      "id": "c4-scenarios",
+      "claim_class": "fact",
+      "text": "Fact: three comparably-specified failure/recovery scenarios (crash between transition and audit/outbox publication; policy gateway unavailability with active runs; SQLite lock/multi-writer degradation and partition) are defined with fault injection points, authoritative state owner, allowed transitions, recovery paths, observable artifacts, stop conditions and INV/SAF/LIVE impact for both topologies on the same workload and acceptance thresholds.",
+      "source_ids": [
+        "S1-005-SCENARIOS",
+        "SRC-06"
+      ]
+    },
+    {
+      "id": "c5-contracts-containers",
+      "claim_class": "inference",
+      "text": "Inference: a container split can preserve gateway-only effects, atomic transition+audit and INV6 budget conservation only if the canonical state keeps exactly one writer (a single stateful state container) with the transactional outbox inside it; duplicated policy state or multiple writers violate frozen hard constraints (that configuration is probe A and is rejected regardless of its latency score).",
+      "source_ids": [
+        "S1-005-MATRIX",
+        "S1-005-SCENARIOS",
+        "S1-005-EXPERIMENTS",
+        "S1-004-EVIDENCE"
+      ]
+    },
+    {
+      "id": "c6-migration",
+      "claim_class": "inference",
+      "text": "Inference: the monolith is migration-reversible because the planes are already separate modules with hard contracts; the documented split path starts with the state container (single-writer canonical state + outbox), then policy gateway as a stateful service, never with policy caches or async audit.",
+      "source_ids": [
+        "ADR-0002",
+        "S1-005-MATRIX",
+        "SRC-03"
+      ]
+    },
+    {
+      "id": "c7-obligation-unknowns",
+      "claim_class": "assumption",
+      "text": "Design obligation / limit: multi-host network partition behavior, orchestrator restart latencies, and production availability are NOT measured (containers restart/recovery cell is unknown and excluded from scoring); no production availability or reliability claim may be built from S1-002 or S1-004 PASS_WITH_LIMITS evidence.",
+      "source_ids": [
+        "S1-005-SENSITIVITY",
+        "S1-002-EVIDENCE",
+        "S1-004-EVIDENCE"
+      ]
+    },
+    {
+      "id": "c8-inherited-limits",
+      "claim_class": "assumption",
+      "text": "Assumption: the S1-002 capacity envelope is a short single-process local SQLite/WAL baseline and the S1-004 evidence is bounded models plus a contract simulator; both are used only within their stated limits and never as production measurements.",
+      "source_ids": [
+        "S1-002-EVIDENCE",
+        "S1-002-RAW",
+        "S1-004-EVIDENCE"
+      ]
+    },
+    {
+      "id": "c9-target",
+      "claim_class": "target",
+      "text": "Research target: answer QA1 by choosing exactly one MVP runtime topology with assumptions, non-goals, measurable future-split conditions and a rollback/migration trigger, without weakening gateway-only effects or atomic transition+audit.",
+      "source_ids": [
+        "SRC-03",
+        "S1-005-RUBRIC"
+      ]
+    }
+  ],
+  "artifacts": {
+    "research_plan": {
+      "producer": "agentos-s1-005-producer",
+      "claim_refs": [
+        "c9-target",
+        "c7-obligation-unknowns"
+      ],
+      "content": "# Question\nQA1: which topology better preserves MVP safety, determinism and\noperability - the modular monolith or a container split?\n\n# Method\nFreeze the rubric (8 dimensions, 0-4 scale, weights, hard constraints,\nverdict rules) before scoring; anchor every matrix cell in implementation\nfacts (ADR/SPEC/code), same-host measurements (E1 dispatch round trip, E2\nSQLite multi-writer), dependency evidence (S1-002 capacity, S1-004 bounded\ninvariants) or explicitly typed inference/assumption/unknown; compare both\ntopologies in three identical failure scenarios; reject two adversarial\nprobes structurally; run a seeded sensitivity analysis over weights and\nunknown bounds.\n\n# Scope\nProcess/container boundaries; canonical SQLite and hash-chained audit;\ngateway-only effects; failure isolation; deterministic simulation/replay;\ndeployment/restart/recovery semantics; consistency/serialization costs;\nmigration path. Non-scope: production Docker/Kubernetes deployment,\norchestrator/vendor choice, core runtime changes, production\navailability claims, SQLite/Postgres or execution backend replacement.\n\n# Claims separation\nSourced facts and measurements: fact claims (c1-c4); interpretation:\ninference (c5-c6); design obligations and limits: assumption (c7-c8);\nthe decision question: target (c9).\n"
+    },
+    "source_registry": {
+      "producer": "agentos-s1-005-producer",
+      "claim_refs": [
+        "c1-experiments",
+        "c2-current-arch"
+      ],
+      "content": "# Sources\n| ID | Class | Verification | Role |\n|---|---|---|---|\n| SRC-02 | feature catalog | external path + SHA-256 review | EP-01..05/EP-08 constraints |\n| SRC-03 | architecture | external path + SHA-256 review | QA1 design input (re-derived, not authority) |\n| SRC-06 | mathematical invariants | external path + SHA-256 review | INV/SAF/LIVE map for scenarios |\n| SRC-07 | gap register | external path + SHA-256 review | scope constraint |\n| SRC-08 | audit history | external path + SHA-256 review | provenance convention |\n| SRC-09 | correction ledger | external path + SHA-256 review | progress convention |\n| S1-002-EVIDENCE | dependency evidence | repo path + SHA-256 binding | capacity envelope (reused within limits) |\n| S1-002-RAW | dependency measurement | repo path + SHA-256 binding | raw benchmark numbers |\n| S1-004-EVIDENCE | dependency evidence | repo path + SHA-256 binding | bounded INV/SAF/LIVE evidence |\n| ADR-0002 | ADR | repo path + SHA-256 binding | current topology decision |\n| ADR-0005 | ADR | repo path + SHA-256 binding | unified process, worker isolation |\n| SPEC | system specification | repo path + SHA-256 binding | guarantees and residual risks |\n| S1-005-EXPERIMENTS | measurement | repo path + SHA-256 binding | E1/E2 boundary measurements |\n| S1-005-RUBRIC | frozen rubric | repo path + SHA-256 binding | frozen weights/constraints |\n| S1-005-MATRIX | decision matrix | repo path + SHA-256 binding | 8x4 matrix with probes |\n| S1-005-SCENARIOS | failure scenarios | repo path + SHA-256 binding | 3 scenarios |\n| S1-005-SENSITIVITY | evaluation output | repo path + SHA-256 binding | verdict and sensitivity |\n| S1-005-EVALUATOR | evaluator | repo path + SHA-256 binding | deterministic evaluator |\n| S1-005-TESTS | regression suite | repo path + SHA-256 binding | 17 tests |\n\n# Verification rules\nLocal repo sources bind verifier_provenance.path + file_sha256 (re-verified\nagainst disk bytes by the research-plan runtime). External research docs\nrecord external_path_at_review + external_file_sha256_at_review. The matrix\nbinds the frozen rubric by hash.\n"
+    },
+    "feature_catalog": {
+      "producer": "agentos-s1-005-producer",
+      "claim_refs": [
+        "c5-contracts-containers",
+        "c2-current-arch"
+      ],
+      "content": "# Affected features (SRC-02)\n| Feature | Topology relevance |\n|---|---|\n| EP-03 F-3.1 derive() atomic child-budget reservation | requires single-writer canonical ledger (INV6); multi-writer measured 12x degradation (E2) |\n| EP-03 F-3.2 grant lifecycle journaling with policy_version | transition+audit atomicity per topology (FS1) |\n| EP-03 F-3.3 revocation <=5s on every new action | policy boundary availability (FS2); allow-after-revoke forbidden (INV5) |\n| EP-04 workspaces/content objects | single canonical store; no cross-container copies |\n| EP-05 inter-agent messaging | message-plane effects still gateway-only in both topologies |\n| EP-08 audit/provenance export | audit atomicity (hard constraint); evidence pack continuity |\n\n# Hypothesis traceability\nH17 (deterministic simulation) favors the monolith (SRC-03 QA1); H4/H6\n(delivery idempotency/reconciliation) are preserved in both topologies only\nunder the outbox-inside-state-container rule (S1-004 contract).\n"
+    },
+    "architecture_models": {
+      "producer": "agentos-s1-005-producer",
+      "claim_refs": [
+        "c2-current-arch",
+        "c5-contracts-containers",
+        "c6-migration"
+      ],
+      "content": "# Candidate A (recommended): modular monolith\nOne process, three logical planes (execution: engine.py/workers.py;\nassurance: machines.py/evaluator.py/gates.py/evidence_pack.py; governance:\ngateway.py), one canonical SQLite (WAL), transition+audit in one\ntransaction. Workers are fresh untrusted subprocesses; effects pass the\nin-process gateway only (fencing, one-time approvals, idempotency,\nmandatory reconciliation).\n\n# Candidate B (rejected for MVP, bounded split path documented)\nContainers: state container (single-writer canonical SQLite + outbox),\noptional stateful policy gateway service, worker pool. Hard constraints\nsurvive only under single-writer canonical state with the outbox inside the\nstate container; duplicated policy state / multiple writers / async audit\nare rejected configurations (probe A, measured 12x multi-writer\ndegradation E2).\n\n# Split path (migration trigger model)\n1. state container first (canonical state + outbox move as a unit);\n2. policy gateway second, as a stateful service (never as a cache);\n3. never split audit from the transition transaction.\nTriggers are measurable (see platform_plan Workstreams) and reversible:\nthe state container boundary is chosen so the move is an extraction of an\nexisting module, not a rewrite.\n"
+    },
+    "mental_model": {
+      "producer": "agentos-s1-005-producer",
+      "claim_refs": [
+        "c7-obligation-unknowns",
+        "c4-scenarios"
+      ],
+      "content": "# Operator model\nOne deployable unit to start, stop, back up and inspect. When something\nunknown happens (crash between transition and publication, gateway\nunavailability), the system fails closed: no effect without policy, no\ntransition without audit, no blind retry. Recovery is replay from durable\nstate; the operator sees the same evidence digest as an interruption-free\nrun.\n\n# What operators must not assume\nThe measured 5x IPC and 12x multi-writer numbers are same-host and bounded;\nthey do not describe a multi-host deployment. Restart latencies of real\norchestrators were not measured. No production availability or reliability\nclaim follows from this research or from S1-002/S1-004 evidence.\n"
+    },
+    "ontology": {
+      "producer": "agentos-s1-005-producer",
+      "claim_refs": [
+        "c2-current-arch",
+        "c5-contracts-containers"
+      ],
+      "content": "# Topology ontology\nCandidates (topologies), dimensions (8 frozen), cells (claim_type,\nscore|null, confidence, evidence_refs, limitations), hard constraints\n(gateway-only effects; atomic transition+audit; single canonical state\nwriter), probes (A: violating candidate, B: incomplete candidate),\nverdicts (PASS/PASS_WITH_LIMITS/FAIL/BLOCKED).\n\n# State ownership\nCanonical state: exactly one writer at any time. In the monolith it is the\nruntime process; in a container split it must be exactly one stateful state\ncontainer. Policy decisions: one authority (the gateway), cached copies are\na different (rejected) configuration. Audit: part of the transition\ntransaction, never a detached stream.\n\n# Scenario vocabulary\nFault injection points are explicit and deterministic; allowed transitions\nare enumerated per topology; stop conditions are observable artifacts, not\nnarratives.\n"
+    },
+    "mathematical_model": {
+      "producer": "agentos-s1-005-producer",
+      "claim_refs": [
+        "c1-experiments",
+        "c3-evaluation"
+      ],
+      "content": "# Scoring model\nScore(candidate) = sum_i w_i * s_i(candidate) / sum_i w_i over scored\ndimensions; unknown cells (s_i = null) are excluded from both numerator and\ndenominator (renormalization) and never mapped to a number. Weights w_i are\nnon-negative integers summing to 100, frozen before scoring and bound by\nhash into the matrix.\n\n# Sensitivity model\nS1: for each dimension, w_i perturbed by x0.5 and x1.5 with the remainder\nrenormalized over the other weights (16 runs). S2: 200 integer weight\nvectors drawn from a fixed-seed (42) stick-breaking process over the same\ntotal. S3: unknown cells bounded at 0 and 4. The winner must be invariant;\nany flip caps the verdict at PASS_WITH_LIMITS.\n\n# Measured boundary model\nE1: round-trip latency per policy decision, three transports, two payload\nsizes. E2: canonical SQLite WAL write throughput with 1 vs 2 writer\nprocesses, counting SQLITE_BUSY retries and verifying committed-row\ncompleteness (serialization property).\n"
+    },
+    "synthesis_and_gaps": {
+      "producer": "agentos-s1-005-producer",
+      "claim_refs": [
+        "c3-evaluation",
+        "c4-scenarios",
+        "c7-obligation-unknowns"
+      ],
+      "content": "# Result\nPASS_WITH_LIMITS. Under the frozen rubric the modular monolith scores 3.72\nversus 2.07 for a contract-preserving container split; the winner is stable\nacross 218 deterministic sensitivity runs (weight perturbations, 200 seeded\nrandom weight vectors, unknown bounds). Both adversarial probes are\nstructurally rejected: the unsafe split (probe A) violates frozen hard\nconstraints regardless of its latency score, and the incomplete monolith\n(probe B) is rejected for lacking a failure boundary and deterministic\nreplay interface. Exactly one recommendation is recorded: the modular\nmonolith, with a bounded split path and measurable triggers.\n\n# Gaps\n1. Containers restart/recovery is an unknown cell (no orchestrator\nmeasurements; production container deployments are out of scope); it is\nexcluded from scoring and bounded in sensitivity S3.\n2. All measurements are same-host; multi-host partition semantics are\nunknown and can only worsen the container case, but are not quantified.\n3. The split trigger thresholds are symbolic until the S1-002 follow-up\nbenchmark wires measurable conditions.\n4. S1-002/S1-004 evidence is PASS_WITH_LIMITS; no production claim is\nderived from it here.\n\n# Next actions\nWire split-trigger conditions into the follow-up benchmark task; when a\ntrigger fires, prototype the state container first and re-run E1/E2 plus a\npartition scenario before any migration decision.\n"
+    },
+    "independent_audit": {
+      "producer": "agentos-s1-005-independent-verifier",
+      "claim_refs": [
+        "c3-evaluation",
+        "c4-scenarios",
+        "c7-obligation-unknowns"
+      ],
+      "content": "# Independent adversarial review (process-separated role)\nThe auditor re-derived the decision from recorded artifacts:\n\n1. Rubric freeze: rubric.json hash 1ee27dbb...8849e is bound inside\nqa1-decision-matrix.json; weights sum to 100; hard constraints and verdict\nrules were frozen before scoring.\n2. Matrix integrity: 8 dimensions x 4 candidates; every real-candidate cell\ncarries claim_type, score or a bounded unknown with stated missing evidence;\nprobe A records hard-constraint violations (duplicated policy state,\nmultiple canonical writers, async audit) and is rejected regardless of its\nlatency score; probe B lacks failure boundary and replay interface and is\nrejected as INCOMPLETE.\n3. Scenarios: three identical-contract scenarios with fault injection,\nstate owner, allowed transitions, recovery, artifacts, stop conditions and\nINV/SAF/LIVE impact for both topologies.\n4. Sensitivity: 218 runs (seed 42) with zero winner flips; unknown bounds\ncannot flip the winner; the unknown cell caps the verdict at\nPASS_WITH_LIMITS - confirmed.\n5. Honesty checks: no production claim is derived from PASS_WITH_LIMITS\ndependencies; same-host measurement limits are stated in the matrix cells\nand ENVIRONMENT.md; the winner matches, but was not assumed by, the\nsource recommendation (SRC-03 QA1) - it was re-derived from evidence and\nthe recommendation text of SRC-03 is treated as input, not authority.\n\n# Verdict\npass_with_limits, with the recorded limitations (same-host measurements\nonly; orchestrator behavior unknown; research evaluation is not a\nproduction decision; process-separated auditor role).\n"
+    },
+    "platform_plan": {
+      "producer": "agentos-s1-005-producer",
+      "claim_refs": [
+        "c6-migration",
+        "c5-contracts-containers",
+        "c7-obligation-unknowns",
+        "c9-target"
+      ],
+      "content": "# Scope\nAdopt the modular monolith (current implementation per ADR-0002/ADR-0005)\nas the MVP runtime topology, with frozen hard constraints (gateway-only\neffects, atomic transition+audit, single canonical state writer) and\ndocumented, measurable split triggers. This ticket decides the topology; it\ndoes not deploy containers, select an orchestrator or a cloud vendor, and\nadds no dependency to Core AgentOS.\n\n# Architecture\nKeep execution/assurance/governance as separate modules in one process over\none canonical SQLite (WAL). Effects pass the in-process gateway only;\ntransition+audit commit in one transaction; workers stay fresh untrusted\nsubprocesses. The recorded container path (future) starts with a stateful\nstate container holding single-writer canonical state plus its transactional\noutbox, then optionally a stateful policy gateway service; policy caches,\nduplicated policy state, multiple canonical writers and asynchronous audit\nare rejected configurations (probe A).\n\n# Workstreams\n1. Keep the QA1 evaluator, rubric and matrix as regression-locked evidence\n(tests/test_s1_005_regressions.py).\n2. Record the split triggers as executable conditions in the S1-002 follow-up\nbenchmark task (load threshold, availability-domain requirement, trust\nboundary requirement).\n3. When any trigger fires, run a bounded same-host container prototype with\nthe state container first and re-run these experiments before any migration.\n4. Re-evaluate QA1 with a new rubric revision if the MVP gains multi-tenant\nor multi-host requirements.\n\n# Milestones\nM1: frozen rubric and decision matrix with probes (done, this bundle).\nM2: boundary measurements E1/E2 recorded and hash-locked (done).\nM3: failure/recovery scenarios specified with invariant impact (done).\nM4: split-trigger monitoring wired into the follow-up benchmark task\n(future, belongs to S1-002/S1-006 follow-ups).\n\n# Verification\nVerification is deterministic and re-runnable: evaluator.py fails closed on\nrubric-hash mismatch, incomplete matrices, unknown-to-number mapping,\naccepted probes, or missing scenarios; sensitivity analysis (218 seeded\nruns) must keep the winner stable; the regression suite re-checks the\nrecorded evidence hashes. Measurements are same-host and bounded; multi-host\nbehavior is unknown and excluded from scoring with stated bounds.\n\n# Risks\nThe monolith recommendation is bounded by today's single-goal MVP workload;\na future multi-tenant or multi-host requirement invalidates the envelope.\nSplit-later carries the risk that modular boundaries erode; mitigated by\nkeeping the planes as separate modules with hard contracts (ADR-0002) and by\nthe migration triggers. The unknown containers restart/recovery cell could\nchange the failure-isolation comparison; it is bounded in sensitivity S3 and\nexplicitly excluded from scoring.\n\n# Open decisions\nExact load threshold for the split trigger (needs the S1-002 follow-up\nbenchmark); whether the first split candidate is the state container or the\npolicy gateway (this plan recommends state first); multi-host partition\nsemantics (unknown until a bounded prototype exists).\n"
+    },
+    "progress": {
+      "producer": "agentos-s1-005-producer",
+      "claim_refs": [
+        "c1-experiments",
+        "c3-evaluation"
+      ],
+      "content": "# 2026-08-30\nDependency gate: S1-002 canonical DB evidence (pass_with_limits, rev 1)\ndiverged from the tickets doc (READY); fixed by the separate alignment\ncommit 571fdfc (durable evaluation-record.json for S1-001/S1-002/S1-003 +\nstatus update) before any research. No evidence was rewritten.\n\n# 2026-08-30 (execution log, append-only)\n1. Grounded in implementation facts: ADR-0002 (monolith, three planes,\ntransition+audit in one transaction), ADR-0005 (unified process, workers as\nfresh subprocesses), SPEC.md guarantees/residual risks.\n2. experiments.py: first pipe/TCP measurement attempt deadlocked (write-all-\nthen-read-all overflows OS buffers); fixed with batched interleaving; the\nTCP server initially served only measured rounds and aborted on warmup +\nrounds (fixed); spawned SQLite writers polluted stdout (moved to a queue).\n3. Measurements recorded: E1 (4.86/25.71/18.20 us small; 37.77/207.89/168.03\nus large), E2 (20,587 vs 1,694 tx/s, zero busy errors, all rows complete).\n4. Rubric frozen before scoring (weights 18/18/14/12/14/8/6/10, sum 100) and\nbound by hash into the matrix.\n5. First evaluation run produced PASS; corrected to PASS_WITH_LIMITS because\nthe rubric's PASS definition requires no unknown cells among BOTH real\ncandidates (containers restart/recovery is unknown) - the evaluator rule\nwas aligned with the rubric, not the reverse.\n6. Regression suite initially caught two evaluator gaps: the missing-\ndimension message wording and, substantively, the real-candidate failure-\nboundary rule (probe B property generalized to all real candidates); both\nfixed. 17/17 tests pass.\n7. Harness: research-plan executed; evaluation recorded in\nevaluation-record.json.\n\n# Limits\nSame-host measurements only; multi-host unknown; no production deployment;\nverdict PASS_WITH_LIMITS.\n"
+    }
+  },
+  "audit": {
+    "subject_producer": "agentos-s1-005-producer",
+    "auditor": "agentos-s1-005-independent-verifier",
+    "verdict": "pass_with_limits",
+    "limitations": [
+      "Boundary measurements are same-host and bounded; multi-host partition semantics and orchestrator restart latencies are unknown and excluded from scoring (bounded in sensitivity S3).",
+      "The recommendation is a research decision for the MVP; it is not a production deployment, availability, or reliability claim.",
+      "S1-002 and S1-004 evidence is PASS_WITH_LIMITS and is reused only within its stated limits.",
+      "Producer and verifier labels are process-separated roles in one local environment, not external human auditors.",
+      "The containers restart/recovery cell remains unknown until a bounded container prototype is measured (production deployments are out of scope for this ticket)."
+    ],
+    "history": [
+      {
+        "timestamp": "2026-08-30T05:00:00Z",
+        "verdict": "pass_with_limits",
+        "verifier": "agentos-s1-005-independent-verifier",
+        "summary": "Initial S1-005 qualification: frozen rubric, 8x4 decision matrix with two structurally rejected adversarial probes, three identical failure scenarios, measured boundary costs, sensitivity analysis stable across 218 runs; recommendation: modular monolith.",
+        "limitations": "See limitations; same-host measurements, unknown multi-host behavior.",
+        "superseded": false
+      }
+    ]
+  }
+}

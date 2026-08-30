@@ -1,0 +1,53 @@
+{
+  "schema": "agentos.s1-005.rubric/v1",
+  "ticket": "S1-005",
+  "frozen_before_scoring": true,
+  "note": "Weights and scale were fixed before any topology was scored. This file is hash-locked: qa1-decision-matrix.json must carry rubric_sha256 equal to the SHA-256 of this file's bytes. Any weight change is a new rubric and requires a new research revision.",
+  "scale": {
+    "range": [0, 4],
+    "0": "the topology fails or badly violates the dimension",
+    "1": "major friction, workaround required",
+    "2": "workable with notable cost or open risk",
+    "3": "good with minor, bounded costs",
+    "4": "directly supported by implementation or measurement",
+    "unknown": "null score; the cell is excluded from BOTH weighted sums (renormalized), never mapped to zero, an average, or an advantage; the cell must state what evidence is missing"
+  },
+  "confidence_scale": {"0.9": "fact/implementation-inspected", "0.7": "measured on this host", "0.5": "inference from adjacent evidence", "0.3": "assumption from standard practice"},
+  "claim_types": ["fact", "measurement", "inference", "assumption", "unknown"],
+  "hard_constraints": [
+    "gateway-only effects: every worker effect passes exactly one policy gateway (S1-004 SAF, SRC-03)",
+    "atomic transition+audit: a guarded state transition and its audit event commit in one transaction (ADR-0002, S1-004 SAF1)",
+    "single canonical state owner: exactly one writer of canonical state"
+  ],
+  "hard_constraint_rule": "any candidate violating a hard constraint is REJECTED regardless of weighted score",
+  "weights": {
+    "policy_boundary": 18,
+    "atomic_transition_audit": 18,
+    "failure_isolation": 14,
+    "restart_recovery_reconciliation": 12,
+    "determinism_simulation": 14,
+    "operational_complexity": 8,
+    "latency_serialization": 6,
+    "migration_reversibility": 10
+  },
+  "weight_sum": 100,
+  "dimensions": {
+    "policy_boundary": "единый policy/authorization boundary",
+    "atomic_transition_audit": "atomic transition + audit и canonical-state consistency",
+    "failure_isolation": "failure isolation и blast radius",
+    "restart_recovery_reconciliation": "restart/recovery и unknown-outcome reconciliation",
+    "determinism_simulation": "deterministic tests, simulation и replay",
+    "operational_complexity": "operational complexity и observability",
+    "latency_serialization": "latency/serialization/resource overhead",
+    "migration_reversibility": "migration reversibility и условия будущего split"
+  },
+  "verdict_rules": {
+    "min_dimensions": 8,
+    "min_failure_scenarios": 3,
+    "probes": "probe A (unsafe split) and probe B (incomplete monolith) must be REJECTED/INCOMPLETE by the evaluator",
+    "pass": "winner stable under every sensitivity perturbation, no unknown cells among the two real candidates, all hard constraints preserved by the winner",
+    "pass_with_limits": "winner stable but unknown cells present, or minor weight-flip sensitivity at the edges",
+    "fail": "a hard constraint is violated by the recommendation, or probes are accepted, or the matrix is incomplete",
+    "cap": "if reasonable weight changes flip the winner, the verdict cannot exceed PASS_WITH_LIMITS"
+  }
+}

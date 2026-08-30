@@ -1,0 +1,46 @@
+{
+  "schema": "agentos.s1-005.boundary-experiments/v1",
+  "python": "3.12.6",
+  "platform": "Windows-11-10.0.22631-SP0",
+  "experiments": {
+    "small_512b": {
+      "rounds": 2000,
+      "in_process_us": 4.86,
+      "pipe_process_us": 25.71,
+      "tcp_localhost_us": 18.2
+    },
+    "large_16kb": {
+      "rounds": 300,
+      "in_process_us": 37.77,
+      "pipe_process_us": 207.89,
+      "tcp_localhost_us": 168.03
+    },
+    "sqlite_multi_writer": {
+      "single_writer": {
+        "writers": 1,
+        "transactions": 800,
+        "seconds": 0.039,
+        "txns_per_second": 20587.0
+      },
+      "two_writers": {
+        "writers": 2,
+        "transactions": 800,
+        "seconds": 0.472,
+        "txns_per_second": 1694.0,
+        "writer_results": [
+          {
+            "busy": 0,
+            "seconds": 0.027281699993181974
+          },
+          {
+            "busy": 0,
+            "seconds": 0.05189740000059828
+          }
+        ],
+        "note": "two writer processes contending for the write lock"
+      },
+      "committed_rows_complete": true,
+      "serialized_writes": true
+    }
+  }
+}

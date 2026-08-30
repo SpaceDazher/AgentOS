@@ -1,0 +1,48 @@
+{
+  "schema": "agentos.s1-005.evaluation/v1",
+  "rubric_sha256": "1ee27dbb25f4ed00f9d43b526e4ba4507006e45bb4ae7d570cf4346d3308849e",
+  "scores_normalized": {
+    "monolith": 3.72,
+    "containers": 2.0682
+  },
+  "used_weight": {
+    "monolith": 100.0,
+    "containers": 88.0
+  },
+  "unknown_dimensions": {
+    "monolith": [],
+    "containers": [
+      "restart_recovery_reconciliation"
+    ]
+  },
+  "winner": "monolith",
+  "recommendation": {
+    "topology": "monolith",
+    "name": "Модульный монолит (текущая реализация)"
+  },
+  "probe_rejections": {
+    "A": [
+      "rejected: violates frozen hard constraints regardless of score"
+    ],
+    "B": [
+      "rejected as INCOMPLETE: no declared failure boundary or deterministic replay interface"
+    ],
+    "probeA_unsafe_split": [
+      "gateway-only effects",
+      "single canonical state owner"
+    ]
+  },
+  "sensitivity": {
+    "runs": 218,
+    "stable": true,
+    "flips": [],
+    "seed": 42,
+    "random_runs": 200
+  },
+  "verdict": "PASS_WITH_LIMITS",
+  "reasons": [
+    "unknown cells present in the comparison: ['restart_recovery_reconciliation'] (excluded and renormalized; winner's cells: none; bounded in sensitivity S3)",
+    "probe A rejected: rejected: violates frozen hard constraints regardless of score",
+    "probe B rejected: rejected as INCOMPLETE: no declared failure boundary or deterministic replay interface"
+  ]
+}

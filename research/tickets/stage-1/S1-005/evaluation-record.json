@@ -1,0 +1,48 @@
+{
+  "schema": "agentos.ticket-evaluation-record/v1",
+  "ticket_id": "S1-005",
+  "recorded_at": "2026-08-30T05:35:00Z",
+  "db_root": ".agentos-research/platform-stage-1",
+  "campaign_id": "rcamp_Z1YF90RYNXXB21ZY01M18FE1TA",
+  "goal_id": "goal_BW951T0DER38F3FQ01M18FE1TA",
+  "evaluation_id": "reval_QXEA3XE48HHEKGB701M18FE1WN",
+  "evaluation_version": 1,
+  "result": "pass_with_limits",
+  "artifact_chain_hash": "5f108462af2d7c5d796b5841e1a34cf45f5f0a96a140fd08272d3d2da6cb742f",
+  "evidence_pack": {
+    "schema": "agentos.evidence-pack/v3",
+    "path": ".agentos-research\\platform-stage-1\\goals\\goal_BW951T0DER38F3FQ01M18FE1TA\\evidence-pack.json",
+    "sha256": "45ec7b5a95d3f87dd257beb236a5347eaa4d2a7f33da48d5515c98bd33795c6a",
+    "chain_fresh": true,
+    "latest_evaluation_valid": true
+  },
+  "wiki_check": {
+    "ok": true,
+    "files": 1563,
+    "links_checked": 4370,
+    "issues": []
+  },
+  "decision": {
+    "question": "QA1 runtime topology: modular monolith versus containers",
+    "recommendation": "modular monolith (current implementation, ADR-0002/ADR-0005)",
+    "scores_normalized": {
+      "monolith": 3.72,
+      "containers": 2.0682
+    },
+    "sensitivity": "218 deterministic runs (16 weight +-50%, 200 seeded random weight vectors, unknown pessimistic/optimistic bounds); zero winner flips",
+    "probes": {
+      "A_unsafe_split": "REJECTED - violates frozen hard constraints (gateway-only effects, single canonical state owner) regardless of latency score",
+      "B_incomplete_monolith": "REJECTED as INCOMPLETE - no declared failure boundary or deterministic replay interface"
+    },
+    "migration_trigger": "split only when a measurable trigger fires (load beyond the single-process S1-002 envelope, an availability-domain requirement, or a new trust boundary); the split starts with the state container (single-writer canonical state + transactional outbox inside it), never with policy caches or async audit",
+    "non_goals": "no production Docker/Kubernetes deployment, no orchestrator/cloud vendor choice, no production availability claims, no core runtime changes, no SQLite/Postgres or execution backend replacement"
+  },
+  "limitations": [
+    "Boundary measurements are same-host and bounded; multi-host partition semantics and orchestrator restart latencies are unknown and excluded from scoring (bounded in sensitivity S3).",
+    "The recommendation is a research decision for the MVP; it is not a production deployment, availability, or reliability claim.",
+    "S1-002 and S1-004 evidence is PASS_WITH_LIMITS and is reused only within its stated limits.",
+    "Producer and verifier labels are process-separated roles in one local environment, not external human auditors.",
+    "The containers restart/recovery cell remains unknown until a bounded container prototype is measured (production deployments are out of scope for this ticket)."
+  ],
+  "note": "research-plan PASS_WITH_LIMITS is a research evaluation; it never sets Goal ACCEPTED (release gate only)"
+}

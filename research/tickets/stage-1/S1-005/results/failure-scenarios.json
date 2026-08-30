@@ -1,0 +1,109 @@
+{
+  "schema": "agentos.s1-005.failure-scenarios/v1",
+  "ticket": "S1-005",
+  "comparability_contract": {
+    "workload": "один и тот же для обеих топологий: 1 goal, 3 tasks (DAG), 2 активных worker runs, 1 gateway effect на task",
+    "initial_scale": "1 процесс/хост, локальный SQLite (WAL, synchronous=NORMAL),фиксированные seeds",
+    "acceptance_thresholds": [
+      "ни одно committed-решение не теряет audit event (SAF1)",
+      "ни одного allow после durable revoke (INV5)",
+      "unknown outcome не превращается в blind retry (SAF3)",
+      "после восстановления детерминированный replay даёт идентичный evidence digest"
+    ],
+    "fault_injection": "детерминированные точки отказа (не случайные): зафиксированы в каждом сценарии"
+  },
+  "scenarios": [
+    {
+      "id": "FS1",
+      "title": "Crash между state transition и audit/outbox publication",
+      "fault_injection": "процесс убивается (SIGKILL-эквивалент) между строками транзакции transition и публикацией",
+      "initial_state": "goal ACTIVE, task RUNNING, решение о effect принято gateway",
+      "authoritative_state_owner": {
+        "monolith": "единственный SQLite-файл того же процесса (ADR-0002)",
+        "containers": "state-контейнер с canonical SQLite; audit/outbox в том же контейнере либо отдельный audit-контейнер (рассматриваются оба варианта)"
+      },
+      "allowed_transitions": {
+        "monolith": [
+          "crash до COMMIT: ни transition, ни audit не существуют (откат транзакции) — restart возобновляет run с checkpoint",
+          "crash после COMMIT: transition+audit атомарно существуют; outbox-публикация возобновляется replay'ем (S1-004 LIVE2)"
+        ],
+        "containers": [
+          "crash state-контейнера до commit: откат локальной транзакции; audit-контейнер не видит события",
+          "crash state-контейнера после commit, до публикации: outbox в state-контейнере; replay при рестарте (SAF1 сохраняется, только если audit живёт в той же транзакции state-контейнера)",
+          "crash audit-контейнера при раздельном audit: окно без audit — запрещённая конфигурация (нарушает hard constraint atomic transition+audit)"
+        ]
+      },
+      "recovery_path": {
+        "monolith": "restart процесса -> recover_expired_runs -> replay durable outbox -> ровно один effect receipt (probe A из S1-004)",
+        "containers": "restart state-контейнера -> тот же replay внутри контейнера; рестарт других контейнеров не требуется; при раздельном audit — требуется компенсация/реконсиляция, что и есть причина запрета"
+      },
+      "observable_artifacts": ["audit_event row", "run checkpoint", "outbox event", "effect receipt"],
+      "stop_condition": "evidence digest идентичен digest-у прогона без крэша",
+      "invariant_impact": {
+        "monolith": "SAF1 держится by construction; SAF4 не затронут; LIVE2 bounded-выполнено (S1-004)",
+        "containers": "SAF1 держится при outbox внутри state-контейнера; раздельный audit нарушает hard constraint; LIVE2 — те же обязательства replay, restart-латентность unknown"
+      }
+    },
+    {
+      "id": "FS2",
+      "title": "Restart/недоступность policy gateway при активных worker runs",
+      "fault_injection": "gateway-компонент становится недоступен на фиксированное окно (монолит: процесс остановлен; контейнеры: policy-контайнер остановлен) при 2 активных runs",
+      "initial_state": "2 runs в RUNNING, у каждого worker запрошен tool effect",
+      "authoritative_state_owner": {
+        "monolith": "тот же процесс (gateway недоступен <=> весь runtime недоступен)",
+        "containers": "policy-контейнер; state и workers продолжают жить"
+      },
+      "allowed_transitions": {
+        "monolith": [
+          "effects во время окна невозможны (fail-closed) — worker получает typed error",
+          "runs доживают до lease expiry; recover_expired_runs возобновляет их после рестарта"
+        ],
+        "containers": [
+          "workers и state живут, но все effects fail-closed на время окна",
+          "запрещено: локальный policy cache в workers (это probe A)",
+          "запрещено: переход state-контейнера в 'degraded allow' без policy"
+        ]
+      },
+      "recovery_path": {
+        "monolith": "рестарт процесса -> recover_expired_runs -> продолжение с checkpoint",
+        "containers": "рестарт policy-контейнера -> effects возобновляются; все отклонённые за окно effects повторяются worker'ами как declared-idempotent"
+      },
+      "observable_artifacts": ["typed gateway error", "run lease", "checkpoint", "idempotent retry"],
+      "stop_condition": "оба runs завершены; ни одного effect вне policy; ни одного потерянного run",
+      "invariant_impact": {
+        "monolith": "fail-closed тривиален (единый процесс); INV5 не затронут; LIVE1 требует активации в тик — окно недоступности сдвигает тики (обязательство дизайна)",
+        "containers": "fail-closed сохраняется; blast radius отказа policy = все workers (против одного процесса у монолита — на самом деле тот же весь-система, но в контейнерах соблазн 'частичной доступности' выше и должен быть запрещён); restart-латентность unknown"
+      }
+    },
+    {
+      "id": "FS3",
+      "title": "SQLite lock/storage degradation либо межпроцессный partition",
+      "fault_injection": "измеренная деградация: два writer-процесса на канонический SQLite (E2) + искусственная задержка/недоступность соединения к state для worker-стороны",
+      "initial_state": "одновременные transitions из двух источников, budget ledger активен",
+      "authoritative_state_owner": {
+        "monolith": "один writer — сам процесс (E2 single: 20 587 tx/s)",
+        "containers": "state-контейнер — единственный writer; два процесса-писателя вне state-контейнера запрещены; измерено: 2 writers -> 1 694 tx/s (12× деградация, E2), busy-retry 0 ошибок, сериализуемость сохранена"
+      },
+      "allowed_transitions": {
+        "monolith": [
+          "деградация диска замедляет всё (fail-slow, fail-closed по таймаутам)",
+          "ни одного частично-записанного перехода (транзакция)"
+        ],
+        "containers": [
+          "partition worker->state: effects и transitions fail-closed",
+          "запрещено: обход state-контейнера через локальную копию (multiple writers)"
+        ]
+      },
+      "recovery_path": {
+        "monolith": "устранение деградации -> продолжение; журнал цел; INV6 conservация ledger не нарушена",
+        "containers": "устранение partition -> reconnect + idempotent retry; при multi-host ничего не измерялось (unknown)"
+      },
+      "observable_artifacts": ["txns/sec", "busy count", "committed rows complete", "ledger balance"],
+      "stop_condition": "spent + reserved <= alloc на всех ledger; ни одной потери транзакции",
+      "invariant_impact": {
+        "monolith": "INV6 защищён single-writer (измерено 20.6k tx/s)",
+        "containers": "INV6 защищён только при единственном writer в state-контейнере (измерено: множественные writers дают 12× и требуют busy-retry); сериализуемость подтверждена измерением (committed rows complete)"
+      }
+    }
+  ]
+}

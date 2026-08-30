@@ -174,7 +174,7 @@ from a lower wave to a higher wave, and S1-020 is the sole closure sink.
 | S1-002 | W0 | P0 | capacity | PASS_WITH_LIMITS | — | benchmark, capacity, storage, and SLO assumptions |
 | S1-003 | W0 | P0 | formal | PASS | — | executable SHACL/ontology validation |
 | S1-004 | W1 | P0 | formal | PASS_WITH_LIMITS | S1-002, S1-003 | bounded formal/simulation checks for INV1–INV6 and delivery safety |
-| S1-005 | W1 | P1 | architecture | READY | S1-002 | QA1 modular monolith versus containers |
+| S1-005 | W1 | P1 | architecture | PASS_WITH_LIMITS | S1-002 | QA1 modular monolith versus containers |
 | S1-006 | W2 | P1 | architecture | READY | S1-002, S1-005 | QA2 in-process versus durable execution backend |
 | S1-007 | W2 | P0 | security | READY | S1-003, S1-005 | QA3 retrieval/index scope isolation |
 | S1-008 | W2 | P0 | security | READY | S1-002, S1-004 | revocation propagation bound of ≤5 seconds |
@@ -464,7 +464,21 @@ python -m agentos.cli research-plan --topic "S1-004 Alloy TLA plus seeded determ
 
 ### S1-005 — QA1 runtime topology: modular monolith versus containers
 
-- **Status:** `READY`
+- **Status:** `PASS_WITH_LIMITS` — recorded 2026-08-30: goal
+  `goal_BW951T0DER38F3FQ01M18FE1TA`, evaluation
+  `reval_QXEA3XE48HHEKGB701M18FE1WN`, artifact chain `5f108462…b742f`,
+  evidence-pack/v3 `chain_fresh=true`, wiki-check ok. Decision: modular
+  monolith (3.72 vs containers 2.07 normalized under the frozen rubric);
+  sensitivity 218 deterministic runs with zero winner flips; probe A
+  (unsafe split) rejected on frozen hard constraints regardless of score;
+  probe B (incomplete monolith) rejected as INCOMPLETE; three identical
+  failure scenarios with INV/SAF/LIVE impact; measured boundary costs
+  (dispatch round trip 4.86→25.71/18.20 µs; SQLite multi-writer 12×
+  degradation with preserved serialization). Limits: same-host
+  measurements only; containers restart/recovery is an unknown cell
+  (bounded in sensitivity S3); no production deployment or availability
+  claims; split triggers are symbolic until the S1-002 follow-up benchmark
+  wires measurable conditions.
 - **Priority:** `P1`
 - **Wave:** `W1`
 - **Owner:** `architecture`

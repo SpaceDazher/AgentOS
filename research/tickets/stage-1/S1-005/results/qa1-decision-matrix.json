@@ -1,0 +1,403 @@
+{
+  "schema": "agentos.s1-005.decision-matrix/v1",
+  "ticket": "S1-005",
+  "rubric_sha256": "1ee27dbb25f4ed00f9d43b526e4ba4507006e45bb4ae7d570cf4346d3308849e",
+  "rubric_frozen_before_scoring": true,
+  "candidates": {
+    "monolith": {
+      "name": "Модульный монолит (текущая реализация)",
+      "description": "Один Python-процесс, три логических плоскости (execution/assurance/governance), один SQLite с transition+audit в одной транзакции; workers уже являются изолированными subprocess (ADR-0002, ADR-0005).",
+      "is_real_candidate": true,
+      "failure_boundary_ref": "src/agentos/engine.py#recover_expired_runs + checkpoint/resume (tests/test_crash_retry.py)",
+      "deterministic_replay_ref": "S1-004 seeded simulator + tests/ (in-process, детерминированные)"
+    },
+    "containers": {
+      "name": "Контейнерное разделение runtime",
+      "description": "Разделение на несколько контейнеров: state (canonical SQLite), policy gateway, worker pool; same-host или multi-host. Без duplicated policy state и без multi-writer canonical state (иначе это probe A).",
+      "is_real_candidate": true,
+      "failure_boundary_ref": "per-container restart + state-контейнер как владелец recovery (checkpoint/resume внутри state-контейнера)",
+      "deterministic_replay_ref": "S1-004 контракт outbox/replay; интеграционная детерминированность требует оркестрации фиксированных образов"
+    },
+    "probeA_unsafe_split": {
+      "name": "PROBE A — unsafe container split",
+      "description": "Искусственный кандидат с отличной поверхностной latency: policy cache в каждом контейнере (дублированный policy state), несколько writers canonical state, асинхронный audit. Специально нарушает hard constraints при высоком score по latency.",
+      "is_real_candidate": false,
+      "probe": "A",
+      "failure_boundary_ref": null,
+      "deterministic_replay_ref": null
+    },
+    "probeB_incomplete_monolith": {
+      "name": "PROBE B — incomplete modular monolith",
+      "description": "Искусственный кандидат: монолит без явной failure boundary (нет checkpoint/resume) и без deterministic replay interface. Остальные ячейки выглядят убедительно.",
+      "is_real_candidate": false,
+      "probe": "B",
+      "failure_boundary_ref": null,
+      "deterministic_replay_ref": null
+    }
+  },
+  "matrix": [
+    {
+      "dimension": "policy_boundary",
+      "cells": {
+        "monolith": {
+          "claim_type": "fact",
+          "score": 4,
+          "confidence": 0.9,
+          "evidence_refs": [
+            "src/agentos/gateway.py",
+            "ADR-0002",
+            "spec/SPEC.md#1",
+            "S1-004 SAF"
+          ],
+          "statement": "Ровно один in-process policy gateway; каждый effect проходит через него (gateway-only effects)."
+        },
+        "containers": {
+          "claim_type": "inference",
+          "score": 2,
+          "confidence": 0.5,
+          "evidence_refs": [
+            "results/boundary-experiments.json#E2",
+            "SRC-03 §3"
+          ],
+          "statement": "Единый boundary сохраняется, только если policy — отдельный stateful сервис с единственным writer policy state; при шардинге/кэшировании возникает дублирование (это и есть probe A). Требует сетевого hop на каждое решение.",
+          "limitation": "restart/доступность policy-контейнера не измерялись на этом хосте"
+        },
+        "probeA_unsafe_split": {
+          "claim_type": "assumption",
+          "score": 4,
+          "confidence": 0.9,
+          "evidence_refs": [
+            "probe"
+          ],
+          "statement": "Дублированный policy state даёт локальные решения без сетевого hop.",
+          "hard_constraint_violations": [
+            "gateway-only effects",
+            "single canonical state owner"
+          ]
+        },
+        "probeB_incomplete_monolith": {
+          "claim_type": "inference",
+          "score": 3,
+          "confidence": 0.9,
+          "evidence_refs": [
+            "probe"
+          ],
+          "statement": "Единый boundary сохранён, но без failure boundary."
+        }
+      }
+    },
+    {
+      "dimension": "atomic_transition_audit",
+      "cells": {
+        "monolith": {
+          "claim_type": "fact",
+          "score": 4,
+          "confidence": 0.9,
+          "evidence_refs": [
+            "src/agentos/journal.py",
+            "ADR-0002",
+            "tests/test_security.py",
+            "S1-004 SAF1"
+          ],
+          "statement": "Guarded transition и audit_event пишутся в одной SQLite-транзакции; projections восстановимы из журнала."
+        },
+        "containers": {
+          "claim_type": "inference",
+          "score": 2,
+          "confidence": 0.5,
+          "evidence_refs": [
+            "results/boundary-experiments.json#E2",
+            "S1-004 SAF1"
+          ],
+          "statement": "Атомарность между сервисами требует transactional outbox/компенсаций внутри state-контейнера (модель S1-004); при разделении audit в отдельный сервис возникает окно рассинхронизации. Multi-writer canonical state деградирует 12× и нарушает единственность writer.",
+          "limitation": "поведение при реальном сетевом partition не измерялось (unknown для multi-host)"
+        },
+        "probeA_unsafe_split": {
+          "claim_type": "assumption",
+          "score": 3,
+          "confidence": 0.9,
+          "evidence_refs": [
+            "probe"
+          ],
+          "statement": "Асинхронный audit ускоряет путь, но ломает atomic transition+audit.",
+          "hard_constraint_violations": [
+            "atomic transition+audit"
+          ]
+        },
+        "probeB_incomplete_monolith": {
+          "claim_type": "inference",
+          "score": 4,
+          "confidence": 0.9,
+          "evidence_refs": [
+            "probe"
+          ],
+          "statement": "Атомарность сохранена (это свойство монолита)."
+        }
+      }
+    },
+    {
+      "dimension": "failure_isolation",
+      "cells": {
+        "monolith": {
+          "claim_type": "fact",
+          "score": 2,
+          "confidence": 0.9,
+          "evidence_refs": [
+            "ADR-0005",
+            "src/agentos/workers.py",
+            "spec/SPEC.md#residual-risk"
+          ],
+          "statement": "Workers уже изолированы как subprocess (недоверенный вывод, effects только через gateway), но падение core-процесса останавливает всё; blast radius = один процесс."
+        },
+        "containers": {
+          "claim_type": "inference",
+          "score": 3,
+          "confidence": 0.5,
+          "evidence_refs": [
+            "SRC-03 §9 QA1"
+          ],
+          "statement": "Перезапуск и изоляция по контейнерам стандартны; blast radius падения policy/state уже меньше по поверхности, но не бесплатно (см. restart_recovery).",
+          "limitation": "реальные restart-характеристики orchestrator не измерялись (unknown)"
+        },
+        "probeA_unsafe_split": {
+          "claim_type": "assumption",
+          "score": 3,
+          "confidence": 0.9,
+          "evidence_refs": [
+            "probe"
+          ],
+          "statement": "Изоляция контейнеров есть, но дублированный state расширяет blast radius рассинхронизации."
+        },
+        "probeB_incomplete_monolith": {
+          "claim_type": "inference",
+          "score": 1,
+          "confidence": 0.9,
+          "evidence_refs": [
+            "probe"
+          ],
+          "statement": "Без checkpoint/resume падение core теряет активные runs."
+        }
+      }
+    },
+    {
+      "dimension": "restart_recovery_reconciliation",
+      "cells": {
+        "monolith": {
+          "claim_type": "fact",
+          "score": 4,
+          "confidence": 0.9,
+          "evidence_refs": [
+            "src/agentos/engine.py#recover_expired_runs",
+            "src/agentos/gateway.py#ReconciliationRequired",
+            "S1-004 LIVE1/LIVE2",
+            "tests/test_crash_retry.py"
+          ],
+          "statement": "Checkpoint/resume, recover_expired_runs, reconciliation обязательна для unknown outcomes (gateway), replay по durable outbox (модель S1-004)."
+        },
+        "containers": {
+          "claim_type": "unknown",
+          "score": null,
+          "confidence": 0.0,
+          "evidence_refs": [],
+          "statement": "Семантика восстановления та же по контракту, но фактические restart-латентности и поведение оркестратора при недоступности policy/state не измерялись на этом хосте.",
+          "limitation": "missing evidence: локальные container-измерения запрещены non-scope тикета (production deployment); нужна будущая measurement-задача"
+        },
+        "probeA_unsafe_split": {
+          "claim_type": "assumption",
+          "score": 2,
+          "confidence": 0.9,
+          "evidence_refs": [
+            "probe"
+          ],
+          "statement": "Рассинхронизация policy cache при рестарте требует инвалидации."
+        },
+        "probeB_incomplete_monolith": {
+          "claim_type": "inference",
+          "score": 1,
+          "confidence": 0.9,
+          "evidence_refs": [
+            "probe"
+          ],
+          "statement": "Нет recovery path — прямое нарушение."
+        }
+      }
+    },
+    {
+      "dimension": "determinism_simulation",
+      "cells": {
+        "monolith": {
+          "claim_type": "fact",
+          "score": 4,
+          "confidence": 0.9,
+          "evidence_refs": [
+            "ADR-0005 (tests never require Hermes/ECC)",
+            "S1-004 simulator",
+            "tests/ (310 tests, in-process)",
+            "SRC-03 §9 QA1 [H17]"
+          ],
+          "statement": "Детерминированный core: полный suite выполняется in-process; seeded simulation (S1-004) воспроизводима; H17 отмечает упрощение deterministic simulation для монолита."
+        },
+        "containers": {
+          "claim_type": "inference",
+          "score": 2,
+          "confidence": 0.5,
+          "evidence_refs": [
+            "SRC-03 §9 QA1 [H17]"
+          ],
+          "statement": "Детерминированная интеграция требует оркестрации нескольких сервисов и фиксированных образов; seeded simulation усложняется межпроцессной синхронизацией."
+        },
+        "probeA_unsafe_split": {
+          "claim_type": "assumption",
+          "score": 1,
+          "confidence": 0.9,
+          "evidence_refs": [
+            "probe"
+          ],
+          "statement": "Дублированный state делает replay недетерминированным."
+        },
+        "probeB_incomplete_monolith": {
+          "claim_type": "inference",
+          "score": 1,
+          "confidence": 0.9,
+          "evidence_refs": [
+            "probe"
+          ],
+          "statement": "Нет deterministic replay interface — прямое нарушение."
+        }
+      }
+    },
+    {
+      "dimension": "operational_complexity",
+      "cells": {
+        "monolith": {
+          "claim_type": "fact",
+          "score": 4,
+          "confidence": 0.9,
+          "evidence_refs": [
+            "ADR-0002",
+            "ADR-0005",
+            "adr/README.md"
+          ],
+          "statement": "Одна единица деплоя, один журнал, один пакет; observability — файлы + evidence pack."
+        },
+        "containers": {
+          "claim_type": "inference",
+          "score": 1,
+          "confidence": 0.5,
+          "evidence_refs": [
+            "standard container practice"
+          ],
+          "statement": "Требуются orchestrator, service discovery, distributed tracing, управление образами — новый operational surface без MVP-необходимости.",
+          "limitation": "количественная стоимость операций не измерялась"
+        },
+        "probeA_unsafe_split": {
+          "claim_type": "assumption",
+          "score": 2,
+          "confidence": 0.9,
+          "evidence_refs": [
+            "probe"
+          ],
+          "statement": "Плюс инвалидация кэшей и согласование writers."
+        },
+        "probeB_incomplete_monolith": {
+          "claim_type": "inference",
+          "score": 4,
+          "confidence": 0.9,
+          "evidence_refs": [
+            "probe"
+          ],
+          "statement": "Тот же уровень, что и монолит."
+        }
+      }
+    },
+    {
+      "dimension": "latency_serialization",
+      "cells": {
+        "monolith": {
+          "claim_type": "measurement",
+          "score": 4,
+          "confidence": 0.7,
+          "evidence_refs": [
+            "results/boundary-experiments.json#E1",
+            "S1-002 raw-results"
+          ],
+          "statement": "Измерено: policy-decision round trip in-process 4.86 µs (512B payload); S1-002: 10–100 ev/s с запасом, p95 в пределах envelope."
+        },
+        "containers": {
+          "claim_type": "measurement",
+          "score": 2,
+          "confidence": 0.7,
+          "evidence_refs": [
+            "results/boundary-experiments.json#E1",
+            "results/boundary-experiments.json#E2"
+          ],
+          "statement": "Измерено (same-host): TCP localhost 18.2 µs, pipe 25.7 µs на решение (3.7–5.3×); 16KB payload — 168–208 µs (4.4–5.5×); два writer-процесса на канонический SQLite — 12× деградация (20 587 → 1 694 tx/s) при сериализуемости.",
+          "limitation": "same-host измерения; сетевой hop между хостами не измерялся (unknown, только хуже)"
+        },
+        "probeA_unsafe_split": {
+          "claim_type": "assumption",
+          "score": 4,
+          "confidence": 0.9,
+          "evidence_refs": [
+            "probe"
+          ],
+          "statement": "Локальный policy cache: ~0 latency на решение — именно этим кандидат соблазнителен."
+        },
+        "probeB_incomplete_monolith": {
+          "claim_type": "inference",
+          "score": 4,
+          "confidence": 0.9,
+          "evidence_refs": [
+            "probe"
+          ],
+          "statement": "Как у монолита."
+        }
+      }
+    },
+    {
+      "dimension": "migration_reversibility",
+      "cells": {
+        "monolith": {
+          "claim_type": "inference",
+          "score": 4,
+          "confidence": 0.5,
+          "evidence_refs": [
+            "ADR-0002 (Postgres note)",
+            "ADR-0003",
+            "src/agentos/gateway.py",
+            "S1-005 platform_plan"
+          ],
+          "statement": "Логические плоскости уже разделены (execution/assurance/governance); выделение контейнера позже = вынос существующего модуля за process boundary с теми же контрактами; migration trigger сформулирован в platform_plan."
+        },
+        "containers": {
+          "claim_type": "inference",
+          "score": 2,
+          "confidence": 0.5,
+          "evidence_refs": [
+            "standard practice",
+            "SRC-07 §5"
+          ],
+          "statement": "Преждевременный split повышает стоимость возврата (распределённые контракты, сетевые протоколы уже в критическом пути)."
+        },
+        "probeA_unsafe_split": {
+          "claim_type": "assumption",
+          "score": 1,
+          "confidence": 0.9,
+          "evidence_refs": [
+            "probe"
+          ],
+          "statement": "Дублированный state почти необратим без нарушения audit."
+        },
+        "probeB_incomplete_monolith": {
+          "claim_type": "inference",
+          "score": 3,
+          "confidence": 0.9,
+          "evidence_refs": [
+            "probe"
+          ],
+          "statement": "Обратимость формально есть, но без failure boundary миграция опасна."
+        }
+      }
+    }
+  ]
+}
