@@ -1,0 +1,126 @@
+{
+  "schema": "agentos.s1-007.isolation-contract/v1",
+  "ticket": "S1-007",
+  "question": "QA3: per-scope index/projection versus shared index with row-level retrieval filtering (shared-RLS)",
+  "frozen_before_experiments": true,
+  "freezing_note": "This contract, the threat model, the rubric and the corpus manifest were frozen before any S1-007 experiment was executed. The winner is not named here; both candidate variants must satisfy this contract identically.",
+
+  "scope_identity": {
+    "canonical_scope_id": {
+      "composition": "tenant_id + '/' + workspace_id + '/' + goal_id",
+      "owner": "canonical DB rows; never derived from caller input",
+      "examples": [
+        "t-alpha/w-main/goal-AAAA-1111",
+        "t-alpha/w-main/goal-AAAB-2222",
+        "t-beta/w-main/goal-ZZZZ-9999"
+      ]
+    },
+    "indexable_record_kinds": ["memory_record", "artifact_object"],
+    "record_binding": {
+      "immutable_at_index_time": ["canonical_scope_id", "object_id", "digest", "provenance"],
+      "provenance_fields": [
+        "canonical_source_id",
+        "publisher_id",
+        "independence_group",
+        "resolver_version",
+        "created_by_activity"
+      ],
+      "rule": "an index entry without a complete provenance tuple plus canonical_scope_id is unverifiable and must be rejected (ISO5)"
+    },
+    "caller_scope_resolution": "the effective scope is resolved ONLY from the canonical authorization context (actor membership rows + run context bound to a canonical goal). A caller-supplied scope string can only narrow to the effective scope; any other value is forged and denies (ISO7, ISO8)."
+  },
+
+  "protected_data": {
+    "fields": [
+      "object content bytes",
+      "object existence",
+      "object identifiers",
+      "object metadata (kind, labels, timestamps, size)",
+      "counts and aggregates over rows",
+      "ranks and ordering positions",
+      "snippets/highlights",
+      "provenance of foreign rows"
+    ],
+    "rule": "all fields above are protectable data of their owning scope; none may be disclosed to a caller outside that scope through content, errors, counts, ranks, snippets, timing or pagination side channels"
+  },
+
+  "deny_form": {
+    "canonical_body": { "objects": [], "result": "empty" },
+    "rule": "deny, miss, forged-scope deny and unknown-scope deny all return the exact same canonical body (byte-identical), with no per-case error detail, no metadata and no existence hint. A generic audit-only reason may exist in the audit log, never in the response.",
+    "equivalence_classes": ["valid foreign id", "nonexistent id", "forged scope", "malformed scope", "unknown scope", "policy-denied"]
+  },
+
+  "authorize_before_materialize": {
+    "rule": "the scope/policy decision for a request must be committed before any content, metadata, count, rank, snippet or identifier of a row that fails the policy is materialized into a response, an aggregate, a cache entry or an index intermediate visible to the caller",
+    "forbidden": [
+      "post-filtering after aggregates (count/rank/snippet) were computed over unauthorized rows",
+      "per-case error detail distinguishing foreign from nonexistent",
+      "short-circuit existence checks observable through response or bounded timing tolerance"
+    ],
+    "measurement": "runner instruments policy_checks_before_materialize and materialize_before_policy_check counters per request; evaluator derives ISO2 from response payloads"
+  },
+
+  "cache_semantics": {
+    "key_binding": "every cache entry key includes (variant-normalized) effective canonical scope, normalized query, and policy_epoch",
+    "entry_binding": "every cache entry stores the scope id, policy epoch at fill time and the digest of the cached payload; an entry missing any of these is unverifiable and unusable",
+    "negative_cache": "deny/miss results may be cached only under the same (scope, epoch) binding; a negative entry dies at the next epoch",
+    "hit_rule": "a cache hit revalidates the current policy epoch before use (ISO3); skipping revalidation is a violation even if the payload looks correct",
+    "cross_scope_rule": "a key collision across scopes must never produce a hit (ISO2)"
+  },
+
+  "invalidation": {
+    "revocation_epoch": "each scope carries a monotonically increasing policy_epoch; revoke/move/supersede/scope-policy change commit by bumping the epoch of every affected scope and tombstoning the affected entries",
+    "committed_invalidation_point": "the simulated transaction commit of the epoch bump plus entry tombstone; any retrieval served for an affected (object, old scope) pair after this point is ISO4",
+    "triggers": ["revoke object", "move/re-scope object", "supersede object version", "scope policy version change", "membership/indexer-role revocation"],
+    "cache_effect": "epoch bump makes every cache entry of the affected scope stale in the same commit"
+  },
+
+  "bulk_pagination_background": {
+    "rule": "bulk retrieval, pagination, aggregation and background re-index requests execute the identical policy contract per row/page/job as single reads (ISO6)",
+    "pagination": "offset/limit windows and total counts are computed after the per-row policy predicate; no pre-filter counts or ranks",
+    "bulk": "each id in a bulk request follows the full single-read path; the deny form per id is the canonical deny body",
+    "background_reindex": "a background job iterates scopes under a per-scope indexer authorization context; it may only write entries bound to the authorized scope and must preserve provenance fields"
+  },
+
+  "audit": {
+    "allow_record": { "event": "retrieval.allow", "fields": ["actor", "effective_scope", "query_digest", "result_count", "policy_epoch"] },
+    "deny_record": { "event": "retrieval.deny", "fields": ["actor", "effective_scope", "query_digest", "generic_reason_class"] },
+    "rule": "audit records never contain protected data of any scope: no content, no foreign ids, no snippets; generic_reason_class is one of {empty, forged_scope, unknown_scope, policy_denied} and must not be derivable from the response body"
+  },
+
+  "variants": {
+    "per_scope": {
+      "index_topology": "one index projection per canonical scope; retrieval touches only the caller's own scope index",
+      "foreign_lookup": "a foreign/nonexistent id resolves as a miss inside the own-scope index without probing other scopes' indexes"
+    },
+    "shared_rls": {
+      "index_topology": "one shared index over all scopes; a row-level policy predicate is applied during retrieval before materialization",
+      "foreign_lookup": "id resolution and policy predicate application happen before any row data is materialized; hit and miss follow the identical deny path"
+    },
+    "equal_contract": "ISO1-ISO8 apply to both variants with zero tolerance; topology alone may not change the contract"
+  },
+
+  "hard_invariants": {
+    "ISO1": "the caller never receives content bytes of another scope",
+    "ISO2": "a deny/miss response never discloses foreign ids, metadata, counts, ranks, snippets or existence; deny bodies for all equivalence classes are byte-identical to the canonical deny form and within the frozen timing tolerance",
+    "ISO3": "a cache hit never bypasses the current scope/policy/revocation check",
+    "ISO4": "after the committed invalidation point of a revoke/move/supersede, the old scope receives no further data from the affected object (no stale cache/projection entry is served)",
+    "ISO5": "provenance fields and the canonical scope binding survive indexing, projection and retrieval on every disclosed object",
+    "ISO6": "bulk, pagination, aggregation and background re-index paths apply the identical policy contract as single reads",
+    "ISO7": "a caller-supplied scope never widens the effective scope of the canonical actor",
+    "ISO8": "an unknown or malformed scope denies; it never resolves to a default or fallback scope"
+  },
+  "invariant_severity": "any ISO1-ISO8 violation in an accepted fixture run is FAIL regardless of the weighted decision score",
+
+  "timing_probe_contract": {
+    "purpose": "bounded local error/timing observability check of the object-existence oracle (valid foreign id versus nonexistent id)",
+    "method": "perf_counter_ns wall time around the retrieval call, identical corpus and request order for both arms",
+    "sample_count": 200,
+    "warmup": 20,
+    "seeds": [101, 202, 303],
+    "statistic": "median of per-seed medians per arm",
+    "tolerance": { "relative": 0.10, "absolute_floor_ns": 1000, "rule": "signal = |median_foreign - median_nonexistent|; distinguishable iff signal > max(relative * median_nonexistent, absolute_floor_ns)" },
+    "interpretation": "a distinguishable signal is a finding that constrains the variant (finding/limitation or FAIL per the frozen rubric); it is never evidence of production exploitability and never a production SLO claim",
+    "no_data_policy": "insufficient samples or executor interruption yields NO_DATA, which remains a limitation and never becomes a pass"
+  }
+}

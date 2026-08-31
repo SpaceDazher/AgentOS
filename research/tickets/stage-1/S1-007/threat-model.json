@@ -1,0 +1,104 @@
+{
+  "schema": "agentos.s1-007.threat-model/v1",
+  "ticket": "S1-007",
+  "frozen_before_experiments": true,
+  "assets": [
+    "memory_record and artifact_object content of every scope",
+    "object existence and identifiers",
+    "object metadata, counts, ranks, snippets",
+    "provenance tuples (canonical_source_id, publisher_id, independence_group, resolver_version, created_by_activity)",
+    "canonical scope bindings and membership rows",
+    "policy versions and revocation epochs",
+    "cache and projection state",
+    "audit log integrity"
+  ],
+  "trust_boundaries": [
+    "caller (worker/run context) -> retrieval gateway",
+    "retrieval gateway -> index/projection store",
+    "index/projection store -> cache layer",
+    "background indexer -> index/projection store",
+    "retrieved/untrusted content -> policy engine (content must never alter policy)"
+  ],
+  "attacker_capabilities": [
+    {
+      "id": "T1",
+      "name": "authenticated caller from a neighboring tenant/workspace/goal",
+      "capability": "issues well-formed retrieval requests authorized only in its own scope; may guess or know foreign scope ids",
+      "prevention": "effective scope resolved from canonical membership rows only; per-row policy predicate / own-scope index access; canonical deny form",
+      "detection": "retrieval.deny audit events with generic_reason_class; ISO1/ISO2 counters derived from raw observations",
+      "residual_risk": "side channels outside the measured surface (host-level timing, storage telemetry) are out of the local model",
+      "observable_security_event": "retrieval.deny with generic_reason_class=policy_denied or empty"
+    },
+    {
+      "id": "T2",
+      "name": "caller holding a valid foreign object id",
+      "capability": "replays a leaked valid id of another scope to probe existence or content",
+      "prevention": "deny path identical to nonexistent-id control (same body, same code path order); no existence hint in detail or timing above the frozen tolerance",
+      "detection": "probe A deny-equivalence and bounded timing comparison against the nonexistent control",
+      "residual_risk": "timing tolerance is a bounded local statistic, not a proof that all side channels are absent",
+      "observable_security_event": "retrieval.deny with generic_reason_class=empty, byte-identical to the control"
+    },
+    {
+      "id": "T3",
+      "name": "forged scope/filter parameters",
+      "capability": "supplies scope, tenant or filter parameters that claim a wider or different scope",
+      "prevention": "caller-supplied scope can only equal the canonical effective scope; anything else denies (ISO7/ISO8)",
+      "detection": "ISO7 counter (scope widening attempts that changed the effective scope) and ISO8 counter (unknown/malformed scope resolved to a default)",
+      "residual_risk": "none identified inside the model; canonical membership rows are trusted inputs",
+      "observable_security_event": "retrieval.deny with generic_reason_class=forged_scope or unknown_scope"
+    },
+    {
+      "id": "T4",
+      "name": "stale cache/projection after revoke or move",
+      "capability": "abuses a cache or projection entry filled before a revoke/move/supersede to keep reading data through the old scope",
+      "prevention": "cache keys and entries bound to (scope, policy_epoch); epoch bump at the committed invalidation point; hit revalidates the epoch (ISO3/ISO4)",
+      "detection": "ISO3/ISO4 counters; probe B exercises the exact sequence warm-cache -> revoke/move -> old-scope read",
+      "residual_risk": "the <=5s cross-component revocation SLO is S1-008 scope and is not claimed here; this model proves the logical invalidation point only",
+      "observable_security_event": "retrieval.deny (generic_reason_class=empty) after the committed invalidation point; violation = stale entry served"
+    },
+    {
+      "id": "T5",
+      "name": "shared-index enumeration via count/rank/error/timing",
+      "capability": "infers foreign data through aggregate fields, pagination totals, per-case error detail or bounded timing differences",
+      "prevention": "aggregates computed only after the per-row policy predicate; canonical deny form; frozen timing tolerance on the foreign/nonexistent pair",
+      "detection": "ISO2 leakage scan of response payloads (count/rank/snippet/metadata fields); probe C post-filter candidate must be detected",
+      "residual_risk": "absence of a measured signal is not proof of absence of all side channels",
+      "observable_security_event": "retrieval.deny/allow with protected fields absent from payloads; any leak = FAIL"
+    },
+    {
+      "id": "T6",
+      "name": "background indexer with excessive read scope",
+      "capability": "a background job reads or writes across scopes beyond its authorization, or drops provenance during reindex",
+      "prevention": "background jobs run under a per-scope indexer authorization context; writes are scope-bound; provenance preservation is checked per entry (ISO5/ISO6)",
+      "detection": "ISO5/ISO6 counters on background-path observations; probe D provenance-loss candidate",
+      "residual_risk": "operator-level compromise of the indexer process is out of scope (operator boundary is a documented profile limit)",
+      "observable_security_event": "reindex.audit per scope with entry counts; unverifiable entries rejected"
+    },
+    {
+      "id": "T7",
+      "name": "malicious/untrusted retrieved content attempting to alter policy",
+      "capability": "content, snippets or metadata returned by retrieval try to inject policy decisions or expand scope on later requests",
+      "prevention": "external content is untrusted (repo invariant 6): retrieval never lets content modify the policy engine, membership rows or scope binding; policy decisions use canonical rows only",
+      "detection": "policy engine state hash before/after retrieval paths; content fields are opaque bytes in the model",
+      "residual_risk": "downstream injection risks (prompt injection through snippets) are gateway/knowledge-gate scope (S1-011), not retrieval topology",
+      "observable_security_event": "policy_state_unchanged=true on every run"
+    },
+    {
+      "id": "T8",
+      "name": "operator/admin boundary",
+      "capability": "an operator or platform admin requests cross-scope reads outside their authorization",
+      "prevention": "out of the MVP contract: admin-visible retrieval is a documented profile-C boundary handled by S1-018 (MLS/TEE attested indexer); in this ticket the admin path is denied like any other",
+      "detection": "same ISO counters; admin-blind indexing is explicitly non-scope",
+      "residual_risk": "profile-C requirements may constrain the selected contract; recorded as a profile-compatibility dimension, not solved here",
+      "observable_security_event": "retrieval.deny for out-of-role requests"
+    }
+  ],
+  "attacker_motivation": "read or infer protected data of a scope for which the caller holds no membership, or keep reading data after revocation",
+  "out_of_scope_threats": [
+    "production search service compromise",
+    "host/kernel-level attacks, memory forensics",
+    "cryptographic non-interference claims from the local timing test",
+    "MLS/TEE profile-C internals (S1-018)"
+  ],
+  "evidence_policy": "each probe records prevention, detection, residual risk and the observed security event; absence of an observed leak is never treated as proof that no side channel exists"
+}

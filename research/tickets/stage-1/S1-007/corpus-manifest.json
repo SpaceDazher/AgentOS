@@ -1,0 +1,175 @@
+{
+  "schema": "agentos.s1-007.corpus-manifest/v1",
+  "ticket": "S1-007",
+  "version": 1,
+  "frozen_before_experiments": true,
+  "fixtures_file": "fixtures.json",
+  "seeds": [101, 202, 303],
+  "variants": ["per_scope", "shared_rls"],
+  "minimums": { "scopes": 3, "cases": 6, "seeds_per_variant_case": 3 },
+  "actuals": { "scopes": 3, "cases": 14, "seeds_per_variant_case": 3, "runs_per_executor": 84 },
+  "case_groups": {
+    "G1_authorized_same_scope": ["same-scope-authorized"],
+    "G2_valid_foreign_id": ["foreign-id-valid"],
+    "G3_nonexistent_control": ["nonexistent-id-control"],
+    "G4_forged_malformed_default_scope": ["forged-scope-param", "malformed-scope", "unknown-scope"],
+    "G5_cross_scope_cache_collision": ["cache-collision-cross-scope"],
+    "G6_revoke_move_stale": ["revoke-stale-cache", "move-rescope-stale", "supersede-invalidation"],
+    "G7_bulk_pagination_aggregates": ["pagination-leak", "bulk-mixed-ids", "count-rank-snippet-aggregation"],
+    "G8_background_reindex_provenance": ["background-reindex-provenance"]
+  },
+  "cases": [
+    {
+      "id": "same-scope-authorized",
+      "group": "G1_authorized_same_scope",
+      "steps": [
+        { "op": "retrieve", "actor": "alice", "query_id": "q-runbook", "target_id": "mem-0001-alpha" }
+      ],
+      "expected": { "decision": "allow", "invariants": ["ISO1", "ISO5"] }
+    },
+    {
+      "id": "foreign-id-valid",
+      "group": "G2_valid_foreign_id",
+      "steps": [
+        { "op": "retrieve", "actor": "bruno", "query_id": "q-runbook", "target_id": "mem-0001-alpha" }
+      ],
+      "expected": { "decision": "deny", "deny_equals_nonexistent_control": true, "invariants": ["ISO1", "ISO2"] }
+    },
+    {
+      "id": "nonexistent-id-control",
+      "group": "G3_nonexistent_control",
+      "steps": [
+        { "op": "retrieve", "actor": "bruno", "query_id": "q-runbook", "target_id": "mem-does-not-exist" }
+      ],
+      "expected": { "decision": "deny", "deny_equals_foreign_id_response": true, "invariants": ["ISO2"] }
+    },
+    {
+      "id": "forged-scope-param",
+      "group": "G4_forged_malformed_default_scope",
+      "steps": [
+        { "op": "retrieve", "actor": "bruno", "query_id": "q-runbook", "target_id": "mem-0001-alpha",
+          "claimed_scope": "t-alpha/w-main/goal-AAAA-1111" }
+      ],
+      "expected": { "decision": "deny", "invariants": ["ISO7", "ISO8"] }
+    },
+    {
+      "id": "malformed-scope",
+      "group": "G4_forged_malformed_default_scope",
+      "steps": [
+        { "op": "retrieve", "actor": "mallory", "query_id": "q-runbook", "target_id": "mem-0001-alpha",
+          "claimed_scope": "../../t-alpha/w-main" }
+      ],
+      "expected": { "decision": "deny", "invariants": ["ISO8"] }
+    },
+    {
+      "id": "unknown-scope",
+      "group": "G4_forged_malformed_default_scope",
+      "steps": [
+        { "op": "retrieve", "actor": "mallory", "query_id": "q-runbook", "target_id": "mem-0001-alpha",
+          "claimed_scope": "t-none/w-none/goal-none" }
+      ],
+      "expected": { "decision": "deny", "no_default_scope": true, "invariants": ["ISO8"] }
+    },
+    {
+      "id": "cache-collision-cross-scope",
+      "group": "G5_cross_scope_cache_collision",
+      "steps": [
+        { "op": "retrieve", "actor": "alice", "query_id": "q-common", "target_id": "mem-0001-alpha" },
+        { "op": "retrieve", "actor": "bruno", "query_id": "q-common", "target_id": "mem-0101-beta",
+          "expect": "no cross-scope cache hit despite identical normalized query text" }
+      ],
+      "expected": { "decision": "allow_then_allow", "cross_scope_cache_hit_forbidden": true, "invariants": ["ISO2", "ISO3"] }
+    },
+    {
+      "id": "revoke-stale-cache",
+      "group": "G6_revoke_move_stale",
+      "steps": [
+        { "op": "retrieve", "actor": "alice", "query_id": "q-runbook", "target_id": "mem-0001-alpha" },
+        { "op": "revoke", "scope": "SCP-A", "target_id": "mem-0001-alpha" },
+        { "op": "retrieve", "actor": "alice", "query_id": "q-runbook", "target_id": "mem-0001-alpha" }
+      ],
+      "expected": { "decision": "allow_deny", "stale_entry_served_forbidden": true, "invariants": ["ISO3", "ISO4"] }
+    },
+    {
+      "id": "move-rescope-stale",
+      "group": "G6_revoke_move_stale",
+      "steps": [
+        { "op": "retrieve", "actor": "carol", "query_id": "q-payroll", "target_id": "mem-0201-gamma" },
+        { "op": "move", "from_scope": "SCP-C", "to_scope": "SCP-A", "target_id": "mem-0201-gamma" },
+        { "op": "retrieve", "actor": "carol", "query_id": "q-payroll", "target_id": "mem-0201-gamma" }
+      ],
+      "expected": { "decision": "allow_deny", "stale_projection_served_forbidden": true, "invariants": ["ISO4", "ISO5"] }
+    },
+    {
+      "id": "supersede-invalidation",
+      "group": "G6_revoke_move_stale",
+      "steps": [
+        { "op": "retrieve", "actor": "alice", "query_id": "q-rotation", "target_id": "mem-0003-alpha", "version": 1 },
+        { "op": "supersede", "scope": "SCP-A", "target_id": "mem-0003-alpha", "new_version": 2 },
+        { "op": "retrieve", "actor": "alice", "query_id": "q-rotation", "target_id": "mem-0003-alpha", "version": 1 },
+        { "op": "retrieve", "actor": "alice", "query_id": "q-rotation", "target_id": "mem-0003-alpha", "version": 2 }
+      ],
+      "expected": { "decision": "allow_deny_allow", "invariants": ["ISO3", "ISO4", "ISO5"] }
+    },
+    {
+      "id": "pagination-leak",
+      "group": "G7_bulk_pagination_aggregates",
+      "steps": [
+        { "op": "paginate", "actor": "bruno", "query_id": "q-common", "offset": 0, "limit": 1 },
+        { "op": "paginate", "actor": "bruno", "query_id": "q-common", "offset": 99, "limit": 10 }
+      ],
+      "expected": {
+        "decision": "allow_empty",
+        "post_filter_aggregates_only": true,
+        "no_foreign_metadata_in_pages": true,
+        "invariants": ["ISO2", "ISO6"]
+      }
+    },
+    {
+      "id": "bulk-mixed-ids",
+      "group": "G7_bulk_pagination_aggregates",
+      "steps": [
+        { "op": "bulk", "actor": "alice", "target_ids": ["mem-0001-alpha", "art-0002-alpha", "mem-0101-beta", "mem-does-not-exist"],
+          "order_seed_note": "request order shuffled by the run seed before execution" }
+      ],
+      "expected": {
+        "decision": "mixed",
+        "per_id_deny_form_canonical": true,
+        "same_policy_per_row": true,
+        "invariants": ["ISO1", "ISO6"]
+      }
+    },
+    {
+      "id": "count-rank-snippet-aggregation",
+      "group": "G7_bulk_pagination_aggregates",
+      "steps": [
+        { "op": "aggregate", "actor": "bruno", "query_id": "q-common" }
+      ],
+      "expected": {
+        "decision": "allow",
+        "aggregates_over_authorized_rows_only": true,
+        "no_foreign_count_rank_snippet": true,
+        "invariants": ["ISO2", "ISO6"]
+      }
+    },
+    {
+      "id": "background-reindex-provenance",
+      "group": "G8_background_reindex_provenance",
+      "steps": [
+        { "op": "background_reindex", "actor": "indexer-svc", "scope": "SCP-A" },
+        { "op": "retrieve", "actor": "alice", "query_id": "q-bench", "target_id": "art-0002-alpha" }
+      ],
+      "expected": {
+        "decision": "allow",
+        "provenance_preserved_after_reindex": true,
+        "scope_bound_writes_only": true,
+        "invariants": ["ISO5", "ISO6"]
+      }
+    }
+  ],
+  "invalidation_points_note": "revoke/move/supersede steps mark the committed invalidation point: the epoch bump plus entry tombstone commit atomically in the model before the next retrieval step executes",
+  "determinism": {
+    "seed_use": "random.Random(seed) selects the bulk request order and the cache pre-state permutation; identical seeds must produce byte-identical run payloads",
+    "serialization": "json.dumps(sort_keys=True, separators=(',',':')) for every run record digest"
+  }
+}

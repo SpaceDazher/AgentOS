@@ -1,0 +1,123 @@
+{
+  "schema": "agentos.s1-007.rubric/v1",
+  "ticket": "S1-007",
+  "frozen_before_experiments": true,
+  "candidates": ["per_scope", "shared_rls"],
+  "score_scale": { "min": 0, "max": 4, "note": "4 = best on this dimension under the frozen evidence rules" },
+  "dimensions": [
+    {
+      "id": "D1",
+      "name": "content/existence/metadata isolation",
+      "weight": 0.16,
+      "evidence_rule": "measured: ISO1/ISO2 counters over accepted fixture runs; deny-equivalence across all equivalence classes; timing signal versus frozen tolerance",
+      "claim_type": "test_measurement",
+      "unknown_bounds": [0, 4]
+    },
+    {
+      "id": "D2",
+      "name": "correctness of authorization placement (authorize before materialize)",
+      "weight": 0.12,
+      "evidence_rule": "measured: materialize_before_policy_check counter = 0 and policy check precedes any row materialization on every allow path",
+      "claim_type": "test_measurement",
+      "unknown_bounds": [0, 4]
+    },
+    {
+      "id": "D3",
+      "name": "cache invalidation and revoke/move behavior",
+      "weight": 0.12,
+      "evidence_rule": "measured: ISO3/ISO4 counters across revoke/move/supersede cases; number of invalidation commit operations per event; stale-entry detections",
+      "claim_type": "test_measurement",
+      "unknown_bounds": [0, 4]
+    },
+    {
+      "id": "D4",
+      "name": "projection/provenance integrity",
+      "weight": 0.10,
+      "evidence_rule": "measured: ISO5 counter; share of retrieved entries carrying the complete provenance tuple plus canonical scope binding after projection/retrieval",
+      "claim_type": "test_measurement",
+      "unknown_bounds": [0, 4]
+    },
+    {
+      "id": "D5",
+      "name": "bulk/pagination/background-job isolation",
+      "weight": 0.10,
+      "evidence_rule": "measured: ISO6 counter over bulk, pagination, aggregation and background reindex observations",
+      "claim_type": "test_measurement",
+      "unknown_bounds": [0, 4]
+    },
+    {
+      "id": "D6",
+      "name": "failure blast radius",
+      "weight": 0.08,
+      "evidence_rule": "measured in-model: number of scopes able to observe a corrupted/misprojected index entry (corrupt-entry fault injection through the real retrieval paths)",
+      "claim_type": "test_measurement",
+      "unknown_bounds": [0, 4]
+    },
+    {
+      "id": "D7",
+      "name": "auditability and counterexample quality",
+      "weight": 0.07,
+      "evidence_rule": "measured: audit completeness (allow/deny events for every request, no protected data in audit bodies) plus whether counterexamples remain visible per raw observation without aggregation",
+      "claim_type": "test_measurement",
+      "unknown_bounds": [0, 4]
+    },
+    {
+      "id": "D8",
+      "name": "deterministic testing/replay",
+      "weight": 0.06,
+      "evidence_rule": "measured: identical bytes for identical seed reruns; number of distinct decision paths needing coverage per variant (fewer = simpler adversarial coverage)",
+      "claim_type": "test_measurement",
+      "unknown_bounds": [0, 4]
+    },
+    {
+      "id": "D9",
+      "name": "operational complexity and migration cost",
+      "weight": 0.07,
+      "evidence_rule": "inference from the frozen contract: number of runtime components on the retrieval path, number of index objects to create/migrate, and whether the current gateway-only memory scoping can adopt the contract without core changes; source-bound, not vendor marketing",
+      "claim_type": "architecture_tradeoff",
+      "unknown_bounds": [0, 4]
+    },
+    {
+      "id": "D10",
+      "name": "storage/latency/resource overhead in the local model",
+      "weight": 0.07,
+      "evidence_rule": "measured: index entry counts and payload bytes, rows scanned and policy predicate evaluations per retrieval, cache behavior under the frozen workload",
+      "claim_type": "test_measurement",
+      "unknown_bounds": [0, 4]
+    },
+    {
+      "id": "D11",
+      "name": "profile compatibility and residual risk",
+      "weight": 0.05,
+      "evidence_rule": "inference from the threat model and source profiles: compatibility with profiles A+/B and the documented profile-C boundary (admin-blind indexing is S1-018 scope; a contract that requires it now is incompatible)",
+      "claim_type": "residual_risk",
+      "unknown_bounds": [0, 4]
+    }
+  ],
+  "weight_sum_check": 1.0,
+  "hard_constraints": [
+    "ISO1-ISO8 counters equal zero on every accepted honest-variant fixture run; any violation is FAIL regardless of weighted score",
+    "authorize before materialize holds on every allow path of both variants",
+    "deny bodies are byte-identical across all equivalence classes for the accepted variants",
+    "provenance plus canonical scope binding present on every disclosed object",
+    "no production, availability, latency-SLO or privacy-certification claims are derived from this local model"
+  ],
+  "tie_policy": {
+    "near_tie_threshold": 0.05,
+    "rule": "if |score_a - score_b| < 0.05 prefer the candidate with fewer dimensions scored as unknown; if still tied the verdict is capped at PASS_WITH_LIMITS and a profile split must be explicitly justified"
+  },
+  "unknown_policy": {
+    "rule": "unknown/NO_DATA cells are excluded from the weighted base score, bounded by [pessimistic, optimistic] in sensitivity analysis, and never counted as zero, as an average or as an advantage"
+  },
+  "sensitivity_policy": {
+    "weight_perturbation": "each weight set to 50% and 150% of its base value (renormalized), all pairwise one-at-a-time",
+    "random_vectors": "200 deterministic seeded weight vectors (seed 42) over the simplex",
+    "unknown_bounds": "every unknown cell swung between its pessimistic and optimistic bounds",
+    "verdict_rule": "any winner flip under the perturbations caps the verdict at PASS_WITH_LIMITS and the flip set is reported verbatim"
+  },
+  "statistical_tolerance": {
+    "rerun_score_absolute": 0.02,
+    "rerun_metric_relative": 0.15,
+    "timing": "see isolation-contract.timing_probe_contract"
+  }
+}

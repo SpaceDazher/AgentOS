@@ -1,0 +1,151 @@
+{
+  "schema": "agentos.s1-007.fixtures/v1",
+  "ticket": "S1-007",
+  "version": 1,
+  "frozen_before_experiments": true,
+  "scopes": [
+    { "scope_id": "t-alpha/w-main/goal-AAAA-1111", "short": "SCP-A", "policy_version": "pol-v1", "policy_epoch": 1 },
+    { "scope_id": "t-alpha/w-main/goal-AAAB-2222", "short": "SCP-B", "policy_version": "pol-v1", "policy_epoch": 1 },
+    { "scope_id": "t-beta/w-main/goal-ZZZZ-9999", "short": "SCP-C", "policy_version": "pol-v1", "policy_epoch": 1 }
+  ],
+  "scope_similarity_note": "SCP-A and SCP-B share tenant and workspace and differ only in a near-collision goal suffix (AAAA-1111 vs AAAB-2222); SCP-C is a different tenant. This stresses prefix-confusion and cross-tenant probes alike.",
+  "actors": [
+    { "actor": "alice", "member_of": ["SCP-A"] },
+    { "actor": "bruno", "member_of": ["SCP-B"] },
+    { "actor": "carol", "member_of": ["SCP-C"] },
+    { "actor": "mallory", "member_of": [] }
+  ],
+  "objects": [
+    {
+      "id": "mem-0001-alpha",
+      "scope": "SCP-A",
+      "kind": "memory_record",
+      "content": "alpha: deployment runbook step 3 requires signing the release with the staging KMS key",
+      "provenance": {
+        "canonical_source_id": "src-tool-fs-17",
+        "publisher_id": "agent-install-7",
+        "independence_group": "ig-ops",
+        "resolver_version": "resolver-v3",
+        "created_by_activity": "act-1001"
+      },
+      "status": "active",
+      "version": 1
+    },
+    {
+      "id": "art-0002-alpha",
+      "scope": "SCP-A",
+      "kind": "artifact_object",
+      "content": "alpha: benchmark report digest 4f2a... baseline throughput table v1",
+      "provenance": {
+        "canonical_source_id": "src-run-local-9",
+        "publisher_id": "agent-install-7",
+        "independence_group": "ig-bench",
+        "resolver_version": "resolver-v3",
+        "created_by_activity": "act-1002"
+      },
+      "status": "active",
+      "version": 1
+    },
+    {
+      "id": "mem-0003-alpha",
+      "scope": "SCP-A",
+      "kind": "memory_record",
+      "content": "alpha v1: deprecated credentials rotation memo (superseded)",
+      "provenance": {
+        "canonical_source_id": "src-memo-4",
+        "publisher_id": "agent-install-7",
+        "independence_group": "ig-ops",
+        "resolver_version": "resolver-v3",
+        "created_by_activity": "act-1003"
+      },
+      "status": "active",
+      "version": 1
+    },
+    {
+      "id": "mem-0003-alpha",
+      "scope": "SCP-A",
+      "kind": "memory_record",
+      "content": "alpha v2: credentials rotation memo, quarterly schedule",
+      "provenance": {
+        "canonical_source_id": "src-memo-4",
+        "publisher_id": "agent-install-7",
+        "independence_group": "ig-ops",
+        "resolver_version": "resolver-v3",
+        "created_by_activity": "act-1004"
+      },
+      "status": "dormant",
+      "version": 2
+    },
+    {
+      "id": "mem-0101-beta",
+      "scope": "SCP-B",
+      "kind": "memory_record",
+      "content": "beta: private customer list for the Q3 pilot (restricted)",
+      "provenance": {
+        "canonical_source_id": "src-crm-2",
+        "publisher_id": "agent-install-11",
+        "independence_group": "ig-crm",
+        "resolver_version": "resolver-v3",
+        "created_by_activity": "act-2001"
+      },
+      "status": "active",
+      "version": 1
+    },
+    {
+      "id": "art-0102-beta",
+      "scope": "SCP-B",
+      "kind": "artifact_object",
+      "content": "beta: design artifact wireframes hash 91bc... internal only",
+      "provenance": {
+        "canonical_source_id": "src-design-8",
+        "publisher_id": "agent-install-11",
+        "independence_group": "ig-design",
+        "resolver_version": "resolver-v3",
+        "created_by_activity": "act-2002"
+      },
+      "status": "active",
+      "version": 1
+    },
+    {
+      "id": "mem-0201-gamma",
+      "scope": "SCP-C",
+      "kind": "memory_record",
+      "content": "gamma: tenant-beta payroll summary (highly restricted)",
+      "provenance": {
+        "canonical_source_id": "src-hr-1",
+        "publisher_id": "agent-install-21",
+        "independence_group": "ig-hr",
+        "resolver_version": "resolver-v3",
+        "created_by_activity": "act-3001"
+      },
+      "status": "active",
+      "version": 1
+    },
+    {
+      "id": "art-0202-gamma",
+      "scope": "SCP-C",
+      "kind": "artifact_object",
+      "content": "gamma: contract draft appendix delta-7",
+      "provenance": {
+        "canonical_source_id": "src-legal-5",
+        "publisher_id": "agent-install-21",
+        "independence_group": "ig-legal",
+        "resolver_version": "resolver-v3",
+        "created_by_activity": "act-3002"
+      },
+      "status": "active",
+      "version": 1
+    }
+  ],
+  "queries": [
+    { "query_id": "q-runbook", "text": "runbook signing", "matches_scope": "SCP-A", "match_ids": ["mem-0001-alpha"] },
+    { "query_id": "q-bench", "text": "benchmark report", "matches_scope": "SCP-A", "match_ids": ["art-0002-alpha"] },
+    { "query_id": "q-rotation", "text": "credentials rotation", "matches_scope": "SCP-A", "match_ids": ["mem-0003-alpha"] },
+    { "query_id": "q-pilot", "text": "customer pilot", "matches_scope": "SCP-B", "match_ids": ["mem-0101-beta"] },
+    { "query_id": "q-wireframe", "text": "wireframes", "matches_scope": "SCP-B", "match_ids": ["art-0102-beta"] },
+    { "query_id": "q-payroll", "text": "payroll summary", "matches_scope": "SCP-C", "match_ids": ["mem-0201-gamma"] },
+    { "query_id": "q-contract", "text": "contract appendix", "matches_scope": "SCP-C", "match_ids": ["art-0202-gamma"] },
+    { "query_id": "q-common", "text": "common term", "matches_scope": null, "match_ids": [] }
+  ],
+  "canonical_deny_body": { "objects": [], "result": "empty" }
+}
