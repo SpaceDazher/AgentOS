@@ -23,6 +23,7 @@ risk / next step. Items closed by recent work are listed at the bottom.
 | CI | GitHub Actions matrix (3.11/3.12 × win/ubuntu): tests + SHA pin + demo smoke + plugin import check | runs only when a GitHub remote exists | add remote and push |
 | Eval evidence | **executed**: harness drills pass⁵=1.0; E2 N=20×5: pass¹=0.93, pass⁵=0.75 (порог не взят); stage gates интегрированы в release Gate (6 этапов, latest-wins); eval_run привязан к goal+case+artifact-chain+corpus | human gold-set для false-completion; LLM-judge FPR/FNR | protocol §Compliance items |
 | Research-to-plan | bounded offline bundle workflow with immutable goal-scoped campaign/source/claim/artifact/evaluation rows, deterministic checks, v3 metadata evidence, and redacted wiki projection | no built-in live retrieval/provider guarantee; no kernel sandbox; no production claim; corpus-level FPR/FNR for this workflow has not been measured | add separately audited retrieval adapters, confinement, and a preregistered research-quality corpus |
+| Research auditor independence | W0 auditor is a role string, adversarial + process-separated but not an external human/model; S1-001/S1-002 record this as an explicit PASS_WITH_LIMITS limit; S1-003 PASS is machine-verifiable (fail-closed oracle, unhashlocked probes) and does not depend on a person | closure independence rests on the S1-020 external review condition; corpus-level probe FPR/FNR not measured | external human/model review of S1-001/S1-002 packs at S1-020, per-ticket external review before the closure gate |
 
 ## Closed gaps (history)
 

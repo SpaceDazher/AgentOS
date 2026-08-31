@@ -205,6 +205,15 @@ the ticket's bounded bundle.
   evidence-pack/v3 `chain_fresh=true`, wiki-check ok. Limits: process-separated
   (not external) auditor; frozen 12-record queue only, not the 176 `u` tail;
   live canonical review without full third-party archiving.
+  **Review-fix 2026-08-30:** adversarial probes made executable — see
+  `research/tickets/stage-1/S1-001/promotion_probes.py` (mirror/Sybil,
+  u-without-provenance, corrected-DOI preservation, acceptance fields) and
+  `probe-results.json`; configured as an executable `probes` block in the
+  bundle and run machine-checked by `research.py` (fail-closed). Re-executed:
+  goal `goal_32TEBCPDBG6Z1Y4G01M17PW082`, evaluation
+  `reval_39V3C11A5AS9PXWG01M17PW104`, result `pass_with_limits`,
+  probe `s1-001-promotion-adversarial` observed `pass`. Versioned
+  evaluation-record: `research/tickets/stage-1/S1-001/evaluation-record.json`.
 - **Priority:** `P0`
 - **Wave:** `W0`
 - **Owner:** `sources`
@@ -270,6 +279,16 @@ python -m agentos.cli research-plan --topic "S1-001 targeted source promotion an
   distributed workers/external calls/revocation/fan-out unverified;
   process-separated (not external) auditor; 20 ms p95 is an internal
   target, not a production SLO.
+  **Review-fix 2026-08-30:** benchmark made reproducible from the repository —
+  `benchmark.py` re-executed (1728 events, 353.28 B/persisted-row reproduced;
+  latency is a live measurement and varies run-to-run), the raw-evidence SHA-256
+  and byte size declared in the bundle corrected to the committed
+  `raw-results.json` digest, and a deterministic probe `bench_probe.py` +
+  `probe-results.json` added; machine-checked as a `probes` block. Re-executed:
+  goal `goal_RTG9X8N2KMNYMAJN01M17PW2AN`, evaluation
+  `reval_NB5XC5R6GDQBXZMQ01M17PW2Y2`, result `pass_with_limits`,
+  probe `s1-002-reproducibility` observed `pass`. Versioned
+  evaluation-record: `research/tickets/stage-1/S1-002/evaluation-record.json`.
 - **Priority:** `P0`
 - **Wave:** `W0`
 - **Owner:** `capacity`
@@ -1396,3 +1415,33 @@ classification, mass verification of 176 `u` sources, production SLO claims,
 and production rollout of profile C. These are re-entry conditions, not implied
 claims of completion. The Stage 1 exit decision can be `PASS_WITH_LIMITS` while
 those limits remain explicit.
+
+## Independent auditor decision (W0 review-fix, 2026-08-30)
+
+The closure gate for every ticket requires an *independent auditor distinct
+from the author*. In the W0 execution the auditor is a role string inside the
+bundle (`agentos-s1-00X-independent-verifier`); for S1-001/S1-002 the limits
+records state it is *process-separated and adversarial, not an external human
+or independently operated model*. This section records the explicit decision:
+
+- **S1-003 (`PASS`):** the verdict is defensible without an external human.
+  The executable evidence is fully fail-closed: the structural oracle
+  (`validate_structural.py`) recomputes every expectation from disk hashes,
+  the pySHACL engine run (26/26 agreement) cannot be silently bypassed
+  (comparison.py rejects tampering), and probes are unhashlocked. Any later
+  change to shapes/fixtures/hashes re-fails the regression suite
+  (`tests/test_s1_003_regressions.py`). The audit opinion is therefore
+  machine-verifiable, and its protection does not depend on a person.
+- **S1-001 / S1-002 (`PASS_WITH_LIMITS`):** the auditor-role limit is explicit
+  and deliberate. The verifier for S1-002 is the same process that authored the
+  benchmark (single-author reproduction), and S1-001's promotion verdicts are
+  asserted by `promotion_probes.py` against the bundle's own data. Because the
+  *author* and *auditor* run inside the same host, independence is
+  process-separation only, so the limit is recorded rather than waived.
+  **Condition to lift:** an external human or independently operated model
+  reviews S1-001 and S1-002 evidence packs during S1-020 (the independent
+  phase-audit ticket), or an external reviewer is added per-ticket before the
+  closure gate. Nothing here implies a real external audit occurred.
+- **No semantic change:** a `research-plan` `PASS` / `PASS_WITH_LIMITS` remains
+  a research evaluation and never sets `Goal ACCEPTED`; only the release gate
+  over evaluator records can accept.
