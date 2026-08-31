@@ -11,6 +11,7 @@ import hashlib
 import json
 import re
 import os
+import sys
 from pathlib import Path, PureWindowsPath
 from types import MappingProxyType
 from typing import Any, Mapping
@@ -54,6 +55,18 @@ MAX_URI_CHARS = 2048
 MAX_SOURCE_TITLE_CHARS = 512
 MAX_SOURCE_TYPE_CHARS = 128
 MAX_CLAIM_TEXT_CHARS = 4096
+
+# Executable ticket-specific probes.  Bundles may declare an OPTIONAL
+# ``probes`` block: [{name, command|python_callable, expected}].  Each probe
+# runs in an isolated subprocess, stdlib-only, with no network/LLM access
+# beyond what the OS grants, and is fail-closed: an unknown command, an
+# unmapped result, or a result that disagrees with ``expected`` is a failure
+# or an explicit abstention, never a silent pass.
+MAX_PROBE_COMMAND_CHARS = 2048
+PROBE_TIMEOUT_SECONDS = 120
+# A probe declares its outcome via an exit code plus an optional JSON verdict
+# line.  Allowed verdict tokens; anything else is an abstention (not a pass).
+_PROBE_VERDICTS = {"pass", "fail", "abstain"}
 
 # This is the host-owned v1 authority.  Keep the public object immutable so a
 # caller cannot mutate the process-wide defaults between campaigns.
@@ -678,6 +691,229 @@ def _normalize_bundle(bundle: Mapping[str, Any], config: Mapping[str, Any],
     return normalized, errors
 
 
+def _probe_items(bundle: Mapping[str, Any]) -> list[Any]:
+    value = bundle.get("probes", [])
+    if isinstance(value, Mapping):
+        return [dict(item, name=str(name)) if isinstance(item, Mapping) else item
+                for name, item in value.items()]
+    return list(value) if isinstance(value, (list, tuple)) else []
+
+
+def _normalise_probes(bundle: Mapping[str, Any]) -> tuple[list[dict[str, Any]], list[str]]:
+    """Normalize the optional ``probes`` block into execution-ready records.
+
+    Every probe must be an object with a unique ``name``, an execution
+    ``command`` (string; ``python_callable``-style resolvers are expressed as
+    a command that invokes the script), and an ``expected`` verdict in
+    {pass, fail, abstain}.  Unknown fields are ignored as data; a malformed
+    probe is a validation error so nothing is silently skipped.
+    """
+    errors: list[str] = []
+    probes: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for index, raw in enumerate(_probe_items(bundle)):
+        if not isinstance(raw, Mapping):
+            errors.append(f"probe {index} must be an object")
+            continue
+        name = str(raw.get("name", "")).strip()
+        if not name:
+            errors.append(f"probe {index} requires a non-empty name")
+            continue
+        if name in seen:
+            errors.append(f"probe name appears more than once: {name}")
+            continue
+        seen.add(name)
+        command = _as_text(raw.get("command", raw.get("python_callable", ""))).strip()
+        if not command:
+            errors.append(f"probe {name} requires a command")
+            continue
+        if len(command) > MAX_PROBE_COMMAND_CHARS:
+            errors.append(f"probe {name} command exceeds {MAX_PROBE_COMMAND_CHARS} characters")
+            continue
+        expected = str(raw.get("expected", "")).strip().lower()
+        if expected not in _PROBE_VERDICTS:
+            errors.append(f"probe {name} expected must be one of pass|fail|abstain")
+            continue
+        probes.append({"name": name, "command": command, "expected": expected})
+    probes = [p for p in probes if p]
+    return probes, list(dict.fromkeys(errors))
+
+
+def _split_command(command: str) -> list[str]:
+    """Split a probe command into argv tokens (no shell interpretation).
+
+    A ticket command is a short safe string like ``python <relpath>``.  We
+    tokenize with shlex so quoted relative paths survive; the tokens are then
+    confinement-checked by the caller.  An empty result is a fail-closed
+    condition.  ``shlex`` is stdlib.
+    """
+    import shlex
+    try:
+        return shlex.split(command)
+    except ValueError:
+        return []
+
+
+def _confine_probe_argv(tokens: list[str], workspace: Path) -> str | None:
+    """Return a confinement error string, or ``None`` if argv is safe.
+
+    Rules (mirroring the effect-parser path confinement):
+      - argv must be non-empty;
+      - the program token must be a bare name (no path separators, no drive,
+        not '.' or '..') so absolute execution is impossible;
+      - any other token that is path-like (contains a separator, starts with
+        '.', has an extension, or looks like a drive path) must resolve INSIDE
+        the workspace; path traversal and absolute/drive paths are refused.
+      - bare flag/argument tokens (no separators, not path-like) are allowed.
+    """
+    if not tokens:
+        return "empty probe command"
+    program = tokens[0]
+    if any(ch in program for ch in ("/", "\\", ":")) or program in {".", ".."}:
+        return f"probe program must be a bare name, got {program!r}"
+    for token in tokens[1:]:
+        if not token or token.startswith("-"):
+            continue
+        path_like = (
+            any(ch in token for ch in ("/", "\\"))
+            or token.startswith(".")
+            or ":" in token
+            or "." in token  # extension / dotted path-like token
+        )
+        if not path_like:
+            continue
+        # Any path-like token must be a workspace-relative path that stays
+        # inside the workspace after resolution.
+        try:
+            p = Path(token)
+        except (TypeError, ValueError):
+            return f"probe token is not a valid path: {token!r}"
+        if p.is_absolute() or Path(token).drive:
+            return f"probe token must be workspace-relative: {token!r}"
+        try:
+            if not (workspace / p).resolve().is_relative_to(workspace):
+                return f"probe token escapes workspace: {token!r}"
+        except (ValueError, OSError):
+            return f"probe token cannot be resolved inside workspace: {token!r}"
+    return None
+
+
+def _run_one_probe(probe: Mapping[str, Any], workspace: Path) -> dict[str, Any]:
+    """Run one isolated probe and return a fail-closed result record.
+
+    A probe that cannot be executed, times out, has an unknown program, or
+    yields an unmapped verdict is reported as ``abstain`` or ``fail`` — never
+    silently treated as a pass.  ``command`` is confined to the workspace and
+    run without a shell via subprocess.
+    """
+    import subprocess
+
+    command = probe["command"]
+    tokens = _split_command(command)
+    confinement = _confine_probe_argv(tokens, workspace)
+    record: dict[str, Any] = {
+        "name": probe["name"],
+        "command": command,
+        "expected": probe["expected"],
+        "observed": "abstain",
+        "result": "abstain",
+        "detail": "",
+    }
+    if confinement:
+        record["observed"] = "fail"
+        record["result"] = "fail"
+        record["detail"] = f"command confined: {confinement}"
+        return record
+    if not tokens:
+        record["observed"] = "fail"
+        record["result"] = "fail"
+        record["detail"] = "command could not be tokenized"
+        return record
+    program = tokens[0]
+    if program in ("python", "python3"):
+        program = sys.executable  # the host interpreter, stdlib-only
+    argv = [program] + tokens[1:]
+    try:
+        completed = subprocess.run(
+            argv, cwd=str(workspace), capture_output=True, text=True,
+            timeout=PROBE_TIMEOUT_SECONDS, check=False,
+        )
+    except FileNotFoundError:
+        record["observed"] = "fail"
+        record["result"] = "fail"
+        record["detail"] = f"unknown probe command: {tokens[0]}"
+        return record
+    except subprocess.TimeoutExpired:
+        record["observed"] = "fail"
+        record["result"] = "fail"
+        record["detail"] = f"probe timed out after {PROBE_TIMEOUT_SECONDS}s"
+        return record
+
+    if completed.returncode != 0:
+        record["observed"] = "fail"
+        record["result"] = "fail"
+        record["detail"] = (completed.stderr or completed.stdout or "").strip()[:2000]
+        return record
+
+    # exit 0 alone is NOT proof of pass (fail-closed): require a machine
+    # readable verdict on stdout.  Parse the full stdout as JSON first, then
+    # fall back to the last non-empty line (compact one-line verdicts).
+    tail = (completed.stdout or "").strip()
+    if not tail:
+        record["observed"] = "abstain"
+        record["result"] = "abstain"
+        record["detail"] = "probe exited 0 but produced no output (fail-closed abstention)"
+        return record
+    observed = None
+    try:
+        parsed = json.loads(tail)
+        if isinstance(parsed, Mapping):
+            observed = str(parsed.get("observed", "")).strip().lower()
+    except (json.JSONDecodeError, ValueError):
+        last_line = tail.rsplit("\n", 1)[-1].strip()
+        try:
+            parsed = json.loads(last_line)
+            if isinstance(parsed, Mapping):
+                observed = str(parsed.get("observed", "")).strip().lower()
+        except (json.JSONDecodeError, ValueError):
+            observed = None
+    if observed not in _PROBE_VERDICTS:
+        record["observed"] = "abstain"
+        record["result"] = "abstain"
+        record["detail"] = "probe exited 0 but returned no parsable verdict (fail-closed abstention)"
+        return record
+    record["observed"] = observed
+    record["result"] = observed  # pass|fail|abstain as observed
+    record["detail"] = (completed.stdout or "").strip()[:2000]
+    return record
+
+
+def _execute_probes(bundle: Mapping[str, Any], workspace: Path) -> tuple[list[dict[str, Any]], list[str]]:
+    """Run every configured probe; return (per-probe records, failures).
+
+    A probe ``fails`` when its observed verdict is anything other than its
+    expected verdict.  ``abstain`` only passes when it is the explicitly
+    expected outcome — it is never treated as ``pass``.
+    """
+    probes, errors = _normalise_probes(bundle)
+    if errors:
+        return [], errors
+    records: list[dict[str, Any]] = []
+    failures: list[str] = []
+    for probe in probes:
+        rec = _run_one_probe(probe, workspace)
+        expected = probe["expected"]
+        if rec["observed"] == expected:
+            rec["passed"] = True
+        else:
+            rec["passed"] = False
+            failures.append(
+                f"probe {probe['name']}: observed {rec['observed']} != expected {expected}"
+                f" ({rec['detail']})")
+        records.append(rec)
+    return records, failures
+
+
 def _evaluation_checks(normalized: Mapping[str, Any], config: Mapping[str, Any]) -> tuple[list[str], list[str]]:
     failures: list[str] = []
     next_actions: list[str] = []
@@ -1052,13 +1288,25 @@ def evaluate_research(db, goal_id: str) -> dict[str, Any]:
     if latest_audit:
         details = json.loads(latest_audit[0] or "{}")
         normalized["audit"] = details.get("audit", {})
+        latest_probes = details.get("probes", [])
+    else:
+        latest_probes = []
     failures, actions = _evaluation_checks(normalized, config)
+    # Re-apply the saved probe verdicts for a consistent re-evaluation:
+    # a probe that did not meet its expected outcome keeps the evaluation
+    # from being green, and abstain is only acceptable as the expected result.
+    for rec in latest_probes:
+        if not rec.get("passed"):
+            failures.append(
+                f"probe {rec.get('name')} did not meet expected "
+                f"{rec.get('expected')}: observed {rec.get('observed')}")
     result = (normalized["audit"].get("verdict")
               if not failures and normalized["audit"].get("verdict") == "pass_with_limits"
               else ("pass" if not failures else "fail"))
     evaluation = _store_evaluation(
         db, goal_id, result, failures, normalized["audit"].get("limitations", []),
-        {"audit": normalized["audit"], "next_actions": actions},
+        {"audit": normalized["audit"], "next_actions": actions,
+         "probes": latest_probes},
     )
     return evaluation
 
@@ -1187,15 +1435,30 @@ def run_research_plan(db, root_dir: str | Path, topic: str,
                 "next_actions": [f"repair research persistence: {type(exc).__name__}: {exc}"],
                 "artifacts": []}
 
+    # Execute the bundle's optional adversarial probes in an isolated process.
+    probe_records, probe_errors = _execute_probes(loaded or {}, workspace)
+    details: dict[str, Any] = {
+        "audit": normalized["audit"], "config": dict(config_norm),
+        "next_actions": [], "probes": probe_records,
+    }
+
     failures, next_actions = _evaluation_checks(normalized, config_norm)
+    failures = list(failures) + list(probe_errors)
+    # Probe failures gate the verdict: a probe that does not meet its expected
+    # outcome drops the evaluation, exactly like the resource checks.  An
+    # ``abstain`` is only acceptable when it is the explicitly expected result.
+    for r in probe_records:
+        if not r.get("passed"):
+            failures.append(f"probe {r['name']} did not meet expected "
+                            f"{r['expected']}: observed {r['observed']}")
+    details["next_actions"] = next_actions
     result_kind = ("pass_with_limits"
                    if not failures and normalized["audit"].get("verdict") == "pass_with_limits"
                    else ("pass" if not failures else "fail"))
     evaluation = _store_evaluation(
         db, goal_id, result_kind, failures,
         normalized["audit"].get("limitations", []),
-        {"audit": normalized["audit"], "config": dict(config_norm),
-         "next_actions": next_actions},
+        details,
     )
     artifacts = [dict(row) for row in artifact_rows]
     sources = [{k: s[k] for k in (
@@ -1219,6 +1482,7 @@ def run_research_plan(db, root_dir: str | Path, topic: str,
         "claims": claims,
         "artifacts": artifacts,
         "evaluation": evaluation,
+        "probes": details.get("probes", []),
         "artifact_chain_hash": evaluation["artifact_chain_hash"],
         "goal_status": db.conn.execute(
             "SELECT status FROM goal WHERE id=?", (goal_id,)).fetchone()[0],
@@ -1344,6 +1608,7 @@ __all__ = [
     "MAX_CLAIMS", "MAX_BODY_BYTES", "MAX_URI_CHARS",
     "MAX_SOURCE_TITLE_CHARS", "MAX_SOURCE_TYPE_CHARS", "MAX_CLAIM_TEXT_CHARS",
     "ResearchValidationError", "evaluate_research",
+    "_execute_probes", "_run_one_probe", "_confine_probe_argv", "_normalise_probes",
     "ResearchPlanner", "ResearchWorkflow", "research_chain_hash", "research_plan",
     "run_research_plan", "fixture_bundle",
     "offline_fixture_bundle", "build_offline_fixture_bundle",
