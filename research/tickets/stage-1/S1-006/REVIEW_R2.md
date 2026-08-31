@@ -60,6 +60,8 @@ comparison is model-based and same-host, not because evidence is missing.
 - Rerun score and metric deltas: all 0.
 - Sensitivity: 222 runs, zero flips, zero ties.
 - S1-006 regressions: 68/68.
+- Clean-tree full repository suite: 467 tests, 466 passed + 1 skipped,
+  exit 0.
 - Canonical research revision 5:
   `reval_3R5R2WNN81E4ZMWW01M1CKXMRE`, chain
   `f5e45f4f59f2f5fd08e57a27afc9c7c6e8ea502b1b034da613c757e8d24bfe53`.

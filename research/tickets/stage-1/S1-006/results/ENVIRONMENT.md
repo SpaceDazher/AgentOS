@@ -32,6 +32,8 @@ py -3.12 -m agentos.cli wiki-check --db ".agentos-research/platform-stage-1"
 Observed before publication: dependency gate exit 0; bundle pipeline exit 0;
 68/68 S1-006 regression tests; research-plan exit 0 with
 `pass_with_limits`; wiki check `ok=true` (2378 files, 6430 links).
+After the evidence commit, the clean-tree full suite completed with
+`Ran 467 tests ... OK (skipped=1)`, exit 0.
 
 ## Evidence authority
 
