@@ -944,7 +944,6 @@ def evaluate(runs_manifest: Path, rerun_manifest: Path,
     if main_doc.get("contract_hashes") != frozen_hashes:
         raise EvalError("main manifest contract hashes diverge from frozen")
     main_runs = validate_run_matrix(main_doc, runs_manifest.parent / "runs")
-
     rerun_doc = load(rerun_manifest)
     digest_input = dict(rerun_doc)
     saved_digest = digest_input.pop("manifest_digest", None)
@@ -955,7 +954,7 @@ def evaluate(runs_manifest: Path, rerun_manifest: Path,
     validate_provenance(rerun_doc.get("provenance", {}), expected_commit)
     if rerun_doc.get("contract_hashes") != frozen_hashes:
         raise EvalError("rerun manifest contract hashes diverge from frozen")
-    rerun_runs = validate_run_matrix(rerun_manifest,
+    rerun_runs = validate_run_matrix(rerun_doc,
                                      rerun_manifest.parent / "runs")
 
     if main_doc["provenance"]["executor_id"] == \
