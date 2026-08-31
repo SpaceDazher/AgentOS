@@ -56,28 +56,30 @@ def dependency_gate() -> dict:
     return json.loads(out)
 
 
-def run_experiments(mode: str, out_dir: Path) -> dict:
+def run_experiments(mode: str, out_dir: Path, executor_id: str) -> dict:
     if out_dir.exists():
         import shutil
         shutil.rmtree(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
+    env = dict(os.environ, AGENTOS_EXECUTOR_ID=executor_id)
     sh([sys.executable, str((TICKET / "runner.py").resolve()), "--mode", mode,
-        "--out", str(out_dir)])
+        "--out", str(out_dir)], env=env)
     return load(out_dir / "run-manifest.json")
 
 
 def run_probes() -> dict:
+    env = dict(os.environ, AGENTOS_EXECUTOR_ID=PRODUCER)
     sh([sys.executable, str((TICKET / "runner.py").resolve()), "--mode", "probes",
-        "--out", str(RESULTS)])
+        "--out", str(RESULTS)], env=env)
     return load(RESULTS / "probes.json")
 
 
 def run_evaluator(runs_manifest: Path, *, expected_commit: str,
-                  run_nonce: str) -> dict:
+                  run_nonce: str, out_path: Path, probes_sha: str) -> dict:
     """Production evaluator invocation with mandatory fresh-write
     semantics: the saved sensitivity output is removed first and the
     fresh file must carry this run's nonce (review R3 finding 2)."""
-    sensitivity = RESULTS / "sensitivity-analysis.json"
+    sensitivity = out_path
     if sensitivity.exists():
         sensitivity.unlink()
     env = dict(os.environ, AGENTOS_RUN_NONCE=run_nonce)
@@ -85,7 +87,9 @@ def run_evaluator(runs_manifest: Path, *, expected_commit: str,
         [sys.executable, str((TICKET / "evaluator.py").resolve()),
          "--runs-manifest", str(runs_manifest),
          "--runs-manifest-sha", sha_file(runs_manifest),
-         "--expected-commit", expected_commit],
+         "--expected-commit", expected_commit,
+         "--probes-sha", probes_sha,
+         "--out", str(sensitivity)],
         capture_output=True, text=True, timeout=900, env=env, cwd=str(ROOT))
     if proc.returncode != 0:
         raise SystemExit(
@@ -130,16 +134,40 @@ def compare_rerun(evaluation: dict, rerun: dict) -> dict:
         raise SystemExit("rerun safety verdict diverged from the main run")
     base_a = evaluation["sensitivity"]["base_scores"]
     base_b = rerun["sensitivity"]["base_scores"]
+    rubric = load(TICKET / "rubric.json")
+    tolerance = rubric["statistical_tolerance"]["rerun_score_absolute"]
     deltas = {}
     for backend, sc in base_a.items():
         other = base_b.get(backend)
-        delta = abs(sc - (other or 0))
+        if other is None:
+            raise SystemExit(f"rerun score missing for {backend}")
+        delta = abs(sc - other)
         deltas[backend] = round(delta, 4)
-        if delta > 2.0:
+        if delta > tolerance:
             raise SystemExit(
-                f"rerun score delta beyond the frozen 2x tolerance for "
+                f"rerun score delta beyond the frozen tolerance for "
                 f"{backend}: {delta}")
+    metric_deltas = {}
+    metric_tolerance = rubric["statistical_tolerance"]["rerun_metric_relative"]
+    for metric in ("p95_us", "recovery_median_us"):
+        metric_deltas[metric] = {}
+        for backend, value in evaluation[metric].items():
+            other = rerun[metric].get(backend)
+            if value is None or other is None:
+                if value != other:
+                    raise SystemExit(f"rerun {metric}.{backend} availability diverged")
+                delta = 0.0
+            else:
+                delta = abs(value - other) / max(abs(value), abs(other), 1e-12)
+            metric_deltas[metric][backend] = round(delta, 6)
+            if delta > metric_tolerance:
+                raise SystemExit(
+                    f"rerun {metric}.{backend} relative delta {delta} exceeds "
+                    f"{metric_tolerance}")
     return {"verdict_equal": True, "score_deltas": deltas,
+            "metric_relative_deltas": metric_deltas,
+            "score_absolute_tolerance": tolerance,
+            "metric_relative_tolerance": metric_tolerance,
             "rerun_nonce": rerun.get("run_nonce")}
 
 
@@ -147,7 +175,7 @@ def _main() -> None:
     gate = dependency_gate()
     print("[gate] both dependencies PROVEN")
 
-    manifest_a = run_experiments("main", RESULTS / "run-a")
+    manifest_a = run_experiments("main", RESULTS / "run-a", PRODUCER)
     print(f"[runner] main: {len(manifest_a['runs'])} runs, "
           f"commit {manifest_a['provenance']['commit'][:12]}, "
           f"dirty={manifest_a['provenance']['dirty']}")
@@ -156,11 +184,19 @@ def _main() -> None:
     if manifest_a["provenance"]["commit"] != _commit():
         raise SystemExit("recorded commit does not match the current HEAD")
 
-    manifest_b = run_experiments("rerun", RESULTS / "run-b")
+    manifest_b = run_experiments("rerun", RESULTS / "run-b", AUDITOR)
     print(f"[runner] rerun: {len(manifest_b['runs'])} runs in a separate "
           f"process and output directory")
+    if manifest_b["provenance"]["dirty"]:
+        raise SystemExit("rerun experiments must run on a clean committed tree")
+    if manifest_b["provenance"]["commit"] != manifest_a["provenance"]["commit"]:
+        raise SystemExit("main/rerun commits diverge")
+    if manifest_b["provenance"].get("executor_id") == \
+            manifest_a["provenance"].get("executor_id"):
+        raise SystemExit("main/rerun executor identities must differ")
 
     probes = run_probes()
+    probes_sha = sha_file(RESULTS / "probes.json")
 
     run_nonce = "s1-006-" + manifest_a["provenance"]["commit"][:12] + "-" + \
         hashlib.sha256(
@@ -170,11 +206,15 @@ def _main() -> None:
     evaluation = run_evaluator(
         RESULTS / "run-a" / "run-manifest.json",
         expected_commit=manifest_a["provenance"]["commit"],
-        run_nonce=run_nonce)
+        run_nonce=run_nonce,
+        out_path=RESULTS / "sensitivity-analysis.json",
+        probes_sha=probes_sha)
     rerun = run_evaluator(
         RESULTS / "run-b" / "run-manifest.json",
         expected_commit=manifest_b["provenance"]["commit"],
-        run_nonce=run_nonce + "-rerun")
+        run_nonce=run_nonce + "-rerun",
+        out_path=RESULTS / "run-b" / "evaluation.json",
+        probes_sha=probes_sha)
     probe_evidence = verify_probes(evaluation, probes)
     rerun_comparison = compare_rerun(evaluation, rerun)
 
@@ -194,7 +234,13 @@ def _main() -> None:
 def _commit() -> str | None:
     out = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True,
                          text=True, timeout=30, cwd=str(ROOT))
-    return out.stdout.strip() or None
+    if out.returncode != 0:
+        raise SystemExit(
+            f"git rev-parse HEAD failed ({out.returncode}): {out.stderr}")
+    commit = out.stdout.strip()
+    if len(commit) != 40:
+        raise SystemExit("git rev-parse HEAD returned malformed commit")
+    return commit
 
 
 def build_bundle(gate: dict, evaluation: dict, rerun_comparison: dict,

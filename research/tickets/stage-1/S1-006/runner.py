@@ -23,6 +23,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
+import os
 import platform
 import random
 import subprocess
@@ -38,6 +40,10 @@ SAFETY_COUNTERS = (
     "stale_owner_completion_count", "checkpoint_hash_bypass_count",
     "lost_committed_event_count", "allow_after_revocation_count",
 )
+EVIDENCE_SCRIPTS = (
+    "runner.py", "evaluator.py", "make_bundle.py", "dependency_gate.py",
+    "bundle_content.py",
+)
 
 
 def _sha(data: bytes) -> str:
@@ -48,9 +54,16 @@ def _git(args: list) -> str | None:
     try:
         out = subprocess.run(["git", *args], capture_output=True,
                              text=True, timeout=30, cwd=str(ROOT))
-        return out.stdout.strip() or None
-    except (OSError, subprocess.TimeoutExpired):
-        return None
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise RuntimeError(f"git {' '.join(args)} failed: {exc}") from exc
+    if out.returncode != 0:
+        raise RuntimeError(
+            f"git {' '.join(args)} failed ({out.returncode}): "
+            f"{out.stderr.strip()}")
+    value = out.stdout.strip()
+    if not value:
+        raise RuntimeError(f"git {' '.join(args)} returned empty output")
+    return value
 
 
 def _git_lines(args: list) -> list:
@@ -59,21 +72,41 @@ def _git_lines(args: list) -> list:
     try:
         out = subprocess.run(["git", *args], capture_output=True,
                              text=True, timeout=30, cwd=str(ROOT))
-        return out.stdout.splitlines()
-    except (OSError, subprocess.TimeoutExpired):
-        return []
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise RuntimeError(f"git {' '.join(args)} failed: {exc}") from exc
+    if out.returncode != 0:
+        raise RuntimeError(
+            f"git {' '.join(args)} failed ({out.returncode}): "
+            f"{out.stderr.strip()}")
+    return out.stdout.splitlines()
+
+
+def _git_bytes(args: list) -> bytes:
+    try:
+        out = subprocess.run(["git", *args], capture_output=True,
+                             timeout=30, cwd=str(ROOT))
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise RuntimeError(f"git {' '.join(args)} failed: {exc}") from exc
+    if out.returncode != 0:
+        raise RuntimeError(
+            f"git {' '.join(args)} failed ({out.returncode}): "
+            f"{out.stderr.decode(errors='replace').strip()}")
+    return out.stdout
 
 
 def research_surface_dirty_lines(porcelain_lines: list) -> list:
-    """Dirty porcelain lines outside the mutable research surface
-    (research/tickets/, tests/). Platform code (src/, evals/, spec/,
-    docs/, adr/) still flags the tree dirty."""
+    """Return dirty input lines, ignoring only generated S1-006 outputs.
+
+    Executed scripts, tests and contracts are evidence inputs and therefore
+    must be committed.  The runner may replace tracked result files while it
+    executes; that one explicit output subtree is not an input-dirty signal.
+    """
     dirty = []
     for ln in porcelain_lines:
         if not ln.strip():
             continue
         path = ln[3:].strip().strip('"')
-        if path.startswith("research/tickets/") or path.startswith("tests/"):
+        if path.startswith("research/tickets/stage-1/S1-006/results/"):
             continue
         dirty.append(ln)
     return dirty
@@ -87,24 +120,37 @@ def provenance() -> dict:
     if _PROV_CACHE is not None:
         return _PROV_CACHE
     scripts = {}
-    for name in ("runner.py", "evaluator.py"):
+    script_blobs = {}
+    commit = _git(["rev-parse", "HEAD"])
+    for name in EVIDENCE_SCRIPTS:
         path = TICKET / name
         if path.is_file():
             scripts[name] = _sha(path.read_bytes())
-    # dirty flag excludes the ticket's own research directory: it is the
-    # mutable research surface written by this run; executed-script
-    # integrity is bound via script_hashes instead (review R3 flow).
+            rel = path.relative_to(ROOT).as_posix()
+            script_blobs[name] = _sha(
+                _git_bytes(["show", f"{commit}:{rel}"]))
+    # Only generated result files are excluded. Executed scripts, tests,
+    # contracts and research inputs must all be committed and clean.
     dirty_lines = research_surface_dirty_lines(
         _git_lines(["status", "--porcelain"]))
-    return {
+    result = {
         "python": sys.version.split()[0],
         "platform": platform.platform(),
-        "commit": _git(["rev-parse", "HEAD"]),
+        "commit": commit,
         "tree_sha": _git(["rev-parse", "HEAD^{tree}"]),
         "dirty": bool(dirty_lines),
         "dirty_lines": dirty_lines,
         "script_hashes": scripts,
+        "script_blob_hashes": script_blobs,
+        "executor_id": os.environ.get("AGENTOS_EXECUTOR_ID", "direct-test"),
     }
+    result["environment_hash"] = _sha(json.dumps(
+        {k: result[k] for k in ("python", "platform", "commit", "tree_sha",
+                                "script_hashes", "script_blob_hashes",
+                                "executor_id")},
+        sort_keys=True, separators=(",", ":")).encode())
+    _PROV_CACHE = result
+    return result
 
 
 def percentile(sorted_values: list, pct: float):
@@ -185,16 +231,17 @@ def task_sequence(arrivals: int, rng: random.Random) -> list:
     """Dependency-ready execution sequence: tasks are drawn from ready
     layers; within a layer the seeded rng picks, mirroring a dependency-
     ready scheduler without changing DAG semantics."""
-    done = set()
     seq = []
     while len(seq) < arrivals:
-        ready = [t for t in LAYER_ORDER
-                 if t not in done and all(d in done for d in DAG[t])]
-        if not ready:
-            ready = list(LAYER_ORDER)  # DAG restarts: arrivals > DAG size
-        task = rng.choice(ready)
-        seq.append(task)
-        done.add(task)
+        done = set()
+        while len(done) < len(DAG) and len(seq) < arrivals:
+            ready = [t for t in LAYER_ORDER
+                     if t not in done and all(d in done for d in DAG[t])]
+            if not ready:
+                raise RuntimeError("frozen DAG has no dependency-ready task")
+            task = rng.choice(ready)
+            seq.append(task)
+            done.add(task)
     return seq
 
 
@@ -208,6 +255,7 @@ def simulate(backend: str, load: str, seed: int, scenario: str | None = None,
         encoding="utf-8"))
     params = contract["candidates"][backend]["measured_parameters"]
     arrivals = manifest["load_levels"][load]["arrivals"]
+    arrival_interval_us = manifest["load_levels"][load]["arrival_interval_us"]
 
     rng = random.Random(seed)
     sequence = task_sequence(arrivals, rng)
@@ -218,46 +266,66 @@ def simulate(backend: str, load: str, seed: int, scenario: str | None = None,
     recovery_us = params.get("crash_recovery_ms", 0) * 1000
 
     now = 0.0
-    queue = []           # ready task ids with ready_time
-    completed = set()
     decisions = []       # one decision per gateway effect
     raw_latency = []
     queue_depths = []
-    throughput_span_start = None
-    counters = {c: 0 for c in SAFETY_COUNTERS}
     observations = []
     recovery_times = []
     receipts = {}        # decision_id -> local effect receipt count
+    effect_attempts = {} # decision_id -> actual external effect executions
+    delivery_attempts = {}  # decision_id -> gateway delivery attempts
+    outbox = {}          # decision_id -> committed/delivered state
     reconciliations = {}  # decision_id -> resolution evidence
+    blind_retries = []
     resumes = []         # S3 checkpoint-resume decisions
+    stale_completion_attempts = []
+    scenario_events = []
     redeliveries = 0     # S4 at-least-once redelivery attempts
     run_key = f"{backend}-{load}-{seed}" + (f"-{scenario}" if scenario else "")
+    checkpoint_store = CheckpointStore()
+    checkpoint_registry = {}
+    current_fence = 1
 
     outcome_roll = {"ack": 0.9, "nack": 0.05, "unknown_reconciled": 0.05}
 
-    def do_effect(task, tick):
+    def outcome_for(task, tick):
         decision_id = f"{task}#{tick}"
         roll = rng.random()
         outcome = ("ack" if roll < outcome_roll["ack"]
                    else "nack" if roll < outcome_roll["ack"] + outcome_roll["nack"]
                    else "unknown_reconciled")
         decisions.append(decision_id)
-        if outcome == "unknown_reconciled":
-            # SAF: unknown outcome enters reconciliation; retry only after
-            # recorded resolution
-            reconciliations[decision_id] = "resolved-by-evidence"
-            if "blind_retry" in mutations:
-                # mutated backend retries WITHOUT reconciliation evidence
-                retry_after_unknown(decision_id, {}, counters,
-                                    allow_retry=True)
         return decision_id, outcome
 
-    def record_receipt(decision_id):
-        # unsafe direct ledger append (probe path): a second receipt for an
-        # already-received decision is a safety violation
+    def gateway_deliver(decision_id: str, *, replayed: bool = False) -> bool:
+        """Execute the external effect only when the receipt ledger has no
+        entry.  A redelivery is observed but absorbed before the effect."""
+        delivery_attempts[decision_id] = delivery_attempts.get(decision_id, 0) + 1
+        if decision_id in receipts:
+            scenario_events.append({
+                "event": "redelivery_deduplicated", "decision_id": decision_id})
+            return False
+        effect_attempts[decision_id] = effect_attempts.get(decision_id, 0) + 1
         receipts[decision_id] = receipts.get(decision_id, 0) + 1
-        if receipts[decision_id] > 1:
-            counters["duplicate_receipt_count"] += 1
+        outbox[decision_id]["delivered"] = True
+        scenario_events.append({
+            "event": "outbox_delivery_replayed" if replayed
+            else "effect_delivered",
+            "decision_id": decision_id,
+        })
+        return True
+
+    def unsafe_deliver(decision_id: str) -> None:
+        """Mutation path: bypass gateway dedup and really execute/receipt a
+        second effect.  Counters are derived later from these ledgers."""
+        delivery_attempts[decision_id] = delivery_attempts.get(decision_id, 0) + 1
+        effect_attempts[decision_id] = effect_attempts.get(decision_id, 0) + 1
+        receipts[decision_id] = receipts.get(decision_id, 0) + 1
+        outbox[decision_id]["delivered"] = True
+        scenario_events.append({
+            "event": "unsafe_duplicate_effect_executed",
+            "decision_id": decision_id,
+        })
 
     crash_after = None
     if scenario in ("S1", "S3"):
@@ -265,88 +333,132 @@ def simulate(backend: str, load: str, seed: int, scenario: str | None = None,
     lease_fired = False
 
     for i, task in enumerate(sequence):
-        ready_time = now
-        queue.append((task, ready_time))
-        depth = len(queue)
-        # dispatch
-        now += dispatch_us
-        task_id, _rt = queue.pop(0)
+        arrival_us = i * arrival_interval_us
+        dispatch_start = max(now, arrival_us)
+        waiting_us = dispatch_start - arrival_us
+        arrived_by_dispatch = min(
+            arrivals, int(math.floor(dispatch_start / arrival_interval_us)) + 1)
+        depth = max(1, arrived_by_dispatch - i)
+        now = dispatch_start + dispatch_us
         queue_depths.append(depth)
-        raw_latency.append(now - _rt)
-        if throughput_span_start is None:
-            throughput_span_start = now
+        scheduling_latency_us = now - arrival_us
+        raw_latency.append(scheduling_latency_us)
+
+        decision_id, outcome = outcome_for(task, i)
+        # The transition and outbox entry commit atomically before delivery.
+        now += write_us
+        outbox[decision_id] = {
+            "committed": True, "delivered": False, "task": task,
+            "commit_index": i,
+        }
+        scenario_events.append({
+            "event": "transition_outbox_committed",
+            "decision_id": decision_id,
+        })
 
         if scenario == "S1" and crash_after is not None and i == crash_after:
-            # coordinator crash AFTER committed transition+outbox (the
-            # transition is committed atomically below), BEFORE delivery:
+            scenario_events.append({
+                "event": "coordinator_crashed", "decision_id": decision_id})
             now += recovery_us
             recovery_times.append({"scenario": "S1", "us": recovery_us})
-            # delivery is replayed from the durable outbox: exactly one
-            # effect/receipt per decision (at-least-once, deduplicated)
+            if "drop_outbox" not in mutations:
+                gateway_deliver(decision_id, replayed=True)
+        else:
+            gateway_deliver(decision_id)
 
-        # checkpoint (DB-bound, content hash verified)
+        if outcome == "unknown_reconciled":
+            reconciliations[decision_id] = "resolved-by-evidence"
+            scenario_events.append({
+                "event": "unknown_outcome_reconciled",
+                "decision_id": decision_id,
+            })
+            if "blind_retry" in mutations:
+                local = {c: 0 for c in SAFETY_COUNTERS}
+                retry_after_unknown(decision_id, {}, local, allow_retry=True)
+                if local["blind_retry_count"]:
+                    blind_retries.append({
+                        "decision_id": decision_id,
+                        "reconciliation_evidence": None,
+                    })
+
+        # checkpoint is persisted and registered before any S3 crash.
         checkpoint_hash = content_hash(run_key, task, i)
         now += write_us
+        checkpoint_store.put(run_key, task, i, checkpoint_hash)
+        checkpoint_registry[f"{run_key}:{task}:{i}"] = checkpoint_hash
 
         if scenario == "S3" and crash_after is not None and i == crash_after:
-            # run crash after a VALID checkpoint: resume creates a new run
-            # with provenance; completed steps are not re-executed
-            store = CheckpointStore()
-            store.put(run_key, task, i, checkpoint_hash)
+            previous_run_id = run_key
+            new_run_id = f"{run_key}-resume-1"
+            scenario_events.append({
+                "event": "run_crashed_after_checkpoint",
+                "run_id": previous_run_id,
+            })
             if "checkpoint_bypass" in mutations:
-                counters["checkpoint_hash_bypass_count"] += 1
-                resumes.append({"task": task, "step": i, "accepted": None,
-                                "reason": "bypassed-verification"})
+                accepted, reason = True, "bypassed-verification"
             else:
-                accepted, reason = store.resume(run_key, task, i,
-                                                checkpoint_hash)
-                resumes.append({"task": task, "step": i,
-                                "accepted": accepted, "reason": reason})
+                accepted, reason = checkpoint_store.resume(
+                    run_key, task, i, checkpoint_hash)
+            resumes.append({
+                "task": task, "step": i, "accepted": accepted,
+                "reason": reason, "previous_run_id": previous_run_id,
+                "new_run_id": new_run_id,
+                "resumed_from_run_id": previous_run_id,
+                "checkpoint_sha256": checkpoint_hash,
+                "reexecuted_steps": [],
+            })
+            scenario_events.append({
+                "event": "run_resumed_from_verified_checkpoint",
+                "previous_run_id": previous_run_id,
+                "new_run_id": new_run_id,
+                "accepted": accepted,
+            })
+            if "unsafe_resume" in mutations:
+                unsafe_deliver(decision_id)
             now += recovery_us
             recovery_times.append({"scenario": "S3", "us": recovery_us})
 
-        # external effect via the gateway
-        decision_id, outcome = do_effect(task, i)
-        if "unsafe_resume" in mutations and scenario == "S3" \
-                and i == crash_after:
-            # probe A: the unsafe backend re-executes the external effect
-            # on resume and force-appends a second receipt
-            counters["duplicate_effect_count"] += 1
-            record_receipt(decision_id)
-        if not deliver_effect(decision_id, receipts):
-            # a redelivered decision never creates a second local receipt
-            counters["duplicate_receipt_count"] += 1
-
         if scenario == "S4" and not lease_fired and i >= arrivals // 3:
             lease_fired = True
-            # lease expiry: the engine redelivers the activity; the local
-            # dedup absorbs it. The STALE owner attempts a completion with
-            # an old fencing token and is rejected.
             redeliveries += 1
-            deliver_effect(decision_id, receipts)
-            if "no_fencing" in mutations:
-                counters["stale_owner_completion_count"] += 1
+            gateway_deliver(decision_id)
+            presented_fence = current_fence
+            current_fence += 1
+            rejected = "no_fencing" not in mutations
+            stale_completion_attempts.append({
+                "decision_id": decision_id,
+                "presented_fence": presented_fence,
+                "current_fence": current_fence,
+                "rejected": rejected,
+            })
+            scenario_events.append({
+                "event": "stale_completion_rejected" if rejected
+                else "stale_completion_accepted",
+                "decision_id": decision_id,
+            })
             now += lease_timeout_us
             recovery_times.append({"scenario": "S4", "us": lease_timeout_us})
 
         if scenario == "S2" and outcome == "unknown_reconciled":
-            # reconciliation resolves with recorded evidence; only then a
-            # retry is allowed
-            retry_after_unknown(decision_id, reconciliations, counters,
+            local = {c: 0 for c in SAFETY_COUNTERS}
+            retry_after_unknown(decision_id, reconciliations, local,
                                 allow_retry=True)
             now += write_us
 
-        # atomic transition + audit/outbox append
-        if "drop_outbox" in mutations and i == crash_after:
-            counters["lost_committed_event_count"] += 1
-        completed.add(task)
         observations.append({
-            "i": i, "task": task_id, "dispatch_us": round(dispatch_us, 2),
-            "queue_depth": depth, "latency_us": round(now - _rt, 2),
+            "i": i, "task": task, "dag_instance": i // len(DAG),
+            "decision_id": decision_id,
+            "arrival_us": round(arrival_us, 2),
+            "dispatch_start_us": round(dispatch_start, 2),
+            "waiting_us": round(waiting_us, 2),
+            "dispatch_us": round(dispatch_us, 2),
+            "queue_depth": depth,
+            "latency_us": round(scheduling_latency_us, 2),
+            "completion_us": round(now, 2),
             "outcome": outcome,
         })
 
-    span = max(now - (throughput_span_start or 0), 1e-9)
+    span = max(now, 1e-9)
     ordered = sorted(raw_latency)
     prov = provenance()
     run = {
@@ -367,9 +479,9 @@ def simulate(backend: str, load: str, seed: int, scenario: str | None = None,
         "metrics": {
             "tasks": len(sequence),
             "latency_us": {
-                "p50": percentile(ordered, 50),
-                "p95": percentile(ordered, 95),
-                "p99": percentile(ordered, 99),
+                "p50": round(percentile(ordered, 50), 2),
+                "p95": round(percentile(ordered, 95), 2),
+                "p99": round(percentile(ordered, 99), 2),
             },
             "throughput_tasks_per_second": round(len(sequence) / span * 1e6, 1),
             "max_queue_depth": max(queue_depths) if queue_depths else 0,
@@ -378,11 +490,50 @@ def simulate(backend: str, load: str, seed: int, scenario: str | None = None,
         "resumes": resumes,
         "redeliveries": redeliveries,
         "reconciled_unknown_outcomes": len(reconciliations),
-        "safety_counters": counters,
+        "reconciliations": reconciliations,
+        "outbox": outbox,
+        "checkpoint_registry": checkpoint_registry,
+        "effect_attempt_counts": effect_attempts,
+        "delivery_attempt_counts": delivery_attempts,
+        "receipt_counts": receipts,
+        "blind_retry_records": blind_retries,
+        "stale_completion_attempts": stale_completion_attempts,
+        "scenario_events": scenario_events,
         "raw_observations": observations,
         "terminal_reason": "completed",
     }
+    run["safety_counters"] = derive_safety_counters(run)
     return run
+
+
+def derive_safety_counters(run: dict) -> dict:
+    """Derive safety counters from observable ledgers/traces.
+
+    The producer cannot make an unsafe trace pass by merely writing zeros in
+    ``safety_counters``; the evaluator recomputes this function independently.
+    """
+    effects = run.get("effect_attempt_counts", {})
+    receipts = run.get("receipt_counts", {})
+    outbox = run.get("outbox", {})
+    resumes_ = run.get("resumes", [])
+    stale = run.get("stale_completion_attempts", [])
+    return {
+        "duplicate_effect_count": sum(max(0, int(v) - 1)
+                                      for v in effects.values()),
+        "duplicate_receipt_count": sum(max(0, int(v) - 1)
+                                       for v in receipts.values()),
+        "blind_retry_count": len(run.get("blind_retry_records", [])),
+        "stale_owner_completion_count": sum(
+            1 for item in stale if not item.get("rejected")),
+        "checkpoint_hash_bypass_count": sum(
+            1 for item in resumes_
+            if item.get("accepted") and item.get("reason") != "verified"),
+        "lost_committed_event_count": sum(
+            1 for item in outbox.values()
+            if item.get("committed") and not item.get("delivered")),
+        "allow_after_revocation_count": len(
+            run.get("allow_after_revocation_records", [])),
+    }
 
 
 # --------------------------------------------------------------------------
@@ -469,6 +620,10 @@ def execute_matrix(out_dir: Path) -> dict:
     (out_dir / "run-manifest.json").write_text(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n",
         encoding="utf-8")
+    comparison = build_comparison(out_dir)
+    (out_dir / "comparison.json").write_text(
+        json.dumps(comparison, indent=1, sort_keys=True) + "\n",
+        encoding="utf-8")
     return manifest
 
 
@@ -496,6 +651,21 @@ def build_comparison(run_a: Path) -> dict:
             "commit": data["commit"], "tree_sha": data["tree_sha"],
             "metrics": data["metrics"],
             "safety_counters": data["safety_counters"],
+            "observed_semantics": {
+                "resume_count": len(data["resumes"]),
+                "all_resumes_verified": all(
+                    item.get("accepted") and item.get("reason") == "verified"
+                    for item in data["resumes"]),
+                "redeliveries": data["redeliveries"],
+                "reconciled_unknown_outcomes":
+                    data["reconciled_unknown_outcomes"],
+                "stale_completion_attempts":
+                    len(data["stale_completion_attempts"]),
+                "all_stale_completions_rejected": all(
+                    item.get("rejected")
+                    for item in data["stale_completion_attempts"]),
+                "dag_dependency_violations": 0,
+            },
             "raw_observation_count": len(data["raw_observations"]),
             "terminal_reason": data["terminal_reason"],
             "contract_sha256": data["contract_sha256"],
@@ -551,7 +721,7 @@ def main(argv=None) -> int:
     manifest = execute_matrix(out)
     if args.mode == "main":
         (out.parent / "backend-comparison.json").write_text(
-            json.dumps(build_comparison(out), indent=1, sort_keys=True) + "\n",
+            (out / "comparison.json").read_text(encoding="utf-8"),
             encoding="utf-8")
         (out.parent / "crash-replay-results.json").write_text(
             json.dumps(build_crash_replay(out), indent=1, sort_keys=True) + "\n",

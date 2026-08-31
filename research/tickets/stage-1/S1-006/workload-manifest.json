@@ -13,10 +13,10 @@
     "per_task": "1 gateway effect, 1 checkpoint with content hash, 1 transition + atomic audit/outbox event"
   },
   "load_levels": {
-    "low": {"arrivals": 40, "s1_002_link": "10 ev/s envelope lower band"},
-    "nominal": {"arrivals": 120, "s1_002_link": "34 ev/s planning envelope"},
-    "high": {"arrivals": 360, "s1_002_link": "100 ev/s burst band"},
-    "note": "arrival counts are discrete task instances over the measured S1-002 envelope; they are research-station load levels, not production profiles"
+    "low": {"arrivals": 40, "rate_per_second": 10, "arrival_interval_us": 100000.0, "s1_002_link": "10 ev/s envelope lower band"},
+    "nominal": {"arrivals": 120, "rate_per_second": 34, "arrival_interval_us": 29411.764705882353, "s1_002_link": "34 ev/s planning envelope"},
+    "high": {"arrivals": 360, "rate_per_second": 20000, "arrival_interval_us": 50.0, "s1_002_link": "explicit same-host saturation probe beyond the S1-002 planning envelope; not a production claim"},
+    "note": "low and nominal link to the measured S1-002 envelope; high is an intentional open-loop saturation probe that must create observable queue pressure; none is a production profile"
   },
   "seeds": [101, 202, 303],
   "backends": ["in_process", "durable_engine"],

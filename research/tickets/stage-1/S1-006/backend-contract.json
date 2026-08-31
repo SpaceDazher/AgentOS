@@ -61,5 +61,19 @@
     "allow_after_revocation_count = 0"
   ],
   "outcome_model": {"ack": 0.9, "nack": 0.05, "unknown_reconciled": 0.05},
-  "reconciliation_contract": "an unknown outcome enters reconciling state; resolution (ack/nack) is recorded as evidence before any retry"
+  "reconciliation_contract": "an unknown outcome enters reconciling state; resolution (ack/nack) is recorded as evidence before any retry",
+  "qualitative_dimensions": {
+    "task_run_durability": {
+      "in_process": {"score": 3, "claim_type": "implementation_fact", "evidence_refs": ["src/agentos/db.py", "src/agentos/engine.py", "S1-006 S1 replay"], "rationale": "task/run rows and committed transition/outbox state survive coordinator restart, while the ready queue itself is reconstructed rather than durable"},
+      "durable_engine": {"score": 4, "claim_type": "design_inference", "evidence_refs": ["backend-contract.json", "S1-006 S1 replay"], "rationale": "the modeled engine owns durable history and queue state; this is provider-neutral model evidence, not a vendor measurement"}
+    },
+    "operator_visibility_complexity": {
+      "in_process": {"score": 4, "claim_type": "architecture_inference", "evidence_refs": ["ADR-0002", "S1-005"], "rationale": "one coordinator/state boundary and the existing audit surface"},
+      "durable_engine": {"score": 2, "claim_type": "architecture_inference", "evidence_refs": ["SRC-03", "S1-005"], "rationale": "adds an engine history/queue boundary and its operator surface; no vendor implementation is measured"}
+    },
+    "migration_reversibility": {
+      "in_process": {"score": 4, "claim_type": "implementation_fact", "evidence_refs": ["ADR-0002", "src/agentos/engine.py"], "rationale": "current backend; retaining it requires no migration"},
+      "durable_engine": {"score": 2, "claim_type": "design_inference", "evidence_refs": ["S1-005", "backend-contract.json"], "rationale": "provider-neutral boundary is reversible in design, but no migration/rollback drill has been executed"}
+    }
+  }
 }

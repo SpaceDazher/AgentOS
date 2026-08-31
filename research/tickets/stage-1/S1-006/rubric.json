@@ -33,6 +33,9 @@
     "incomparable": "workload/contract/hash divergence between compared runs -> NO_DATA, never a winner"
   },
   "statistical_tolerance": {
-    "rerun": "safety verdicts must be identical; p95/p99 deltas within 2x recorded run-to-run spread are 'consistent', larger deltas are 'explained-required' and cap the verdict at PASS_WITH_LIMITS"
+    "rerun_score_absolute": 0.01,
+    "rerun_metric_relative": 0.01,
+    "formula": "abs(a-b) for normalized scores; abs(a-b)/max(abs(a),abs(b)) for p95 and recovery medians",
+    "policy": "safety verdicts must be identical; missing comparables or deltas above the frozen bounds fail the evidence pipeline"
   }
 }

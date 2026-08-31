@@ -28,6 +28,73 @@ def sha(b: bytes) -> str:
     return hashlib.sha256(b).hexdigest()
 
 
+def payload_sha(pack: dict) -> str:
+    payload = {key: value for key, value in pack.items() if key != "sha256"}
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"),
+                         ensure_ascii=False).encode("utf-8")
+    return sha(encoded)
+
+
+def validate_dependency_binding(rec: dict, pack: dict, db_eval,
+                                revision_in_db: int | None) -> list[str]:
+    """Validate the complete record -> pack -> canonical evaluation binding."""
+    problems = []
+    evidence = rec.get("evidence_pack") or {}
+    research = pack.get("research") or {}
+    campaign = research.get("campaign") or {}
+    evaluations = research.get("evaluations") or []
+    goal = pack.get("goal") or {}
+
+    if evidence.get("chain_fresh") is not True or \
+            research.get("chain_fresh") is not True:
+        problems.append("chain_fresh is not true")
+    if evidence.get("latest_evaluation_valid") is not True or \
+            research.get("latest_evaluation_valid") is not True:
+        problems.append("latest_evaluation_valid is not true")
+    expected_chain = rec.get("artifact_chain_hash")
+    if research.get("current_chain_hash") != expected_chain:
+        problems.append("pack current chain mismatch")
+    if research.get("latest_chain_hash") != expected_chain:
+        problems.append("pack latest chain mismatch")
+    if goal.get("id") != rec.get("goal_id"):
+        problems.append("pack goal id mismatch")
+    if campaign.get("id") != rec.get("campaign_id") or \
+            campaign.get("goal_id") != rec.get("goal_id"):
+        problems.append("pack campaign binding mismatch")
+    if campaign.get("revision") is not None and \
+            campaign.get("revision") != rec.get("research_revision"):
+        problems.append("pack research revision mismatch")
+
+    matches = [item for item in evaluations
+               if item.get("id") == rec.get("evaluation_id")]
+    if len(matches) != 1:
+        problems.append("pack evaluation id missing or duplicated")
+    else:
+        packed_eval = matches[0]
+        for key in ("result", "artifact_chain_hash", "campaign_id", "goal_id"):
+            if packed_eval.get(key) != rec.get(
+                    "artifact_chain_hash" if key == "artifact_chain_hash" else key):
+                problems.append(f"pack evaluation {key} mismatch")
+
+    if db_eval is None:
+        problems.append("evaluation id not in canonical DB")
+    else:
+        for key in ("id", "result", "artifact_chain_hash", "campaign_id",
+                    "goal_id"):
+            if db_eval[key] != rec.get(
+                    "evaluation_id" if key == "id" else key):
+                problems.append(f"{key} mismatch vs canonical DB")
+    if revision_in_db != rec.get("research_revision"):
+        problems.append(
+            f"research_revision mismatch: record={rec.get('research_revision')} "
+            f"db={revision_in_db}")
+    if pack.get("sha256") != evidence.get("payload_sha256"):
+        problems.append("pack payload sha field mismatch")
+    if payload_sha(pack) != evidence.get("payload_sha256"):
+        problems.append("pack payload bytes mismatch")
+    return problems
+
+
 def check(ticket: str) -> dict:
     rec_path = ROOT / "research/tickets/stage-1" / ticket / "evaluation-record.json"
     rec = json.loads(rec_path.read_text(encoding="utf-8"))
@@ -41,12 +108,9 @@ def check(ticket: str) -> dict:
         if file_sha != rec["evidence_pack"]["sha256"]:
             problems.append("pack file sha mismatch")
         pack = json.loads(pack_path.read_text(encoding="utf-8"))
-        if pack.get("sha256") != rec["evidence_pack"]["payload_sha256"]:
-            problems.append("pack payload sha mismatch")
-        research = pack.get("research", {})
-        if not (research.get("chain_fresh") is True
-                and rec["evidence_pack"].get("chain_fresh") is True):
-            problems.append("chain_fresh is not true")
+        if pack_path.name != \
+                f"evidence-pack-{rec['evidence_pack']['sha256']}.json":
+            problems.append("pack path is not content-addressed by file sha")
 
     c = sqlite3.connect(DB)
     c.row_factory = sqlite3.Row
@@ -54,23 +118,13 @@ def check(ticket: str) -> dict:
         "SELECT id, result, artifact_chain_hash, campaign_id, goal_id"
         " FROM research_evaluation WHERE id=?",
         (rec["evaluation_id"],)).fetchone()
-    if ev is None:
-        problems.append("evaluation id not in canonical DB")
-    else:
-        if ev["result"] != rec["result"]:
-            problems.append("verdict mismatch vs canonical DB")
-        if ev["artifact_chain_hash"] != rec["artifact_chain_hash"]:
-            problems.append("artifact chain hash mismatch vs canonical DB")
-        if ev["goal_id"] != rec["goal_id"]:
-            problems.append("goal id mismatch")
     series = c.execute(
         "SELECT revision FROM research_series WHERE research_key=? AND goal_id=?",
         (ticket, rec["goal_id"])).fetchone()
     revision_in_db = series["revision"] if series else None
-    if revision_in_db != rec.get("research_revision"):
-        problems.append(
-            f"research_revision mismatch: record={rec.get('research_revision')} "
-            f"db={revision_in_db}")
+    if pack_path.is_file():
+        problems.extend(validate_dependency_binding(
+            rec, pack, dict(ev) if ev is not None else None, revision_in_db))
 
     docs = DOCS.read_text(encoding="utf-8")
     marker = f"### {ticket} "

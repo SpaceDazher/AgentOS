@@ -32,6 +32,8 @@ import json
 import subprocess
 import sys
 import tempfile
+import random
+import shutil
 from pathlib import Path
 from unittest import TestCase
 
@@ -60,6 +62,7 @@ def _load_ticket_module(name: str):
 ev = _load_ticket_module("evaluator")
 rn = _load_ticket_module("runner")
 mb = _load_ticket_module("make_bundle")
+dg = _load_ticket_module("dependency_gate")
 # make_bundle.build_bundle does 'from bundle_content import build' at call
 # time; pre-register S1-006's copy so the name resolves deterministically.
 _load_ticket_module("bundle_content")
@@ -108,6 +111,7 @@ class PositiveFlowTests(TestCase):
                  str(S1006 / "results" / "run-a" / "run-manifest.json"),
                  "--runs-manifest-sha", _sha(
                      S1006 / "results" / "run-a" / "run-manifest.json"),
+                 "--probes-sha", _sha(S1006 / "results" / "probes.json"),
                  "--out", str(out)],
                 capture_output=True, text=True, timeout=600,
                 cwd=str(ROOT))
@@ -139,7 +143,12 @@ class PositiveFlowTests(TestCase):
         main = ev.load(S1006 / "results" / "sensitivity-analysis.json")
         cmp = ev.load(S1006 / "results" / "rerun-comparison.json")
         self.assertTrue(cmp["verdict_equal"])
-        self.assertLessEqual(max(cmp["score_deltas"].values()), 2.0)
+        self.assertLessEqual(max(cmp["score_deltas"].values()),
+                             cmp["score_absolute_tolerance"])
+        self.assertTrue(all(
+            delta <= cmp["metric_relative_tolerance"]
+            for metric in cmp["metric_relative_deltas"].values()
+            for delta in metric.values()))
         self.assertEqual(main["verdict"], "PASS_WITH_LIMITS")
 
 
@@ -208,7 +217,7 @@ class ProvenanceMixingTests(TestCase):
         with self.assertRaises(ev.EvalError) as ctx:
             _evaluate(comparison=comparison, probes=probes,
                       manifest=manifest, manifest_sha=sha)
-        self.assertIn("commit/tree", str(ctx.exception))
+        self.assertIn("raw-derived", str(ctx.exception))
 
     def test_fabricated_tree_sha_rejected(self):
         comparison, probes, manifest, sha = _load_fresh()
@@ -311,21 +320,18 @@ class ProvenanceTests(TestCase):
             mb.sh([sys.executable, "-c", "import time; time.sleep(30)"],
                   timeout=1)
 
-    def test_porcelain_first_line_modified_file_excluded(self):
-        """Regression (REVIEW_R1 finding 7): a globally stripped status
-        output dropped the leading status column of the FIRST porcelain
-        line, so a modified research-surface file as line #1 wrongly
-        flagged the tree dirty."""
+    def test_porcelain_parser_only_ignores_generated_results(self):
+        """Executed research scripts/tests are inputs and must be clean;
+        only the explicitly generated results subtree may be ignored."""
         lines = [" M research/tickets/stage-1/S1-006/evaluator.py",
                  " M tests/test_s1_006_regressions.py",
                  " M src/agentos/engine.py",
-                 "?? research/tickets/stage-1/S1-006/REVIEW_R1.md"]
+                 "?? research/tickets/stage-1/S1-006/results/new.json"]
         dirty = rn.research_surface_dirty_lines(lines)
-        self.assertEqual(dirty, [" M src/agentos/engine.py"])
-        # a clean research surface -> no dirty lines
+        self.assertEqual(dirty, lines[:3])
         self.assertEqual(
             rn.research_surface_dirty_lines(
-                [" M tests/x.py", "?? research/tickets/stage-1/S1-006/y"]),
+                [" M research/tickets/stage-1/S1-006/results/x.json"]),
             [])
 
 
@@ -366,7 +372,7 @@ class SafetyCounterTests(TestCase):
         with self.assertRaises(ev.EvalError) as ctx:
             _evaluate(comparison=comparison, probes=probes,
                       manifest=manifest, manifest_sha=sha)
-        self.assertIn("SAFETY VIOLATION", str(ctx.exception))
+        self.assertIn("raw-derived", str(ctx.exception))
 
 
 # --------------------------------------------------------------------------
@@ -556,6 +562,8 @@ class IndependentRerunTests(TestCase):
         for field in ("contract_sha256", "workload_sha256", "rubric_sha256"):
             self.assertEqual(run_a[field], run_b[field])
         self.assertEqual(len(run_b["runs"]), 90)
+        self.assertNotEqual(run_a["provenance"]["executor_id"],
+                            run_b["provenance"]["executor_id"])
 
     def test_fresh_subprocess_reproduces_main_matrix(self):
         """A separate runner process with the same frozen inputs
@@ -571,6 +579,10 @@ class IndependentRerunTests(TestCase):
                        "workload_sha256", "rubric_sha256", "metrics",
                        "resumes", "redeliveries",
                        "reconciled_unknown_outcomes", "safety_counters",
+                       "reconciliations", "outbox", "checkpoint_registry",
+                       "effect_attempt_counts", "delivery_attempt_counts",
+                       "receipt_counts", "blind_retry_records",
+                       "stale_completion_attempts", "scenario_events",
                        "raw_observations", "terminal_reason")
         with tempfile.TemporaryDirectory() as td:
             out = Path(td) / "run-x"
@@ -582,13 +594,16 @@ class IndependentRerunTests(TestCase):
             fresh = ev.load(out / "run-manifest.json")
             fresh_files = {e["run_id"]: ev.load(out / e["file"])
                            for e in fresh["runs"]}
-        # 1) the independent rerun manifest (run-b) matches run-a
-        #    byte-for-byte on every frozen run file
+        # 1) the independent rerun matches run-a semantically; executor and
+        #    environment identity intentionally differ.
         for entry_a in run_a["runs"]:
             entry_b = next(e for e in run_b["runs"]
                            if e["run_id"] == entry_a["run_id"])
-            self.assertEqual(entry_a["sha256"], entry_b["sha256"],
-                             entry_a["run_id"])
+            data_a = ev.load(S1006 / "results" / "run-a" / entry_a["file"])
+            data_b = ev.load(S1006 / "results" / "run-b" / entry_b["file"])
+            for key in frozen_keys:
+                self.assertEqual(data_a[key], data_b[key],
+                                 f"{entry_a['run_id']}.{key}")
         # 2) a fresh subprocess reproduces the frozen content of every
         #    run despite executing on the current HEAD
         for entry in fresh["runs"]:
@@ -607,6 +622,245 @@ class IndependentRerunTests(TestCase):
                              fresh["provenance"]["tree_sha"])
             self.assertEqual(fresh_run["dirty"],
                              fresh["provenance"]["dirty"])
+
+
+# --------------------------------------------------------------------------
+# Corrective review R2: raw authority, real scenarios, provenance, deps
+
+class RawRunAuthorityR2Tests(TestCase):
+    def test_run_manifest_cannot_escape_its_evidence_directory(self):
+        with self.assertRaises(ev.EvalError):
+            ev.run_file_path(S1006 / "results" / "run-a", "../secrets.json")
+
+    def test_raw_safety_violation_cannot_be_hidden_by_comparison(self):
+        """The evaluator must derive counters from hash-verified raw runs,
+        not trust the separately produced backend-comparison summary."""
+        with tempfile.TemporaryDirectory() as td:
+            run_dir = Path(td) / "run-b"
+            shutil.copytree(S1006 / "results" / "run-b", run_dir)
+            manifest_path = run_dir / "run-manifest.json"
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            entry = manifest["runs"][0]
+            raw_path = run_dir / entry["file"]
+            raw = json.loads(raw_path.read_text(encoding="utf-8"))
+            raw["safety_counters"]["duplicate_effect_count"] = 99
+            raw_path.write_text(
+                json.dumps(raw, indent=1, sort_keys=True) + "\n",
+                encoding="utf-8")
+            entry["sha256"] = _sha(raw_path)
+            manifest_path.write_text(
+                json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8")
+            with self.assertRaises(ev.EvalError) as ctx:
+                ev.evaluate(
+                    S1006, S1006 / "results",
+                    runs_manifest_path=manifest_path,
+                    runs_manifest_sha=_sha(manifest_path),
+                    expected_commit=manifest["provenance"]["commit"])
+        self.assertIn("SAFETY VIOLATION", str(ctx.exception))
+
+    def test_comparison_summary_must_equal_raw_derived_comparison(self):
+        comparison, probes, manifest, sha = _load_fresh()
+        comparison = copy.deepcopy(comparison)
+        comparison["runs"][0]["metrics"]["latency_us"]["p95"] = 10**12
+        with self.assertRaises(ev.EvalError) as ctx:
+            _evaluate(comparison=comparison, probes=probes,
+                      manifest=manifest, manifest_sha=sha)
+        self.assertIn("raw-derived", str(ctx.exception))
+
+    def test_throughput_summary_is_derived_from_raw_completion_times(self):
+        run = rn.simulate("in_process", "low", 101)
+        run["metrics"]["throughput_tasks_per_second"] += 1
+        with self.assertRaises(ev.EvalError) as ctx:
+            ev.validate_raw_run(run)
+        self.assertIn("throughput", str(ctx.exception))
+
+    def test_production_evaluator_requires_probe_digest_binding(self):
+        manifest_path = S1006 / "results" / "run-a" / "run-manifest.json"
+        with self.assertRaises(ev.EvalError) as ctx:
+            ev.evaluate(
+                S1006, S1006 / "results",
+                runs_manifest_path=manifest_path,
+                runs_manifest_sha=_sha(manifest_path),
+                expected_commit=ev.load(manifest_path)["provenance"]["commit"])
+        self.assertIn("probe", str(ctx.exception).lower())
+
+
+class RunnerSemanticsR2Tests(TestCase):
+    def test_every_dag_instance_is_dependency_valid(self):
+        roots = {task for task, deps in rn.DAG.items() if not deps}
+        sequence = rn.task_sequence(40, random.Random(101))
+        for offset in range(0, len(sequence), len(rn.DAG)):
+            chunk = sequence[offset:offset + len(rn.DAG)]
+            if chunk:
+                self.assertIn(chunk[0], roots)
+            seen = set()
+            for task in chunk:
+                self.assertTrue(set(rn.DAG[task]).issubset(seen),
+                                f"{task} ran before its deps in {chunk}")
+                seen.add(task)
+
+    def test_arrivals_are_open_loop_not_ready_time_equals_dispatch_time(self):
+        low = rn.simulate("in_process", "low", 101)
+        high = rn.simulate("in_process", "high", 101)
+        self.assertGreater(low["raw_observations"][1]["arrival_us"], 0)
+        self.assertGreater(high["raw_observations"][1]["arrival_us"], 0)
+        self.assertGreater(
+            low["raw_observations"][1]["arrival_us"],
+            high["raw_observations"][1]["arrival_us"])
+        self.assertIn("waiting_us", high["raw_observations"][1])
+
+    def test_high_load_creates_observable_queue_pressure(self):
+        high = rn.simulate("in_process", "high", 101)
+        self.assertGreater(high["metrics"]["max_queue_depth"], 1)
+        self.assertTrue(any(item["waiting_us"] > 0
+                            for item in high["raw_observations"]))
+
+    def test_s1_observes_commit_crash_and_replayed_delivery(self):
+        run = rn.simulate("in_process", "low", 101, "S1")
+        event_types = [event["event"] for event in run["scenario_events"]]
+        self.assertIn("transition_outbox_committed", event_types)
+        self.assertIn("coordinator_crashed", event_types)
+        self.assertIn("outbox_delivery_replayed", event_types)
+        self.assertTrue(run["outbox"])
+        self.assertTrue(all(item["delivered"] for item in run["outbox"].values()))
+
+    def test_s3_resume_records_new_run_provenance(self):
+        run = rn.simulate("durable_engine", "nominal", 303, "S3")
+        self.assertTrue(run["resumes"])
+        resume = run["resumes"][0]
+        self.assertNotEqual(resume["previous_run_id"], resume["new_run_id"])
+        self.assertEqual(resume["resumed_from_run_id"],
+                         resume["previous_run_id"])
+        self.assertEqual(resume["reexecuted_steps"], [])
+
+    def test_s4_records_real_stale_fence_rejection(self):
+        run = rn.simulate("durable_engine", "low", 202, "S4")
+        stale = run["stale_completion_attempts"]
+        self.assertTrue(stale)
+        self.assertTrue(all(item["rejected"] for item in stale))
+        self.assertTrue(all(item["presented_fence"] < item["current_fence"]
+                            for item in stale))
+
+    def test_probe_a_derives_duplicates_from_actual_ledgers(self):
+        probe = next(p for p in rn.build_probes()
+                     if p["probe"] == "A_unsafe_resume")
+        self.assertTrue(any(v == 2 for v in
+                            probe["effect_attempt_counts"].values()))
+        self.assertTrue(any(v == 2 for v in
+                            probe["receipt_counts"].values()))
+        derived = rn.derive_safety_counters(probe)
+        self.assertEqual(derived, probe["safety_counters"])
+
+
+class ProvenanceR2Tests(TestCase):
+    def test_script_hashes_are_mandatory(self):
+        comparison, probes, manifest, sha = _load_fresh()
+        manifest = copy.deepcopy(manifest)
+        manifest["provenance"].pop("script_hashes", None)
+        with self.assertRaises(ev.EvalError) as ctx:
+            _evaluate(comparison=comparison, probes=probes,
+                      manifest=manifest, manifest_sha=sha)
+        self.assertIn("script", str(ctx.exception).lower())
+
+    def test_executed_script_hash_must_match_commit_tree(self):
+        comparison, probes, manifest, sha = _load_fresh()
+        manifest = copy.deepcopy(manifest)
+        manifest["provenance"]["script_hashes"]["runner.py"] = "0" * 64
+        with self.assertRaises(ev.EvalError) as ctx:
+            _evaluate(comparison=comparison, probes=probes,
+                      manifest=manifest, manifest_sha=sha)
+        self.assertIn("runner.py", str(ctx.exception))
+
+    def test_commit_blob_hashes_are_mandatory(self):
+        comparison, probes, manifest, sha = _load_fresh()
+        manifest = copy.deepcopy(manifest)
+        manifest["provenance"].pop("script_blob_hashes", None)
+        with self.assertRaises(ev.EvalError) as ctx:
+            _evaluate(comparison=comparison, probes=probes,
+                      manifest=manifest, manifest_sha=sha)
+        self.assertIn("blob", str(ctx.exception).lower())
+
+
+class SensitivityR2Tests(TestCase):
+    def test_run_count_matches_every_weight_dimension_plus_random_vectors(self):
+        rubric = ev.load(S1006 / "rubric.json")
+        scores = {
+            "a": {name: 4 for name in rubric["weights"]},
+            "b": {name: 1 for name in rubric["weights"]},
+        }
+        result = ev.sensitivity(scores, rubric["weights"], {"a": [], "b": []})
+        expected_perturbations = 2 * len(rubric["weights"])
+        self.assertEqual(result["perturbation_runs"], expected_perturbations)
+        self.assertEqual(result["random_runs"], ev.SENSITIVITY_RANDOM_RUNS)
+        self.assertEqual(result["runs"],
+                         expected_perturbations + ev.SENSITIVITY_RANDOM_RUNS)
+
+
+class ScoringAuthorityR2Tests(TestCase):
+    def test_qualitative_score_comes_from_explicit_evidence_cell(self):
+        raw_runs = {}
+        entries = []
+        for spec in rn.run_matrix("main"):
+            run = rn.simulate(spec["backend"], spec["load"], spec["seed"],
+                              spec["scenario"])
+            raw_runs[run["run_id"]] = run
+            entries.append({"run_id": run["run_id"]})
+        comparison = ev.comparison_from_raw({
+            "contract_sha256": raw_runs[next(iter(raw_runs))]
+                ["contract_sha256"],
+            "workload_sha256": raw_runs[next(iter(raw_runs))]
+                ["workload_sha256"],
+            "rubric_sha256": raw_runs[next(iter(raw_runs))]["rubric_sha256"],
+            "runs": entries,
+        }, raw_runs)
+        contract = ev.load(S1006 / "backend-contract.json")
+        changed = copy.deepcopy(contract)
+        changed["candidates"]["in_process"]["task_queue"] = "arbitrary text"
+        baseline, _, _, _ = ev.score_dims(comparison, contract)
+        text_changed, _, _, _ = ev.score_dims(comparison, changed)
+        self.assertEqual(baseline["in_process"]["task_run_durability"],
+                         text_changed["in_process"]["task_run_durability"])
+        changed["qualitative_dimensions"]["task_run_durability"] \
+            ["in_process"]["score"] = 1
+        evidence_changed, _, _, _ = ev.score_dims(comparison, changed)
+        self.assertEqual(
+            evidence_changed["in_process"]["task_run_durability"], 1)
+
+
+class DependencyGateR2Tests(TestCase):
+    def _binding(self):
+        rec = ev.load(ROOT / "research/tickets/stage-1/S1-002"
+                      / "evaluation-record.json")
+        pack = ev.load(ROOT / rec["evidence_pack"]["path"])
+        db_eval = {
+            "id": rec["evaluation_id"], "result": rec["result"],
+            "artifact_chain_hash": rec["artifact_chain_hash"],
+            "campaign_id": rec["campaign_id"], "goal_id": rec["goal_id"],
+        }
+        return rec, pack, db_eval
+
+    def test_latest_evaluation_valid_is_required(self):
+        rec, pack, db_eval = self._binding()
+        rec = copy.deepcopy(rec)
+        rec["evidence_pack"]["latest_evaluation_valid"] = False
+        problems = dg.validate_dependency_binding(
+            rec, pack, db_eval, rec["research_revision"])
+        self.assertTrue(any("latest_evaluation_valid" in p for p in problems))
+
+    def test_current_dependency_binding_is_complete(self):
+        rec, pack, db_eval = self._binding()
+        problems = dg.validate_dependency_binding(
+            rec, pack, db_eval, rec["research_revision"])
+        self.assertEqual(problems, [])
+
+    def test_pack_chain_campaign_and_evaluation_are_bound(self):
+        rec, pack, db_eval = self._binding()
+        pack = copy.deepcopy(pack)
+        pack["research"]["current_chain_hash"] = "0" * 64
+        problems = dg.validate_dependency_binding(
+            rec, pack, db_eval, rec["research_revision"])
+        self.assertTrue(any("current chain" in p for p in problems))
 
 
 if __name__ == "__main__":  # pragma: no cover
