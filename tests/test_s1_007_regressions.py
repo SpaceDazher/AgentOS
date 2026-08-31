@@ -31,6 +31,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -77,9 +78,9 @@ class GoldenFixture:
         if cls.state:
             return
         base = Path(tempfile.mkdtemp(prefix="s1007-golden-"))
-        env_main = dict(__import__("os").environment,
+        env_main = dict(os.environ,
                         AGENTOS_EXECUTOR_ID="s1-007-test-producer")
-        env_rerun = dict(__import__("os").environment,
+        env_rerun = dict(os.environ,
                          AGENTOS_EXECUTOR_ID="s1-007-test-auditor")
         for mode, out, env in (("main", base / "run-a", env_main),
                                ("rerun", base / "run-b", env_rerun)):
@@ -114,6 +115,7 @@ class GoldenFixture:
     @classmethod
     def fresh_copy(cls, dest: Path) -> Path:
         """Copy of the golden base for mutation tests."""
+        cls.build()
         if dest.exists():
             shutil.rmtree(dest)
         shutil.copytree(cls.state["base"], dest,
