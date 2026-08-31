@@ -73,6 +73,7 @@ def build(gate: dict, evaluation: dict, rerun: dict, probe_evidence: dict,
     winner = evaluation["winner"]
     verdict = evaluation["verdict"]
     scores = evaluation["scores_normalized"]
+    base_scores = evaluation["sensitivity"]["base_scores"]
     runs = evaluation["sensitivity"]["runs"]
     rec_med = evaluation["recovery_median_us"]
     p95s = evaluation["p95_us"]
@@ -313,8 +314,9 @@ M4 migration-trigger monitoring wired to the follow-up benchmark
 # Verification
 Deterministic and re-runnable: runner (90 main runs + 90 rerun runs in
 a separate process/output dir), evaluator with exact-matrix, hash,
-counter, probe and tolerance checks, sensitivity analysis (222 seeded
-runs), regression suite covering every fail-closed rule. All commands
+raw-ledger, probe-digest and tolerance checks, sensitivity analysis
+(22 per-dimension perturbations + 200 seeded compositions), regression
+suite covering every fail-closed rule. All commands
 and hashes are recorded in results/ENVIRONMENT.md.
 
 # Risks
@@ -448,13 +450,15 @@ winner flip caps the verdict at PASS_WITH_LIMITS.
         "synthesis_and_gaps": {
             "producer": PRODUCER,
             "claim_refs": ["c3-probes", "c4-verdict", "c6-obligation"],
-            "content": """# Result
+            "content": f"""# Result
 PASS_WITH_LIMITS. Over the frozen contract/workload/rubric the
-in-process scheduler scores 4.0 versus 2.11 for the modeled durable
+in-process scheduler scores {base_scores['in_process']} versus
+{base_scores['durable_engine']} for the modeled durable
 engine; 222 sensitivity runs show no winner flips; all seven safety
 counters are zero across 90 main runs and 90 rerun runs; all three
-probes are detected through real evaluation paths; the independent
-rerun (separate process, separate output directory) reproduces the
+probes are detected from digest-bound behavioral traces; the isolated
+rerun (separate process, output directory, and executor identity)
+reproduces the
 safety verdict within the frozen tolerance.
 
 # Gaps
@@ -463,8 +467,10 @@ documented lease/visibility assumptions; no vendor engine was installed.
 2. Multi-host partition behaviour is unknown (excluded from scoring).
 3. Recovery times are modeled constants per backend (12 ms / 105 ms),
 not wall measurements of a deployed system.
-4. The comparison covers the frozen 12-task DAG and arrival counts; the
-S1-002 production-like envelope remains symbolic.
+4. The comparison covers repeated dependency-valid instances of the
+frozen 12-task DAG. Low/nominal loads remain inside the S1-002 planning
+envelope; high is an explicit same-host saturation probe, not a
+production profile.
 
 # Next actions
 Wire migration triggers into the follow-up benchmark; prototype the
