@@ -540,11 +540,11 @@ python -m agentos.cli research-plan --topic "S1-005 QA1 runtime topology modular
 ### S1-006 — QA2 execution backend: in-process versus durable engine
 
 - **Status:** `PASS_WITH_LIMITS` - corrective round R1 recorded
-  2026-08-31 (research revision 2; experiments re-executed on the clean
-  committed tree `f77c5ac...`, dirty=false, commit/tree provenance bound
+  2026-08-31 (research revision 3; experiments re-executed on the clean
+  committed tree `262560c...`, dirty=false, commit/tree provenance bound
   per compared run, evaluator nonce-bound to the frozen experiment
-  digest): goal `goal_ZXPYXVJF1EF2CKYG01M1CE3KDH`, evaluation
-  `reval_9W4Z3TY877JCZPDA01M1CE3KF6`, artifact chain `c6732b48...`,
+  digest): goal `goal_JTRCP0334WBHE00G01M1CF4R6F`, evaluation
+  `reval_CAPVNG086DJSBNHX01M1CF4RAP`, artifact chain `8c544790...`,
   tracked content-addressed evidence-pack/v3 `chain_fresh=true` at
   `results/evidence/`. Decision: in-process scheduler (4.00 vs durable
   engine 3.04 normalized under the frozen 11-dimension rubric);
