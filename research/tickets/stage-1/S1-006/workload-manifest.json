@@ -1,0 +1,45 @@
+{
+  "schema": "agentos.s1-006.workload-manifest/v1",
+  "ticket": "S1-006",
+  "frozen_before_measurements": true,
+  "dag": {
+    "tasks": 12,
+    "layers": [
+      {"ids": ["t0", "t1", "t2", "t3"], "deps": []},
+      {"ids": ["t4", "t5", "t6", "t7"], "deps": "each mid task depends on two distinct root tasks"},
+      {"ids": ["t8", "t9", "t10", "t11"], "deps": "each final task depends on two distinct mid tasks"}
+    ],
+    "note": "fixed dependency-ready DAG; identical for both backends and all loads/seeds",
+    "per_task": "1 gateway effect, 1 checkpoint with content hash, 1 transition + atomic audit/outbox event"
+  },
+  "load_levels": {
+    "low": {"arrivals": 40, "s1_002_link": "10 ev/s envelope lower band"},
+    "nominal": {"arrivals": 120, "s1_002_link": "34 ev/s planning envelope"},
+    "high": {"arrivals": 360, "s1_002_link": "100 ev/s burst band"},
+    "note": "arrival counts are discrete task instances over the measured S1-002 envelope; they are research-station load levels, not production profiles"
+  },
+  "seeds": [101, 202, 303],
+  "backends": ["in_process", "durable_engine"],
+  "run_matrix": {
+    "throughput_runs": "backends x loads x seeds = 2 x 3 x 3 = 18",
+    "scenario_runs": "4 scenarios x 3 loads x 3 seeds x 2 backends = 72",
+    "total_main_runs": 90,
+    "independent_rerun": "separate subprocess, separate output directory (run-b), same frozen manifest"
+  },
+  "fault_schedule": {
+    "S1_coordinator_crash_before_delivery": "deterministic tick from seed",
+    "S2_effect_started_outcome_unknown": "unknown-outcome probability 0.05 plus deterministic placement",
+    "S3_run_crash_after_valid_checkpoint": "deterministic tick from seed",
+    "S4_lease_expiry_duplicate_delivery_stale_owner": "one stale owner attempt per scenario run"
+  },
+  "metrics": [
+    "scheduling_latency_us (ready -> dispatched, raw per task)",
+    "throughput_tasks_per_second",
+    "queue_depth_at_dispatch (raw per task)",
+    "recovery_time_us (fault -> all in-flight resumed)"
+  ],
+  "censoring": "metrics that a backend cannot observe are recorded as explicit unavailable entries with reasons; they are never interpolated",
+  "coordinated_omission": "the generator emits fixed arrival ticks from the frozen manifest; dispatch observations record arrival-to-dispatch for every task including late ones, so missing-data bias does not arise by construction",
+  "stop_conditions": "run ends when all arrivals are processed or a terminal fault fires; failed/censored runs are recorded as failed, never silently retried",
+  "outcome_seed_policy": "random.Random(seed) per run; no wall clock; no dict-order dependence"
+}

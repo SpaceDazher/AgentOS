@@ -1,0 +1,65 @@
+{
+  "schema": "agentos.s1-006.backend-contract/v1",
+  "ticket": "S1-006",
+  "frozen_before_experiments": true,
+  "note": "Provider-neutral semantics both candidate backends must provide. Identical canonical workload, seeds and fault schedule; identical AgentOS safety semantics (S1-004). Any property not expressible without vendor-specific semantics is unknown and escalates.",
+  "shared_semantics": [
+    "identical task DAG, payload distribution and seeds",
+    "exactly one authoritative state owner",
+    "transition + audit/outbox appended atomically",
+    "side effects only through the policy gateway",
+    "retry only with proven idempotency or compensation",
+    "unknown external outcome enters reconciliation, never blind retry",
+    "lease/fencing token excludes stale-owner completion",
+    "checkpoint carries a DB binding and a verified content hash",
+    "resume creates a new run with provenance to the previous run",
+    "at-least-once delivery never creates a second local effect receipt"
+  ],
+  "candidates": {
+    "in_process": {
+      "name": "In-process scheduler (current AgentOS)",
+      "state": "single canonical SQLite (WAL) owned by the coordinator process",
+      "dispatch": "in-process function call",
+      "task_queue": "in-memory ready queue; durable task/run rows in SQLite",
+      "crash_model": "coordinator crash stops everything; committed transitions survive; in-flight tasks restart from checkpoints",
+      "delivery": "direct call inside the state owner; outbox drain in-process",
+      "lease": "runs carry leases recovered by recover_expired_runs",
+      "measured_parameters": {
+        "source": "S1-005 E1/E2 + S1-002",
+        "dispatch_us": 4.86,
+        "state_write_us": 48.6,
+        "crash_recovery_ms": 12.0,
+        "note": "dispatch from E1 in-process; state write from E2 single-writer txns (1/20587 s); crash recovery modeled from the S1-004 crash-replay probe"
+      }
+    },
+    "durable_engine": {
+      "name": "Durable-execution engine (provider-neutral)",
+      "state": "event history + task queue in durable storage owned by the engine",
+      "dispatch": "queue enqueue/dequeue across a process boundary",
+      "task_queue": "durable queue with visibility timeouts and redelivery",
+      "crash_model": "engine state survives coordinator worker crashes; in-flight activities are redelivered after lease expiry; completed activities are never re-executed (event history dedup)",
+      "delivery": "activity commands cross the boundary; outcome recorded as a durable event",
+      "lease": "activity leases with fencing tokens; stale owners rejected",
+      "measured_parameters": {
+        "source": "S1-005 E1 (pipe/TCP) + modeled lease/visibility assumptions",
+        "dispatch_us": 25.71,
+        "state_write_us": 74.3,
+        "lease_timeout_ms": 100.0,
+        "crash_recovery_ms": 105.0,
+        "note": "dispatch from E1 pipe; state write = E2 per-txn cost + one queue/history write; lease timeout and recovery are documented model assumptions (same-host), not vendor measurements",
+        "unknown": "multi-host network partition behaviour; vendor-specific timer semantics"
+      }
+    }
+  },
+  "hard_safety_invariants": [
+    "duplicate_effect_count = 0",
+    "duplicate_receipt_count = 0",
+    "blind_retry_count = 0",
+    "stale_owner_completion_count = 0",
+    "checkpoint_hash_bypass_count = 0",
+    "lost_committed_event_count = 0",
+    "allow_after_revocation_count = 0"
+  ],
+  "outcome_model": {"ack": 0.9, "nack": 0.05, "unknown_reconciled": 0.05},
+  "reconciliation_contract": "an unknown outcome enters reconciling state; resolution (ack/nack) is recorded as evidence before any retry"
+}

@@ -1,0 +1,38 @@
+{
+  "schema": "agentos.s1-006.rubric/v1",
+  "ticket": "S1-006",
+  "frozen_before_measurements": true,
+  "scale": {"range": [0, 4], "4": "directly supported by measurement or implementation", "0": "fails the dimension"},
+  "unknown_policy": "unknown/NO_DATA cells are excluded from both weighted sums (renormalized), recorded with missing evidence, never mapped to a number or advantage",
+  "weights": {
+    "task_run_durability": 12,
+    "checkpoint_integrity_resume": 12,
+    "duplicate_effect_prevention": 12,
+    "unknown_outcome_reconciliation": 10,
+    "lease_fencing_stale_owner": 10,
+    "dag_determinism": 8,
+    "crash_recovery_time": 8,
+    "throughput_latency": 8,
+    "test_determinism_replay": 8,
+    "operator_visibility_complexity": 6,
+    "migration_reversibility": 6
+  },
+  "weight_sum": 100,
+  "hard_constraints": [
+    "all seven safety counters equal zero in every accepted run",
+    "identical frozen workload/contract/evaluator hashes across compared runs",
+    "crash/replay scenarios executed for both backends",
+    "unknown outcomes reconciled, never blind-retried",
+    "stale-owner completions rejected by fencing"
+  ],
+  "verdict_rules": {
+    "min_runs": ">= 90 main runs + full independent rerun in a separate process/output dir",
+    "pass": "winner stable under sensitivity, no unknown cells among real candidates, all safety counters zero, probes rejected",
+    "pass_with_limits": "winner stable but unknown cells, weight-flip sensitivity, or inherited PASS_WITH_LIMITS dependencies bind the claim",
+    "fail": "any safety counter non-zero on the recommendation, any probe accepted, any incomparable pair scored",
+    "incomparable": "workload/contract/hash divergence between compared runs -> NO_DATA, never a winner"
+  },
+  "statistical_tolerance": {
+    "rerun": "safety verdicts must be identical; p95/p99 deltas within 2x recorded run-to-run spread are 'consistent', larger deltas are 'explained-required' and cap the verdict at PASS_WITH_LIMITS"
+  }
+}
