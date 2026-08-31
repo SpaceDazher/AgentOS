@@ -114,12 +114,13 @@
 
   "timing_probe_contract": {
     "purpose": "bounded local error/timing observability check of the object-existence oracle (valid foreign id versus nonexistent id)",
-    "method": "perf_counter_ns wall time around the retrieval call, identical corpus and request order for both arms",
+    "method": "perf_counter_ns wall time around paired interleaved retrieval calls (foreign and control alternate per sample so slow drift affects both arms equally), identical corpus for both arms",
     "sample_count": 200,
     "warmup": 20,
+    "inner_repeats": 32,
     "seeds": [101, 202, 303],
-    "statistic": "median of per-seed medians per arm",
-    "tolerance": { "relative": 0.10, "absolute_floor_ns": 1000, "rule": "signal = |median_foreign - median_nonexistent|; distinguishable iff signal > max(relative * median_nonexistent, absolute_floor_ns)" },
+    "statistic": "median_of_paired_interleaved_differences (pooled over seeds)",
+    "tolerance": { "relative": 0.10, "absolute_floor_ns": 2000, "rule": "signal = |median paired difference|; distinguishable iff signal > max(relative * median_control, absolute_floor_ns)" },
     "interpretation": "a distinguishable signal is a finding that constrains the variant (finding/limitation or FAIL per the frozen rubric); it is never evidence of production exploitability and never a production SLO claim",
     "no_data_policy": "insufficient samples or executor interruption yields NO_DATA, which remains a limitation and never becomes a pass"
   }

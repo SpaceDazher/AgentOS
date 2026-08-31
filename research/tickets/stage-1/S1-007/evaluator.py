@@ -927,22 +927,23 @@ def analyze_timing(timing: dict, contract: dict | None = None) -> dict:
         "seeds": frozen["seeds"], "statistic": frozen["statistic"],
         "tolerance": tol_rule}, "variants": {}}
     for variant, data in timing.get("variants", {}).items():
-        foreign = data["arms"]["valid_foreign_id"]["median_ns"]
-        control = data["arms"]["nonexistent_id"]["median_ns"]
-        signal = abs(foreign - control)
-        tol = max(tol_rule["relative"] * control,
-                  tol_rule["absolute_floor_ns"])
+        signal = data.get("median_paired_diff_ns")
+        tol = data.get("tolerance_ns")
+        if signal is None or tol is None:
+            out["variants"][variant] = {
+                "verdict": "NO_DATA",
+                "note": "timing section lacks paired statistics"}
+            continue
         out["variants"][variant] = {
-            "foreign_median_ns": foreign, "control_median_ns": control,
-            "signal_ns": signal, "tolerance_ns": round(tol),
-            "verdict": ("WITHIN_TOLERANCE" if signal <= tol
-                        else "SIGNAL_ABOVE_TOLERANCE"),
-            "per_seed": (data["arms"].get("valid_foreign_id", {})
-                         .get("per_seed", []))
-            + (data["arms"].get("nonexistent_id", {})
-               .get("per_seed", [])),
-            "note": "bounded local measurement; not a production SLO, "
-                    "not proof of absence of all side channels"}
+            "signal_ns": signal, "tolerance_ns": tol,
+            "verdict": data.get("verdict",
+                                "WITHIN_TOLERANCE" if signal <= tol
+                                else "SIGNAL_ABOVE_TOLERANCE"),
+            "per_seed": data.get("per_seed", []),
+            "pooled_samples": data.get("pooled_samples"),
+            "note": "bounded local paired-interleaved measurement; not a "
+                    "production SLO, not proof of absence of all side "
+                    "channels"}
     if not out["variants"]:
         out["NO_DATA"] = "timing section missing or unparsable"
     return out
@@ -1046,11 +1047,11 @@ def evaluate(runs_manifest: Path, rerun_manifest: Path,
     timing_analysis = analyze_timing(timing, contract)
     rerun_timing = load(rerun_manifest.parent / "timing.json")
     timing_analysis["rerun_note"] = (
-        "rerun timing medians are independent local measurements; "
-        f"main foreign/control signal per variant: "
-        f"{ {v: d['signal_ns'] for v, d in timing['variants'].items()} }; "
+        "rerun timing is an independent local measurement; "
+        f"main paired-signal per variant: "
+        f"{ {v: d.get('median_paired_diff_ns') for v, d in timing['variants'].items()} }; "
         f"rerun: "
-        f"{ {v: d['signal_ns'] for v, d in rerun_timing['variants'].items()} }; "
+        f"{ {v: d.get('median_paired_diff_ns') for v, d in rerun_timing['variants'].items()} }; "
         "cross-executor timing deltas are expected OS-scheduling noise on a "
         "microsecond-scale in-process path and never gate the safety "
         "verdict")

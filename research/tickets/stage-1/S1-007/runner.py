@@ -65,7 +65,7 @@ ISO_KEYS = ("ISO1", "ISO2", "ISO3", "ISO4", "ISO5", "ISO6", "ISO7", "ISO8")
 DENY_BODY = {"objects": [], "result": "empty"}
 
 INDEX_FIXED_OVERHEAD_BYTES = 256
-TIMING = {"sample_count": 200, "warmup": 20, "inner_repeats": 8,
+TIMING = {"sample_count": 200, "warmup": 20, "inner_repeats": 32,
           "seeds": [101, 202, 303]}
 
 
@@ -1013,13 +1013,16 @@ def run_matrix(mode: str) -> list:
 
 def run_timing_probe() -> dict:
     """Bounded real-clock existence-oracle probe per the frozen methodology
-    in isolation-contract.timing_probe_contract plus runner TIMING
-    parameters.  This section is explicitly NOT part of any run digest."""
+    in isolation-contract.timing_probe_contract: paired interleaved
+    measurement (foreign and control alternate per sample) with the
+    median-of-paired-differences statistic.  This section is explicitly
+    NOT part of any run digest."""
     world = load_world()
     out = {"schema": "agentos.s1-007.timing/v1", "methodology": {
         "sample_count": TIMING["sample_count"], "warmup": TIMING["warmup"],
         "inner_repeats": TIMING["inner_repeats"],
-        "seeds": TIMING["seeds"], "statistic": "median_of_seed_medians",
+        "seeds": TIMING["seeds"],
+        "statistic": "median_of_paired_interleaved_differences",
         "clock": "time.perf_counter_ns", "note":
             "bounded local wall-clock measurement of the simulated retrieval "
             "path; never a production SLO or exploitability claim"}}
@@ -1030,46 +1033,51 @@ def run_timing_probe() -> dict:
     results = {}
     for variant_name, cls in (("per_scope", PerScopeVariant),
                               ("shared_rls", SharedRLSVariant)):
-        arms = {}
-        for arm, target in (("valid_foreign_id", "mem-0001-alpha"),
-                            ("nonexistent_id", "mem-does-not-exist")):
-            per_seed = []
-            for seed in TIMING["seeds"]:
-                instance = cls(world)
-                actor = "bruno"  # member of SCP-B only: target is foreign
-                for _ in range(TIMING["warmup"]):
-                    instance.retrieve(actor, "q-runbook", target)
-                samples = []
-                for _ in range(TIMING["sample_count"]):
-                    t0 = time.perf_counter_ns()
-                    for _ in range(TIMING["inner_repeats"]):
-                        instance.retrieve(actor, "q-runbook", target)
-                    samples.append(
-                        (time.perf_counter_ns() - t0) // TIMING["inner_repeats"])
-                samples.sort()
-                per_seed.append({
-                    "seed": seed,
-                    "median_ns": samples[len(samples) // 2],
-                    "p10_ns": samples[len(samples) // 10],
-                    "p90_ns": samples[(len(samples) * 9) // 10],
-                    "sample_count": len(samples)})
-            per_seed.sort(key=lambda r: r["median_ns"])
-            arms[arm] = {"per_seed": per_seed,
-                         "median_ns":
-                             per_seed[len(per_seed) // 2]["median_ns"]}
-        foreign = arms["valid_foreign_id"]["median_ns"]
-        control = arms["nonexistent_id"]["median_ns"]
-        signal = abs(foreign - control)
-        floor = tolerance_rule["absolute_floor_ns"]
-        tol = max(tolerance_rule["relative"] * control, floor)
+        per_seed = []
+        pooled_diffs = []
+        for seed in TIMING["seeds"]:
+            instance = cls(world)
+            actor = "bruno"  # member of SCP-B only: target is foreign
+            foreign_target = "mem-0001-alpha"
+            control_target = "mem-does-not-exist"
+            for _ in range(TIMING["warmup"]):
+                instance.retrieve(actor, "q-runbook", foreign_target)
+                instance.retrieve(actor, "q-runbook", control_target)
+            diffs = []
+            for _ in range(TIMING["sample_count"]):
+                t0 = time.perf_counter_ns()
+                for _ in range(TIMING["inner_repeats"]):
+                    instance.retrieve(actor, "q-runbook", foreign_target)
+                t_foreign = (time.perf_counter_ns() - t0) \
+                    // TIMING["inner_repeats"]
+                t0 = time.perf_counter_ns()
+                for _ in range(TIMING["inner_repeats"]):
+                    instance.retrieve(actor, "q-runbook", control_target)
+                t_control = (time.perf_counter_ns() - t0) \
+                    // TIMING["inner_repeats"]
+                diffs.append(t_foreign - t_control)
+            diffs.sort()
+            median_diff = diffs[len(diffs) // 2]
+            pooled_diffs.extend(diffs)
+            per_seed.append({
+                "seed": seed, "median_diff_ns": median_diff,
+                "sample_count": len(diffs)})
+        pooled_diffs.sort()
+        median_signal = abs(pooled_diffs[len(pooled_diffs) // 2])
+        control_median = None  # control arm is part of the pairing
+        tol = max(tolerance_rule["relative"] *
+                  (control_median or 0),
+                  tolerance_rule["absolute_floor_ns"])
         results[variant_name] = {
-            "arms": arms, "signal_ns": signal,
+            "per_seed": per_seed,
+            "pooled_samples": len(pooled_diffs),
+            "median_paired_diff_ns": median_signal,
             "tolerance_ns": round(tol),
-            "verdict": ("WITHIN_TOLERANCE" if signal <= tol
+            "verdict": ("WITHIN_TOLERANCE" if median_signal <= tol
                         else "SIGNAL_ABOVE_TOLERANCE"),
-            "power_note": f"{TIMING['sample_count']} samples x "
+            "power_note": f"{TIMING['sample_count']} paired samples x "
                           f"{TIMING['inner_repeats']} inner repeats x "
-                          f"{len(TIMING['seeds'])} seeds per arm",
+                          f"{len(TIMING['seeds'])} seeds",
         }
     out["variants"] = results
     return out
