@@ -5,21 +5,21 @@
   "environment": {
     "python_full": "3.12.6 (tags/v3.12.6:a4a2d2b, Sep  6 2024, 20:11:23) [MSC v.1940 64 bit (AMD64)]",
     "platform": "Windows-11-10.0.22631-SP0",
-    "processor": "Intel64 Family 6 Model 154 Stepping 3, GenuineIntel"
+    "processor": ""
   },
-  "commit": "1348b9d98c782751fabe0357082cf99a819a1197",
-  "tree_sha": "ee547cce25f8a52d2fa8bd54a04087493b137993",
+  "commit": "1812d0563069c5726fdc85e455c960c1df16b2dd",
+  "tree_sha": "cf4ee98ddb0acdefae026d5b7ac051dec3869b69",
   "dirty": false,
   "script_hashes": {
-    "experiments.py": "d234dace12733308b87826dc936b2c5cfbcf44535cb3da2983dea1303a3a210b",
+    "experiments.py": "661396df19666a6035e6ba6552242f35f0e3958a103a4c53f7394483b0b32d10",
     "evaluator.py": "902138174759ca503767fbeb1c11148f0c5691655bd4518dd63b31221471336c"
   },
   "experiments": {
     "small_512b": {
       "rounds": 2000,
-      "in_process_us": 2.55,
-      "pipe_process_us": 10.4,
-      "tcp_localhost_us": 13.74,
+      "in_process_us": 2.67,
+      "pipe_process_us": 9.37,
+      "tcp_localhost_us": 15.3,
       "response_semantics_validated": true,
       "validated_counts": {
         "in_process": 2050,
@@ -29,9 +29,9 @@
     },
     "large_16kb": {
       "rounds": 300,
-      "in_process_us": 33.53,
-      "pipe_process_us": 116.05,
-      "tcp_localhost_us": 57.28,
+      "in_process_us": 36.37,
+      "pipe_process_us": 111.15,
+      "tcp_localhost_us": 49.45,
       "response_semantics_validated": true,
       "validated_counts": {
         "in_process": 350,
@@ -44,21 +44,21 @@
         "writers": 1,
         "transactions": 800,
         "seconds": 0.012,
-        "txns_per_second": 65059.7
+        "txns_per_second": 67620.7
       },
       "two_writers": {
         "writers": 2,
         "transactions": 800,
-        "seconds": 0.155,
-        "txns_per_second": 5174.2,
+        "seconds": 0.192,
+        "txns_per_second": 4172.5,
         "writer_results": [
           {
             "busy": 0,
-            "seconds": 0.007506599999032915
+            "seconds": 0.007126800017431378
           },
           {
             "busy": 0,
-            "seconds": 0.025106800021603703
+            "seconds": 0.027376000012736768
           }
         ],
         "note": "two writer processes contending for the write lock"
@@ -67,5 +67,5 @@
       "serialized_writes": true
     }
   },
-  "output_sha256": "f51515f6ca1f7534836263d5125c4ce9199d34b60525f47bd0b75c3c782e775f"
+  "output_sha256": "807d080c0521bb9b41f5fa68042228efd9907dd6185bbfe27332e1099060102a"
 }

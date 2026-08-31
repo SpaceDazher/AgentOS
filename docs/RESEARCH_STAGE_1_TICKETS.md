@@ -464,13 +464,14 @@ python -m agentos.cli research-plan --topic "S1-004 Alloy TLA plus seeded determ
 
 ### S1-005 — QA1 runtime topology: modular monolith versus containers
 
-- **Status:** `PASS_WITH_LIMITS` - corrective round R3 recorded
-  2026-08-30 (research revision 6; experiments re-executed on the clean
-  committed tree `1348b9d98c78...`, dirty=false, tree and script hashes
+- **Status:** `PASS_WITH_LIMITS` - corrective round R4 recorded
+  2026-08-31 (research revision 7; experiments re-executed on the clean
+  committed tree `1812d0563069...`, dirty=false, commit-derived tree and the
+  exact producer/evaluator script-hash set
   bound, evaluator nonce-bound to the frozen experiment digest):
-  goal `goal_VJ2YYSZ3HN25KCVW01M1AHBQW2`, evaluation
-  `reval_1BYAM2E8ARGMZKF101M1AHBQYK`, artifact chain
-  `f7e09f6ddc49a41c...`, tracked content-addressed evidence-pack/v3
+  goal `goal_Q661VGKGFZC95QMH01M1AS9PRW`, evaluation
+  `reval_QN4TWY89FAA5QDHX01M1AS9PTK`, artifact chain
+  `580d570fe81485ae...`, tracked content-addressed evidence-pack/v3
   `chain_fresh=true` at `results/evidence/`. Decision: modular monolith
   (3.72 vs containers 2.07 normalized under the frozen rubric; scores
   host-frozen per candidate x dimension); sensitivity 218 deterministic
@@ -480,8 +481,10 @@ python -m agentos.cli research-plan --topic "S1-004 Alloy TLA plus seeded determ
   resolve only via hash-bound registry ids or tracked snapshots
   (portable from a clean clone); failure scenarios under a strict
   production schema with INV/SAF/LIVE references; boundary experiments
-  re-executed before the evaluator with semantically validated
-  responses and raw observation counts. Limits: same-host measurements
+  re-executed before the evaluator with semantically validated responses,
+  exact transport observation keys, and fail-closed Git provenance.
+  Autoresearch worktree copy now ignores only explicit generated/cache
+  paths; all other copy failures stop execution. Limits: same-host measurements
   only; containers restart/recovery unknown (bounded in sensitivity
   S3); no production claims; split triggers symbolic until the
   follow-up benchmark.
