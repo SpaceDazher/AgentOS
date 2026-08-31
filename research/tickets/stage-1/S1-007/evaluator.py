@@ -380,6 +380,7 @@ def _check_retrieval_obs(obs, run, counters, findings, expected=None,
                                  "why": "non-canonical window response"})
             return
         authorized = set(expected["authorized"])
+        authorized_ids = {e[0] for e in authorized}
         window = set(expected.get("window") or authorized)
         for o in objects:
             if (o.get("id"), o.get("version")) not in window:
@@ -396,7 +397,7 @@ def _check_retrieval_obs(obs, run, counters, findings, expected=None,
         meta = response.get("meta", {})
         for key in ("ranks", "snippets"):
             for item in meta.get(key, []):
-                if item.get("id") not in authorized:
+                if item.get("id") not in authorized_ids:
                     counters["ISO2"] += 1
                     findings.append({"iso": "ISO2", "target": target,
                                      "why": f"foreign {key} entry"})
@@ -512,7 +513,8 @@ def validate_provenance(prov: dict, expected_commit: str | None) -> None:
             raise EvalError(f"script hash drift: {name}")
 
 
-def validate_run_matrix(manifest_doc: dict, runs_dir: Path) -> dict:
+def validate_run_matrix(manifest_doc: dict, runs_dir: Path,
+                        frozen_hashes: dict | None = None) -> dict:
     manifest = load(TICKET / "corpus-manifest.json")
     variants = manifest["variants"]
     seeds = manifest["seeds"]
@@ -540,6 +542,11 @@ def validate_run_matrix(manifest_doc: dict, runs_dir: Path) -> dict:
             raise EvalError(f"run file digest mismatch: {entry['path']}")
         data = json.loads(raw.decode("utf-8"))
         validate_raw_run(data, entry["run_id"])
+        if frozen_hashes is not None and \
+                data.get("contract_hashes") != frozen_hashes:
+            raise EvalError(
+                f"run {entry['run_id']}: contract hashes diverge from "
+                f"frozen files")
         runs[entry["run_id"]] = data
     return runs
 
@@ -930,8 +937,10 @@ def analyze_timing(timing: dict, contract: dict | None = None) -> dict:
             "signal_ns": signal, "tolerance_ns": round(tol),
             "verdict": ("WITHIN_TOLERANCE" if signal <= tol
                         else "SIGNAL_ABOVE_TOLERANCE"),
-            "per_seed": data["arms"]["valid_foreign_id"]["per_seed"]
-            + data["arms"]["nonexistent_id"]["per_seed"],
+            "per_seed": (data["arms"].get("valid_foreign_id", {})
+                         .get("per_seed", []))
+            + (data["arms"].get("nonexistent_id", {})
+               .get("per_seed", [])),
             "note": "bounded local measurement; not a production SLO, "
                     "not proof of absence of all side channels"}
     if not out["variants"]:
@@ -966,7 +975,8 @@ def evaluate(runs_manifest: Path, rerun_manifest: Path,
     validate_provenance(main_doc.get("provenance", {}), expected_commit)
     if main_doc.get("contract_hashes") != frozen_hashes:
         raise EvalError("main manifest contract hashes diverge from frozen")
-    main_runs = validate_run_matrix(main_doc, runs_manifest.parent / "runs")
+    main_runs = validate_run_matrix(main_doc, runs_manifest.parent / "runs",
+                                    frozen_hashes=frozen_hashes)
     rerun_doc = load(rerun_manifest)
     digest_input = dict(rerun_doc)
     saved_digest = digest_input.pop("manifest_digest", None)
@@ -978,7 +988,8 @@ def evaluate(runs_manifest: Path, rerun_manifest: Path,
     if rerun_doc.get("contract_hashes") != frozen_hashes:
         raise EvalError("rerun manifest contract hashes diverge from frozen")
     rerun_runs = validate_run_matrix(rerun_doc,
-                                     rerun_manifest.parent / "runs")
+                                     rerun_manifest.parent / "runs",
+                                     frozen_hashes=frozen_hashes)
 
     if main_doc["provenance"]["executor_id"] == \
             rerun_doc["provenance"]["executor_id"]:
