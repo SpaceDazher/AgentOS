@@ -292,9 +292,15 @@ def simulate(backend: str, load: str, seed: int, scenario: str | None = None,
     def outcome_for(task, tick):
         decision_id = f"{task}#{tick}"
         roll = rng.random()
-        outcome = ("ack" if roll < outcome_roll["ack"]
-                   else "nack" if roll < outcome_roll["ack"] + outcome_roll["nack"]
-                   else "unknown_reconciled")
+        if scenario == "S2" and tick == arrivals // 3:
+            # S2 is a fault scenario, not a probabilistic hope: every seed
+            # contains at least one started effect with an unknown outcome.
+            outcome = "unknown_reconciled"
+        else:
+            outcome = ("ack" if roll < outcome_roll["ack"]
+                       else "nack" if roll < outcome_roll["ack"]
+                       + outcome_roll["nack"]
+                       else "unknown_reconciled")
         decisions.append(decision_id)
         return decision_id, outcome
 

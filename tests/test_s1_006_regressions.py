@@ -753,6 +753,16 @@ class RunnerSemanticsR2Tests(TestCase):
         self.assertTrue(all(item["presented_fence"] < item["current_fence"]
                             for item in stale))
 
+    def test_every_s2_run_injects_and_reconciles_an_unknown_outcome(self):
+        for backend in rn.BACKENDS:
+            for load in rn.LOADS:
+                for seed in rn.SEEDS:
+                    run = rn.simulate(backend, load, seed, "S2")
+                    self.assertGreater(
+                        run["reconciled_unknown_outcomes"], 0,
+                        f"missing S2 injection for {backend}/{load}/{seed}")
+                    ev.validate_raw_run(run)
+
     def test_probe_a_derives_duplicates_from_actual_ledgers(self):
         probe = next(p for p in rn.build_probes()
                      if p["probe"] == "A_unsafe_resume")

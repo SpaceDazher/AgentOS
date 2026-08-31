@@ -344,7 +344,7 @@ def validate_raw_run(data: dict, *, allow_safety_failure: bool = False) -> None:
     elif scenario == "S2":
         unknowns = {item.get("decision_id") for item in observations
                     if item.get("outcome") == "unknown_reconciled"}
-        if unknowns != set(data.get("reconciliations", {})):
+        if not unknowns or unknowns != set(data.get("reconciliations", {})):
             raise EvalError(f"{data.get('run_id')}: unreconciled S2 outcomes")
     elif scenario == "S3":
         resumes = data.get("resumes", [])
