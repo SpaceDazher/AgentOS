@@ -175,7 +175,7 @@ from a lower wave to a higher wave, and S1-020 is the sole closure sink.
 | S1-003 | W0 | P0 | formal | PASS | — | executable SHACL/ontology validation |
 | S1-004 | W1 | P0 | formal | PASS_WITH_LIMITS | S1-002, S1-003 | bounded formal/simulation checks for INV1–INV6 and delivery safety |
 | S1-005 | W1 | P1 | architecture | PASS_WITH_LIMITS | S1-002 | QA1 modular monolith versus containers |
-| S1-006 | W2 | P1 | architecture | READY | S1-002, S1-005 | QA2 in-process versus durable execution backend |
+| S1-006 | W2 | P1 | architecture | PASS_WITH_LIMITS | S1-002, S1-005 | QA2 in-process versus durable execution backend |
 | S1-007 | W2 | P0 | security | READY | S1-003, S1-005 | QA3 retrieval/index scope isolation |
 | S1-008 | W2 | P0 | security | READY | S1-002, S1-004 | revocation propagation bound of ≤5 seconds |
 | S1-009 | W2 | P1 | architecture | READY | S1-001, S1-005 | MCP/A2A delegation and knowledge adapter roadmap |
@@ -539,7 +539,27 @@ python -m agentos.cli research-plan --topic "S1-005 QA1 runtime topology modular
 
 ### S1-006 — QA2 execution backend: in-process versus durable engine
 
-- **Status:** `READY`
+- **Status:** `PASS_WITH_LIMITS` - corrective round R1 recorded
+  2026-08-31 (research revision 2; experiments re-executed on the clean
+  committed tree `f77c5ac...`, dirty=false, commit/tree provenance bound
+  per compared run, evaluator nonce-bound to the frozen experiment
+  digest): goal `goal_ZXPYXVJF1EF2CKYG01M1CE3KDH`, evaluation
+  `reval_9W4Z3TY877JCZPDA01M1CE3KF6`, artifact chain `c6732b48...`,
+  tracked content-addressed evidence-pack/v3 `chain_fresh=true` at
+  `results/evidence/`. Decision: in-process scheduler (4.00 vs durable
+  engine 3.04 normalized under the frozen 11-dimension rubric);
+  sensitivity 222 deterministic runs with zero winner flips; 90 main
+  runs + 90 independent rerun runs (separate process, run-b), all seven
+  safety counters zero on every accepted run; probes A (unsafe resume),
+  B (incomparable workload) and C (blind retry) detected fail-closed
+  through the real simulator/evaluator paths; S3 resumes only via
+  registered content-hash-verified checkpoints, S4 at-least-once
+  redelivery absorbed by dedup, S2 unknown outcomes reconciled before
+  any retry. Limits: model-based same-host comparison (durable-engine
+  costs combine S1-005 E1/E2 measurements with documented 100 ms lease
+  assumption); no vendor engine installed; multi-host partition and
+  vendor timer semantics unknown and excluded from scoring; migration
+  triggers symbolic until the follow-up benchmark measures them.
 - **Priority:** `P1`
 - **Wave:** `W2`
 - **Owner:** `architecture`

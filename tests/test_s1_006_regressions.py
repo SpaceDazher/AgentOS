@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import copy
 import hashlib
+import importlib.util
 import json
 import subprocess
 import sys
@@ -38,9 +39,31 @@ ROOT = Path(__file__).resolve().parent.parent
 S1006 = ROOT / "research" / "tickets" / "stage-1" / "S1-006"
 sys.path.insert(0, str(S1006))
 
-import evaluator as ev  # noqa: E402
-import runner as rn  # noqa: E402
-import make_bundle as mb  # noqa: E402
+
+def _load_ticket_module(name: str):
+    """Load an S1-006 research module under a UNIQUE sys.modules name.
+    Other ticket suites (S1-005) import generic module names such as
+    'evaluator' or 'make_bundle'; a plain import here would receive their
+    cached module inside one discovery process (and vice versa), so each
+    ticket suite must namespace its own modules."""
+    unique = f"s1_006_{name}"
+    if unique in sys.modules:
+        return sys.modules[unique]
+    spec = importlib.util.spec_from_file_location(
+        unique, S1006 / f"{name}.py")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[unique] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+ev = _load_ticket_module("evaluator")
+rn = _load_ticket_module("runner")
+mb = _load_ticket_module("make_bundle")
+# make_bundle.build_bundle does 'from bundle_content import build' at call
+# time; pre-register S1-006's copy so the name resolves deterministically.
+_load_ticket_module("bundle_content")
+sys.modules.setdefault("bundle_content", sys.modules["s1_006_bundle_content"])
 
 
 def _sha(path: Path) -> str:
@@ -580,7 +603,10 @@ class IndependentRerunTests(TestCase):
                     f"{entry['run_id']}.{key} diverged")
             # provenance is internally consistent with the executing tree
             self.assertEqual(fresh_run["commit"], fresh["provenance"]["commit"])
-            self.assertFalse(fresh_run["dirty"])
+            self.assertEqual(fresh_run["tree_sha"],
+                             fresh["provenance"]["tree_sha"])
+            self.assertEqual(fresh_run["dirty"],
+                             fresh["provenance"]["dirty"])
 
 
 if __name__ == "__main__":  # pragma: no cover
