@@ -1,0 +1,1081 @@
+{
+  "commit": "bdb7e4bcacfdadafb090381a80b6aee55b6232b4",
+  "contract_hashes": {
+    "corpus-manifest.json": "d894973e8819c0d94e863ca1a84aaf3fdf63ae73c998cbb69b1d7247105d7dd9",
+    "fixtures.json": "de6d459158764c1221935200d15a23ec8e8097f4d78d8f34bb836437753edbe1",
+    "isolation-contract.json": "30dfa3469e372f5ed05f173df521d3c0b1cd6f00bab2f3bba3bf0e0d3beb9d5b",
+    "rubric.json": "fd3ff0ff8e3534d61e4de113aeca9067d933221a796e3695f92998b75d8564eb",
+    "threat-model.json": "cd45c5998c4e0cb2c0e80f17585d1ac1cbe1fea7b71de1f5f4a48904b5cd36e8"
+  },
+  "decision_matrix": [
+    {
+      "claim_type": "test_measurement",
+      "confidence": "high",
+      "dimension": "D1 content/existence/metadata isolation",
+      "evidence_refs": [
+        "iso:shared_rls:ISO1=0",
+        "iso:shared_rls:ISO2=0",
+        "timing:shared_rls:WITHIN_TOLERANCE"
+      ],
+      "limitation": null,
+      "missing_evidence": null,
+      "score": 4.0,
+      "variant": "per_scope",
+      "weight": 0.16
+    },
+    {
+      "claim_type": "test_measurement",
+      "confidence": "high",
+      "dimension": "D1 content/existence/metadata isolation",
+      "evidence_refs": [
+        "iso:shared_rls:ISO1=0",
+        "iso:shared_rls:ISO2=0",
+        "timing:shared_rls:WITHIN_TOLERANCE"
+      ],
+      "limitation": null,
+      "missing_evidence": null,
+      "score": 4.0,
+      "variant": "shared_rls",
+      "weight": 0.16
+    },
+    {
+      "claim_type": "test_measurement",
+      "confidence": "high",
+      "dimension": "D2 correctness of authorization placement (authorize before materialize)",
+      "evidence_refs": [
+        "materialize_before_policy=0"
+      ],
+      "limitation": null,
+      "missing_evidence": null,
+      "score": 4.0,
+      "variant": "per_scope",
+      "weight": 0.12
+    },
+    {
+      "claim_type": "test_measurement",
+      "confidence": "high",
+      "dimension": "D2 correctness of authorization placement (authorize before materialize)",
+      "evidence_refs": [
+        "materialize_before_policy=0"
+      ],
+      "limitation": null,
+      "missing_evidence": null,
+      "score": 4.0,
+      "variant": "shared_rls",
+      "weight": 0.12
+    },
+    {
+      "claim_type": "test_measurement",
+      "confidence": "high",
+      "dimension": "D3 cache invalidation and revoke/move behavior",
+      "evidence_refs": [
+        "iso:ISO3=0",
+        "iso:ISO4=0",
+        "stale_invalidated=9",
+        "invalidation_ops=9"
+      ],
+      "limitation": null,
+      "missing_evidence": null,
+      "score": 4.0,
+      "variant": "per_scope",
+      "weight": 0.12
+    },
+    {
+      "claim_type": "test_measurement",
+      "confidence": "high",
+      "dimension": "D3 cache invalidation and revoke/move behavior",
+      "evidence_refs": [
+        "iso:ISO3=0",
+        "iso:ISO4=0",
+        "stale_invalidated=9",
+        "invalidation_ops=9"
+      ],
+      "limitation": null,
+      "missing_evidence": null,
+      "score": 4.0,
+      "variant": "shared_rls",
+      "weight": 0.12
+    },
+    {
+      "claim_type": "test_measurement",
+      "confidence": "high",
+      "dimension": "D4 projection/provenance integrity",
+      "evidence_refs": [
+        "iso:ISO5=0",
+        "provenance_share=0.8462"
+      ],
+      "limitation": null,
+      "missing_evidence": null,
+      "score": 3.3846,
+      "variant": "per_scope",
+      "weight": 0.1
+    },
+    {
+      "claim_type": "test_measurement",
+      "confidence": "high",
+      "dimension": "D4 projection/provenance integrity",
+      "evidence_refs": [
+        "iso:ISO5=0",
+        "provenance_share=0.8462"
+      ],
+      "limitation": null,
+      "missing_evidence": null,
+      "score": 3.3846,
+      "variant": "shared_rls",
+      "weight": 0.1
+    },
+    {
+      "claim_type": "test_measurement",
+      "confidence": "high",
+      "dimension": "D5 bulk/pagination/background-job isolation",
+      "evidence_refs": [
+        "iso:ISO6=0"
+      ],
+      "limitation": null,
+      "missing_evidence": null,
+      "score": 4.0,
+      "variant": "per_scope",
+      "weight": 0.1
+    },
+    {
+      "claim_type": "test_measurement",
+      "confidence": "high",
+      "dimension": "D5 bulk/pagination/background-job isolation",
+      "evidence_refs": [
+        "iso:ISO6=0"
+      ],
+      "limitation": null,
+      "missing_evidence": null,
+      "score": 4.0,
+      "variant": "shared_rls",
+      "weight": 0.1
+    },
+    {
+      "claim_type": "test_measurement",
+      "confidence": "high",
+      "dimension": "D6 failure blast radius",
+      "evidence_refs": [
+        "fault:shared_rls:{\"corrupt_entry_affected_scopes\": 1, \"predicate_bypass_affected_scopes\": 2}"
+      ],
+      "limitation": "in-model fault injection, not production fault data",
+      "missing_evidence": null,
+      "score": 3.25,
+      "variant": "per_scope",
+      "weight": 0.08
+    },
+    {
+      "claim_type": "test_measurement",
+      "confidence": "high",
+      "dimension": "D6 failure blast radius",
+      "evidence_refs": [
+        "fault:shared_rls:{\"corrupt_entry_affected_scopes\": 1, \"predicate_bypass_affected_scopes\": 2}"
+      ],
+      "limitation": "in-model fault injection, not production fault data",
+      "missing_evidence": null,
+      "score": 3.25,
+      "variant": "shared_rls",
+      "weight": 0.08
+    },
+    {
+      "claim_type": "test_measurement",
+      "confidence": "high",
+      "dimension": "D7 auditability and counterexample quality",
+      "evidence_refs": [
+        "audit_share=0.8696",
+        "protected_in_audit=0"
+      ],
+      "limitation": null,
+      "missing_evidence": null,
+      "score": 3.4783,
+      "variant": "per_scope",
+      "weight": 0.07
+    },
+    {
+      "claim_type": "test_measurement",
+      "confidence": "high",
+      "dimension": "D7 auditability and counterexample quality",
+      "evidence_refs": [
+        "audit_share=0.8696",
+        "protected_in_audit=0"
+      ],
+      "limitation": null,
+      "missing_evidence": null,
+      "score": 3.4783,
+      "variant": "shared_rls",
+      "weight": 0.07
+    },
+    {
+      "claim_type": "test_measurement",
+      "confidence": "high",
+      "dimension": "D8 deterministic testing/replay",
+      "evidence_refs": [
+        "cross-executor"
+      ],
+      "limitation": null,
+      "missing_evidence": null,
+      "score": 4.0,
+      "variant": "per_scope",
+      "weight": 0.06
+    },
+    {
+      "claim_type": "test_measurement",
+      "confidence": "high",
+      "dimension": "D8 deterministic testing/replay",
+      "evidence_refs": [
+        "cross-executor"
+      ],
+      "limitation": null,
+      "missing_evidence": null,
+      "score": 4.0,
+      "variant": "shared_rls",
+      "weight": 0.06
+    },
+    {
+      "claim_type": "architecture_tradeoff",
+      "confidence": "medium",
+      "dimension": "D9 operational complexity and migration cost",
+      "evidence_refs": [
+        "isolation-contract.json#variants",
+        "gateway.py memory scoping (per-goal canonical)",
+        "SRC-03 section 4/6"
+      ],
+      "limitation": "inference from the frozen contract and current implementation, not a measured production cost",
+      "missing_evidence": "multi-scope production workload data",
+      "score": 4.0,
+      "variant": "per_scope",
+      "weight": 0.07
+    },
+    {
+      "claim_type": "architecture_tradeoff",
+      "confidence": "medium",
+      "dimension": "D9 operational complexity and migration cost",
+      "evidence_refs": [
+        "isolation-contract.json#variants",
+        "gateway.py memory scoping (per-goal canonical)",
+        "SRC-03 section 4/6"
+      ],
+      "limitation": "inference from the frozen contract and current implementation, not a measured production cost",
+      "missing_evidence": "multi-scope production workload data",
+      "score": 3.0,
+      "variant": "shared_rls",
+      "weight": 0.07
+    },
+    {
+      "claim_type": "test_measurement",
+      "confidence": "high",
+      "dimension": "D10 storage/latency/resource overhead in the local model",
+      "evidence_refs": [
+        "storage:per_scope:1388B vs 876B",
+        "rows_scanned:per_scope:51 vs 105"
+      ],
+      "limitation": "local model with a frozen fixed per-index overhead constant (INDEX_FIXED_OVERHEAD_BYTES=256)",
+      "missing_evidence": "production storage/latency data",
+      "score": 2.2337,
+      "variant": "per_scope",
+      "weight": 0.07
+    },
+    {
+      "claim_type": "test_measurement",
+      "confidence": "high",
+      "dimension": "D10 storage/latency/resource overhead in the local model",
+      "evidence_refs": [
+        "storage:shared_rls:876B vs 1388B",
+        "rows_scanned:shared_rls:105 vs 51"
+      ],
+      "limitation": "local model with a frozen fixed per-index overhead constant (INDEX_FIXED_OVERHEAD_BYTES=256)",
+      "missing_evidence": "production storage/latency data",
+      "score": 2.2337,
+      "variant": "shared_rls",
+      "weight": 0.07
+    },
+    {
+      "claim_type": "residual_risk",
+      "confidence": "medium",
+      "dimension": "D11 profile compatibility and residual risk",
+      "evidence_refs": [
+        "threat-model.json#T8",
+        "SRC-03 section 6 (profile C: client-side member indexes; server=ciphertext)",
+        "SRC-07 G-04"
+      ],
+      "limitation": "profile-C compatibility is a documented-design inference; S1-018 owns the MLS/TEE contract",
+      "missing_evidence": "profile-C PoC (S1-018)",
+      "score": 4.0,
+      "variant": "per_scope",
+      "weight": 0.05
+    },
+    {
+      "claim_type": "residual_risk",
+      "confidence": "medium",
+      "dimension": "D11 profile compatibility and residual risk",
+      "evidence_refs": [
+        "threat-model.json#T8",
+        "SRC-03 section 6 (profile C: client-side member indexes; server=ciphertext)",
+        "SRC-07 G-04"
+      ],
+      "limitation": "profile-C compatibility is a documented-design inference; S1-018 owns the MLS/TEE contract",
+      "missing_evidence": "profile-C PoC (S1-018)",
+      "score": 2.0,
+      "variant": "shared_rls",
+      "weight": 0.05
+    }
+  ],
+  "executor_main": "agentos-s1-007-producer",
+  "executor_rerun": "agentos-s1-007-independent-verifier",
+  "fault_injection": {
+    "per_scope": {
+      "corrupt_entry_affected_scopes": 1,
+      "predicate_bypass_affected_scopes": 1
+    },
+    "shared_rls": {
+      "corrupt_entry_affected_scopes": 1,
+      "predicate_bypass_affected_scopes": 2
+    }
+  },
+  "iso_counters_main": {
+    "per_scope": {
+      "ISO1": 0,
+      "ISO2": 0,
+      "ISO3": 0,
+      "ISO4": 0,
+      "ISO5": 0,
+      "ISO6": 0,
+      "ISO7": 0,
+      "ISO8": 0
+    },
+    "shared_rls": {
+      "ISO1": 0,
+      "ISO2": 0,
+      "ISO3": 0,
+      "ISO4": 0,
+      "ISO5": 0,
+      "ISO6": 0,
+      "ISO7": 0,
+      "ISO8": 0
+    }
+  },
+  "iso_counters_rerun": {
+    "per_scope": {
+      "ISO1": 0,
+      "ISO2": 0,
+      "ISO3": 0,
+      "ISO4": 0,
+      "ISO5": 0,
+      "ISO6": 0,
+      "ISO7": 0,
+      "ISO8": 0
+    },
+    "shared_rls": {
+      "ISO1": 0,
+      "ISO2": 0,
+      "ISO3": 0,
+      "ISO4": 0,
+      "ISO5": 0,
+      "ISO6": 0,
+      "ISO7": 0,
+      "ISO8": 0
+    }
+  },
+  "isolation_cases": {
+    "per_scope": {
+      "background-reindex-provenance": {
+        "decisions": [
+          null,
+          "allow"
+        ],
+        "iso": {
+          "ISO1": 0,
+          "ISO2": 0,
+          "ISO3": 0,
+          "ISO4": 0,
+          "ISO5": 0,
+          "ISO6": 0,
+          "ISO7": 0,
+          "ISO8": 0
+        }
+      },
+      "bulk-mixed-ids": {
+        "decisions": [
+          "allow",
+          "deny",
+          "deny",
+          "allow",
+          null
+        ],
+        "iso": {
+          "ISO1": 0,
+          "ISO2": 0,
+          "ISO3": 0,
+          "ISO4": 0,
+          "ISO5": 0,
+          "ISO6": 0,
+          "ISO7": 0,
+          "ISO8": 0
+        }
+      },
+      "cache-collision-cross-scope": {
+        "decisions": [
+          "allow",
+          "allow"
+        ],
+        "iso": {
+          "ISO1": 0,
+          "ISO2": 0,
+          "ISO3": 0,
+          "ISO4": 0,
+          "ISO5": 0,
+          "ISO6": 0,
+          "ISO7": 0,
+          "ISO8": 0
+        }
+      },
+      "count-rank-snippet-aggregation": {
+        "decisions": [
+          "allow"
+        ],
+        "iso": {
+          "ISO1": 0,
+          "ISO2": 0,
+          "ISO3": 0,
+          "ISO4": 0,
+          "ISO5": 0,
+          "ISO6": 0,
+          "ISO7": 0,
+          "ISO8": 0
+        }
+      },
+      "foreign-id-valid": {
+        "decisions": [
+          "deny"
+        ],
+        "iso": {
+          "ISO1": 0,
+          "ISO2": 0,
+          "ISO3": 0,
+          "ISO4": 0,
+          "ISO5": 0,
+          "ISO6": 0,
+          "ISO7": 0,
+          "ISO8": 0
+        }
+      },
+      "forged-scope-param": {
+        "decisions": [
+          "deny"
+        ],
+        "iso": {
+          "ISO1": 0,
+          "ISO2": 0,
+          "ISO3": 0,
+          "ISO4": 0,
+          "ISO5": 0,
+          "ISO6": 0,
+          "ISO7": 0,
+          "ISO8": 0
+        }
+      },
+      "malformed-scope": {
+        "decisions": [
+          "deny"
+        ],
+        "iso": {
+          "ISO1": 0,
+          "ISO2": 0,
+          "ISO3": 0,
+          "ISO4": 0,
+          "ISO5": 0,
+          "ISO6": 0,
+          "ISO7": 0,
+          "ISO8": 0
+        }
+      },
+      "move-rescope-stale": {
+        "decisions": [
+          "allow",
+          null,
+          "deny"
+        ],
+        "iso": {
+          "ISO1": 0,
+          "ISO2": 0,
+          "ISO3": 0,
+          "ISO4": 0,
+          "ISO5": 0,
+          "ISO6": 0,
+          "ISO7": 0,
+          "ISO8": 0
+        }
+      },
+      "nonexistent-id-control": {
+        "decisions": [
+          "deny"
+        ],
+        "iso": {
+          "ISO1": 0,
+          "ISO2": 0,
+          "ISO3": 0,
+          "ISO4": 0,
+          "ISO5": 0,
+          "ISO6": 0,
+          "ISO7": 0,
+          "ISO8": 0
+        }
+      },
+      "pagination-leak": {
+        "decisions": [
+          "allow",
+          "allow"
+        ],
+        "iso": {
+          "ISO1": 0,
+          "ISO2": 0,
+          "ISO3": 0,
+          "ISO4": 0,
+          "ISO5": 0,
+          "ISO6": 0,
+          "ISO7": 0,
+          "ISO8": 0
+        }
+      },
+      "revoke-stale-cache": {
+        "decisions": [
+          "allow",
+          null,
+          "deny"
+        ],
+        "iso": {
+          "ISO1": 0,
+          "ISO2": 0,
+          "ISO3": 0,
+          "ISO4": 0,
+          "ISO5": 0,
+          "ISO6": 0,
+          "ISO7": 0,
+          "ISO8": 0
+        }
+      },
+      "same-scope-authorized": {
+        "decisions": [
+          "allow"
+        ],
+        "iso": {
+          "ISO1": 0,
+          "ISO2": 0,
+          "ISO3": 0,
+          "ISO4": 0,
+          "ISO5": 0,
+          "ISO6": 0,
+          "ISO7": 0,
+          "ISO8": 0
+        }
+      },
+      "supersede-invalidation": {
+        "decisions": [
+          "allow",
+          null,
+          "deny",
+          "allow"
+        ],
+        "iso": {
+          "ISO1": 0,
+          "ISO2": 0,
+          "ISO3": 0,
+          "ISO4": 0,
+          "ISO5": 0,
+          "ISO6": 0,
+          "ISO7": 0,
+          "ISO8": 0
+        }
+      },
+      "unknown-scope": {
+        "decisions": [
+          "deny"
+        ],
+        "iso": {
+          "ISO1": 0,
+          "ISO2": 0,
+          "ISO3": 0,
+          "ISO4": 0,
+          "ISO5": 0,
+          "ISO6": 0,
+          "ISO7": 0,
+          "ISO8": 0
+        }
+      }
+    },
+    "shared_rls": {
+      "background-reindex-provenance": {
+        "decisions": [
+          null,
+          "allow"
+        ],
+        "iso": {
+          "ISO1": 0,
+          "ISO2": 0,
+          "ISO3": 0,
+          "ISO4": 0,
+          "ISO5": 0,
+          "ISO6": 0,
+          "ISO7": 0,
+          "ISO8": 0
+        }
+      },
+      "bulk-mixed-ids": {
+        "decisions": [
+          "allow",
+          "deny",
+          "deny",
+          "allow",
+          null
+        ],
+        "iso": {
+          "ISO1": 0,
+          "ISO2": 0,
+          "ISO3": 0,
+          "ISO4": 0,
+          "ISO5": 0,
+          "ISO6": 0,
+          "ISO7": 0,
+          "ISO8": 0
+        }
+      },
+      "cache-collision-cross-scope": {
+        "decisions": [
+          "allow",
+          "allow"
+        ],
+        "iso": {
+          "ISO1": 0,
+          "ISO2": 0,
+          "ISO3": 0,
+          "ISO4": 0,
+          "ISO5": 0,
+          "ISO6": 0,
+          "ISO7": 0,
+          "ISO8": 0
+        }
+      },
+      "count-rank-snippet-aggregation": {
+        "decisions": [
+          "allow"
+        ],
+        "iso": {
+          "ISO1": 0,
+          "ISO2": 0,
+          "ISO3": 0,
+          "ISO4": 0,
+          "ISO5": 0,
+          "ISO6": 0,
+          "ISO7": 0,
+          "ISO8": 0
+        }
+      },
+      "foreign-id-valid": {
+        "decisions": [
+          "deny"
+        ],
+        "iso": {
+          "ISO1": 0,
+          "ISO2": 0,
+          "ISO3": 0,
+          "ISO4": 0,
+          "ISO5": 0,
+          "ISO6": 0,
+          "ISO7": 0,
+          "ISO8": 0
+        }
+      },
+      "forged-scope-param": {
+        "decisions": [
+          "deny"
+        ],
+        "iso": {
+          "ISO1": 0,
+          "ISO2": 0,
+          "ISO3": 0,
+          "ISO4": 0,
+          "ISO5": 0,
+          "ISO6": 0,
+          "ISO7": 0,
+          "ISO8": 0
+        }
+      },
+      "malformed-scope": {
+        "decisions": [
+          "deny"
+        ],
+        "iso": {
+          "ISO1": 0,
+          "ISO2": 0,
+          "ISO3": 0,
+          "ISO4": 0,
+          "ISO5": 0,
+          "ISO6": 0,
+          "ISO7": 0,
+          "ISO8": 0
+        }
+      },
+      "move-rescope-stale": {
+        "decisions": [
+          "allow",
+          null,
+          "deny"
+        ],
+        "iso": {
+          "ISO1": 0,
+          "ISO2": 0,
+          "ISO3": 0,
+          "ISO4": 0,
+          "ISO5": 0,
+          "ISO6": 0,
+          "ISO7": 0,
+          "ISO8": 0
+        }
+      },
+      "nonexistent-id-control": {
+        "decisions": [
+          "deny"
+        ],
+        "iso": {
+          "ISO1": 0,
+          "ISO2": 0,
+          "ISO3": 0,
+          "ISO4": 0,
+          "ISO5": 0,
+          "ISO6": 0,
+          "ISO7": 0,
+          "ISO8": 0
+        }
+      },
+      "pagination-leak": {
+        "decisions": [
+          "allow",
+          "allow"
+        ],
+        "iso": {
+          "ISO1": 0,
+          "ISO2": 0,
+          "ISO3": 0,
+          "ISO4": 0,
+          "ISO5": 0,
+          "ISO6": 0,
+          "ISO7": 0,
+          "ISO8": 0
+        }
+      },
+      "revoke-stale-cache": {
+        "decisions": [
+          "allow",
+          null,
+          "deny"
+        ],
+        "iso": {
+          "ISO1": 0,
+          "ISO2": 0,
+          "ISO3": 0,
+          "ISO4": 0,
+          "ISO5": 0,
+          "ISO6": 0,
+          "ISO7": 0,
+          "ISO8": 0
+        }
+      },
+      "same-scope-authorized": {
+        "decisions": [
+          "allow"
+        ],
+        "iso": {
+          "ISO1": 0,
+          "ISO2": 0,
+          "ISO3": 0,
+          "ISO4": 0,
+          "ISO5": 0,
+          "ISO6": 0,
+          "ISO7": 0,
+          "ISO8": 0
+        }
+      },
+      "supersede-invalidation": {
+        "decisions": [
+          "allow",
+          null,
+          "deny",
+          "allow"
+        ],
+        "iso": {
+          "ISO1": 0,
+          "ISO2": 0,
+          "ISO3": 0,
+          "ISO4": 0,
+          "ISO5": 0,
+          "ISO6": 0,
+          "ISO7": 0,
+          "ISO8": 0
+        }
+      },
+      "unknown-scope": {
+        "decisions": [
+          "deny"
+        ],
+        "iso": {
+          "ISO1": 0,
+          "ISO2": 0,
+          "ISO3": 0,
+          "ISO4": 0,
+          "ISO5": 0,
+          "ISO6": 0,
+          "ISO7": 0,
+          "ISO8": 0
+        }
+      }
+    }
+  },
+  "limitations": [
+    "All measurements come from a deterministic stdlib-only local simulation; no production search service, latency or privacy certification is claimed.",
+    "The timing probe is a bounded same-host wall-clock measurement of a microsecond-scale in-process path; it cannot prove absence of all side channels and is never a production SLO.",
+    "D9/D11 are inference-type cells derived from the frozen contract, the current implementation and the documented profiles; a profile-C MLS/TEE contract remains S1-018 scope."
+  ],
+  "metrics": {
+    "per_scope": {
+      "cache_hits": 0,
+      "deny_equivalence": true,
+      "determinism_share_cross_executor": 1.0,
+      "invalidation_ops_total": 9,
+      "materialize_before_policy": 0,
+      "policy_evaluations_total": 63,
+      "rows_scanned_total": 51,
+      "storage": {
+        "index_count": 3,
+        "index_entries": 7,
+        "payload_bytes_est": 1388
+      }
+    },
+    "shared_rls": {
+      "cache_hits": 0,
+      "deny_equivalence": true,
+      "determinism_share_cross_executor": 1.0,
+      "invalidation_ops_total": 9,
+      "materialize_before_policy": 0,
+      "policy_evaluations_total": 63,
+      "rows_scanned_total": 105,
+      "storage": {
+        "index_count": 1,
+        "index_entries": 7,
+        "payload_bytes_est": 876
+      }
+    }
+  },
+  "near_tie": false,
+  "probe_rejections": {
+    "A_existence_oracle": {
+      "detected": "FAIL",
+      "expected": "FAIL",
+      "iso": {
+        "ISO1": 0,
+        "ISO2": 2,
+        "ISO3": 0,
+        "ISO4": 0,
+        "ISO5": 0,
+        "ISO6": 0,
+        "ISO7": 0,
+        "ISO8": 0
+      }
+    },
+    "B_stale_cache": {
+      "detected": "FAIL",
+      "expected": "FAIL",
+      "iso": {
+        "ISO1": 0,
+        "ISO2": 0,
+        "ISO3": 1,
+        "ISO4": 1,
+        "ISO5": 0,
+        "ISO6": 0,
+        "ISO7": 0,
+        "ISO8": 0
+      }
+    },
+    "C_postfilter": {
+      "detected": "FAIL",
+      "expected": "FAIL",
+      "iso": {
+        "ISO1": 0,
+        "ISO2": 36,
+        "ISO3": 0,
+        "ISO4": 0,
+        "ISO5": 0,
+        "ISO6": 0,
+        "ISO7": 0,
+        "ISO8": 0
+      }
+    },
+    "D_forged_scope_provenance_loss": {
+      "detected": "FAIL+INCOMPARABLE",
+      "expected": "FAIL+INCOMPARABLE",
+      "iso": {
+        "ISO1": 0,
+        "ISO2": 0,
+        "ISO3": 0,
+        "ISO4": 1,
+        "ISO5": 4,
+        "ISO6": 0,
+        "ISO7": 1,
+        "ISO8": 0
+      }
+    }
+  },
+  "reasons": [
+    "inference-type dimensions present (D9, D11); bounded local timing; model-based overhead constant"
+  ],
+  "run_nonce": "s1-007-bdb7e4bcacfd-8e07245d2a29",
+  "schema": "agentos.s1-007.evaluation/v1",
+  "score_margin": 0.17,
+  "scores_normalized": {
+    "per_scope": 3.7183,
+    "shared_rls": 3.5483
+  },
+  "scores_per_dimension": {
+    "D1": {
+      "per_scope": 4.0,
+      "shared_rls": 4.0
+    },
+    "D10": {
+      "per_scope": 2.2337,
+      "shared_rls": 2.2337
+    },
+    "D11": {
+      "per_scope": 4.0,
+      "shared_rls": 2.0
+    },
+    "D2": {
+      "per_scope": 4.0,
+      "shared_rls": 4.0
+    },
+    "D3": {
+      "per_scope": 4.0,
+      "shared_rls": 4.0
+    },
+    "D4": {
+      "per_scope": 3.3846,
+      "shared_rls": 3.3846
+    },
+    "D5": {
+      "per_scope": 4.0,
+      "shared_rls": 4.0
+    },
+    "D6": {
+      "per_scope": 3.25,
+      "shared_rls": 3.25
+    },
+    "D7": {
+      "per_scope": 3.4783,
+      "shared_rls": 3.4783
+    },
+    "D8": {
+      "per_scope": 4.0,
+      "shared_rls": 4.0
+    },
+    "D9": {
+      "per_scope": 4.0,
+      "shared_rls": 3.0
+    }
+  },
+  "sensitivity": {
+    "base_scores": {
+      "per_scope": 3.7183,
+      "shared_rls": 3.5483
+    },
+    "base_weights": {
+      "D1": 0.16,
+      "D10": 0.07,
+      "D11": 0.05,
+      "D2": 0.12,
+      "D3": 0.12,
+      "D4": 0.1,
+      "D5": 0.1,
+      "D6": 0.08,
+      "D7": 0.07,
+      "D8": 0.06,
+      "D9": 0.07
+    },
+    "flip_count": 0,
+    "flips": [],
+    "oat_weight_factors": [
+      0.5,
+      1.5
+    ],
+    "random_seed": 42,
+    "random_vectors": 200,
+    "winner_stable": true
+  },
+  "timing_analysis": {
+    "frozen_methodology": {
+      "sample_count": 200,
+      "seeds": [
+        101,
+        202,
+        303
+      ],
+      "statistic": "median_of_paired_interleaved_differences (pooled over seeds)",
+      "tolerance": {
+        "absolute_floor_ns": 2000,
+        "relative": 0.1,
+        "rule": "signal = |median paired difference|; distinguishable iff signal > max(relative * median_control, absolute_floor_ns)"
+      },
+      "warmup": 20
+    },
+    "rerun_note": "rerun timing is an independent local measurement; main paired-signal per variant: {'per_scope': 6, 'shared_rls': 150}; rerun: {'per_scope': 3, 'shared_rls': 172}; cross-executor timing deltas are expected OS-scheduling noise on a microsecond-scale in-process path and never gate the safety verdict",
+    "variants": {
+      "per_scope": {
+        "note": "bounded local paired-interleaved measurement; not a production SLO, not proof of absence of all side channels",
+        "per_seed": [
+          {
+            "median_diff_ns": 19,
+            "sample_count": 200,
+            "seed": 101
+          },
+          {
+            "median_diff_ns": -13,
+            "sample_count": 200,
+            "seed": 202
+          },
+          {
+            "median_diff_ns": -10,
+            "sample_count": 200,
+            "seed": 303
+          }
+        ],
+        "pooled_samples": 600,
+        "signal_ns": 6,
+        "tolerance_ns": 2000,
+        "verdict": "WITHIN_TOLERANCE"
+      },
+      "shared_rls": {
+        "note": "bounded local paired-interleaved measurement; not a production SLO, not proof of absence of all side channels",
+        "per_seed": [
+          {
+            "median_diff_ns": 150,
+            "sample_count": 200,
+            "seed": 101
+          },
+          {
+            "median_diff_ns": 153,
+            "sample_count": 200,
+            "seed": 202
+          },
+          {
+            "median_diff_ns": 150,
+            "sample_count": 200,
+            "seed": 303
+          }
+        ],
+        "pooled_samples": 600,
+        "signal_ns": 150,
+        "tolerance_ns": 2000,
+        "verdict": "WITHIN_TOLERANCE"
+      }
+    }
+  },
+  "tree_sha": "8720bac566337284eb4d1c04cb310111822015a8",
+  "verdict": "PASS_WITH_LIMITS",
+  "winner": "per_scope"
+}

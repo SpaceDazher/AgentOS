@@ -1,0 +1,387 @@
+{
+  "decision_matrix": [
+    {
+      "claim_type": "test_measurement",
+      "confidence": "high",
+      "dimension": "D1 content/existence/metadata isolation",
+      "evidence_refs": [
+        "iso:shared_rls:ISO1=0",
+        "iso:shared_rls:ISO2=0",
+        "timing:shared_rls:WITHIN_TOLERANCE"
+      ],
+      "limitation": null,
+      "missing_evidence": null,
+      "score": 4.0,
+      "variant": "per_scope",
+      "weight": 0.16
+    },
+    {
+      "claim_type": "test_measurement",
+      "confidence": "high",
+      "dimension": "D1 content/existence/metadata isolation",
+      "evidence_refs": [
+        "iso:shared_rls:ISO1=0",
+        "iso:shared_rls:ISO2=0",
+        "timing:shared_rls:WITHIN_TOLERANCE"
+      ],
+      "limitation": null,
+      "missing_evidence": null,
+      "score": 4.0,
+      "variant": "shared_rls",
+      "weight": 0.16
+    },
+    {
+      "claim_type": "test_measurement",
+      "confidence": "high",
+      "dimension": "D2 correctness of authorization placement (authorize before materialize)",
+      "evidence_refs": [
+        "materialize_before_policy=0"
+      ],
+      "limitation": null,
+      "missing_evidence": null,
+      "score": 4.0,
+      "variant": "per_scope",
+      "weight": 0.12
+    },
+    {
+      "claim_type": "test_measurement",
+      "confidence": "high",
+      "dimension": "D2 correctness of authorization placement (authorize before materialize)",
+      "evidence_refs": [
+        "materialize_before_policy=0"
+      ],
+      "limitation": null,
+      "missing_evidence": null,
+      "score": 4.0,
+      "variant": "shared_rls",
+      "weight": 0.12
+    },
+    {
+      "claim_type": "test_measurement",
+      "confidence": "high",
+      "dimension": "D3 cache invalidation and revoke/move behavior",
+      "evidence_refs": [
+        "iso:ISO3=0",
+        "iso:ISO4=0",
+        "stale_invalidated=9",
+        "invalidation_ops=9"
+      ],
+      "limitation": null,
+      "missing_evidence": null,
+      "score": 4.0,
+      "variant": "per_scope",
+      "weight": 0.12
+    },
+    {
+      "claim_type": "test_measurement",
+      "confidence": "high",
+      "dimension": "D3 cache invalidation and revoke/move behavior",
+      "evidence_refs": [
+        "iso:ISO3=0",
+        "iso:ISO4=0",
+        "stale_invalidated=9",
+        "invalidation_ops=9"
+      ],
+      "limitation": null,
+      "missing_evidence": null,
+      "score": 4.0,
+      "variant": "shared_rls",
+      "weight": 0.12
+    },
+    {
+      "claim_type": "test_measurement",
+      "confidence": "high",
+      "dimension": "D4 projection/provenance integrity",
+      "evidence_refs": [
+        "iso:ISO5=0",
+        "provenance_share=0.8462"
+      ],
+      "limitation": null,
+      "missing_evidence": null,
+      "score": 3.3846,
+      "variant": "per_scope",
+      "weight": 0.1
+    },
+    {
+      "claim_type": "test_measurement",
+      "confidence": "high",
+      "dimension": "D4 projection/provenance integrity",
+      "evidence_refs": [
+        "iso:ISO5=0",
+        "provenance_share=0.8462"
+      ],
+      "limitation": null,
+      "missing_evidence": null,
+      "score": 3.3846,
+      "variant": "shared_rls",
+      "weight": 0.1
+    },
+    {
+      "claim_type": "test_measurement",
+      "confidence": "high",
+      "dimension": "D5 bulk/pagination/background-job isolation",
+      "evidence_refs": [
+        "iso:ISO6=0"
+      ],
+      "limitation": null,
+      "missing_evidence": null,
+      "score": 4.0,
+      "variant": "per_scope",
+      "weight": 0.1
+    },
+    {
+      "claim_type": "test_measurement",
+      "confidence": "high",
+      "dimension": "D5 bulk/pagination/background-job isolation",
+      "evidence_refs": [
+        "iso:ISO6=0"
+      ],
+      "limitation": null,
+      "missing_evidence": null,
+      "score": 4.0,
+      "variant": "shared_rls",
+      "weight": 0.1
+    },
+    {
+      "claim_type": "test_measurement",
+      "confidence": "high",
+      "dimension": "D6 failure blast radius",
+      "evidence_refs": [
+        "fault:shared_rls:{\"corrupt_entry_affected_scopes\": 1, \"predicate_bypass_affected_scopes\": 2}"
+      ],
+      "limitation": "in-model fault injection, not production fault data",
+      "missing_evidence": null,
+      "score": 3.25,
+      "variant": "per_scope",
+      "weight": 0.08
+    },
+    {
+      "claim_type": "test_measurement",
+      "confidence": "high",
+      "dimension": "D6 failure blast radius",
+      "evidence_refs": [
+        "fault:shared_rls:{\"corrupt_entry_affected_scopes\": 1, \"predicate_bypass_affected_scopes\": 2}"
+      ],
+      "limitation": "in-model fault injection, not production fault data",
+      "missing_evidence": null,
+      "score": 3.25,
+      "variant": "shared_rls",
+      "weight": 0.08
+    },
+    {
+      "claim_type": "test_measurement",
+      "confidence": "high",
+      "dimension": "D7 auditability and counterexample quality",
+      "evidence_refs": [
+        "audit_share=0.8696",
+        "protected_in_audit=0"
+      ],
+      "limitation": null,
+      "missing_evidence": null,
+      "score": 3.4783,
+      "variant": "per_scope",
+      "weight": 0.07
+    },
+    {
+      "claim_type": "test_measurement",
+      "confidence": "high",
+      "dimension": "D7 auditability and counterexample quality",
+      "evidence_refs": [
+        "audit_share=0.8696",
+        "protected_in_audit=0"
+      ],
+      "limitation": null,
+      "missing_evidence": null,
+      "score": 3.4783,
+      "variant": "shared_rls",
+      "weight": 0.07
+    },
+    {
+      "claim_type": "test_measurement",
+      "confidence": "high",
+      "dimension": "D8 deterministic testing/replay",
+      "evidence_refs": [
+        "cross-executor"
+      ],
+      "limitation": null,
+      "missing_evidence": null,
+      "score": 4.0,
+      "variant": "per_scope",
+      "weight": 0.06
+    },
+    {
+      "claim_type": "test_measurement",
+      "confidence": "high",
+      "dimension": "D8 deterministic testing/replay",
+      "evidence_refs": [
+        "cross-executor"
+      ],
+      "limitation": null,
+      "missing_evidence": null,
+      "score": 4.0,
+      "variant": "shared_rls",
+      "weight": 0.06
+    },
+    {
+      "claim_type": "architecture_tradeoff",
+      "confidence": "medium",
+      "dimension": "D9 operational complexity and migration cost",
+      "evidence_refs": [
+        "isolation-contract.json#variants",
+        "gateway.py memory scoping (per-goal canonical)",
+        "SRC-03 section 4/6"
+      ],
+      "limitation": "inference from the frozen contract and current implementation, not a measured production cost",
+      "missing_evidence": "multi-scope production workload data",
+      "score": 4.0,
+      "variant": "per_scope",
+      "weight": 0.07
+    },
+    {
+      "claim_type": "architecture_tradeoff",
+      "confidence": "medium",
+      "dimension": "D9 operational complexity and migration cost",
+      "evidence_refs": [
+        "isolation-contract.json#variants",
+        "gateway.py memory scoping (per-goal canonical)",
+        "SRC-03 section 4/6"
+      ],
+      "limitation": "inference from the frozen contract and current implementation, not a measured production cost",
+      "missing_evidence": "multi-scope production workload data",
+      "score": 3.0,
+      "variant": "shared_rls",
+      "weight": 0.07
+    },
+    {
+      "claim_type": "test_measurement",
+      "confidence": "high",
+      "dimension": "D10 storage/latency/resource overhead in the local model",
+      "evidence_refs": [
+        "storage:per_scope:1388B vs 876B",
+        "rows_scanned:per_scope:51 vs 105"
+      ],
+      "limitation": "local model with a frozen fixed per-index overhead constant (INDEX_FIXED_OVERHEAD_BYTES=256)",
+      "missing_evidence": "production storage/latency data",
+      "score": 2.2337,
+      "variant": "per_scope",
+      "weight": 0.07
+    },
+    {
+      "claim_type": "test_measurement",
+      "confidence": "high",
+      "dimension": "D10 storage/latency/resource overhead in the local model",
+      "evidence_refs": [
+        "storage:shared_rls:876B vs 1388B",
+        "rows_scanned:shared_rls:105 vs 51"
+      ],
+      "limitation": "local model with a frozen fixed per-index overhead constant (INDEX_FIXED_OVERHEAD_BYTES=256)",
+      "missing_evidence": "production storage/latency data",
+      "score": 2.2337,
+      "variant": "shared_rls",
+      "weight": 0.07
+    },
+    {
+      "claim_type": "residual_risk",
+      "confidence": "medium",
+      "dimension": "D11 profile compatibility and residual risk",
+      "evidence_refs": [
+        "threat-model.json#T8",
+        "SRC-03 section 6 (profile C: client-side member indexes; server=ciphertext)",
+        "SRC-07 G-04"
+      ],
+      "limitation": "profile-C compatibility is a documented-design inference; S1-018 owns the MLS/TEE contract",
+      "missing_evidence": "profile-C PoC (S1-018)",
+      "score": 4.0,
+      "variant": "per_scope",
+      "weight": 0.05
+    },
+    {
+      "claim_type": "residual_risk",
+      "confidence": "medium",
+      "dimension": "D11 profile compatibility and residual risk",
+      "evidence_refs": [
+        "threat-model.json#T8",
+        "SRC-03 section 6 (profile C: client-side member indexes; server=ciphertext)",
+        "SRC-07 G-04"
+      ],
+      "limitation": "profile-C compatibility is a documented-design inference; S1-018 owns the MLS/TEE contract",
+      "missing_evidence": "profile-C PoC (S1-018)",
+      "score": 2.0,
+      "variant": "shared_rls",
+      "weight": 0.05
+    }
+  ],
+  "fault_injection": {
+    "per_scope": {
+      "corrupt_entry_affected_scopes": 1,
+      "predicate_bypass_affected_scopes": 1
+    },
+    "shared_rls": {
+      "corrupt_entry_affected_scopes": 1,
+      "predicate_bypass_affected_scopes": 2
+    }
+  },
+  "near_tie": false,
+  "schema": "agentos.s1-007.decision-matrix/v1",
+  "score_margin": 0.17,
+  "scores_normalized": {
+    "per_scope": 3.7183,
+    "shared_rls": 3.5483
+  },
+  "scores_per_dimension": {
+    "D1": {
+      "per_scope": 4.0,
+      "shared_rls": 4.0
+    },
+    "D10": {
+      "per_scope": 2.2337,
+      "shared_rls": 2.2337
+    },
+    "D11": {
+      "per_scope": 4.0,
+      "shared_rls": 2.0
+    },
+    "D2": {
+      "per_scope": 4.0,
+      "shared_rls": 4.0
+    },
+    "D3": {
+      "per_scope": 4.0,
+      "shared_rls": 4.0
+    },
+    "D4": {
+      "per_scope": 3.3846,
+      "shared_rls": 3.3846
+    },
+    "D5": {
+      "per_scope": 4.0,
+      "shared_rls": 4.0
+    },
+    "D6": {
+      "per_scope": 3.25,
+      "shared_rls": 3.25
+    },
+    "D7": {
+      "per_scope": 3.4783,
+      "shared_rls": 3.4783
+    },
+    "D8": {
+      "per_scope": 4.0,
+      "shared_rls": 4.0
+    },
+    "D9": {
+      "per_scope": 4.0,
+      "shared_rls": 3.0
+    }
+  },
+  "sensitivity": {
+    "base_scores": {
+      "per_scope": 3.7183,
+      "shared_rls": 3.5483
+    },
+    "flip_count": 0,
+    "flips": [],
+    "winner_stable": true
+  },
+  "winner": "per_scope"
+}

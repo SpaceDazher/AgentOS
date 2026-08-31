@@ -1,0 +1,490 @@
+{
+  "contract_hashes": {
+    "corpus-manifest.json": "d894973e8819c0d94e863ca1a84aaf3fdf63ae73c998cbb69b1d7247105d7dd9",
+    "fixtures.json": "de6d459158764c1221935200d15a23ec8e8097f4d78d8f34bb836437753edbe1",
+    "isolation-contract.json": "30dfa3469e372f5ed05f173df521d3c0b1cd6f00bab2f3bba3bf0e0d3beb9d5b",
+    "rubric.json": "fd3ff0ff8e3534d61e4de113aeca9067d933221a796e3695f92998b75d8564eb",
+    "threat-model.json": "cd45c5998c4e0cb2c0e80f17585d1ac1cbe1fea7b71de1f5f4a48904b5cd36e8"
+  },
+  "executor_id": "agentos-s1-007-producer",
+  "manifest_digest": "daee81a7c2386efac9bed1980e4dd59cddfa0f6ae0ef0b021d6e926595208f43",
+  "matrix": {
+    "cases": [
+      "same-scope-authorized",
+      "foreign-id-valid",
+      "nonexistent-id-control",
+      "forged-scope-param",
+      "malformed-scope",
+      "unknown-scope",
+      "cache-collision-cross-scope",
+      "revoke-stale-cache",
+      "move-rescope-stale",
+      "supersede-invalidation",
+      "pagination-leak",
+      "bulk-mixed-ids",
+      "count-rank-snippet-aggregation",
+      "background-reindex-provenance"
+    ],
+    "seeds": [
+      101,
+      202,
+      303
+    ],
+    "variants": [
+      "per_scope",
+      "shared_rls"
+    ]
+  },
+  "mode": "main",
+  "provenance": {
+    "commit": "bdb7e4bcacfdadafb090381a80b6aee55b6232b4",
+    "dirty": false,
+    "dirty_lines": [],
+    "environment_hash": "f29e22c6bef652cf0a6f414a8f6e0ea00badbb423ba0ed325417d7e80219f277",
+    "executor_id": "agentos-s1-007-producer",
+    "platform": "Windows-11-10.0.22631-SP0",
+    "python": "3.12.6",
+    "script_blob_hashes": {
+      "bundle_content.py": "b45634c2e270a6ced1c270302ea704c9704b31e23257ef1a39cef5fb78745ca3",
+      "dependency_gate.py": "fd4e7cfa40ab60b9b6a9e680fdc44340b5a1ee06e7a4e19b4ffd13a7db013a34",
+      "evaluator.py": "b27cdacd2b79977772270a2dbc6d7fbe2def50016851d03757a885c17109d37c",
+      "make_bundle.py": "baba6332eac13a81d6c143efd84a15296fa3d61d72ab8e7323c674257d95962a",
+      "publish_evidence_pack.py": "7b4d2262ce32e6e66422a22f6a07be20504ef3fa916b25ce67aecfc7ff172ecd",
+      "runner.py": "52aa1d9a295bc64ac3210e6352903defb085dcc2e536dfd9359cd2f03d470e69"
+    },
+    "script_hashes": {
+      "bundle_content.py": "08428e053e896ef6669bbe519b683d24c2a5cb0be4bce12d83e57e7213788949",
+      "dependency_gate.py": "fd4e7cfa40ab60b9b6a9e680fdc44340b5a1ee06e7a4e19b4ffd13a7db013a34",
+      "evaluator.py": "b27cdacd2b79977772270a2dbc6d7fbe2def50016851d03757a885c17109d37c",
+      "make_bundle.py": "baba6332eac13a81d6c143efd84a15296fa3d61d72ab8e7323c674257d95962a",
+      "publish_evidence_pack.py": "7b4d2262ce32e6e66422a22f6a07be20504ef3fa916b25ce67aecfc7ff172ecd",
+      "runner.py": "52aa1d9a295bc64ac3210e6352903defb085dcc2e536dfd9359cd2f03d470e69"
+    },
+    "tree_sha": "8720bac566337284eb4d1c04cb310111822015a8"
+  },
+  "runs": [
+    {
+      "path": "per_scope__same-scope-authorized__101.json",
+      "run_id": "per_scope|same-scope-authorized|101",
+      "sha256": "14c290cbb9e0e63c070413e51e83558eba3455812fa741fc052115783677b480"
+    },
+    {
+      "path": "per_scope__foreign-id-valid__101.json",
+      "run_id": "per_scope|foreign-id-valid|101",
+      "sha256": "fa3dbda7e9baa1c5130d8f19e4213bf886573f062fc5136823544e1487e0ae2e"
+    },
+    {
+      "path": "per_scope__nonexistent-id-control__101.json",
+      "run_id": "per_scope|nonexistent-id-control|101",
+      "sha256": "6de97be4b2311b98f753108fc1cd138d84c6f6e8ec27f42f9e8fc1433d953c64"
+    },
+    {
+      "path": "per_scope__forged-scope-param__101.json",
+      "run_id": "per_scope|forged-scope-param|101",
+      "sha256": "22367295dde12c0f0cd60543cb2642b5c79a724c6017225b29370f71ee4600aa"
+    },
+    {
+      "path": "per_scope__malformed-scope__101.json",
+      "run_id": "per_scope|malformed-scope|101",
+      "sha256": "b036b615f5e051342c247c6358a7a705c93f2a04f0fbaa2cb2b6f9a08139d8e3"
+    },
+    {
+      "path": "per_scope__unknown-scope__101.json",
+      "run_id": "per_scope|unknown-scope|101",
+      "sha256": "f15622e2664ad151fc22f3f6ff7db4613bc7dd2694e8635f264c6e3a9787c6a9"
+    },
+    {
+      "path": "per_scope__cache-collision-cross-scope__101.json",
+      "run_id": "per_scope|cache-collision-cross-scope|101",
+      "sha256": "82effb761c19647b388efdf96f16559a021c725327fef693024e8571872281d4"
+    },
+    {
+      "path": "per_scope__revoke-stale-cache__101.json",
+      "run_id": "per_scope|revoke-stale-cache|101",
+      "sha256": "3147ec85a5d7fb43c66d7c3e827eb0f4a8a2c84eeb3e9f910f155729b7f6db4d"
+    },
+    {
+      "path": "per_scope__move-rescope-stale__101.json",
+      "run_id": "per_scope|move-rescope-stale|101",
+      "sha256": "294bab8566e1899e5a28cd8f8d6972c6d695b46ed2152281a0b8b07e44c66621"
+    },
+    {
+      "path": "per_scope__supersede-invalidation__101.json",
+      "run_id": "per_scope|supersede-invalidation|101",
+      "sha256": "acf5cf45c81111b0e7c1fe1009f8a0e732a91e14e53e9bfc5735f8d4b0799576"
+    },
+    {
+      "path": "per_scope__pagination-leak__101.json",
+      "run_id": "per_scope|pagination-leak|101",
+      "sha256": "de5fcc2cf1d68d4ea32c3a7454477966dcc337eefe35ad80c632462532dbd0d0"
+    },
+    {
+      "path": "per_scope__bulk-mixed-ids__101.json",
+      "run_id": "per_scope|bulk-mixed-ids|101",
+      "sha256": "85c8b34eccb9f40416954e818c88643bb833e9ea0f7d223e3a60e61f5f018d4a"
+    },
+    {
+      "path": "per_scope__count-rank-snippet-aggregation__101.json",
+      "run_id": "per_scope|count-rank-snippet-aggregation|101",
+      "sha256": "fb1a3834546027ec3e033051e1803938012813305e6802bc6c7fcfdb0e7fb48d"
+    },
+    {
+      "path": "per_scope__background-reindex-provenance__101.json",
+      "run_id": "per_scope|background-reindex-provenance|101",
+      "sha256": "708c479815ab94a3dd6d86ca3deaa043d2f7b767c3c3437beef57438c7b4164c"
+    },
+    {
+      "path": "per_scope__same-scope-authorized__202.json",
+      "run_id": "per_scope|same-scope-authorized|202",
+      "sha256": "b3df66ba695c1df399f32fc827398afe26a23cf18d6b152dfe0d8fd2c86c3570"
+    },
+    {
+      "path": "per_scope__foreign-id-valid__202.json",
+      "run_id": "per_scope|foreign-id-valid|202",
+      "sha256": "4dbff3c01abe5c755e3e7a4dd679485c37095cb425e2983a0b58f7c848785062"
+    },
+    {
+      "path": "per_scope__nonexistent-id-control__202.json",
+      "run_id": "per_scope|nonexistent-id-control|202",
+      "sha256": "d450b963e379d124956239699eb5dbb1ada04af343a3d4cc0f7963ca8dae1663"
+    },
+    {
+      "path": "per_scope__forged-scope-param__202.json",
+      "run_id": "per_scope|forged-scope-param|202",
+      "sha256": "16fe1e0b2033d11b24aa277215ae3e11b11950b458036774451de67a83f8db44"
+    },
+    {
+      "path": "per_scope__malformed-scope__202.json",
+      "run_id": "per_scope|malformed-scope|202",
+      "sha256": "04395ab642dbb93f25daf4885262b5986d42083102c3425c49667477028ee6b3"
+    },
+    {
+      "path": "per_scope__unknown-scope__202.json",
+      "run_id": "per_scope|unknown-scope|202",
+      "sha256": "70423270c0e0ef6e17481d32d0ac96516453f8493727f9515d8228d3631eea32"
+    },
+    {
+      "path": "per_scope__cache-collision-cross-scope__202.json",
+      "run_id": "per_scope|cache-collision-cross-scope|202",
+      "sha256": "6540735c2a8698e0985de10e23338c4317161ae875020e57019b0626fa385760"
+    },
+    {
+      "path": "per_scope__revoke-stale-cache__202.json",
+      "run_id": "per_scope|revoke-stale-cache|202",
+      "sha256": "f5d1b9b6cbf96a74a11fb8545ee420b749f67d180b2fee14f7bd60e29c06fcc2"
+    },
+    {
+      "path": "per_scope__move-rescope-stale__202.json",
+      "run_id": "per_scope|move-rescope-stale|202",
+      "sha256": "fc0212a262bb2ec3e17c4cfa85d7b74de74870f9854372e69f355770d2933eb8"
+    },
+    {
+      "path": "per_scope__supersede-invalidation__202.json",
+      "run_id": "per_scope|supersede-invalidation|202",
+      "sha256": "61968046b855242798caf6ec4cd2a9b745ed08f5f69de7902aff5094372a9e39"
+    },
+    {
+      "path": "per_scope__pagination-leak__202.json",
+      "run_id": "per_scope|pagination-leak|202",
+      "sha256": "b07047420f8e758b5bd7824f73edf7e02cd916ed81225055f7a275e33d7da33b"
+    },
+    {
+      "path": "per_scope__bulk-mixed-ids__202.json",
+      "run_id": "per_scope|bulk-mixed-ids|202",
+      "sha256": "c51340f8d542aa6b24da9c7560d3b358100a431ada2159ee6d48c4ad7df635f3"
+    },
+    {
+      "path": "per_scope__count-rank-snippet-aggregation__202.json",
+      "run_id": "per_scope|count-rank-snippet-aggregation|202",
+      "sha256": "0704fced37b8964b7e310a5deebaa6d3b6f2be63c5bf040a96d545624958b86c"
+    },
+    {
+      "path": "per_scope__background-reindex-provenance__202.json",
+      "run_id": "per_scope|background-reindex-provenance|202",
+      "sha256": "a084d357e064a219da520f6cd74ce6701b34497dc634add8b12a908342a8656f"
+    },
+    {
+      "path": "per_scope__same-scope-authorized__303.json",
+      "run_id": "per_scope|same-scope-authorized|303",
+      "sha256": "d5145d7c4499a20c2991cb15ef910008f18258cb127d22a8de3b0d2c9b5cfdf6"
+    },
+    {
+      "path": "per_scope__foreign-id-valid__303.json",
+      "run_id": "per_scope|foreign-id-valid|303",
+      "sha256": "0fe33c14965ad771e7baf42c34d8df1c33aa7e0634c64936c166601a430ad1aa"
+    },
+    {
+      "path": "per_scope__nonexistent-id-control__303.json",
+      "run_id": "per_scope|nonexistent-id-control|303",
+      "sha256": "ab397d28fc876230a05e15100684847dadb3e0f0893ccace5399f9ed11299515"
+    },
+    {
+      "path": "per_scope__forged-scope-param__303.json",
+      "run_id": "per_scope|forged-scope-param|303",
+      "sha256": "bacfb27d2e14abed6fca5d8b6c5237bee54dd2650939273c1e76e71d598ad6ab"
+    },
+    {
+      "path": "per_scope__malformed-scope__303.json",
+      "run_id": "per_scope|malformed-scope|303",
+      "sha256": "8bd25e1cd69554b84efc81d3b28c66506595eef81ffde9379676154a0162ed2d"
+    },
+    {
+      "path": "per_scope__unknown-scope__303.json",
+      "run_id": "per_scope|unknown-scope|303",
+      "sha256": "fbac2788b81fe1be77ea43c6ca059e71d6d9579d194ba4eb6786c4f8ac2acc5c"
+    },
+    {
+      "path": "per_scope__cache-collision-cross-scope__303.json",
+      "run_id": "per_scope|cache-collision-cross-scope|303",
+      "sha256": "30dd1360c0c1628119bff4fa2d4f171531acf92b7520f27511a0bccbb2b3d1a1"
+    },
+    {
+      "path": "per_scope__revoke-stale-cache__303.json",
+      "run_id": "per_scope|revoke-stale-cache|303",
+      "sha256": "bab9403a2f2c5155b58021b1bebd2d9cbf94926315fa4c1ded9aef7237023db8"
+    },
+    {
+      "path": "per_scope__move-rescope-stale__303.json",
+      "run_id": "per_scope|move-rescope-stale|303",
+      "sha256": "e2847301f2ad8a69fe7ea8de855b36065fba7655242c2f706f5f29043e797793"
+    },
+    {
+      "path": "per_scope__supersede-invalidation__303.json",
+      "run_id": "per_scope|supersede-invalidation|303",
+      "sha256": "c31029b9e12701ea95f34228654443d693872692543fabdbdae27b94033f60ce"
+    },
+    {
+      "path": "per_scope__pagination-leak__303.json",
+      "run_id": "per_scope|pagination-leak|303",
+      "sha256": "fabe449168b4c82c41b6ae54525f1adddcb5540a5ba0a4624437cbb6be6be0c3"
+    },
+    {
+      "path": "per_scope__bulk-mixed-ids__303.json",
+      "run_id": "per_scope|bulk-mixed-ids|303",
+      "sha256": "f6075430b9694eb61d36678e071e024adb4aed9770a9abb43a8d5ff2dcece9bf"
+    },
+    {
+      "path": "per_scope__count-rank-snippet-aggregation__303.json",
+      "run_id": "per_scope|count-rank-snippet-aggregation|303",
+      "sha256": "322583df788b485454d8192fe205738df190fc1876b9569c137599641e4e6d29"
+    },
+    {
+      "path": "per_scope__background-reindex-provenance__303.json",
+      "run_id": "per_scope|background-reindex-provenance|303",
+      "sha256": "b101bb063b01e1513fcc7217744a5cc13f6b2159f65e32702e16f9b1168513af"
+    },
+    {
+      "path": "shared_rls__same-scope-authorized__101.json",
+      "run_id": "shared_rls|same-scope-authorized|101",
+      "sha256": "0eed1bc798db0a59f378a135ca6d2c061084eb5831fe5bc303477130fa689b0c"
+    },
+    {
+      "path": "shared_rls__foreign-id-valid__101.json",
+      "run_id": "shared_rls|foreign-id-valid|101",
+      "sha256": "7e48a30ce3db5b509813ba665fc4cad9433992486fa9bc7db09757659c793093"
+    },
+    {
+      "path": "shared_rls__nonexistent-id-control__101.json",
+      "run_id": "shared_rls|nonexistent-id-control|101",
+      "sha256": "a4722e39082ab3b8ab133c87cf6aaf426b502383c454412ddcdc349da97da609"
+    },
+    {
+      "path": "shared_rls__forged-scope-param__101.json",
+      "run_id": "shared_rls|forged-scope-param|101",
+      "sha256": "40429197764022128289df5c7a82b38ab8e2a8cde4ae60c3b6c8abcf741a0177"
+    },
+    {
+      "path": "shared_rls__malformed-scope__101.json",
+      "run_id": "shared_rls|malformed-scope|101",
+      "sha256": "e7e3e125df3eaae18b63c00e760a98b53b3d2766bb7e057f5c45bb4750c85541"
+    },
+    {
+      "path": "shared_rls__unknown-scope__101.json",
+      "run_id": "shared_rls|unknown-scope|101",
+      "sha256": "a6df25b66ada2dacd209feb127c46d379c5901d91a10094b5dbb3e3e6045c573"
+    },
+    {
+      "path": "shared_rls__cache-collision-cross-scope__101.json",
+      "run_id": "shared_rls|cache-collision-cross-scope|101",
+      "sha256": "a4fa7048286bc61df446f904677db04954abeb7750667274394397a7b789b5ad"
+    },
+    {
+      "path": "shared_rls__revoke-stale-cache__101.json",
+      "run_id": "shared_rls|revoke-stale-cache|101",
+      "sha256": "e13bba7139e8b820cb994ed4669b9622d5548516397cc847e0923306a95f3445"
+    },
+    {
+      "path": "shared_rls__move-rescope-stale__101.json",
+      "run_id": "shared_rls|move-rescope-stale|101",
+      "sha256": "27d39694725111118a5f977d4074eb9df5ad244125939587983c8abe044acbc3"
+    },
+    {
+      "path": "shared_rls__supersede-invalidation__101.json",
+      "run_id": "shared_rls|supersede-invalidation|101",
+      "sha256": "ae63ac7f659b17f022711e881c66e467ac471706e5d1e0102398822abdf9b1d3"
+    },
+    {
+      "path": "shared_rls__pagination-leak__101.json",
+      "run_id": "shared_rls|pagination-leak|101",
+      "sha256": "a6916b48201796e4ddaa49c008d3eff65aeb6f0520f16dc0e10344fb3b603619"
+    },
+    {
+      "path": "shared_rls__bulk-mixed-ids__101.json",
+      "run_id": "shared_rls|bulk-mixed-ids|101",
+      "sha256": "509682435fe203fe2ddb6f156e2b0ec408b78cf2e2a927f32cce97ecb5e41519"
+    },
+    {
+      "path": "shared_rls__count-rank-snippet-aggregation__101.json",
+      "run_id": "shared_rls|count-rank-snippet-aggregation|101",
+      "sha256": "4899bf35f003eddd3dd490e71eac4fa1e5ae51ab9c3d8efe8958ca55a6435ced"
+    },
+    {
+      "path": "shared_rls__background-reindex-provenance__101.json",
+      "run_id": "shared_rls|background-reindex-provenance|101",
+      "sha256": "e1323c481bba89851cfecc6379f7ffb1ba2150ca3294a8ccb95684e5557b3030"
+    },
+    {
+      "path": "shared_rls__same-scope-authorized__202.json",
+      "run_id": "shared_rls|same-scope-authorized|202",
+      "sha256": "5fdf44ae4e5e796a2ee9aa14534257a73b08941086dd63365a77ff7a588df808"
+    },
+    {
+      "path": "shared_rls__foreign-id-valid__202.json",
+      "run_id": "shared_rls|foreign-id-valid|202",
+      "sha256": "2d86eafa8bcb47366f29848fdd88065533e7a24dc33fca014c6dde881cde19fc"
+    },
+    {
+      "path": "shared_rls__nonexistent-id-control__202.json",
+      "run_id": "shared_rls|nonexistent-id-control|202",
+      "sha256": "8a24fc495c901e3857e8dd86dd6adec18b131327ef9031ce2d76cf4cca3cc063"
+    },
+    {
+      "path": "shared_rls__forged-scope-param__202.json",
+      "run_id": "shared_rls|forged-scope-param|202",
+      "sha256": "187f9a0443a7e4a71bbe64cadbc355f001c9982bed1d1312257ac5437323cfab"
+    },
+    {
+      "path": "shared_rls__malformed-scope__202.json",
+      "run_id": "shared_rls|malformed-scope|202",
+      "sha256": "83d0921edb0f1bdb9869af2d767da4929c85b6bc9fa60e009f884b1a94ed14e2"
+    },
+    {
+      "path": "shared_rls__unknown-scope__202.json",
+      "run_id": "shared_rls|unknown-scope|202",
+      "sha256": "c6ca8a48ab9654ffd131778f794925cd196d6b8c69cb096e041ba0f4cbb7ff4e"
+    },
+    {
+      "path": "shared_rls__cache-collision-cross-scope__202.json",
+      "run_id": "shared_rls|cache-collision-cross-scope|202",
+      "sha256": "61f966f6c2e24e1b835b992eefcb0ab71b2712bba1049780da9fe26ed6aeddea"
+    },
+    {
+      "path": "shared_rls__revoke-stale-cache__202.json",
+      "run_id": "shared_rls|revoke-stale-cache|202",
+      "sha256": "555625f0bb443fa2a4add55319ff410ed3134c57de33d67a4cca2c893b6e13aa"
+    },
+    {
+      "path": "shared_rls__move-rescope-stale__202.json",
+      "run_id": "shared_rls|move-rescope-stale|202",
+      "sha256": "ea03d0466fd64bc51328f2d684cd17c128fb2ed23e330e2d134e2201a6d17b79"
+    },
+    {
+      "path": "shared_rls__supersede-invalidation__202.json",
+      "run_id": "shared_rls|supersede-invalidation|202",
+      "sha256": "0d77e80ab7a0242e0ad8f16bd4abd4cd4071710b5d6df4a7da07af371edb49da"
+    },
+    {
+      "path": "shared_rls__pagination-leak__202.json",
+      "run_id": "shared_rls|pagination-leak|202",
+      "sha256": "19c269c112dcf6e8a5b4a8be3ef3be51c56a49cf11f3f99252652130c647abf9"
+    },
+    {
+      "path": "shared_rls__bulk-mixed-ids__202.json",
+      "run_id": "shared_rls|bulk-mixed-ids|202",
+      "sha256": "c2621008649f1149e81075df9e3da8da50c5de94a8c229053f5f07fe301e3358"
+    },
+    {
+      "path": "shared_rls__count-rank-snippet-aggregation__202.json",
+      "run_id": "shared_rls|count-rank-snippet-aggregation|202",
+      "sha256": "1cfed93e8c33a47f5f26b6cddd3b268a373f6626b66506105d7033478abef4e4"
+    },
+    {
+      "path": "shared_rls__background-reindex-provenance__202.json",
+      "run_id": "shared_rls|background-reindex-provenance|202",
+      "sha256": "21dc6641d558bba69e615ca00da383d9ce3b5ee002d8871af3bcda69d2c634e1"
+    },
+    {
+      "path": "shared_rls__same-scope-authorized__303.json",
+      "run_id": "shared_rls|same-scope-authorized|303",
+      "sha256": "298001a42a61eb24172a8f3ef3556f7da9691628dd4a9581043844a043b9f958"
+    },
+    {
+      "path": "shared_rls__foreign-id-valid__303.json",
+      "run_id": "shared_rls|foreign-id-valid|303",
+      "sha256": "6499e90adba70c36055fecf272d7068fbbc7f4d093b492aab742aff8170a8465"
+    },
+    {
+      "path": "shared_rls__nonexistent-id-control__303.json",
+      "run_id": "shared_rls|nonexistent-id-control|303",
+      "sha256": "41d327136d0fa3088b2709f777d3e7fefd7387ad8aad33a1f0b74ce8c47804bb"
+    },
+    {
+      "path": "shared_rls__forged-scope-param__303.json",
+      "run_id": "shared_rls|forged-scope-param|303",
+      "sha256": "a1cf1639c7902713e770404c72bd7c138ae10332a69ad4ab3fe005f5c93c88c8"
+    },
+    {
+      "path": "shared_rls__malformed-scope__303.json",
+      "run_id": "shared_rls|malformed-scope|303",
+      "sha256": "c594c6690664e9004915a502e815709495d7cb783d832db9e9e749f6b2f3b40a"
+    },
+    {
+      "path": "shared_rls__unknown-scope__303.json",
+      "run_id": "shared_rls|unknown-scope|303",
+      "sha256": "9979502c3dd631a866e4b20db548cd208fa9f6133131338901bcd61efbc62a5e"
+    },
+    {
+      "path": "shared_rls__cache-collision-cross-scope__303.json",
+      "run_id": "shared_rls|cache-collision-cross-scope|303",
+      "sha256": "7b1d0c7697f7b740a38767b48a2b6d0291467898e2aa7e821e65919352a1ce4b"
+    },
+    {
+      "path": "shared_rls__revoke-stale-cache__303.json",
+      "run_id": "shared_rls|revoke-stale-cache|303",
+      "sha256": "7d6da36a628396160cf1782b22f8dd2e62e94f5bbda620cad62c889859e90b46"
+    },
+    {
+      "path": "shared_rls__move-rescope-stale__303.json",
+      "run_id": "shared_rls|move-rescope-stale|303",
+      "sha256": "58f6a0dac184ae88e0219ba960352527764b5d52d1fdb728148253e9dd46ecb5"
+    },
+    {
+      "path": "shared_rls__supersede-invalidation__303.json",
+      "run_id": "shared_rls|supersede-invalidation|303",
+      "sha256": "c6aa222978d8ecc3de8ecc3edd4c4561efc14d66a6d010ce14f8f21d7234bee7"
+    },
+    {
+      "path": "shared_rls__pagination-leak__303.json",
+      "run_id": "shared_rls|pagination-leak|303",
+      "sha256": "086c9ad77cf59bd30a12c5d6c8d916399292b2562b63b9b807709d88b0143834"
+    },
+    {
+      "path": "shared_rls__bulk-mixed-ids__303.json",
+      "run_id": "shared_rls|bulk-mixed-ids|303",
+      "sha256": "d29c7ef7b9677d4396436b3373dfd45110bda6e19add332e8ac3d6359b472db8"
+    },
+    {
+      "path": "shared_rls__count-rank-snippet-aggregation__303.json",
+      "run_id": "shared_rls|count-rank-snippet-aggregation|303",
+      "sha256": "8019338a431ae498ff0bb4fdfc74e17dc132f41735e50d4047e40ea1f23669b1"
+    },
+    {
+      "path": "shared_rls__background-reindex-provenance__303.json",
+      "run_id": "shared_rls|background-reindex-provenance|303",
+      "sha256": "3fe4b5c9d047121d0d59c38da52d61457bad6084c2303d80a1e74fdbc1853df5"
+    }
+  ],
+  "schema": "agentos.s1-007.run-manifest/v1",
+  "timing_path": "timing.json",
+  "timing_sha256": "4ea1e2062ba40035ee8c56cc2204a6e2b14545ae85d796f6fddd38cde77f2043"
+}

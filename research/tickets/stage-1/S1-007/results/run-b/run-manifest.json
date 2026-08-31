@@ -1,0 +1,490 @@
+{
+  "contract_hashes": {
+    "corpus-manifest.json": "d894973e8819c0d94e863ca1a84aaf3fdf63ae73c998cbb69b1d7247105d7dd9",
+    "fixtures.json": "de6d459158764c1221935200d15a23ec8e8097f4d78d8f34bb836437753edbe1",
+    "isolation-contract.json": "30dfa3469e372f5ed05f173df521d3c0b1cd6f00bab2f3bba3bf0e0d3beb9d5b",
+    "rubric.json": "fd3ff0ff8e3534d61e4de113aeca9067d933221a796e3695f92998b75d8564eb",
+    "threat-model.json": "cd45c5998c4e0cb2c0e80f17585d1ac1cbe1fea7b71de1f5f4a48904b5cd36e8"
+  },
+  "executor_id": "agentos-s1-007-independent-verifier",
+  "manifest_digest": "03fcbfa1968e2f4e3f16d8411a5b9365862242e2d28a608e29358cc93a9b9bdf",
+  "matrix": {
+    "cases": [
+      "same-scope-authorized",
+      "foreign-id-valid",
+      "nonexistent-id-control",
+      "forged-scope-param",
+      "malformed-scope",
+      "unknown-scope",
+      "cache-collision-cross-scope",
+      "revoke-stale-cache",
+      "move-rescope-stale",
+      "supersede-invalidation",
+      "pagination-leak",
+      "bulk-mixed-ids",
+      "count-rank-snippet-aggregation",
+      "background-reindex-provenance"
+    ],
+    "seeds": [
+      101,
+      202,
+      303
+    ],
+    "variants": [
+      "per_scope",
+      "shared_rls"
+    ]
+  },
+  "mode": "rerun",
+  "provenance": {
+    "commit": "bdb7e4bcacfdadafb090381a80b6aee55b6232b4",
+    "dirty": false,
+    "dirty_lines": [],
+    "environment_hash": "650f5074ed1b85882aa1c5ab6f4fb0b8ca381484d84451435178bbe58c72da74",
+    "executor_id": "agentos-s1-007-independent-verifier",
+    "platform": "Windows-11-10.0.22631-SP0",
+    "python": "3.12.6",
+    "script_blob_hashes": {
+      "bundle_content.py": "b45634c2e270a6ced1c270302ea704c9704b31e23257ef1a39cef5fb78745ca3",
+      "dependency_gate.py": "fd4e7cfa40ab60b9b6a9e680fdc44340b5a1ee06e7a4e19b4ffd13a7db013a34",
+      "evaluator.py": "b27cdacd2b79977772270a2dbc6d7fbe2def50016851d03757a885c17109d37c",
+      "make_bundle.py": "baba6332eac13a81d6c143efd84a15296fa3d61d72ab8e7323c674257d95962a",
+      "publish_evidence_pack.py": "7b4d2262ce32e6e66422a22f6a07be20504ef3fa916b25ce67aecfc7ff172ecd",
+      "runner.py": "52aa1d9a295bc64ac3210e6352903defb085dcc2e536dfd9359cd2f03d470e69"
+    },
+    "script_hashes": {
+      "bundle_content.py": "08428e053e896ef6669bbe519b683d24c2a5cb0be4bce12d83e57e7213788949",
+      "dependency_gate.py": "fd4e7cfa40ab60b9b6a9e680fdc44340b5a1ee06e7a4e19b4ffd13a7db013a34",
+      "evaluator.py": "b27cdacd2b79977772270a2dbc6d7fbe2def50016851d03757a885c17109d37c",
+      "make_bundle.py": "baba6332eac13a81d6c143efd84a15296fa3d61d72ab8e7323c674257d95962a",
+      "publish_evidence_pack.py": "7b4d2262ce32e6e66422a22f6a07be20504ef3fa916b25ce67aecfc7ff172ecd",
+      "runner.py": "52aa1d9a295bc64ac3210e6352903defb085dcc2e536dfd9359cd2f03d470e69"
+    },
+    "tree_sha": "8720bac566337284eb4d1c04cb310111822015a8"
+  },
+  "runs": [
+    {
+      "path": "per_scope__same-scope-authorized__101.json",
+      "run_id": "per_scope|same-scope-authorized|101",
+      "sha256": "067d2a24120c1af31a1259f37fde592974cb17582661f2f6e520de75855b514b"
+    },
+    {
+      "path": "per_scope__foreign-id-valid__101.json",
+      "run_id": "per_scope|foreign-id-valid|101",
+      "sha256": "5b712eb16eb623bbb83f4da3d7bcda7fdb218f02e442ab7e62c9ce9862093cf1"
+    },
+    {
+      "path": "per_scope__nonexistent-id-control__101.json",
+      "run_id": "per_scope|nonexistent-id-control|101",
+      "sha256": "3529f055aebb2fad5dbf9bb6fb50713182d6f01668ff59bbb8ea5fe48cd494a3"
+    },
+    {
+      "path": "per_scope__forged-scope-param__101.json",
+      "run_id": "per_scope|forged-scope-param|101",
+      "sha256": "347d06c90ef1ff390bcbf7a5ad0987da91aeb51e64520d93a7d3625df028ee29"
+    },
+    {
+      "path": "per_scope__malformed-scope__101.json",
+      "run_id": "per_scope|malformed-scope|101",
+      "sha256": "28f146b9cfa18740b24b51e4b5b3ba217daa7901f22406ad77f047aaed0f8720"
+    },
+    {
+      "path": "per_scope__unknown-scope__101.json",
+      "run_id": "per_scope|unknown-scope|101",
+      "sha256": "60c2ef8c9ecb5712f74bec716cf57fea22b910d82c6bacb1d5cc61b6e934a550"
+    },
+    {
+      "path": "per_scope__cache-collision-cross-scope__101.json",
+      "run_id": "per_scope|cache-collision-cross-scope|101",
+      "sha256": "b03cf153bed9ab259606a35774381b2123ce74231acdb5a89672e9a1e353a899"
+    },
+    {
+      "path": "per_scope__revoke-stale-cache__101.json",
+      "run_id": "per_scope|revoke-stale-cache|101",
+      "sha256": "b63b32bfbff2dcc1d867725dc2eaf1c8b92e8084e1c57d7b955fca70dd55c9e8"
+    },
+    {
+      "path": "per_scope__move-rescope-stale__101.json",
+      "run_id": "per_scope|move-rescope-stale|101",
+      "sha256": "c83e3d34a9e0931d51f3acbc4d64e8a957f05849201b4a4ec2e65b28939e2c55"
+    },
+    {
+      "path": "per_scope__supersede-invalidation__101.json",
+      "run_id": "per_scope|supersede-invalidation|101",
+      "sha256": "674a5b73d4e48e1255c4c8be6fbbefd32cc41cb4cd26b7d98095939272be7fba"
+    },
+    {
+      "path": "per_scope__pagination-leak__101.json",
+      "run_id": "per_scope|pagination-leak|101",
+      "sha256": "9bbe198f7e96e86fedce4fb6bc0cd22a72c932420fb91356a61122ba797ee28d"
+    },
+    {
+      "path": "per_scope__bulk-mixed-ids__101.json",
+      "run_id": "per_scope|bulk-mixed-ids|101",
+      "sha256": "5bedeebc553fd50354df5175722921e12f87f34aa4dea4e973c91dbb26943c9a"
+    },
+    {
+      "path": "per_scope__count-rank-snippet-aggregation__101.json",
+      "run_id": "per_scope|count-rank-snippet-aggregation|101",
+      "sha256": "e1fbba45867bff56c3f540418da03a3926ef4e54623505b67641466a4e07815c"
+    },
+    {
+      "path": "per_scope__background-reindex-provenance__101.json",
+      "run_id": "per_scope|background-reindex-provenance|101",
+      "sha256": "2b1e6063001e1d3d96dfc2ee92f4f118149ee74007e59a99eb0b0ee5352e9808"
+    },
+    {
+      "path": "per_scope__same-scope-authorized__202.json",
+      "run_id": "per_scope|same-scope-authorized|202",
+      "sha256": "ea09d13dcf9b7ab380d8934451513529ebce062008415cf44552381bb76e27bc"
+    },
+    {
+      "path": "per_scope__foreign-id-valid__202.json",
+      "run_id": "per_scope|foreign-id-valid|202",
+      "sha256": "f7ec8c8edbab74933b51e1cc9b574beb86da36cdfe9df216ed01f2914dc6af6e"
+    },
+    {
+      "path": "per_scope__nonexistent-id-control__202.json",
+      "run_id": "per_scope|nonexistent-id-control|202",
+      "sha256": "44c122f9dfaee217d2576313330bd924290c9b87c4edf0b318bb4628855ff71a"
+    },
+    {
+      "path": "per_scope__forged-scope-param__202.json",
+      "run_id": "per_scope|forged-scope-param|202",
+      "sha256": "1d3362b4f7eaeb34744ecf7d58f7f59f164b611c9c40ba81ead64f6f49604c62"
+    },
+    {
+      "path": "per_scope__malformed-scope__202.json",
+      "run_id": "per_scope|malformed-scope|202",
+      "sha256": "d0f2947c7454021157c4b2bb33e6d32f30c2ca01d862d2e3ebb5d1cdf11dd13d"
+    },
+    {
+      "path": "per_scope__unknown-scope__202.json",
+      "run_id": "per_scope|unknown-scope|202",
+      "sha256": "c1b307d161504496ef9888a440f4b4567b515213b27f8d275b16ca757d1553f5"
+    },
+    {
+      "path": "per_scope__cache-collision-cross-scope__202.json",
+      "run_id": "per_scope|cache-collision-cross-scope|202",
+      "sha256": "9d62c7f013ece8401bb2e57e72890cd0337e8ac6354297be7b580c0a24bdd4a4"
+    },
+    {
+      "path": "per_scope__revoke-stale-cache__202.json",
+      "run_id": "per_scope|revoke-stale-cache|202",
+      "sha256": "bb37c7496cefa40d12d1d0195ea8bd577701b3a786f870d8e71b1e9d51da497a"
+    },
+    {
+      "path": "per_scope__move-rescope-stale__202.json",
+      "run_id": "per_scope|move-rescope-stale|202",
+      "sha256": "be0401b2ccb2d4c241c31f0958c932d07c77eb6806d93167cf92fb39e2f65a3c"
+    },
+    {
+      "path": "per_scope__supersede-invalidation__202.json",
+      "run_id": "per_scope|supersede-invalidation|202",
+      "sha256": "5d60acf316a3789d7a78b0eecb96566610981a7524a87e19cfb3543642cc3ec6"
+    },
+    {
+      "path": "per_scope__pagination-leak__202.json",
+      "run_id": "per_scope|pagination-leak|202",
+      "sha256": "aff707d8a60f0d2986301d92a36b93f199cdb6bb669603a1a7b8d8b2dde2a56c"
+    },
+    {
+      "path": "per_scope__bulk-mixed-ids__202.json",
+      "run_id": "per_scope|bulk-mixed-ids|202",
+      "sha256": "70c13088e5337cad65b8b8f674a6e32b484f133efc6d368b8aaa2a872048bb3c"
+    },
+    {
+      "path": "per_scope__count-rank-snippet-aggregation__202.json",
+      "run_id": "per_scope|count-rank-snippet-aggregation|202",
+      "sha256": "9dce5e95df3ee62246fafb4ec0ae4862b4ada5cd3398d72e9e0bff06384df444"
+    },
+    {
+      "path": "per_scope__background-reindex-provenance__202.json",
+      "run_id": "per_scope|background-reindex-provenance|202",
+      "sha256": "33a37b341746690b96bef8c495d2065573e6de289fef4eaba8f313ea39965133"
+    },
+    {
+      "path": "per_scope__same-scope-authorized__303.json",
+      "run_id": "per_scope|same-scope-authorized|303",
+      "sha256": "38d51910ee36700e308f5b8a4840efd8103de34b1326ea6ffe4882a3e0321603"
+    },
+    {
+      "path": "per_scope__foreign-id-valid__303.json",
+      "run_id": "per_scope|foreign-id-valid|303",
+      "sha256": "aef3fddee4ce6ff08c55b67781759c004a30ca0aaba8018012563377d44730ff"
+    },
+    {
+      "path": "per_scope__nonexistent-id-control__303.json",
+      "run_id": "per_scope|nonexistent-id-control|303",
+      "sha256": "7deb6f71c348a7691cd563c12d4b31ca644c26d63f05858a7d4cfecd0f4d4f66"
+    },
+    {
+      "path": "per_scope__forged-scope-param__303.json",
+      "run_id": "per_scope|forged-scope-param|303",
+      "sha256": "82a6f4110ebbf8b2c987501e7ffdea62b73f21e681b84414c1da3bf7a38f9a8d"
+    },
+    {
+      "path": "per_scope__malformed-scope__303.json",
+      "run_id": "per_scope|malformed-scope|303",
+      "sha256": "7e58dc593c8333a9eda1ca18cce5362a02046b03eb80888ff5a3922b56fa1072"
+    },
+    {
+      "path": "per_scope__unknown-scope__303.json",
+      "run_id": "per_scope|unknown-scope|303",
+      "sha256": "64b581c8b0cd6b9dbad1b7693f109f96dbd84ae298f11d82c97ab9e7ca436d18"
+    },
+    {
+      "path": "per_scope__cache-collision-cross-scope__303.json",
+      "run_id": "per_scope|cache-collision-cross-scope|303",
+      "sha256": "ab705ad5bea3fbf27bc31d56301b5073f934e8517769906360c71d372d3a40d5"
+    },
+    {
+      "path": "per_scope__revoke-stale-cache__303.json",
+      "run_id": "per_scope|revoke-stale-cache|303",
+      "sha256": "353b422c8b4a5dc7eb0713ffd3049c3f41c775eae430bbf01b2b6c676fca9721"
+    },
+    {
+      "path": "per_scope__move-rescope-stale__303.json",
+      "run_id": "per_scope|move-rescope-stale|303",
+      "sha256": "2f415f4a39b58c798ae53c21e4a896908d51a833bb144abcfa1983787144d372"
+    },
+    {
+      "path": "per_scope__supersede-invalidation__303.json",
+      "run_id": "per_scope|supersede-invalidation|303",
+      "sha256": "2ed9917db3ee92f355e13f0611f6466f05e7fac5c2da2aadd576a4eb8d43d559"
+    },
+    {
+      "path": "per_scope__pagination-leak__303.json",
+      "run_id": "per_scope|pagination-leak|303",
+      "sha256": "cc6dee4b341d2da5e876e9b8518eca4bc9018020e9071e067374cb823e66b205"
+    },
+    {
+      "path": "per_scope__bulk-mixed-ids__303.json",
+      "run_id": "per_scope|bulk-mixed-ids|303",
+      "sha256": "e933935d959476b0613c4b68e777dd04ec5a6cdb48f36a3fc54ad4f6b349a7c4"
+    },
+    {
+      "path": "per_scope__count-rank-snippet-aggregation__303.json",
+      "run_id": "per_scope|count-rank-snippet-aggregation|303",
+      "sha256": "90fc99597fff4db708def54677900ae126274483eb913962f065e3a8f6f39693"
+    },
+    {
+      "path": "per_scope__background-reindex-provenance__303.json",
+      "run_id": "per_scope|background-reindex-provenance|303",
+      "sha256": "36092d1b4e604dac2186ae2eddb6c4526674050312459c427071747e3cb910f3"
+    },
+    {
+      "path": "shared_rls__same-scope-authorized__101.json",
+      "run_id": "shared_rls|same-scope-authorized|101",
+      "sha256": "29fbcbf35b178f6b228d2f6c34af226fb990461ee370bfd23b00a7c905950403"
+    },
+    {
+      "path": "shared_rls__foreign-id-valid__101.json",
+      "run_id": "shared_rls|foreign-id-valid|101",
+      "sha256": "736504e76ce7afd83a465872e46824ae4f7c88b9b6e35bb484a107c08f5af16a"
+    },
+    {
+      "path": "shared_rls__nonexistent-id-control__101.json",
+      "run_id": "shared_rls|nonexistent-id-control|101",
+      "sha256": "9696d450061735c9293e6d277010db5ee303d4e1434041d226c1df02d40fc1f8"
+    },
+    {
+      "path": "shared_rls__forged-scope-param__101.json",
+      "run_id": "shared_rls|forged-scope-param|101",
+      "sha256": "f37dcafe9351b42327610cbea08c8af66b79c1aa74ce0a60de271100f327f3f8"
+    },
+    {
+      "path": "shared_rls__malformed-scope__101.json",
+      "run_id": "shared_rls|malformed-scope|101",
+      "sha256": "095b725e873d6168e6d67e3c9eb3e60386c8c786725f93824551c604538b148a"
+    },
+    {
+      "path": "shared_rls__unknown-scope__101.json",
+      "run_id": "shared_rls|unknown-scope|101",
+      "sha256": "bbc953b1616b7974fff4fc613d8ec3a46beaf69139515da00ec020c5b5542819"
+    },
+    {
+      "path": "shared_rls__cache-collision-cross-scope__101.json",
+      "run_id": "shared_rls|cache-collision-cross-scope|101",
+      "sha256": "a6ee4185dc74f97016699bcbbcb7981e3611095144651ccf70862ba07a25f22c"
+    },
+    {
+      "path": "shared_rls__revoke-stale-cache__101.json",
+      "run_id": "shared_rls|revoke-stale-cache|101",
+      "sha256": "5fe0229d5f1d3f2acb4409db0c41b71f52b42a3994cbfbe16351a2a8662f7cfa"
+    },
+    {
+      "path": "shared_rls__move-rescope-stale__101.json",
+      "run_id": "shared_rls|move-rescope-stale|101",
+      "sha256": "f2b0818d4cc6fc5d3f4bd7ff1798b039461157adab33037fe15d00f158932b2b"
+    },
+    {
+      "path": "shared_rls__supersede-invalidation__101.json",
+      "run_id": "shared_rls|supersede-invalidation|101",
+      "sha256": "667416055f3042fcb9301691cc55260324afb4a6a0a5bb0e303cc49fe3f9fcd7"
+    },
+    {
+      "path": "shared_rls__pagination-leak__101.json",
+      "run_id": "shared_rls|pagination-leak|101",
+      "sha256": "a135ed4469255eede2cd3c9eb68f78da13bb94ad6c432171ac4cc704d6cbe4dc"
+    },
+    {
+      "path": "shared_rls__bulk-mixed-ids__101.json",
+      "run_id": "shared_rls|bulk-mixed-ids|101",
+      "sha256": "696e2be2fa6f544ed47e3265b80501700a4ce97f1aebaf04ced9b8306b93853c"
+    },
+    {
+      "path": "shared_rls__count-rank-snippet-aggregation__101.json",
+      "run_id": "shared_rls|count-rank-snippet-aggregation|101",
+      "sha256": "dc62dd9e88a7e3f7e6f5933321fd63c755003f8ed2955a758b826c67e278efb2"
+    },
+    {
+      "path": "shared_rls__background-reindex-provenance__101.json",
+      "run_id": "shared_rls|background-reindex-provenance|101",
+      "sha256": "9d18ae197672d2e27a86d26552144aa1af85ab0a718b12bb0433f62b028b4465"
+    },
+    {
+      "path": "shared_rls__same-scope-authorized__202.json",
+      "run_id": "shared_rls|same-scope-authorized|202",
+      "sha256": "403d2924551f288a80ada0984fe5bf2e301334a3eb2f547270924af7f2d4d4da"
+    },
+    {
+      "path": "shared_rls__foreign-id-valid__202.json",
+      "run_id": "shared_rls|foreign-id-valid|202",
+      "sha256": "7ad7030d59f2f64a85f5f65e2b77488a10bde6f50124f8ef689aa25b5e15e3a3"
+    },
+    {
+      "path": "shared_rls__nonexistent-id-control__202.json",
+      "run_id": "shared_rls|nonexistent-id-control|202",
+      "sha256": "9bcb95212d9c8265d0f0f5ac921fc0dea1540ebb690ccf54a97e4b3d1daa5db2"
+    },
+    {
+      "path": "shared_rls__forged-scope-param__202.json",
+      "run_id": "shared_rls|forged-scope-param|202",
+      "sha256": "3f2d1b3da5d704dbf70cebaadb7dbcfdec4f049a2f4264d4fcbbd30868ee5ffe"
+    },
+    {
+      "path": "shared_rls__malformed-scope__202.json",
+      "run_id": "shared_rls|malformed-scope|202",
+      "sha256": "7efca080db10add91bc4296f7de573b0865173daae9bf5bd662f0757be09cf6a"
+    },
+    {
+      "path": "shared_rls__unknown-scope__202.json",
+      "run_id": "shared_rls|unknown-scope|202",
+      "sha256": "19718e67c740619c4c2db0409211ab67a086495d28b6674a770a62dd6753c296"
+    },
+    {
+      "path": "shared_rls__cache-collision-cross-scope__202.json",
+      "run_id": "shared_rls|cache-collision-cross-scope|202",
+      "sha256": "162609b643be2a140152e3caf1252ffb5bbf3bb09894fd87d6a3d80df328981d"
+    },
+    {
+      "path": "shared_rls__revoke-stale-cache__202.json",
+      "run_id": "shared_rls|revoke-stale-cache|202",
+      "sha256": "5a99917f19cdb9538aa0fd7223704d6409830c164fac5f964b59f25e544e7596"
+    },
+    {
+      "path": "shared_rls__move-rescope-stale__202.json",
+      "run_id": "shared_rls|move-rescope-stale|202",
+      "sha256": "b3d2522ece08219d8eeb408c6c92aea68fa1fef2a30a9bd57726af3d7408fa76"
+    },
+    {
+      "path": "shared_rls__supersede-invalidation__202.json",
+      "run_id": "shared_rls|supersede-invalidation|202",
+      "sha256": "37e3f34c3c4a86adf59c963fe63f7110a33446f121524f8560dc9867f1f49dfc"
+    },
+    {
+      "path": "shared_rls__pagination-leak__202.json",
+      "run_id": "shared_rls|pagination-leak|202",
+      "sha256": "968c4f429b33cad8469747729b22b88783be84d065dad3420aa61d61d31da84f"
+    },
+    {
+      "path": "shared_rls__bulk-mixed-ids__202.json",
+      "run_id": "shared_rls|bulk-mixed-ids|202",
+      "sha256": "51868d3ed49ada12173d7f75f9d70794b014c340dea7c2e40350d83f1501049f"
+    },
+    {
+      "path": "shared_rls__count-rank-snippet-aggregation__202.json",
+      "run_id": "shared_rls|count-rank-snippet-aggregation|202",
+      "sha256": "8aa4d492f06f4fc2422cd4ef80a59619bd8aaa954f421dd447a081c29d5d0891"
+    },
+    {
+      "path": "shared_rls__background-reindex-provenance__202.json",
+      "run_id": "shared_rls|background-reindex-provenance|202",
+      "sha256": "cc85ff9446bf103b9b7dd9896c3c4f3ffb6dcac5b49606a2fc2e4fc99d63aac0"
+    },
+    {
+      "path": "shared_rls__same-scope-authorized__303.json",
+      "run_id": "shared_rls|same-scope-authorized|303",
+      "sha256": "5c6c1dc97034f551ad27c78569b168941f5c2479830f893cf35ed95467660f17"
+    },
+    {
+      "path": "shared_rls__foreign-id-valid__303.json",
+      "run_id": "shared_rls|foreign-id-valid|303",
+      "sha256": "5802971d8846629ee2dc59318dcad072736267b8cec93fddc6c4b29623129d23"
+    },
+    {
+      "path": "shared_rls__nonexistent-id-control__303.json",
+      "run_id": "shared_rls|nonexistent-id-control|303",
+      "sha256": "91672a38d63e11cf05078c2303bea04f2729fc9c0c16e22d6d5b323624b1be9e"
+    },
+    {
+      "path": "shared_rls__forged-scope-param__303.json",
+      "run_id": "shared_rls|forged-scope-param|303",
+      "sha256": "d1880c512cbf33355897c9e959848ebed8b8fd29f0cb9b55c488f3ff77623d0f"
+    },
+    {
+      "path": "shared_rls__malformed-scope__303.json",
+      "run_id": "shared_rls|malformed-scope|303",
+      "sha256": "48b977be8133900fe692608f2ceb2a7e51d9792830db8c36d25c27021d615540"
+    },
+    {
+      "path": "shared_rls__unknown-scope__303.json",
+      "run_id": "shared_rls|unknown-scope|303",
+      "sha256": "eaf8c940f42b8429c10ad1f43efc3260cf742374428f7a9773d75849689e19d1"
+    },
+    {
+      "path": "shared_rls__cache-collision-cross-scope__303.json",
+      "run_id": "shared_rls|cache-collision-cross-scope|303",
+      "sha256": "c6dde9c7b3b7d610ace3bbc7e13a2a1629126c8ff4da12dbe8e3df03a765eb3d"
+    },
+    {
+      "path": "shared_rls__revoke-stale-cache__303.json",
+      "run_id": "shared_rls|revoke-stale-cache|303",
+      "sha256": "008ab759e40c4667c9f4ce910ea7f04e1d2216605b8d46d727103eb78a9f1c9d"
+    },
+    {
+      "path": "shared_rls__move-rescope-stale__303.json",
+      "run_id": "shared_rls|move-rescope-stale|303",
+      "sha256": "220dc70284fccb06805e493b2c34aa1797bf2c084cc77a26d0389b612ef1d818"
+    },
+    {
+      "path": "shared_rls__supersede-invalidation__303.json",
+      "run_id": "shared_rls|supersede-invalidation|303",
+      "sha256": "0b7963e9f904fa9ab95efaae46f3529f680087227513ab8de45f8080839ac0fa"
+    },
+    {
+      "path": "shared_rls__pagination-leak__303.json",
+      "run_id": "shared_rls|pagination-leak|303",
+      "sha256": "3a00d04c21db984f672f3e3036c0c7cf8185f76550540c60202eadf379581866"
+    },
+    {
+      "path": "shared_rls__bulk-mixed-ids__303.json",
+      "run_id": "shared_rls|bulk-mixed-ids|303",
+      "sha256": "a4f595cc9d8c8f031465d870f74f169a7b1b309f8562751c3939358004dbef8b"
+    },
+    {
+      "path": "shared_rls__count-rank-snippet-aggregation__303.json",
+      "run_id": "shared_rls|count-rank-snippet-aggregation|303",
+      "sha256": "bf0e38131e26f359a4314da62b90b5a8b1c5f91238b3c3847ba3011167a8ae8a"
+    },
+    {
+      "path": "shared_rls__background-reindex-provenance__303.json",
+      "run_id": "shared_rls|background-reindex-provenance|303",
+      "sha256": "beaf7de86f710d7427a944753e051810cdd70d6efbd46acca279745e129d6eb2"
+    }
+  ],
+  "schema": "agentos.s1-007.run-manifest/v1",
+  "timing_path": "timing.json",
+  "timing_sha256": "a6a6a03c2fb402a645a8557cb8b02746f1f998323a470cbd1e35a586e21b1a56"
+}

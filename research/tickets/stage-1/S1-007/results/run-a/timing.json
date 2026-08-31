@@ -1,0 +1,71 @@
+{
+  "frozen_tolerance": {
+    "absolute_floor_ns": 2000,
+    "relative": 0.1,
+    "rule": "signal = |median paired difference|; distinguishable iff signal > max(relative * median_control, absolute_floor_ns)"
+  },
+  "methodology": {
+    "clock": "time.perf_counter_ns",
+    "inner_repeats": 32,
+    "note": "bounded local wall-clock measurement of the simulated retrieval path; never a production SLO or exploitability claim",
+    "sample_count": 200,
+    "seeds": [
+      101,
+      202,
+      303
+    ],
+    "statistic": "median_of_paired_interleaved_differences",
+    "warmup": 20
+  },
+  "schema": "agentos.s1-007.timing/v1",
+  "variants": {
+    "per_scope": {
+      "median_paired_diff_ns": 6,
+      "per_seed": [
+        {
+          "median_diff_ns": 19,
+          "sample_count": 200,
+          "seed": 101
+        },
+        {
+          "median_diff_ns": -13,
+          "sample_count": 200,
+          "seed": 202
+        },
+        {
+          "median_diff_ns": -10,
+          "sample_count": 200,
+          "seed": 303
+        }
+      ],
+      "pooled_samples": 600,
+      "power_note": "200 paired samples x 32 inner repeats x 3 seeds",
+      "tolerance_ns": 2000,
+      "verdict": "WITHIN_TOLERANCE"
+    },
+    "shared_rls": {
+      "median_paired_diff_ns": 150,
+      "per_seed": [
+        {
+          "median_diff_ns": 150,
+          "sample_count": 200,
+          "seed": 101
+        },
+        {
+          "median_diff_ns": 153,
+          "sample_count": 200,
+          "seed": 202
+        },
+        {
+          "median_diff_ns": 150,
+          "sample_count": 200,
+          "seed": 303
+        }
+      ],
+      "pooled_samples": 600,
+      "power_note": "200 paired samples x 32 inner repeats x 3 seeds",
+      "tolerance_ns": 2000,
+      "verdict": "WITHIN_TOLERANCE"
+    }
+  }
+}

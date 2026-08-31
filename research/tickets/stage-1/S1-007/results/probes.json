@@ -1,0 +1,1093 @@
+{
+  "fault_injection": {
+    "per_scope": {
+      "corrupt_entry_affected_scopes": 1,
+      "predicate_bypass_affected_scopes": 1
+    },
+    "shared_rls": {
+      "corrupt_entry_affected_scopes": 1,
+      "predicate_bypass_affected_scopes": 2
+    }
+  },
+  "probe_hashes": {
+    "A_existence_oracle": [
+      "probeA_existence_oracle|foreign-id-valid|101",
+      "probeA_existence_oracle|nonexistent-id-control|101"
+    ],
+    "B_stale_cache": [
+      "probeB_stale_cache|revoke-stale-cache|101"
+    ],
+    "C_postfilter": [
+      "probeC_postfilter|pagination-leak|101",
+      "probeC_postfilter|count-rank-snippet-aggregation|101"
+    ],
+    "D_forged_scope_provenance_loss": [
+      "probeD_forged_scope_provenance_loss|forged-scope-param|101",
+      "probeD_forged_scope_provenance_loss|background-reindex-provenance|101",
+      "probeD_forged_scope_provenance_loss|same-scope-authorized|101"
+    ]
+  },
+  "probes": [
+    {
+      "candidate": "probeA_existence_oracle",
+      "probe": "A_existence_oracle",
+      "runs": [
+        {
+          "case_id": "foreign-id-valid",
+          "final_state": {
+            "cache_entries": 0,
+            "storage": {
+              "index_count": 1,
+              "index_entries": 7,
+              "payload_bytes_est": 876
+            }
+          },
+          "iso_counters": {
+            "ISO1": 0,
+            "ISO2": 0,
+            "ISO3": 0,
+            "ISO4": 0,
+            "ISO5": 0,
+            "ISO6": 0,
+            "ISO7": 0,
+            "ISO8": 0
+          },
+          "metrics": {
+            "cache_hits": 0,
+            "cache_misses": 1,
+            "index_writes_scope_bound": 0,
+            "invalidation_ops": 0,
+            "policy_evaluations": 1,
+            "rows_scanned": 1,
+            "stale_invalidated": 0
+          },
+          "observations": [
+            {
+              "actor": "bruno",
+              "audit_event": {
+                "event": "retrieval.deny",
+                "generic_reason_class": "empty"
+              },
+              "cache_events": [
+                "miss"
+              ],
+              "claimed_scope": null,
+              "decision": "deny",
+              "effective_scope": "SCP-B",
+              "materialize_before_policy_check": 0,
+              "op": "retrieve",
+              "policy_checks": [
+                "scope_resolution_canonical",
+                "policy_version_valid"
+              ],
+              "policy_epoch_at_step": {
+                "SCP-A": 1,
+                "SCP-B": 1,
+                "SCP-C": 1
+              },
+              "policy_epoch_current": 1,
+              "query_id": "q-runbook",
+              "reason_class": "empty",
+              "requested_version": null,
+              "response": {
+                "detail": "object_exists_but_denied",
+                "objects": [],
+                "result": "empty"
+              },
+              "response_digest": "bd50d399bb18722968eb3f33ec5a6581f2dc7706011df0f4811e3a5ff071231a",
+              "rows_scanned": 1,
+              "target_id": "mem-0001-alpha"
+            }
+          ],
+          "run_id": "probeA_existence_oracle|foreign-id-valid|101",
+          "schema": "agentos.s1-007.run/v1",
+          "seed": 101,
+          "variant": "probeA_existence_oracle"
+        },
+        {
+          "case_id": "nonexistent-id-control",
+          "final_state": {
+            "cache_entries": 0,
+            "storage": {
+              "index_count": 1,
+              "index_entries": 7,
+              "payload_bytes_est": 876
+            }
+          },
+          "iso_counters": {
+            "ISO1": 0,
+            "ISO2": 0,
+            "ISO3": 0,
+            "ISO4": 0,
+            "ISO5": 0,
+            "ISO6": 0,
+            "ISO7": 0,
+            "ISO8": 0
+          },
+          "metrics": {
+            "cache_hits": 0,
+            "cache_misses": 1,
+            "index_writes_scope_bound": 0,
+            "invalidation_ops": 0,
+            "policy_evaluations": 1,
+            "rows_scanned": 0,
+            "stale_invalidated": 0
+          },
+          "observations": [
+            {
+              "actor": "bruno",
+              "audit_event": {
+                "event": "retrieval.deny",
+                "generic_reason_class": "empty"
+              },
+              "cache_events": [
+                "miss"
+              ],
+              "claimed_scope": null,
+              "decision": "deny",
+              "effective_scope": "SCP-B",
+              "materialize_before_policy_check": 0,
+              "op": "retrieve",
+              "policy_checks": [
+                "scope_resolution_canonical",
+                "policy_version_valid"
+              ],
+              "policy_epoch_at_step": {
+                "SCP-A": 1,
+                "SCP-B": 1,
+                "SCP-C": 1
+              },
+              "policy_epoch_current": 1,
+              "query_id": "q-runbook",
+              "reason_class": "empty",
+              "requested_version": null,
+              "response": {
+                "detail": "no_such_object",
+                "objects": [],
+                "result": "empty"
+              },
+              "response_digest": "edd6c642ae9169d87196576882686998cdb06af0f5cab9ad9e4735427d4adf1d",
+              "rows_scanned": 0,
+              "target_id": "mem-does-not-exist"
+            }
+          ],
+          "run_id": "probeA_existence_oracle|nonexistent-id-control|101",
+          "schema": "agentos.s1-007.run/v1",
+          "seed": 101,
+          "variant": "probeA_existence_oracle"
+        }
+      ]
+    },
+    {
+      "candidate": "probeB_stale_cache",
+      "probe": "B_stale_cache",
+      "runs": [
+        {
+          "case_id": "revoke-stale-cache",
+          "final_state": {
+            "cache_entries": 1,
+            "storage": {
+              "index_count": 1,
+              "index_entries": 6,
+              "payload_bytes_est": 788
+            }
+          },
+          "iso_counters": {
+            "ISO1": 0,
+            "ISO2": 0,
+            "ISO3": 0,
+            "ISO4": 0,
+            "ISO5": 0,
+            "ISO6": 0,
+            "ISO7": 0,
+            "ISO8": 0
+          },
+          "metrics": {
+            "cache_hits": 1,
+            "cache_misses": 1,
+            "index_writes_scope_bound": 0,
+            "invalidation_ops": 1,
+            "policy_evaluations": 2,
+            "rows_scanned": 1,
+            "stale_invalidated": 0
+          },
+          "observations": [
+            {
+              "actor": "alice",
+              "audit_event": {
+                "event": "retrieval.allow",
+                "result_count": 1
+              },
+              "cache_events": [
+                "miss",
+                "fill"
+              ],
+              "claimed_scope": null,
+              "decision": "allow",
+              "effective_scope": "SCP-A",
+              "materialize_before_policy_check": 0,
+              "op": "retrieve",
+              "policy_checks": [
+                "scope_resolution_canonical",
+                "policy_version_valid"
+              ],
+              "policy_epoch_at_step": {
+                "SCP-A": 1,
+                "SCP-B": 1,
+                "SCP-C": 1
+              },
+              "policy_epoch_current": 1,
+              "query_id": "q-runbook",
+              "requested_version": null,
+              "response": {
+                "meta": {
+                  "ranks": [
+                    {
+                      "id": "mem-0001-alpha",
+                      "rank": 1
+                    }
+                  ],
+                  "result_count": 1,
+                  "snippets": [
+                    {
+                      "id": "mem-0001-alpha",
+                      "snippet": "alpha: deployment runboo"
+                    }
+                  ]
+                },
+                "objects": [
+                  {
+                    "content": "alpha: deployment runbook step 3 requires signing the release with the staging KMS key",
+                    "digest": "3329765533cbf21c8aed1f7ed37bae0ea1a18d2fb9bcb572e5095367b38a7c3d",
+                    "id": "mem-0001-alpha",
+                    "kind": "memory_record",
+                    "provenance": {
+                      "canonical_source_id": "src-tool-fs-17",
+                      "created_by_activity": "act-1001",
+                      "independence_group": "ig-ops",
+                      "publisher_id": "agent-install-7",
+                      "resolver_version": "resolver-v3"
+                    },
+                    "scope": "SCP-A",
+                    "version": 1
+                  }
+                ],
+                "result": "ok"
+              },
+              "response_digest": "a7ac43020a66ec4429304c7d1ffbf5fda49368789649b516ca7cbdb59df6c59f",
+              "rows_scanned": 1,
+              "target_id": "mem-0001-alpha"
+            },
+            {
+              "audit_event": {
+                "event": "object.revoked",
+                "scope": "SCP-A"
+              },
+              "cache_events": [],
+              "committed_invalidation_point": true,
+              "epochs_after": {
+                "SCP-A": 2,
+                "SCP-B": 1,
+                "SCP-C": 1
+              },
+              "materialize_before_policy_check": 0,
+              "op": "revoke",
+              "policy_checks": [],
+              "policy_epoch_at_step": {
+                "SCP-A": 1,
+                "SCP-B": 1,
+                "SCP-C": 1
+              },
+              "rows_scanned": 0,
+              "scope": "SCP-A",
+              "target_id": "mem-0001-alpha"
+            },
+            {
+              "actor": "alice",
+              "audit_event": {
+                "event": "retrieval.allow",
+                "result_count": 1
+              },
+              "cache_entry_binding": {
+                "epoch": 1,
+                "payload_digest": "a7ac43020a66ec4429304c7d1ffbf5fda49368789649b516ca7cbdb59df6c59f",
+                "scope": "SCP-A"
+              },
+              "cache_events": [
+                "hit_no_revalidation"
+              ],
+              "claimed_scope": null,
+              "decision": "allow",
+              "effective_scope": "SCP-A",
+              "materialize_before_policy_check": 0,
+              "op": "retrieve",
+              "policy_checks": [
+                "scope_resolution_canonical",
+                "policy_version_valid"
+              ],
+              "policy_epoch_at_step": {
+                "SCP-A": 2,
+                "SCP-B": 1,
+                "SCP-C": 1
+              },
+              "policy_epoch_current": 2,
+              "query_id": "q-runbook",
+              "requested_version": null,
+              "response": {
+                "meta": {
+                  "ranks": [
+                    {
+                      "id": "mem-0001-alpha",
+                      "rank": 1
+                    }
+                  ],
+                  "result_count": 1,
+                  "snippets": [
+                    {
+                      "id": "mem-0001-alpha",
+                      "snippet": "alpha: deployment runboo"
+                    }
+                  ]
+                },
+                "objects": [
+                  {
+                    "content": "alpha: deployment runbook step 3 requires signing the release with the staging KMS key",
+                    "digest": "3329765533cbf21c8aed1f7ed37bae0ea1a18d2fb9bcb572e5095367b38a7c3d",
+                    "id": "mem-0001-alpha",
+                    "kind": "memory_record",
+                    "provenance": {
+                      "canonical_source_id": "src-tool-fs-17",
+                      "created_by_activity": "act-1001",
+                      "independence_group": "ig-ops",
+                      "publisher_id": "agent-install-7",
+                      "resolver_version": "resolver-v3"
+                    },
+                    "scope": "SCP-A",
+                    "version": 1
+                  }
+                ],
+                "result": "ok"
+              },
+              "response_digest": "a7ac43020a66ec4429304c7d1ffbf5fda49368789649b516ca7cbdb59df6c59f",
+              "rows_scanned": 0,
+              "target_id": "mem-0001-alpha"
+            }
+          ],
+          "run_id": "probeB_stale_cache|revoke-stale-cache|101",
+          "schema": "agentos.s1-007.run/v1",
+          "seed": 101,
+          "variant": "probeB_stale_cache"
+        }
+      ]
+    },
+    {
+      "candidate": "probeC_postfilter",
+      "probe": "C_postfilter",
+      "runs": [
+        {
+          "case_id": "pagination-leak",
+          "final_state": {
+            "cache_entries": 0,
+            "storage": {
+              "index_count": 1,
+              "index_entries": 7,
+              "payload_bytes_est": 876
+            }
+          },
+          "iso_counters": {
+            "ISO1": 0,
+            "ISO2": 0,
+            "ISO3": 0,
+            "ISO4": 0,
+            "ISO5": 0,
+            "ISO6": 0,
+            "ISO7": 0,
+            "ISO8": 0
+          },
+          "metrics": {
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "index_writes_scope_bound": 0,
+            "invalidation_ops": 0,
+            "policy_evaluations": 2,
+            "rows_scanned": 14,
+            "stale_invalidated": 0
+          },
+          "observations": [
+            {
+              "actor": "bruno",
+              "cache_events": [],
+              "decision": "allow",
+              "effective_scope": "SCP-B",
+              "limit": 1,
+              "materialize_before_policy_check": 0,
+              "offset": 0,
+              "op": "paginate",
+              "policy_checks": [
+                "scope_resolution_canonical",
+                "policy_version_valid"
+              ],
+              "policy_epoch_at_step": {
+                "SCP-A": 1,
+                "SCP-B": 1,
+                "SCP-C": 1
+              },
+              "query_id": "q-common",
+              "response": {
+                "meta": {
+                  "ranks": [
+                    {
+                      "id": "art-0002-alpha",
+                      "rank": 1
+                    },
+                    {
+                      "id": "art-0102-beta",
+                      "rank": 2
+                    },
+                    {
+                      "id": "art-0202-gamma",
+                      "rank": 3
+                    },
+                    {
+                      "id": "mem-0001-alpha",
+                      "rank": 4
+                    },
+                    {
+                      "id": "mem-0003-alpha",
+                      "rank": 5
+                    },
+                    {
+                      "id": "mem-0101-beta",
+                      "rank": 6
+                    },
+                    {
+                      "id": "mem-0201-gamma",
+                      "rank": 7
+                    }
+                  ],
+                  "result_count": 7,
+                  "snippets": [
+                    {
+                      "id": "art-0002-alpha",
+                      "snippet": "alpha: benchmark report "
+                    },
+                    {
+                      "id": "art-0102-beta",
+                      "snippet": "beta: design artifact wi"
+                    },
+                    {
+                      "id": "art-0202-gamma",
+                      "snippet": "gamma: contract draft ap"
+                    },
+                    {
+                      "id": "mem-0001-alpha",
+                      "snippet": "alpha: deployment runboo"
+                    },
+                    {
+                      "id": "mem-0003-alpha",
+                      "snippet": "alpha v1: deprecated cre"
+                    },
+                    {
+                      "id": "mem-0101-beta",
+                      "snippet": "beta: private customer l"
+                    },
+                    {
+                      "id": "mem-0201-gamma",
+                      "snippet": "gamma: tenant-beta payro"
+                    }
+                  ],
+                  "total_count": 7
+                },
+                "objects": [
+                  {
+                    "content": "beta: design artifact wireframes hash 91bc... internal only",
+                    "digest": "7f0c8b809a87e51756d343a986b6a9100e18eccf72190b68fad5b6781235be10",
+                    "id": "art-0102-beta",
+                    "kind": "artifact_object",
+                    "provenance": {
+                      "canonical_source_id": "src-design-8",
+                      "created_by_activity": "act-2002",
+                      "independence_group": "ig-design",
+                      "publisher_id": "agent-install-11",
+                      "resolver_version": "resolver-v3"
+                    },
+                    "scope": "SCP-B",
+                    "version": 1
+                  }
+                ],
+                "result": "ok"
+              },
+              "response_digest": "a2c0da0449551afa76bfe6f010860db734bedf916901c0e7fdbe7ae6f54a86cb",
+              "rows_scanned": 7
+            },
+            {
+              "actor": "bruno",
+              "cache_events": [],
+              "decision": "allow",
+              "effective_scope": "SCP-B",
+              "limit": 10,
+              "materialize_before_policy_check": 0,
+              "offset": 99,
+              "op": "paginate",
+              "policy_checks": [
+                "scope_resolution_canonical",
+                "policy_version_valid"
+              ],
+              "policy_epoch_at_step": {
+                "SCP-A": 1,
+                "SCP-B": 1,
+                "SCP-C": 1
+              },
+              "query_id": "q-common",
+              "response": {
+                "meta": {
+                  "ranks": [
+                    {
+                      "id": "art-0002-alpha",
+                      "rank": 1
+                    },
+                    {
+                      "id": "art-0102-beta",
+                      "rank": 2
+                    },
+                    {
+                      "id": "art-0202-gamma",
+                      "rank": 3
+                    },
+                    {
+                      "id": "mem-0001-alpha",
+                      "rank": 4
+                    },
+                    {
+                      "id": "mem-0003-alpha",
+                      "rank": 5
+                    },
+                    {
+                      "id": "mem-0101-beta",
+                      "rank": 6
+                    },
+                    {
+                      "id": "mem-0201-gamma",
+                      "rank": 7
+                    }
+                  ],
+                  "result_count": 7,
+                  "snippets": [
+                    {
+                      "id": "art-0002-alpha",
+                      "snippet": "alpha: benchmark report "
+                    },
+                    {
+                      "id": "art-0102-beta",
+                      "snippet": "beta: design artifact wi"
+                    },
+                    {
+                      "id": "art-0202-gamma",
+                      "snippet": "gamma: contract draft ap"
+                    },
+                    {
+                      "id": "mem-0001-alpha",
+                      "snippet": "alpha: deployment runboo"
+                    },
+                    {
+                      "id": "mem-0003-alpha",
+                      "snippet": "alpha v1: deprecated cre"
+                    },
+                    {
+                      "id": "mem-0101-beta",
+                      "snippet": "beta: private customer l"
+                    },
+                    {
+                      "id": "mem-0201-gamma",
+                      "snippet": "gamma: tenant-beta payro"
+                    }
+                  ],
+                  "total_count": 7
+                },
+                "objects": [],
+                "result": "ok"
+              },
+              "response_digest": "df3faa02aa8e2ec58215c397fc3016a3a6f10f6f360b866b08ee3d96cd63474f",
+              "rows_scanned": 7
+            }
+          ],
+          "run_id": "probeC_postfilter|pagination-leak|101",
+          "schema": "agentos.s1-007.run/v1",
+          "seed": 101,
+          "variant": "probeC_postfilter"
+        },
+        {
+          "case_id": "count-rank-snippet-aggregation",
+          "final_state": {
+            "cache_entries": 0,
+            "storage": {
+              "index_count": 1,
+              "index_entries": 7,
+              "payload_bytes_est": 876
+            }
+          },
+          "iso_counters": {
+            "ISO1": 0,
+            "ISO2": 0,
+            "ISO3": 0,
+            "ISO4": 0,
+            "ISO5": 0,
+            "ISO6": 0,
+            "ISO7": 0,
+            "ISO8": 0
+          },
+          "metrics": {
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "index_writes_scope_bound": 0,
+            "invalidation_ops": 0,
+            "policy_evaluations": 1,
+            "rows_scanned": 7,
+            "stale_invalidated": 0
+          },
+          "observations": [
+            {
+              "actor": "bruno",
+              "cache_events": [],
+              "decision": "allow",
+              "effective_scope": "SCP-B",
+              "materialize_before_policy_check": 0,
+              "op": "aggregate",
+              "policy_checks": [
+                "scope_resolution_canonical",
+                "policy_version_valid"
+              ],
+              "policy_epoch_at_step": {
+                "SCP-A": 1,
+                "SCP-B": 1,
+                "SCP-C": 1
+              },
+              "query_id": "q-common",
+              "response": {
+                "meta": {
+                  "ranks": [
+                    {
+                      "id": "art-0002-alpha",
+                      "rank": 1
+                    },
+                    {
+                      "id": "art-0102-beta",
+                      "rank": 2
+                    },
+                    {
+                      "id": "art-0202-gamma",
+                      "rank": 3
+                    },
+                    {
+                      "id": "mem-0001-alpha",
+                      "rank": 4
+                    },
+                    {
+                      "id": "mem-0003-alpha",
+                      "rank": 5
+                    },
+                    {
+                      "id": "mem-0101-beta",
+                      "rank": 6
+                    },
+                    {
+                      "id": "mem-0201-gamma",
+                      "rank": 7
+                    }
+                  ],
+                  "result_count": 7,
+                  "snippets": [
+                    {
+                      "id": "art-0002-alpha",
+                      "snippet": "alpha: benchmark report "
+                    },
+                    {
+                      "id": "art-0102-beta",
+                      "snippet": "beta: design artifact wi"
+                    },
+                    {
+                      "id": "art-0202-gamma",
+                      "snippet": "gamma: contract draft ap"
+                    },
+                    {
+                      "id": "mem-0001-alpha",
+                      "snippet": "alpha: deployment runboo"
+                    },
+                    {
+                      "id": "mem-0003-alpha",
+                      "snippet": "alpha v1: deprecated cre"
+                    },
+                    {
+                      "id": "mem-0101-beta",
+                      "snippet": "beta: private customer l"
+                    },
+                    {
+                      "id": "mem-0201-gamma",
+                      "snippet": "gamma: tenant-beta payro"
+                    }
+                  ],
+                  "total_count": 7
+                },
+                "objects": [],
+                "result": "ok"
+              },
+              "response_digest": "df3faa02aa8e2ec58215c397fc3016a3a6f10f6f360b866b08ee3d96cd63474f",
+              "rows_scanned": 7
+            }
+          ],
+          "run_id": "probeC_postfilter|count-rank-snippet-aggregation|101",
+          "schema": "agentos.s1-007.run/v1",
+          "seed": 101,
+          "variant": "probeC_postfilter"
+        }
+      ]
+    },
+    {
+      "candidate": "probeD_forged_scope_provenance_loss",
+      "probe": "D_forged_scope_provenance_loss",
+      "runs": [
+        {
+          "case_id": "forged-scope-param",
+          "final_state": {
+            "cache_entries": 1,
+            "storage": {
+              "index_count": 3,
+              "index_entries": 7,
+              "payload_bytes_est": 1388
+            }
+          },
+          "iso_counters": {
+            "ISO1": 0,
+            "ISO2": 0,
+            "ISO3": 0,
+            "ISO4": 0,
+            "ISO5": 0,
+            "ISO6": 0,
+            "ISO7": 0,
+            "ISO8": 0
+          },
+          "metrics": {
+            "cache_hits": 0,
+            "cache_misses": 1,
+            "index_writes_scope_bound": 0,
+            "invalidation_ops": 0,
+            "policy_evaluations": 1,
+            "rows_scanned": 1,
+            "stale_invalidated": 0
+          },
+          "observations": [
+            {
+              "actor": "bruno",
+              "audit_event": {
+                "event": "retrieval.allow",
+                "result_count": 1
+              },
+              "cache_events": [
+                "miss",
+                "fill"
+              ],
+              "claimed_scope": "t-alpha/w-main/goal-AAAA-1111",
+              "decision": "allow",
+              "effective_scope": "SCP-A",
+              "materialize_before_policy_check": 0,
+              "op": "retrieve",
+              "policy_checks": [
+                "scope_resolution_caller_supplied",
+                "policy_version_valid"
+              ],
+              "policy_epoch_at_step": {
+                "SCP-A": 1,
+                "SCP-B": 1,
+                "SCP-C": 1
+              },
+              "policy_epoch_current": 1,
+              "query_id": "q-runbook",
+              "requested_version": null,
+              "response": {
+                "meta": {
+                  "ranks": [
+                    {
+                      "id": "mem-0001-alpha",
+                      "rank": 1
+                    }
+                  ],
+                  "result_count": 1,
+                  "snippets": [
+                    {
+                      "id": "mem-0001-alpha",
+                      "snippet": "alpha: deployment runboo"
+                    }
+                  ]
+                },
+                "objects": [
+                  {
+                    "content": "alpha: deployment runbook step 3 requires signing the release with the staging KMS key",
+                    "digest": "3329765533cbf21c8aed1f7ed37bae0ea1a18d2fb9bcb572e5095367b38a7c3d",
+                    "id": "mem-0001-alpha",
+                    "kind": "memory_record",
+                    "provenance": {
+                      "canonical_source_id": "src-tool-fs-17",
+                      "created_by_activity": "act-1001",
+                      "independence_group": "ig-ops",
+                      "publisher_id": "agent-install-7",
+                      "resolver_version": "resolver-v3"
+                    },
+                    "scope": "SCP-A",
+                    "version": 1
+                  }
+                ],
+                "result": "ok"
+              },
+              "response_digest": "a7ac43020a66ec4429304c7d1ffbf5fda49368789649b516ca7cbdb59df6c59f",
+              "rows_scanned": 1,
+              "target_id": "mem-0001-alpha"
+            }
+          ],
+          "run_id": "probeD_forged_scope_provenance_loss|forged-scope-param|101",
+          "schema": "agentos.s1-007.run/v1",
+          "seed": 101,
+          "variant": "probeD_forged_scope_provenance_loss"
+        },
+        {
+          "case_id": "background-reindex-provenance",
+          "final_state": {
+            "cache_entries": 1,
+            "storage": {
+              "index_count": 3,
+              "index_entries": 7,
+              "payload_bytes_est": 1457
+            }
+          },
+          "iso_counters": {
+            "ISO1": 0,
+            "ISO2": 0,
+            "ISO3": 0,
+            "ISO4": 0,
+            "ISO5": 0,
+            "ISO6": 0,
+            "ISO7": 0,
+            "ISO8": 0
+          },
+          "metrics": {
+            "cache_hits": 0,
+            "cache_misses": 1,
+            "index_writes_scope_bound": 3,
+            "invalidation_ops": 0,
+            "policy_evaluations": 2,
+            "rows_scanned": 1,
+            "stale_invalidated": 0
+          },
+          "observations": [
+            {
+              "actor": "indexer-svc",
+              "cache_events": [],
+              "materialize_before_policy_check": 0,
+              "op": "background_reindex",
+              "policy_checks": [
+                "indexer_scope_context"
+              ],
+              "policy_epoch_at_step": {
+                "SCP-A": 1,
+                "SCP-B": 1,
+                "SCP-C": 1
+              },
+              "reindex_result": {
+                "entries": [
+                  {
+                    "id": "mem-0001-alpha",
+                    "kind": "memory_record",
+                    "scope": "SCP-A",
+                    "version": 1
+                  },
+                  {
+                    "id": "art-0002-alpha",
+                    "kind": "artifact_object",
+                    "scope": "SCP-A",
+                    "version": 1
+                  },
+                  {
+                    "id": "mem-0003-alpha",
+                    "kind": "memory_record",
+                    "scope": "SCP-A",
+                    "version": 1
+                  }
+                ],
+                "provenance_preserved": false,
+                "scope": "SCP-A"
+              },
+              "rows_scanned": 0,
+              "scope": "SCP-A"
+            },
+            {
+              "actor": "alice",
+              "audit_event": {
+                "event": "retrieval.allow",
+                "result_count": 1
+              },
+              "cache_events": [
+                "miss",
+                "fill"
+              ],
+              "claimed_scope": null,
+              "decision": "allow",
+              "effective_scope": "SCP-A",
+              "materialize_before_policy_check": 0,
+              "op": "retrieve",
+              "policy_checks": [
+                "scope_resolution_canonical",
+                "policy_version_valid"
+              ],
+              "policy_epoch_at_step": {
+                "SCP-A": 1,
+                "SCP-B": 1,
+                "SCP-C": 1
+              },
+              "policy_epoch_current": 1,
+              "query_id": "q-bench",
+              "requested_version": null,
+              "response": {
+                "meta": {
+                  "ranks": [
+                    {
+                      "id": "art-0002-alpha",
+                      "rank": 1
+                    }
+                  ],
+                  "result_count": 1,
+                  "snippets": [
+                    {
+                      "id": "art-0002-alpha",
+                      "snippet": "alpha: benchmark report "
+                    }
+                  ]
+                },
+                "objects": [
+                  {
+                    "content": "alpha: benchmark report digest 4f2a... baseline throughput table v1",
+                    "digest": "173ba5a59d8afbff60f8d8fda87ecb3069d3c8ae7c711f487b3fee213a11ecea",
+                    "id": "art-0002-alpha",
+                    "kind": "artifact_object",
+                    "provenance": {},
+                    "scope": "SCP-A",
+                    "version": 1
+                  }
+                ],
+                "result": "ok"
+              },
+              "response_digest": "75d7625cbb237ef2599b2ff104b1a4a756ee5d005382d6f9352311bb97a64196",
+              "rows_scanned": 1,
+              "target_id": "art-0002-alpha"
+            }
+          ],
+          "run_id": "probeD_forged_scope_provenance_loss|background-reindex-provenance|101",
+          "schema": "agentos.s1-007.run/v1",
+          "seed": 101,
+          "variant": "probeD_forged_scope_provenance_loss"
+        },
+        {
+          "case_id": "same-scope-authorized",
+          "final_state": {
+            "cache_entries": 1,
+            "storage": {
+              "index_count": 3,
+              "index_entries": 7,
+              "payload_bytes_est": 1388
+            }
+          },
+          "iso_counters": {
+            "ISO1": 0,
+            "ISO2": 0,
+            "ISO3": 0,
+            "ISO4": 0,
+            "ISO5": 0,
+            "ISO6": 0,
+            "ISO7": 0,
+            "ISO8": 0
+          },
+          "metrics": {
+            "cache_hits": 0,
+            "cache_misses": 1,
+            "index_writes_scope_bound": 0,
+            "invalidation_ops": 0,
+            "policy_evaluations": 1,
+            "rows_scanned": 1,
+            "stale_invalidated": 0
+          },
+          "observations": [
+            {
+              "actor": "alice",
+              "audit_event": {
+                "event": "retrieval.allow",
+                "result_count": 1
+              },
+              "cache_events": [
+                "miss",
+                "fill"
+              ],
+              "claimed_scope": null,
+              "decision": "allow",
+              "effective_scope": "SCP-A",
+              "materialize_before_policy_check": 0,
+              "op": "retrieve",
+              "policy_checks": [
+                "scope_resolution_canonical",
+                "policy_version_valid"
+              ],
+              "policy_epoch_at_step": {
+                "SCP-A": 1,
+                "SCP-B": 1,
+                "SCP-C": 1
+              },
+              "policy_epoch_current": 1,
+              "query_id": "q-runbook",
+              "requested_version": null,
+              "response": {
+                "meta": {
+                  "ranks": [
+                    {
+                      "id": "mem-0001-alpha",
+                      "rank": 1
+                    }
+                  ],
+                  "result_count": 1,
+                  "snippets": [
+                    {
+                      "id": "mem-0001-alpha",
+                      "snippet": "alpha: deployment runboo"
+                    }
+                  ]
+                },
+                "objects": [
+                  {
+                    "content": "alpha: deployment runbook step 3 requires signing the release with the staging KMS key",
+                    "digest": "3329765533cbf21c8aed1f7ed37bae0ea1a18d2fb9bcb572e5095367b38a7c3d",
+                    "id": "mem-0001-alpha",
+                    "kind": "memory_record",
+                    "provenance": {
+                      "canonical_source_id": "src-tool-fs-17",
+                      "created_by_activity": "act-1001",
+                      "independence_group": "ig-ops",
+                      "publisher_id": "agent-install-7",
+                      "resolver_version": "resolver-v3"
+                    },
+                    "scope": "SCP-A",
+                    "version": 1
+                  }
+                ],
+                "result": "ok"
+              },
+              "response_digest": "a7ac43020a66ec4429304c7d1ffbf5fda49368789649b516ca7cbdb59df6c59f",
+              "rows_scanned": 1,
+              "target_id": "mem-0001-alpha"
+            }
+          ],
+          "run_id": "probeD_forged_scope_provenance_loss|same-scope-authorized|101",
+          "schema": "agentos.s1-007.run/v1",
+          "seed": 101,
+          "variant": "probeD_forged_scope_provenance_loss"
+        }
+      ]
+    }
+  ],
+  "schema": "agentos.s1-007.probes/v1"
+}

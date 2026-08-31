@@ -1,0 +1,69 @@
+{
+  "frozen_methodology": {
+    "sample_count": 200,
+    "seeds": [
+      101,
+      202,
+      303
+    ],
+    "statistic": "median_of_paired_interleaved_differences (pooled over seeds)",
+    "tolerance": {
+      "absolute_floor_ns": 2000,
+      "relative": 0.1,
+      "rule": "signal = |median paired difference|; distinguishable iff signal > max(relative * median_control, absolute_floor_ns)"
+    },
+    "warmup": 20
+  },
+  "rerun_note": "rerun timing is an independent local measurement; main paired-signal per variant: {'per_scope': 6, 'shared_rls': 150}; rerun: {'per_scope': 3, 'shared_rls': 172}; cross-executor timing deltas are expected OS-scheduling noise on a microsecond-scale in-process path and never gate the safety verdict",
+  "schema": "agentos.s1-007.timing-analysis/v1",
+  "variants": {
+    "per_scope": {
+      "note": "bounded local paired-interleaved measurement; not a production SLO, not proof of absence of all side channels",
+      "per_seed": [
+        {
+          "median_diff_ns": 19,
+          "sample_count": 200,
+          "seed": 101
+        },
+        {
+          "median_diff_ns": -13,
+          "sample_count": 200,
+          "seed": 202
+        },
+        {
+          "median_diff_ns": -10,
+          "sample_count": 200,
+          "seed": 303
+        }
+      ],
+      "pooled_samples": 600,
+      "signal_ns": 6,
+      "tolerance_ns": 2000,
+      "verdict": "WITHIN_TOLERANCE"
+    },
+    "shared_rls": {
+      "note": "bounded local paired-interleaved measurement; not a production SLO, not proof of absence of all side channels",
+      "per_seed": [
+        {
+          "median_diff_ns": 150,
+          "sample_count": 200,
+          "seed": 101
+        },
+        {
+          "median_diff_ns": 153,
+          "sample_count": 200,
+          "seed": 202
+        },
+        {
+          "median_diff_ns": 150,
+          "sample_count": 200,
+          "seed": 303
+        }
+      ],
+      "pooled_samples": 600,
+      "signal_ns": 150,
+      "tolerance_ns": 2000,
+      "verdict": "WITHIN_TOLERANCE"
+    }
+  }
+}
