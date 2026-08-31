@@ -233,9 +233,16 @@ def _check_run(run: dict, expected_steps: list, oracle: Oracle) -> dict:
             if len(block) < n or summary.get("op") != "bulk_summary":
                 raise EvalError(
                     f"run {run['run_id']}: malformed bulk block")
-            if [o.get("target_id") for o in block] != exp["ids"]:
+            # the runner may execute the batch in a seeded shuffled order;
+            # require a permutation, then pair per id
+            if sorted(o.get("target_id") for o in block) != \
+                    sorted(exp["ids"]):
                 raise EvalError(
-                    f"run {run['run_id']}: bulk order mismatch")
+                    f"run {run['run_id']}: bulk id set mismatch")
+            if summary.get("order") != [o.get("target_id")
+                                        for o in block]:
+                raise EvalError(
+                    f"run {run['run_id']}: bulk summary order mismatch")
             expected_by_id = {row["target_id"]: row
                               for row in exp["rows"]}
             for obs in block:
