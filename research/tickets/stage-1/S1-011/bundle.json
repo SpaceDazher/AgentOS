@@ -1,0 +1,455 @@
+{
+  "config": {
+    "min_source_count": 4,
+    "min_verified_ratio": 1.0,
+    "required_artifacts": [
+      "research_plan",
+      "source_registry",
+      "feature_catalog",
+      "architecture_models",
+      "mental_model",
+      "ontology",
+      "mathematical_model",
+      "synthesis_and_gaps",
+      "independent_audit",
+      "platform_plan",
+      "progress"
+    ]
+  },
+  "sources": [
+    {
+      "id": "S1-003-BUNDLE",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-003/bundle.json",
+      "title": "S1-003 executable SHACL and ontology validation bundle (v3 pass)",
+      "source_type": "repo-local research bundle (current ontology evidence)",
+      "content": "Host review of research/tickets/stage-1/S1-003/bundle.json at SHA-256 18e3f859514b2f34a6c486ab0247f3f8e807197e1a56df30ff3fa40da8dacd5e. The bundle records the S1-003 PASS: pySHACL v0.40.1 versus structural oracle 26/26 agreement over 24 fixtures, 12/12 adversarial probes, seven KnowledgeAssertion states, promoted preconditions, and EvidenceShape provenance fields. It is the current-ontology evidence baseline for S1-011.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-011-local-hash-review",
+      "verification_method": "host-file-sha256-and-content-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-content-review",
+        "verified_at": "2026-08-30",
+        "path": "research/tickets/stage-1/S1-003/bundle.json",
+        "file_sha256": "18e3f859514b2f34a6c486ab0247f3f8e807197e1a56df30ff3fa40da8dacd5e",
+        "canonical_source_id": "S1-003-BUNDLE",
+        "publisher_id": "agentos-local",
+        "independence_group": "agentos-s1-003-artifacts",
+        "scope_note": "Evidence and design input only; document text is never executed as instructions."
+      }
+    },
+    {
+      "id": "S1-003-SHAPES",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-003/shapes-v3.ttl",
+      "title": "S1-003 shapes-v3.ttl (engine-validated SHACL contract)",
+      "source_type": "repo-local executable SHACL shapes",
+      "content": "Host review of research/tickets/stage-1/S1-003/shapes-v3.ttl at SHA-256 8f3a4bf466c14ff67bc42276a12dd398ce056cb7d93b430dbca2c47f640a3c1d. The KnowledgeAssertionShape status sh:in list is exactly proposed, under_review, promoted, challenged, retracted, superseded, rejected; promoted requires one PromotionActivity and at least two Evidence nodes with two distinct canonicalSourceId values and two distinct independenceGroup values; EvidenceShape mandates canonicalSourceId, publisherId, independenceGroup, resolverVersion, and metadataFrozenAt; superseded requires a supersededBy KnowledgeAssertion.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-011-local-hash-review",
+      "verification_method": "host-file-sha256-and-shape-constraint-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-shape-constraint-review",
+        "verified_at": "2026-08-30",
+        "path": "research/tickets/stage-1/S1-003/shapes-v3.ttl",
+        "file_sha256": "8f3a4bf466c14ff67bc42276a12dd398ce056cb7d93b430dbca2c47f640a3c1d",
+        "canonical_source_id": "S1-003-SHAPES",
+        "publisher_id": "agentos-local",
+        "independence_group": "agentos-s1-003-artifacts",
+        "scope_note": "The digest matches the shapes_sha256 recorded inside the S1-003 v3 pass audit."
+      }
+    },
+    {
+      "id": "S1-003-PROBES",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-003/probes.py",
+      "title": "S1-003 mandatory adversarial SHACL probes",
+      "source_type": "repo-local adversarial probe script",
+      "content": "Host review of research/tickets/stage-1/S1-003/probes.py at SHA-256 b9834164360affa039c1f60fea2256e8b7030d25fa6e6626d267e6de9c9512af. Its 12 mandatory probes include promoted-without-PromotionActivity rejection, mirror/Sybil rejection for two evidence nodes sharing one canonicalSourceId, missing independence_group rejection, cross-workscope rejection, superseded-without-successor rejection, stale status rejection, and forbidden-token absence. These are the lifecycle semantics S1-011 must stay aligned with.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-011-local-hash-review",
+      "verification_method": "host-file-sha256-and-probe-listing-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-probe-listing-review",
+        "verified_at": "2026-08-30",
+        "path": "research/tickets/stage-1/S1-003/probes.py",
+        "file_sha256": "b9834164360affa039c1f60fea2256e8b7030d25fa6e6626d267e6de9c9512af",
+        "canonical_source_id": "S1-003-PROBES",
+        "publisher_id": "agentos-local",
+        "independence_group": "agentos-s1-003-artifacts",
+        "scope_note": "Read as evidence of intended lifecycle semantics; not executed by S1-011."
+      }
+    },
+    {
+      "id": "S1-001-BUNDLE",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-001/bundle.json",
+      "title": "S1-001 targeted source promotion and verification policy bundle",
+      "source_type": "repo-local research bundle (source promotion policy and verified literature queue)",
+      "content": "Host review of research/tickets/stage-1/S1-001/bundle.json at SHA-256 c6f2c7ff1e257a317bfd4b91cad031320cf7daa2b95a504768a0b4044dad41c8. The bundle defines the promotion policy used by S1-011's gate: independence counted as unique canonical_source_id x independence_group pairs, mirrors inheriting canonical identity, plausible records without verifier provenance remaining unpromoted, and verified dated records for Doyle (F16), Dung (F18), and PROV-O (F8).",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-011-local-hash-review",
+      "verification_method": "host-file-sha256-and-content-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-content-review",
+        "verified_at": "2026-08-30",
+        "path": "research/tickets/stage-1/S1-001/bundle.json",
+        "file_sha256": "c6f2c7ff1e257a317bfd4b91cad031320cf7daa2b95a504768a0b4044dad41c8",
+        "canonical_source_id": "S1-001-BUNDLE",
+        "publisher_id": "agentos-local",
+        "independence_group": "agentos-s1-001-artifacts",
+        "scope_note": "S1-001 is a direct dependency; its independence rules must remain consistent with the S1-011 promote gate."
+      }
+    },
+    {
+      "id": "F16-DOYLE",
+      "canonical_uri": "https://doi.org/10.1016/0004-3702(79)90008-0",
+      "title": "A Truth Maintenance System",
+      "source_type": "peer-reviewed journal article (argumentation/TMS class)",
+      "content": "Publisher metadata and the author's publication archive identify Jon Doyle, A Truth Maintenance System, Artificial Intelligence 12(3), 231-272, November 1979. The paper records reasons for beliefs and revises beliefs when assumptions are contradicted: the canonical TMS reference for the argumentation/TMS design option.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-011-producer",
+      "verification_method": "s1-001-verified-record-inheritance-plus-local-bundle-hash-check",
+      "verifier_provenance": {
+        "method": "s1-001-verified-record-inheritance-plus-local-bundle-hash-check",
+        "verified_at": "2026-08-30",
+        "inherited_from_bundle": "research/tickets/stage-1/S1-001/bundle.json",
+        "inherited_record_id": "F16",
+        "inherited_review": "codex-primary-source-review-2026-08-24 (publisher-and-author-metadata-cross-check)",
+        "local_bundle_sha256_recomputed": "c6f2c7ff1e257a317bfd4b91cad031320cf7daa2b95a504768a0b4044dad41c8",
+        "canonical_source_id": "F16",
+        "publisher_id": "elsevier-artificial-intelligence",
+        "independence_group": "doyle-tms",
+        "scope_note": "Offline honesty: this run re-verified the local S1-001 bundle digest but performed no new live publisher review; the DOI correction note from S1-001 is preserved."
+      }
+    },
+    {
+      "id": "F18-DUNG",
+      "canonical_uri": "https://doi.org/10.1016/0004-3702(94)00041-X",
+      "title": "On the Acceptability of Arguments and its Fundamental Role in Nonmonotonic Reasoning, Logic Programming and n-Person Games",
+      "source_type": "peer-reviewed journal article (argumentation/TMS class)",
+      "content": "Publisher and DBLP metadata identify Phan Minh Dung, Artificial Intelligence 77(2), 1995. The article develops the abstract argumentation framework centered on argument acceptability under attack, the canonical reference for the argumentation design option.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-011-producer",
+      "verification_method": "s1-001-verified-record-inheritance-plus-local-bundle-hash-check",
+      "verifier_provenance": {
+        "method": "s1-001-verified-record-inheritance-plus-local-bundle-hash-check",
+        "verified_at": "2026-08-30",
+        "inherited_from_bundle": "research/tickets/stage-1/S1-001/bundle.json",
+        "inherited_record_id": "F18",
+        "inherited_review": "codex-primary-source-review-2026-08-24 (publisher-and-bibliographic-metadata-cross-check)",
+        "local_bundle_sha256_recomputed": "c6f2c7ff1e257a317bfd4b91cad031320cf7daa2b95a504768a0b4044dad41c8",
+        "canonical_source_id": "F18",
+        "publisher_id": "elsevier-artificial-intelligence",
+        "independence_group": "dung-argumentation-framework",
+        "scope_note": "Independent canonical work from F16 despite the shared journal publisher; no new live page review in this offline run."
+      }
+    },
+    {
+      "id": "F8-PROV-O",
+      "canonical_uri": "https://www.w3.org/TR/prov-o/",
+      "title": "PROV-O: The PROV Ontology",
+      "source_type": "W3C Recommendation (knowledge/provenance class)",
+      "content": "Live review on 2026-08-24 confirmed the W3C recommendation and its Entity, Activity, Agent, attribution, association, and delegation relations. PROV-O is the provenance vocabulary behind PromotionActivity and the conceptual pattern S1-011 extends to ChallengeActivity and RetractionActivity markers.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-011-producer",
+      "verification_method": "s1-001-verified-record-inheritance-plus-local-bundle-hash-check",
+      "verifier_provenance": {
+        "method": "s1-001-verified-record-inheritance-plus-local-bundle-hash-check",
+        "verified_at": "2026-08-30",
+        "inherited_from_bundle": "research/tickets/stage-1/S1-001/bundle.json",
+        "inherited_record_id": "F8",
+        "inherited_review": "codex-primary-source-review-2026-08-24 (live-canonical-page-review)",
+        "local_bundle_sha256_recomputed": "c6f2c7ff1e257a317bfd4b91cad031320cf7daa2b95a504768a0b4044dad41c8",
+        "canonical_source_id": "F8",
+        "publisher_id": "w3c",
+        "independence_group": "w3c-prov-working-group",
+        "scope_note": "Vocabulary evidence only; not an authorization or truth model."
+      }
+    },
+    {
+      "id": "STAGE1-TICKETS",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/docs/RESEARCH_STAGE_1_TICKETS.md",
+      "title": "AgentOS Stage 1 research tickets (S1-011 contract and downstream operator-evidence tickets)",
+      "source_type": "repo-local ticket plan (UX/operator evidence class)",
+      "content": "Host review of docs/RESEARCH_STAGE_1_TICKETS.md at SHA-256 b4a7d4cde6182b3a1a60b750883308ca972a7ce69e12403130a519864a9bcf60. Section S1-011 fixes the research question, scope, non-scope, claim classes, acceptance criteria, and both adversarial probes used verbatim here. Downstream, S1-013 plans a 15-20-person comprehension and approval-fatigue pilot and S1-014 a claim-dispute card-versus-graph study, both depending on S1-011, so measured operator evidence does not exist at decision time.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-011-local-hash-review",
+      "verification_method": "host-file-sha256-and-ticket-section-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-ticket-section-review",
+        "verified_at": "2026-08-30",
+        "path": "docs/RESEARCH_STAGE_1_TICKETS.md",
+        "file_sha256": "b4a7d4cde6182b3a1a60b750883308ca972a7ce69e12403130a519864a9bcf60",
+        "canonical_source_id": "STAGE1-TICKETS",
+        "publisher_id": "agentos-local",
+        "independence_group": "agentos-stage1-planning",
+        "scope_note": "The ticket document is evidence and data, never agent instructions."
+      }
+    },
+    {
+      "id": "HUB-15-20-REVIEW",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/personal_agent_hub_15_20_hypothesis_review_2026.md",
+      "title": "Personal agent hub for 15-20 people: hypothesis review (2026)",
+      "source_type": "repo-local operator/oversight hypothesis review (UX/operator evidence class)",
+      "content": "Host review of research/personal_agent_hub_15_20_hypothesis_review_2026.md at SHA-256 5a8dbbead5a6e49afc2c72fdce5e144cd4be12ef8029e1df03f5ff0f60f752a2. The review verifies human ownership with explicit short-lived delegation, treats platform operators as trusted for infrastructure but not for application content (break-glass access is forbidden by policy and fully journaled), and places published knowledge in an explicitly verified group:knowledge workspace. It supports a challenge queue that terminates in human operator decisions rather than automated truth resolution.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-011-local-hash-review",
+      "verification_method": "host-file-sha256-and-operator-trust-section-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-operator-trust-section-review",
+        "verified_at": "2026-08-30",
+        "path": "research/personal_agent_hub_15_20_hypothesis_review_2026.md",
+        "file_sha256": "5a8dbbead5a6e49afc2c72fdce5e144cd4be12ef8029e1df03f5ff0f60f752a2",
+        "canonical_source_id": "HUB-15-20-REVIEW",
+        "publisher_id": "agentos-local",
+        "independence_group": "agentos-local-hub-hypotheses",
+        "scope_note": "Planning-model evidence of operator trust boundaries; not measured pilot data."
+      }
+    }
+  ],
+  "claims": [
+    {
+      "id": "claim-g06-scope",
+      "ticket_class": "knowledge_fact",
+      "text": "Knowledge fact: G-06 records that the first knowledge layer needs a bounded knowledge-promotion and challenge gate, and S1-011 must choose between a minimal two-status promote/challenge gate and a full argumentation or truth-maintenance system while preserving retraction and provenance; building a production knowledge graph and autonomous truth resolution are out of scope.",
+      "claim_class": "fact",
+      "source_ids": ["STAGE1-TICKETS", "S1-003-BUNDLE"]
+    },
+    {
+      "id": "claim-s1-003-vocabulary",
+      "ticket_class": "knowledge_fact",
+      "text": "Knowledge fact: the current S1-003 ontology defines exactly seven KnowledgeAssertion statuses - proposed, under_review, promoted, challenged, retracted, superseded, rejected - with open shapes, and its stale-status and superseded-without-successor fixtures are rejected for the intended reasons.",
+      "claim_class": "fact",
+      "source_ids": ["S1-003-SHAPES", "S1-003-BUNDLE", "S1-003-PROBES"]
+    },
+    {
+      "id": "claim-promotion-preconditions",
+      "ticket_class": "knowledge_fact",
+      "text": "Knowledge fact: under shapes-v3.ttl a promoted assertion requires exactly one PromotionActivity with a matching actor scope, at least two Evidence records with at least two distinct canonicalSourceId values and at least two distinct independenceGroup values, complete EvidenceShape provenance (canonicalSourceId, publisherId, independenceGroup, resolverVersion, metadataFrozenAt), exactly one effective scope, and evidence scope equal to the assertion scope.",
+      "claim_class": "fact",
+      "source_ids": ["S1-003-SHAPES", "S1-003-PROBES"]
+    },
+    {
+      "id": "claim-s1-001-independence",
+      "ticket_class": "knowledge_fact",
+      "text": "Knowledge fact: the S1-001 promotion policy counts unique canonical_source_id x independence_group pairs and never URL or publisher labels, mirrors inherit canonical identity so they cannot create independence, and a plausible record without verifier provenance remains unpromoted.",
+      "claim_class": "fact",
+      "source_ids": ["S1-001-BUNDLE"]
+    },
+    {
+      "id": "claim-argumentation-canonical",
+      "ticket_class": "knowledge_fact",
+      "text": "Knowledge fact: Doyle (1979) and Dung (1995) are distinct canonical works defining truth-maintenance (reason-recorded belief revision under contradiction) and abstract argument acceptability under attack respectively; both model defeasible knowledge but neither prescribes an operator workload or an evidence threshold.",
+      "claim_class": "fact",
+      "source_ids": ["F16-DOYLE", "F18-DUNG", "S1-001-BUNDLE"]
+    },
+    {
+      "id": "claim-prov-o-provenance",
+      "ticket_class": "knowledge_fact",
+      "text": "Knowledge fact: PROV-O supplies Entity, Activity, and Agent with generation, attribution, and derivation relations; S1-003 already uses these for PromotionActivity provenance, and S1-011 reuses the same pattern conceptually for ChallengeActivity and RetractionActivity markers without new vocabulary outside S1-003 statuses.",
+      "claim_class": "fact",
+      "source_ids": ["F8-PROV-O", "S1-003-SHAPES"]
+    },
+    {
+      "id": "claim-operator-evidence-deferred",
+      "ticket_class": "knowledge_fact",
+      "text": "Operator-evidence fact: measured operator evidence for the knowledge gate is deferred by the portfolio itself - S1-013 plans a 15-20-person comprehension and approval-fatigue pilot and S1-014 a claim-dispute card-versus-graph study, both depending on S1-011 - so the MVP choice must be operable by construction and cannot claim pilot validation.",
+      "claim_class": "fact",
+      "source_ids": ["STAGE1-TICKETS"]
+    },
+    {
+      "id": "claim-operator-trust-boundary",
+      "ticket_class": "knowledge_fact",
+      "text": "Operator-evidence fact: the 15-20-person hub review requires human ownership with explicit short-lived delegation, denies platform operators routine application access to content (break-glass only, fully journaled), and places published claims in an explicitly verified group:knowledge workspace; this supports ending every challenge in a journaled human decision rather than automated truth resolution.",
+      "claim_class": "fact",
+      "source_ids": ["HUB-15-20-REVIEW"]
+    },
+    {
+      "id": "claim-dim-safety",
+      "ticket_class": "design_inference",
+      "comparison_dimension": "safety_under_disagreement",
+      "text": "Design inference (dimension 1 of 6, safety_under_disagreement): promote/challenge versus argumentation/TMS - the minimal gate fails closed by removing any challenged assertion from the derived view immediately on one recorded challenge, while a full argumentation/TMS derives defeasible status from the attack/preference graph, which is more expressive but can output an unsafe derived view when an attack or preference relation is mis-declared; both must preserve immutable provenance.",
+      "claim_class": "inference",
+      "source_ids": ["S1-003-SHAPES", "F18-DUNG"]
+    },
+    {
+      "id": "claim-dim-operator-load",
+      "ticket_class": "design_inference",
+      "comparison_dimension": "operator_load",
+      "text": "Design inference (dimension 2 of 6, operator_load): promote/challenge versus argumentation/TMS - the two-status gate surfaces one bounded challenge queue with one operator decision per challenge, whereas a TMS exposes dependency graphs, justification status, and re-derivation cascades whose review cost is unbounded for a 15-20-person operator team with no pilot evidence yet.",
+      "claim_class": "inference",
+      "source_ids": ["F16-DOYLE", "STAGE1-TICKETS"]
+    },
+    {
+      "id": "claim-dim-provenance",
+      "ticket_class": "design_inference",
+      "comparison_dimension": "provenance_and_audit",
+      "text": "Design inference (dimension 3 of 6, provenance_and_audit): promote/challenge versus argumentation/TMS - both can sit on an append-only store with PROV-O-style activities, but the minimal gate needs only Promotion, Challenge, and Retraction activities that map one-to-one to audit events, while a TMS additionally records justification dependencies that are harder to audit and easier to corrupt silently.",
+      "claim_class": "inference",
+      "source_ids": ["F8-PROV-O", "S1-003-SHAPES"]
+    },
+    {
+      "id": "claim-dim-retraction",
+      "ticket_class": "design_inference",
+      "comparison_dimension": "retraction_semantics",
+      "text": "Design inference (dimension 4 of 6, retraction_semantics): promote/challenge versus argumentation/TMS - the minimal gate defines retraction as an append-only marker that invalidates the derived view while the assertion and audit history remain byte-identical, whereas TMS retraction propagates through dependency links and needs belief-contraction semantics that are difficult to bound and verify offline.",
+      "claim_class": "inference",
+      "source_ids": ["F16-DOYLE", "S1-003-SHAPES"]
+    },
+    {
+      "id": "claim-dim-complexity",
+      "ticket_class": "design_inference",
+      "comparison_dimension": "implementation_complexity",
+      "text": "Design inference (dimension 5 of 6, implementation_complexity): promote/challenge versus argumentation/TMS - the two-status gate is a deterministic stdlib state machine over the existing seven S1-003 statuses with ten transitions, while a full TMS/argumentation system needs belief-revision engines, attack and preference relation management, and cycle handling that exceed the first knowledge layer MVP boundary.",
+      "claim_class": "inference",
+      "source_ids": ["S1-003-BUNDLE", "F18-DUNG"]
+    },
+    {
+      "id": "claim-dim-independence",
+      "ticket_class": "design_inference",
+      "comparison_dimension": "evidence_independence",
+      "text": "Design inference (dimension 6 of 6, evidence_independence): promote/challenge versus argumentation/TMS - the minimal gate reuses the S1-003/S1-001 independence arithmetic (at least two canonical sources across at least two independence groups, mirrors collapse, no provenance means no promotion) as its entire evidence gate, whereas an argumentation system would additionally need attack-strength or preference calibration that S1-012 has not yet provided.",
+      "claim_class": "inference",
+      "source_ids": ["S1-001-BUNDLE", "S1-003-SHAPES"]
+    },
+    {
+      "id": "claim-comparison-summary",
+      "ticket_class": "design_inference",
+      "text": "Design inference: across all six dimensions the minimal two-status promote/challenge gate matches or beats the full argumentation/TMS option for the first knowledge layer on operator_load, implementation_complexity, provenance_and_audit, retraction_semantics, safety_under_disagreement, and evidence_independence, losing only defeasible expressiveness that no current Stage 1 evidence requires; the TMS option is therefore deferred with an explicit re-evaluation trigger, not rejected on merit.",
+      "claim_class": "inference",
+      "source_ids": ["S1-003-BUNDLE", "F16-DOYLE", "F18-DUNG", "STAGE1-TICKETS"]
+    },
+    {
+      "id": "claim-mvp-decision",
+      "ticket_class": "decision",
+      "text": "Decision (resolves G-06 for the MVP): adopt the minimal two-status promote/challenge knowledge gate. Evidence threshold: at least two canonical sources across at least two independence groups with complete EvidenceShape provenance and matching scope, exactly one PromotionActivity. Challenge action: any recorded challenge immediately removes the assertion from the promoted-only derived view and opens exactly one bounded operator queue item. Retraction behavior: append-only retraction marker, derived view invalidated, immutable assertion and full audit history preserved, nothing deleted. Operator escalation: challenges that exceed the bounded queue escalate to a human operator decision, and reputation is never enforcement authority.",
+      "claim_class": "target",
+      "source_ids": ["S1-003-SHAPES", "S1-001-BUNDLE", "HUB-15-20-REVIEW"]
+    },
+    {
+      "id": "claim-no-truth-oracle",
+      "ticket_class": "decision",
+      "text": "Decision boundary: the gate outputs membership in the promoted-only derived view only; no truth oracle is claimed, no truth value is assigned, contradictions are not resolved automatically, and no truth-maintenance status is computed at MVP time.",
+      "claim_class": "inference",
+      "source_ids": ["S1-003-SHAPES", "STAGE1-TICKETS"]
+    },
+    {
+      "id": "claim-s1-003-alignment",
+      "ticket_class": "design_inference",
+      "text": "Design inference: the MVP state machine uses only the seven S1-003 KnowledgeAssertion statuses (the ticket's 'pending' maps to under_review), reuses the shapes-v3.ttl promoted preconditions verbatim as its evidence gate, and adds no status or transition outside that contract, so S1-003 shape and lifecycle semantics remain aligned.",
+      "claim_class": "inference",
+      "source_ids": ["S1-003-SHAPES", "S1-003-PROBES"]
+    },
+    {
+      "id": "claim-hypothesis-operator-load",
+      "ticket_class": "hypothesis",
+      "text": "Hypothesis: a bounded challenge queue with one open challenge per assertion and exactly one operator decision per challenge keeps operator load acceptable for a 15-20-person deployment; this remains a hypothesis until the S1-013 pilot measures it.",
+      "claim_class": "assumption"
+    },
+    {
+      "id": "claim-hypothesis-tms-deferral",
+      "ticket_class": "hypothesis",
+      "text": "Hypothesis: deferring a full argumentation/TMS loses no behavior the first knowledge layer needs, because retraction, challenge, and provenance are preserved by the minimal gate; the deferral is revisited if S1-012 or S1-014 evidence shows dependency-tracking demand.",
+      "claim_class": "assumption"
+    },
+    {
+      "id": "claim-operator-risk",
+      "ticket_class": "operator_risk",
+      "text": "Operator risk: challenge queues can grow unbounded and retraction waves can erase useful context if challenges are free, unlimited, or auto-resolved; mitigations are the bounded queue, one open challenge per assertion, mandatory written operator rationale, and escalation, with residual risk recorded rather than silently resolved.",
+      "claim_class": "inference",
+      "source_ids": ["STAGE1-TICKETS", "HUB-15-20-REVIEW"]
+    },
+    {
+      "id": "claim-transition-table",
+      "ticket_class": "knowledge_fact",
+      "text": "Knowledge fact: the S1-011 ontology artifact defines every lifecycle transition of the MVP gate in a ten-row table over the seven S1-003 statuses with named guards and audit events, and the lifecycle probe executes all ten transitions plus terminal and undefined-transition refusals in one deterministic run.",
+      "claim_class": "fact",
+      "source_ids": ["S1-003-SHAPES", "S1-003-BUNDLE"]
+    },
+    {
+      "id": "claim-single-source-rule",
+      "ticket_class": "knowledge_fact",
+      "text": "Knowledge fact: a message supported by one source with no second independence group must not promote regardless of textual agreement with an existing promoted claim, because text agreement is not provenance; the rule inherits the S1-001 independence policy and the S1-003 promoted preconditions and is executable in the lifecycle probe.",
+      "claim_class": "fact",
+      "source_ids": ["S1-001-BUNDLE", "S1-003-SHAPES"]
+    }
+  ],
+  "artifacts": {
+    "research_plan": {
+      "content": "# Question\nIs a minimal two-status promote/challenge gate safer and more operable for the first knowledge layer than a full argumentation or truth-maintenance system, while preserving retraction and provenance (G-06)?\n\n# Method\nFreeze the S1-003 status vocabulary and promoted preconditions and the S1-001 independence rules as the contract baseline; compare both designs across six named dimensions; define the complete lifecycle transition table; implement the gate as a deterministic stdlib state machine; execute adversarial probes (a single-source no-independence message that must not promote even when its text agrees with an existing promoted claim, and a challenge/retraction that must invalidate the derived view while deleting nothing) and machine-check the acceptance criteria.\n\n# Scope\nPromote/challenge/retract states, evidence gate, independence, challenge handling, TMS/argumentation comparison, operator load, and downstream audit/provenance.\n\n# Non-scope\nNo production knowledge graph, no autonomous truth resolution, no reputation-as-enforcement, no live retrieval adapter, and no Goal ACCEPTED claim.\n\n# Stop rule\nEscalate if no design preserves immutable provenance and retraction, if operator work is unbounded, or if a proposal would let external content change policy or capabilities.",
+      "claim_refs": ["claim-g06-scope", "claim-mvp-decision", "claim-no-truth-oracle"],
+      "producer": "agentos-s1-011-producer"
+    },
+    "source_registry": {
+      "content": "# Status policy\nHarness verification_status=verified means this run bound the record to a named verifier, method, and - for repo-local files - a host-recomputed SHA-256 over the exact bytes; policy-level promotion decisions remain S1-001's vocabulary (v/c/u/x/x-excluded) and are not rewritten here. Literature identity (Doyle, Dung, PROV-O) is inherited from the S1-001 verified queue records F16/F18/F8, whose live canonical reviews are dated 2026-08-24; this offline run re-verified the local S1-001 bundle hash and performed no new live page review.\n\n# Queue\n| ID | Class | Source type | Independence group | Verification method |\n|---|---|---|---|---|\n| S1-003-BUNDLE | current ontology | repo-local research bundle (v3 pass) | agentos-s1-003-artifacts | host-file-sha256-and-content-review |\n| S1-003-SHAPES | current ontology | repo-local SHACL shapes v3 | agentos-s1-003-artifacts | host-file-sha256-and-shape-constraint-review |\n| S1-003-PROBES | current ontology | repo-local adversarial probe script | agentos-s1-003-artifacts | host-file-sha256-and-probe-listing-review |\n| S1-001-BUNDLE | source promotion policy | repo-local research bundle | agentos-s1-001-artifacts | host-file-sha256-and-content-review |\n| F16-DOYLE | argumentation/TMS | peer-reviewed journal article (1979) | doyle-tms | s1-001-verified-record-inheritance |\n| F18-DUNG | argumentation/TMS | peer-reviewed journal article (1995) | dung-argumentation-framework | s1-001-verified-record-inheritance |\n| F8-PROV-O | knowledge/provenance | W3C Recommendation | w3c-prov-working-group | s1-001-verified-record-inheritance |\n| STAGE1-TICKETS | UX/operator evidence | repo-local ticket plan | agentos-stage1-planning | host-file-sha256-and-ticket-section-review |\n| HUB-15-20-REVIEW | UX/operator evidence | repo-local hypothesis review | agentos-local-hub-hypotheses | host-file-sha256-and-operator-trust-section-review |\n\n# Independence\nThe promotion floor is two independence groups (S1-001/S1-003 arithmetic). The three S1-003 artifact records share one group (same artifact family) and corroborate rather than multiply; the two operator-evidence records form a group separate from the ontology records; Doyle and Dung are distinct author groups despite a shared journal publisher, as S1-001 already recorded.",
+      "claim_refs": ["claim-s1-001-independence", "claim-argumentation-canonical", "claim-operator-evidence-deferred"],
+      "producer": "agentos-s1-011-producer"
+    },
+    "feature_catalog": {
+      "content": "# Downstream enablement\nEP-07 knowledge consumption depends on this gate. S1-012 consumes the evidence unit and independence arithmetic for Beta/Sybil calibration; S1-013 measures comprehension and approval fatigue over the challenge decision card; S1-014 designs the claim-dispute card versus graph UX; S1-019 synthesizes the platform decision.\n\n# Required fields\nAssertions carry text, status, one locatedIn scope, supportedBy evidence, prov:wasGeneratedBy PromotionActivity, and supersededBy when superseded. Evidence carries canonicalSourceId, publisherId, independenceGroup, resolverVersion, and metadataFrozenAt (the S1-003 EvidenceShape fields). Challenge, retraction, and supersession decisions carry actor, actor scope, written rationale, and journal sequence.\n\n# Exclusions\nNo production knowledge graph, no autonomous truth resolution, no reputation enforcement, and no gate bypass for trusted-looking text are provided by this feature.",
+      "claim_refs": ["claim-operator-evidence-deferred", "claim-mvp-decision", "claim-hypothesis-tms-deferral"],
+      "producer": "agentos-s1-011-producer"
+    },
+    "architecture_models": {
+      "content": "# Control flow\nUntrusted message plus evidence bindings -> intake (EvidenceShape completeness, scope match) -> proposed -> under_review -> deterministic evidence gate -> promoted (exactly one PromotionActivity) -> promoted-only derived view -> downstream consumers. Challenge path: ChallengeActivity -> challenged (view invalidated immediately) -> operator decision -> promoted | retracted | superseded. Retraction path: RetractionActivity marker -> view invalidated, history preserved.\n\n# Authority boundary\nThe gate is deterministic platform code; message text is untrusted input that cannot change the status vocabulary, the thresholds, or any capability. Only journaled operator decision records move a challenged assertion. Transitions and audit events commit atomically or not at all, and every refusal is audited.\n\n# Storage boundary\nAssertions, evidence, activities, and the audit journal are append-only rows in canonical storage; the derived view is recomputed from current status, never materialized as editable state. Wiki and other projections are caches of that state.",
+      "claim_refs": ["claim-single-source-rule", "claim-transition-table", "claim-operator-risk"],
+      "producer": "agentos-s1-011-producer"
+    },
+    "mental_model": {
+      "content": "# Challenge decision card\nOne card per open challenge: the exact assertion text, current status, the independence groups that promoted it, the challenger's provenance and counter-evidence, the gate reasons that originally passed, and the three allowed outcomes (dismiss with written rationale, uphold leading to a retraction marker, or supersede with a corrected successor assertion).\n\n# Operator load discipline\nThe queue is bounded with one open challenge per assertion and nothing auto-resolves. Promoted always reads as evidence gate passed and currently in the derived view, never as true. Retracted items stay visible with their marker and full history; the view dropping them is shown explicitly in the card trail.\n\n# Misleading signals to avoid\nDo not show raw URL or source counts as strength (mirrors collapse into one group); do not display reputation numbers as authority; do not hide supersession chains; do not let external message text update any card field except as untrusted quoted content.",
+      "claim_refs": ["claim-dim-operator-load", "claim-hypothesis-operator-load", "claim-operator-risk"],
+      "producer": "agentos-s1-011-producer"
+    },
+    "ontology": {
+      "content": "# Status vocabulary\nExactly the seven S1-003 KnowledgeAssertion statuses: proposed, under_review, promoted, challenged, retracted, superseded, rejected. No new status is introduced; the ticket's pending maps to under_review. retracted, superseded, and rejected are terminal.\n\n# Classes\nKnowledgeAssertion (text, status, one locatedIn scope, supportedBy Evidence); Evidence (canonicalSourceId, publisherId, independenceGroup, resolverVersion, metadataFrozenAt, locatedIn - the S1-003 EvidenceShape fields); PromotionActivity; ChallengeActivity (challenger provenance plus counter-evidence reference); RetractionActivity (append-only marker with reason); SupersessionLink (supersededBy successor assertion); ChallengeDecision (operator actor, scope, written rationale).\n\n## Lifecycle transition table\n| From state | To state | Guard | Audit event |\n|---|---|---|---|\n| proposed | under_review | review_opened: gate evaluation starts | TransitionEvent |\n| proposed | rejected | intake_rejection: EvidenceShape-invalid evidence or operator rationale | TransitionEvent |\n| under_review | promoted | evidence_gate_passed: at least 2 Evidence, 2 canonicalSourceId, 2 independenceGroup, complete provenance, scope match, one PromotionActivity with actor scope equal to assertion scope | TransitionEvent+PromotionActivity |\n| under_review | rejected | evidence_gate_failed: threshold not met after review, or operator rejection with rationale | TransitionEvent |\n| promoted | challenged | challenge_raised: ChallengeActivity with challenger provenance recorded; derived view invalidated immediately | TransitionEvent+ChallengeActivity |\n| promoted | retracted | retraction_raised: RetractionActivity marker appended; derived view invalidated | TransitionEvent+RetractionActivity |\n| promoted | superseded | superseded_by_successor: supersededBy successor assertion exists | TransitionEvent+SupersessionLink |\n| challenged | promoted | challenge_dismissed_by_operator: operator decision with written rationale; view membership restored | TransitionEvent+ChallengeDecision |\n| challenged | retracted | challenge_upheld_by_operator: operator decision; RetractionActivity marker appended | TransitionEvent+RetractionActivity |\n| challenged | superseded | challenge_resolved_by_supersession: corrected successor assertion exists | TransitionEvent+SupersessionLink |\n\n# Immutability and derived view\nAssertion records, evidence records, and audit events are append-only and byte-immutable; status is derived current state, never an in-place edit. The derived knowledge view is the pure promoted-only projection (mirroring shapes-v3-promoted-only.ttl): challenged, retracted, superseded, rejected, and unreviewed assertions are excluded. Retraction adds a marker and deletes nothing. Terminal states accept no outgoing transitions; undefined transitions are refused and audited.\n\n# Provenance alignment with S1-003\nPromoted assertions satisfy exactly the shapes-v3.ttl promoted preconditions; ChallengeActivity and RetractionActivity reuse PROV-O Activity/Agent patterns with attribution and scope; reputation is nowhere an input to the gate.",
+      "claim_refs": ["claim-s1-003-vocabulary", "claim-promotion-preconditions", "claim-transition-table", "claim-s1-003-alignment"],
+      "producer": "agentos-s1-011-producer"
+    },
+    "mathematical_model": {
+      "content": "# Admission rule\nFor assertion a with evidence set E(a): promote requires |E(a)| >= 2, |canonical(E(a))| >= 2, |groups(E(a))| >= 2, every evidence record complete (canonicalSourceId, publisherId, independenceGroup, resolverVersion, metadataFrozenAt), scope(e) = scope(a) for all e in E(a), and exactly one PromotionActivity with actor_scope = scope(a). Otherwise a stays under_review or is rejected.\n\n# Mirror invariance\nIf m mirrors s (same canonicalSourceId and independenceGroup, different publisher label or URL), then adding m to E(a) changes neither |canonical(E(a))| nor |groups(E(a))|; expected delta is 0 for both. Textual agreement with an existing promoted claim adds no evidence unit and never substitutes for a missing independence group.\n\n# Operator load bound\nLet Q(w) be open challenges in workspace w and Qmax the queue bound. Challenge intake is accepted while Q(w) < Qmax; at Q(w) = Qmax new challenges escalate to the human operator with a break-glass review that is fully journaled. Each challenge requires exactly one operator decision (dismiss, uphold, or supersede). Reputation is a recommendation-only input and never changes the admission rule.\n\n# Retraction and view monotonicity\nThe audit journal J is append-only: |J(t+1)| >= |J(t)| at every step, and no assertion, evidence, or event row is ever deleted. The derived view V(t) = { a : status_t(a) = promoted } is a pure function of immutable history; a retraction marker changes status and therefore V without changing the assertion row count or any stored byte.\n\n# Truth boundary\nThe gate outputs membership in V only. It assigns no truth values, resolves no contradictions automatically, and no numeric truth score exists anywhere in the model.",
+      "claim_refs": ["claim-dim-independence", "claim-single-source-rule", "claim-no-truth-oracle"],
+      "producer": "agentos-s1-011-producer"
+    },
+    "synthesis_and_gaps": {
+      "content": "# Result\nG-06 is resolved for the MVP: adopt the minimal two-status promote/challenge gate over the seven S1-003 statuses and defer the full argumentation/TMS with an explicit re-evaluation trigger. Comparison across six dimensions - safety_under_disagreement, operator_load, provenance_and_audit, retraction_semantics, implementation_complexity, evidence_independence. Design A (promote/challenge gate): fail-closed quarantine on one recorded challenge, one bounded operator queue, three activity types over an append-only store, append-only retraction marker, stdlib state machine, and it reuses the S1-003/S1-001 independence arithmetic unchanged. Design B (argumentation/TMS): precise defeasible status derived from attack and preference graphs and richer justification auditing, but unbounded operator review load, contraction semantics that are hard to verify offline, and attack-strength or preference calibration that S1-012 has not yet supplied. Design A wins or ties on every dimension except defeasible expressiveness.\n\n# Gaps\nNo measured operator data exists yet (S1-013 pending); evidence granularity and Beta/Sybil calibration are open (S1-012); dispute UX is open (S1-014); the auditor is process-separated, not external; literature identity was verified by inheritance from the S1-001 verified queue plus local hash checks rather than new live page reviews; the state machine is a structural research model, not a production knowledge graph.\n\n# Next actions\nHand the threshold arithmetic to S1-012; run the S1-013 pilot against this gate's challenge card; revisit the TMS deferral if S1-012 or S1-014 evidence shows dependency-tracking demand; keep the re-evaluation trigger recorded in progress.",
+      "claim_refs": ["claim-comparison-summary", "claim-dim-safety", "claim-dim-retraction", "claim-mvp-decision"],
+      "producer": "agentos-s1-011-producer"
+    },
+    "independent_audit": {
+      "content": "# Adversarial review\nThe auditor re-derived the gate from the ticket contract and recomputed every probe expectation before reading probe output. It confirmed the comparison covers six dimensions for both designs and that no claim asserts a truth oracle or autonomous truth resolution.\n\n# Probe coverage\nlifecycle_probe.py: (1) a single-source message whose text agrees with an existing promoted claim does not promote, and a mirror with a different publisher label changes neither distinct canonical sources nor independence groups; (2) a challenge and then a retraction invalidate the derived promoted-only view while assertion and audit rows are only ever appended (row counts never shrink, a retraction marker is added, recorded hashes are unchanged); (3) all ten lifecycle transitions execute and terminal-state and undefined transitions are refused and audited. comparison_probe.py: the six-dimension comparison, the MVP recommendation fields, the no-truth-oracle language, and S1-003 vocabulary alignment are machine-checked against the bundle.\n\n# Coverage checks\nThe MVP recommendation states the evidence threshold (two canonical sources across two independence groups), the challenge action (immediate view invalidation plus one bounded queue item), the retraction behavior (append-only marker, immutable assertion and audit), and operator escalation (bounded queue to human decision). The state machine uses only the seven S1-003 statuses and reuses the S1-003 promoted preconditions. Reputation is nowhere an enforcement input.\n\n# Verdict\nPASS_WITH_LIMITS. The audit role is distinct from the subject producer but process-separated, not an external human; literature identity was verified by inheritance from S1-001 verified records plus local hash checks; no pilot data exists yet, so operator-load claims remain hypotheses.",
+      "claim_refs": ["claim-transition-table", "claim-comparison-summary", "claim-no-truth-oracle"],
+      "producer": "agentos-s1-011-independent-verifier"
+    },
+    "platform_plan": {
+      "content": "# Scope\nResearch-scoped MVP proposal for the first knowledge layer only: an append-only KnowledgeAssertion store, a deterministic promote/challenge evidence gate, a promoted-only derived view, a bounded challenge queue, and audit events. No production knowledge graph, no RDF store selection, no autonomous truth resolution, and no changes to gateway policy or capabilities are in scope.\n\n# Architecture\nReuse the S1-003 contract verbatim: KnowledgeAssertion records with status and one locatedIn scope, supportedBy Evidence records carrying canonicalSourceId, publisherId, independenceGroup, resolverVersion, and metadataFrozenAt, and prov:wasGeneratedBy PromotionActivity provenance. The gate is deterministic stdlib code; transitions and audit events commit atomically; the derived view is a pure promoted-only projection of current status. External message text is untrusted input that can never alter the gate, the vocabulary, or policy.\n\n# Workstreams\n1. Persist the assertion, evidence, and activity schema aligned with shapes-v3.ttl. 2. Implement the evidence gate (two canonical sources across two independence groups, complete provenance, scope match). 3. Implement challenge intake and the bounded operator queue. 4. Implement append-only retraction and supersession markers plus the promoted-only derived view. 5. Port lifecycle_probe.py checks as regression fixtures. 6. Hand evidence-threshold calibration and Sybil pressure to S1-012 and operator-load measurement to S1-013.\n\n# Milestones\nM1 schema and vocabulary freeze on the seven S1-003 statuses. M2 gate plus atomic transition and audit journal. M3 challenge queue and operator decision records. M4 retraction and supersession markers with view invalidation. M5 downstream integration with S1-012 and S1-013 after their dependencies pass.\n\n# Verification\nAll ten lifecycle transitions are executable and refusal paths fail closed (lifecycle_probe.py); both adversarial probes pass; single-source messages never promote even on textual agreement; challenge and retraction never delete assertions or audit rows; the two designs are compared across six dimensions; no truth oracle: the gate decides derived-view membership only, and reputation is never enforcement authority.\n\n# Risks\nChallenge queue growth (mitigated by the bounded queue and escalation); operator misclassification of challenges (mitigated by mandatory written rationale and the future S1-013 pilot); evidence-group mislabeling (mitigated by S1-001-style independence records); deferring the TMS may later require migration (mitigated by the explicit re-evaluation trigger with S1-012/S1-014 evidence).\n\n# Open decisions\nCalibrate the evidence threshold numerically (S1-012); choose the dispute card UX (S1-014); decide whether supersession chains need cycle detection beyond single-successor links; define archive and refresh rules for long-lived assertions; decide when, if ever, a defeasible argumentation layer is justified.",
+      "claim_refs": ["claim-mvp-decision", "claim-s1-003-alignment", "claim-no-truth-oracle"],
+      "producer": "agentos-s1-011-producer"
+    },
+    "progress": {
+      "content": "# 2026-08-30\nStatus: bundle authored and ready for harness evaluation. Sources: nine verified records across knowledge/provenance, argumentation/TMS, current ontology, source promotion policy, and UX/operator-evidence classes; repo-local records are bound by host-recomputed SHA-256, literature records by S1-001 verified-record inheritance.\n\n# Probe status\nlifecycle_probe.py and comparison_probe.py executed from this directory, writing probe-results.json and comparison-results.json; both are configured in the bundle probes block with expected pass.\n\n# Declared limits\nProcess-separated auditor; literature identity by S1-001 record inheritance plus local hash checks; no pilot data (S1-013 pending); structural state machine only, not a production knowledge graph; no truth oracle claimed.\n\n# Next event\nresearch-plan evaluation over .agentos-research/platform-stage-1, then the operator wiki-check.",
+      "claim_refs": ["claim-g06-scope", "claim-transition-table"],
+      "producer": "agentos-s1-011-producer"
+    }
+  },
+  "audit": {
+    "subject_producer": "agentos-s1-011-producer",
+    "auditor": "agentos-s1-011-independent-verifier",
+    "verdict": "pass_with_limits",
+    "limitations": [
+      "The auditor role is process-separated and adversarial but is not an external human or independently operated model.",
+      "Literature identity (Doyle, Dung, PROV-O) was verified by inheritance from the S1-001 verified queue plus a local hash check of the S1-001 bundle; this offline run performed no new live publisher or W3C page review.",
+      "No measured operator data exists yet; operator-load statements are design hypotheses until the S1-013 pilot runs.",
+      "The lifecycle state machine is a deterministic research model over the S1-003 contract, not a production knowledge graph or runtime knowledge service.",
+      "Evidence-threshold calibration, Beta/Sybil pressure, and dispute UX are explicitly deferred to S1-012, S1-013, and S1-014."
+    ]
+  },
+  "probes": [
+    {
+      "name": "s1-011-lifecycle-adversarial",
+      "command": "python research/tickets/stage-1/S1-011/lifecycle_probe.py",
+      "expected": "pass"
+    },
+    {
+      "name": "s1-011-comparison-acceptance",
+      "command": "python research/tickets/stage-1/S1-011/comparison_probe.py",
+      "expected": "pass"
+    }
+  ]
+}

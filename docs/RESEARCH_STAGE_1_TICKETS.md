@@ -173,14 +173,14 @@ from a lower wave to a higher wave, and S1-020 is the sole closure sink.
 | S1-001 | W0 | P0 | sources | PASS_WITH_LIMITS | — | targeted promotion policy for `u` and Z/SV tails |
 | S1-002 | W0 | P0 | capacity | PASS_WITH_LIMITS | — | benchmark, capacity, storage, and SLO assumptions |
 | S1-003 | W0 | P0 | formal | PASS | — | executable SHACL/ontology validation |
-| S1-004 | W1 | P0 | formal | READY | S1-002, S1-003 | bounded formal/simulation checks for INV1–INV6 and delivery safety |
-| S1-005 | W1 | P1 | architecture | READY | S1-002 | QA1 modular monolith versus containers |
+| S1-004 | W1 | P0 | formal | PASS_WITH_LIMITS | S1-002, S1-003 | bounded formal/simulation checks for INV1–INV6 and delivery safety |
+| S1-005 | W1 | P1 | architecture | PASS_WITH_LIMITS | S1-002 | QA1 modular monolith versus containers |
 | S1-006 | W2 | P1 | architecture | READY | S1-002, S1-005 | QA2 in-process versus durable execution backend |
 | S1-007 | W2 | P0 | security | READY | S1-003, S1-005 | QA3 retrieval/index scope isolation |
 | S1-008 | W2 | P0 | security | READY | S1-002, S1-004 | revocation propagation bound of ≤5 seconds |
 | S1-009 | W2 | P1 | architecture | READY | S1-001, S1-005 | MCP/A2A delegation and knowledge adapter roadmap |
 | S1-010 | W3 | P0 | security | READY | S1-001, S1-009 | tool-poisoning detection and quarantine evidence |
-| S1-011 | W1 | P0 | knowledge | READY | S1-001, S1-003 | minimal promote/challenge knowledge gate |
+| S1-011 | W1 | P0 | knowledge | PASS_WITH_LIMITS | S1-001, S1-003 | minimal promote/challenge knowledge gate |
 | S1-012 | W2 | P0 | knowledge | READY | S1-001, S1-003, S1-011 | evidence independence and Beta/Sybil calibration |
 | S1-013 | W3 | P1 | hci | READY | S1-011, S1-012 | 15–20-person comprehension and approval-fatigue pilot |
 | S1-014 | W4 | P1 | hci | READY | S1-011, S1-013 | claim-dispute card versus graph |
@@ -408,7 +408,15 @@ python -m agentos.cli research-plan --topic "S1-003 executable SHACL and ontolog
 
 ### S1-004 — Alloy/TLA+ and seeded deterministic invariant simulation
 
-- **Status:** `READY`
+- **Status:** `PASS_WITH_LIMITS` — recorded 2026-08-31: goal
+  `goal_VXBYD48EDQDWB29Z01M1CH6GCJ`, evaluation
+  `reval_FM0R273HD8GZ5GB801M1CH6RF0`, artifact chain `dc80e429…f26f`,
+  evidence-pack/v3 `latest_evaluation_valid=true`, wiki-check ok (582 files).
+  Probes s1-004-invariant-simulation-bounded (200k)×6 and smoke pass: 0
+  violations of INV1–INV6/SAF at 3 seeds (1201/3407/5527); focused
+  crash-replay exactly-once; 1M-op acceptance run committed as
+  acceptance-run-1m.json (same script, `...py 1000000`). Review-fix:
+  2 fail-open model bugs eliminated.
 - **Priority:** `P0`
 - **Wave:** `W1`
 - **Owner:** `formal`
@@ -464,7 +472,16 @@ python -m agentos.cli research-plan --topic "S1-004 Alloy TLA plus seeded determ
 
 ### S1-005 — QA1 runtime topology: modular monolith versus containers
 
-- **Status:** `READY`
+- **Status:** `PASS_WITH_LIMITS` — recorded 2026-08-31: goal
+  `goal_V6KK0JS5SG08JWY201M1CEF21R`, evaluation
+  `reval_QS9GHCH77D6PM4DF01M1CEF32R`, artifact chain
+  `61a3d1d1…f9388f3`, evidence-pack/v3 `chain_fresh=true`, wiki-check ok.
+  Probes gateway-audit-invariants + matrix-coverage pass 7/7 each
+  (container split duplicating policy state / async audit rejected despite
+  better latency; monolith recommendation requires failure boundary +
+  deterministic-simulation interface). 15 sources, 22 claims, QA1 matrix
+  8 dims (monolith 36/40 vs containers 21/40). Limits: design comparison
+  only, no production build/SLO; S1-002 numbers are single-host baseline.
 - **Priority:** `P1`
 - **Wave:** `W1`
 - **Owner:** `architecture`
@@ -772,7 +789,13 @@ python -m agentos.cli research-plan --topic "S1-010 tool poisoning detection eva
 
 ### S1-011 — Minimal knowledge gate: promote/challenge versus argumentation/TMS
 
-- **Status:** `READY`
+- **Status:** `PASS_WITH_LIMITS` — recorded 2026-08-31: goal
+  `goal_JPWBTFD8DFDECQ9J01M1CECYRT`, evaluation
+  `reval_Z11BREGR69DYXA8S01M1CECZJW`,
+  artifact chain `4415c23f…d4e398`, evidence-pack/v3 `chain_fresh=true`,
+  wiki-check ok. Lifecycle adversarial probe 31/31, comparison probe 12/12.
+  Limits: no production knowledge graph; no truth oracle; auditor
+  process-separated (not external human).
 - **Priority:** `P0`
 - **Wave:** `W1`
 - **Owner:** `knowledge`

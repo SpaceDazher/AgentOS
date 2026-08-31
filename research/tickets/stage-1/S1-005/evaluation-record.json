@@ -1,0 +1,52 @@
+{
+  "schema": "agentos.ticket-evaluation-record/v1",
+  "ticket_id": "S1-005",
+  "recorded_at": "2026-08-31T00:00:00Z",
+  "db_root": ".agentos-research/platform-stage-1",
+  "campaign_id": "rcamp_E29XTF99Z5VZZMZA01M1CEF21R",
+  "goal_id": "goal_V6KK0JS5SG08JWY201M1CEF21R",
+  "evaluation_id": "reval_QS9GHCH77D6PM4DF01M1CEF32R",
+  "evaluation_version": 1,
+  "result": "pass_with_limits",
+  "artifact_chain_hash": "61a3d1d14ae9ea6f59fdb13393928fcca647062a2bc2d2ca69551c7d0f9388f3",
+  "evidence_pack": {
+    "schema": "agentos.evidence-pack/v3",
+    "path": ".agentos-research/platform-stage-1/goals/goal_V6KK0JS5SG08JWY201M1CEF21R/evidence-pack.json",
+    "sha256": "61a3d1d14ae9ea6f59fdb13393928fcca647062a2bc2d2ca69551c7d0f9388f3",
+    "chain_fresh": true,
+    "latest_evaluation_valid": true,
+    "embedded_sha256_matches": true
+  },
+  "probes": [
+    {
+      "name": "gateway-audit-invariants",
+      "command": "python research/tickets/stage-1/S1-005/decision_matrix_probe.py --probe gateway-audit-invariants",
+      "expected": "pass",
+      "observed": "pass",
+      "result": "pass",
+      "checks": 7
+    },
+    {
+      "name": "matrix-coverage",
+      "command": "python research/tickets/stage-1/S1-005/decision_matrix_probe.py --probe matrix-coverage",
+      "expected": "pass",
+      "observed": "pass",
+      "result": "pass",
+      "checks": 7
+    }
+  ],
+  "wiki_check": {
+    "ok": true,
+    "files": 498,
+    "links_checked": 1335,
+    "issues": []
+  },
+  "limitations": [
+    "Design-level comparison only: no production containers were built and no reliability or SLO claim is made from this research.",
+    "Latency and throughput numbers come from S1-002's single-process, single-host Windows benchmark; multi-process and container behavior is explicitly out of its scope and unmeasured here.",
+    "Literature sources were verified by offline identity and content-scope review of well-known canonical documents; no live network fetch was performed in this environment.",
+    "Producer and verifier are process-separated roles in one local environment, not independent human operators.",
+    "Decision-matrix scores are structured design judgments grounded in cited evidence, not measurements."
+  ],
+  "note": "S1-005 authored + validated: bundle.json with 15 verified sources, 22 claims, 11 artifacts; QA1 decision matrix (8 dimensions, monolith 36/40 vs container split 21/40, 4 failure/recovery scenarios); gateway-audit-invariants + matrix-coverage probes pass 7/7. research-plan PASS is a research evaluation; it never sets Goal ACCEPTED (release gate only)."
+}

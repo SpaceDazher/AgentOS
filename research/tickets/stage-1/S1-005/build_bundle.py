@@ -1,0 +1,1006 @@
+#!/usr/bin/env python3
+"""Build the S1-005 research bundle (QA1: modular monolith versus containers).
+
+Deterministic offline generator: writes ``bundle.json`` (FLOW-11 research
+bundle for ``agentos.cli research-plan``) and ``matrix.json`` (standalone
+machine-readable copy of the QA1 decision matrix that is embedded, fenced,
+in the ``architecture_models`` artifact).  stdlib only.
+"""
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+TICKET_DIR = Path(__file__).resolve().parent
+VERIFIED_AT = "2026-08-31"
+LOCAL_VERIFIER = "agentos-s1-005-local-hash-review"
+LOCAL_METHOD = "host-file-sha256-and-section-review"
+LIT_VERIFIER = "agentos-s1-005-literature-review"
+FLOW = (
+    "research_plan", "source_registry", "feature_catalog", "architecture_models",
+    "mental_model", "ontology", "mathematical_model", "synthesis_and_gaps",
+    "independent_audit", "platform_plan", "progress",
+)
+
+MATRIX = {
+    "schema": "agentos.s1-005-decision-matrix/v1",
+    "ticket": "S1-005",
+    "question": ("QA1: for the MVP, does a modular monolith with hard internal "
+                 "contracts provide a better safety, determinism and operability "
+                 "boundary than splitting the runtime into containers?"),
+    "options": {
+        "modular_monolith": ("One process; gateway/journal/engine/workers as modules "
+                             "behind hard internal contracts; one SQLite/WAL store; "
+                             "in-process calls."),
+        "container_split": ("Separate processes/containers for gateway, engine, workers "
+                            "and audit store; RPC between them; possibly more than one host."),
+    },
+    "scoring": ("Integer 1..5 per option per dimension; 5 is best for MVP safety, "
+                "determinism and operability; evidence arrays cite bundle source ids; "
+                "totals are unweighted sums; hard invariants gate before totals."),
+    "baseline": {
+        "measured_p99_end_to_end_ms_cold_100eps": 7.3917,
+        "source": "S1-002-RESULTS",
+        "note": ("Single-process, single-host SQLite/WAL benchmark (seed 20260824); "
+                 "explicitly excludes multi-process/multi-host and production SLOs."),
+    },
+    "dimensions": [
+        {
+            "id": "D1", "name": "policy_gateway_enforcement",
+            "modular_monolith": {
+                "score": 5,
+                "evidence": ["SPEC-ARCH", "GATEWAY-IMPL", "AGENTOS-INVARIANTS"],
+                "notes": ("The in-process gateway is the only effects path; policy state is "
+                          "read from the one authoritative store; no cross-process copies exist."),
+            },
+            "container_split": {
+                "score": 2,
+                "evidence": ["SPEC-ARCH", "AGENTOS-INVARIANTS"],
+                "notes": ("The gateway becomes a network service and other containers are tempted "
+                          "to cache policy/capability state; a duplicated policy cache is a "
+                          "standing invariant-5..7 risk and creates an unreviewed trust boundary."),
+            },
+        },
+        {
+            "id": "D2", "name": "audit_atomicity_and_chain",
+            "modular_monolith": {
+                "score": 5,
+                "evidence": ["JOURNAL-IMPL", "SPEC-ARCH", "AGENTOS-INVARIANTS"],
+                "notes": ("Transition + hash-chained audit event + anchor head update commit in one "
+                          "SQLite transaction; rollback leaves state and audit consistent by construction."),
+            },
+            "container_split": {
+                "score": 2,
+                "evidence": ["JOURNAL-IMPL", "SQLITE-CORRUPT"],
+                "notes": ("Splitting transition and audit across processes/streams risks partial audit "
+                          "on crash, chain forks and anchor divergence; preserving invariant 8 would need "
+                          "a distributed transaction the MVP does not have."),
+            },
+        },
+        {
+            "id": "D3", "name": "worker_failure_isolation",
+            "modular_monolith": {
+                "score": 4,
+                "evidence": ["ENGINE-IMPL", "GATEWAY-IMPL", "SPEC-ARCH"],
+                "notes": ("Crash containment comes from lease/fence checks, scoped capability sets, "
+                          "bounded retries and checkpoint resume; an engine-internal fault remains a "
+                          "whole-process (host) failure domain."),
+            },
+            "container_split": {
+                "score": 4,
+                "evidence": ["ENGINE-IMPL", "SPEC-ARCH"],
+                "notes": ("OS boundaries contain module crashes better, but lease/fence authority must be "
+                          "re-proved across RPC and the shared audit store couples the containers anyway."),
+            },
+        },
+        {
+            "id": "D4", "name": "deterministic_simulation_replay",
+            "modular_monolith": {
+                "score": 5,
+                "evidence": ["WORKERS-IMPL", "S1-002-BENCH", "S1-002-RESULTS"],
+                "notes": ("One process keeps one clock domain: deterministic WorkerAdapter + seeded "
+                          "fixed-rate schedule replays runs offline (S1-002 seed 20260824)."),
+            },
+            "container_split": {
+                "score": 3,
+                "evidence": ["WORKERS-IMPL", "S1-002-RESULTS"],
+                "notes": ("Every RPC hop and separate scheduler adds nondeterminism the simulation "
+                          "interface must abstract away again; a simulation mode is in-process anyway."),
+            },
+        },
+        {
+            "id": "D5", "name": "sqlite_wal_storage_constraints",
+            "modular_monolith": {
+                "score": 5,
+                "evidence": ["SQLITE-WAL", "SQLITE-CORRUPT", "S1-002-RESULTS"],
+                "notes": ("Single writer and same-host file access hold by construction; measured p99 "
+                          "7.39 ms at 100 events/s leaves headroom."),
+            },
+            "container_split": {
+                "score": 2,
+                "evidence": ["SQLITE-WAL", "SQLITE-CORRUPT"],
+                "notes": ("N containers contend for the single WAL writer on one host; multi-host split "
+                          "of a live WAL database is unsupported and a documented corruption risk."),
+            },
+        },
+        {
+            "id": "D6", "name": "deployment_and_recovery",
+            "modular_monolith": {
+                "score": 5,
+                "evidence": ["ENGINE-IMPL", "SPEC-ARCH", "SRE-BOOK"],
+                "notes": ("One deployable unit; recovery is resume-from-latest-consistent-checkpoint; "
+                          "one set of logs, one audit anchor."),
+            },
+            "container_split": {
+                "score": 2,
+                "evidence": ["TWELVE-FACTOR", "SRE-BOOK"],
+                "notes": ("N images plus orchestration, service discovery and coordinated recovery; "
+                          "every recovery path now spans a process boundary."),
+            },
+        },
+        {
+            "id": "D7", "name": "operational_complexity",
+            "modular_monolith": {
+                "score": 5,
+                "evidence": ["FOWLER-MONOLITH-FIRST", "SRE-BOOK"],
+                "notes": ("One runtime to monitor, upgrade and debug; hard module contracts give most "
+                          "of the maintainability benefit without the network."),
+            },
+            "container_split": {
+                "score": 2,
+                "evidence": ["FOWLER-MICROSERVICES", "TWELVE-FACTOR"],
+                "notes": ("Distributed debugging, versioned RPC contracts, partial-failure handling and "
+                          "per-container observability are new permanent operating costs."),
+            },
+        },
+        {
+            "id": "D8", "name": "independent_scaling_and_resource_isolation",
+            "modular_monolith": {
+                "score": 2,
+                "evidence": ["S1-002-RESULTS", "SPEC-ARCH"],
+                "notes": ("One process shares CPU/memory; measured headroom at MVP rates is ample "
+                          "(busy ratio <= 0.323 at 100 events/s), so the constraint is not binding yet."),
+            },
+            "container_split": {
+                "score": 4,
+                "evidence": ["TWELVE-FACTOR", "S1-002-RESULTS"],
+                "notes": ("Per-module scaling and resource caps are the genuine gain; the shared "
+                          "single-writer SQLite store caps the benefit for the record path."),
+            },
+        },
+    ],
+    "totals": {"modular_monolith": 36, "container_split": 21, "max": 40},
+    "failure_scenarios": [
+        {
+            "id": "FS-1", "name": "worker crash mid-run",
+            "detection": "lease expiry with no heartbeat/progress and a missing or stale checkpoint",
+            "modular_monolith_recovery": ("engine marks the run FAILED(recoverable) and resumes from the "
+                                          "latest consistent sha-verified checkpoint into a new Run with "
+                                          "immutable lineage; bounded retry budget applies"),
+            "container_split_recovery": ("same state machine only if the engine retains sole lease authority; "
+                                         "a scheduler container reassigning leases independently weakens "
+                                         "fencing and can double-execute"),
+            "evidence": ["ENGINE-IMPL", "SPEC-ARCH", "GATEWAY-IMPL"],
+        },
+        {
+            "id": "FS-2", "name": "crash between transition and audit append",
+            "detection": "open SQLite transaction rolls back; audit_anchor head and row count unchanged",
+            "modular_monolith_recovery": ("atomic rollback leaves state and audit consistent; a retried "
+                                          "transition_key is a no-op returning the original event"),
+            "container_split_recovery": ("an asynchronous or per-container audit writer can lose or fork "
+                                         "audit rows across the crash; the hash chain and anchor diverge "
+                                         "and invariant 8 is broken"),
+            "evidence": ["JOURNAL-IMPL", "SPEC-ARCH", "SQLITE-CORRUPT"],
+        },
+        {
+            "id": "FS-3", "name": "policy/audit store unavailable or partitioned",
+            "detection": "gateway op raises, or a mutating intent exists without a recorded outcome",
+            "modular_monolith_recovery": ("mutating ops return UNKNOWN_OUTCOME with reconciliation_required "
+                                          "and are never blindly retried; reconcile() distinguishes "
+                                          "RECONCILED_SUCCEEDED/FAILED and the gate blocks the latter"),
+            "container_split_recovery": ("a split with per-container policy copies keeps serving stale policy "
+                                          "during the partition (split-brain); detecting audit-mirror "
+                                          "divergence across containers is not provided by the MVP"),
+            "evidence": ["GATEWAY-IMPL", "AGENTOS-INVARIANTS"],
+        },
+        {
+            "id": "FS-4", "name": "SQLite WAL writer contention",
+            "detection": "write-latency growth and busy timeouts on the record path",
+            "modular_monolith_recovery": ("single in-process writer serializes by construction; measured "
+                                          "baseline holds p99 <= 7.39 ms at 100 events/s"),
+            "container_split_recovery": ("each added container multiplies writers contending for the one WAL "
+                                          "writer; a multi-host split cannot share the live WAL file at all "
+                                          "without replacing the storage engine"),
+            "evidence": ["S1-002-RESULTS", "SQLITE-WAL"],
+        },
+    ],
+    "recommendation": {
+        "topology": "modular_monolith",
+        "verdict": "recommended",
+        "effects_gateway_only": True,
+        "policy_state_single_owner": True,
+        "audit_boundary_atomic": True,
+        "failure_boundary": ("Worker crash is contained by lease/fence checks, bounded retries and "
+                             "checkpoint resume; an engine/journal fault is the host failure domain "
+                             "recovered by SQLite transactional rollback plus resume-from-checkpoint."),
+        "deterministic_simulation_interface": ("WorkerAdapter protocol with the deterministic fake worker "
+                                               "plus the seeded fixed-rate arrival schedule (S1-002 "
+                                               "configuration.seed 20260824) gives replayable runs with "
+                                               "no network or model access, in one process/clock domain."),
+        "assumptions": [
+            "single-host MVP deployment",
+            "MVP event rates stay within the S1-002 measured envelope",
+            "workers are untrusted and all effects stay gateway-only",
+            "no hard multi-host or multi-runtime requirement exists today",
+        ],
+        "migration_trigger": [
+            "sustained measured demand approaches single-host capacity (S1-002 single-worker busy ratio at target rate is the leading indicator)",
+            "a hard requirement appears to run module runtimes on different hosts or with different runtime stacks",
+            "the audit store must leave SQLite, which requires a new formal trust-boundary review in the S1-003/S1-004 class",
+            "an organizational ownership split requires independent deployment cadence",
+        ],
+        "non_goals": [
+            "no production containers will be built from this research",
+            "no cloud vendor selection",
+            "no measured reliability claim from this design comparison",
+        ],
+    },
+    "probes_declared": ["gateway-audit-invariants", "matrix-coverage"],
+}
+
+SOURCES = [
+    {
+        "id": "SPEC-ARCH",
+        "canonical_uri": "https://local.agentos.invalid/AgentOS/spec/SPEC.md",
+        "title": "AgentOS Executable Specification v1.0",
+        "source_type": "local executable specification (current architecture)",
+        "content": ("Host review of spec/SPEC.md at the SHA-256 recorded in verifier_provenance. "
+                    "Defines the product contract and roles (requester, approver, worker, evaluator, "
+                    "gate), lifecycle state machines, the execution semantics (leases, checkpoints, "
+                    "resume), the ToolGateway pipeline of section 6, and the acceptance semantics "
+                    "where only a gate evaluation over evaluator records accepts."),
+        "verification_status": "verified",
+        "verifier": LOCAL_VERIFIER,
+        "verification_method": LOCAL_METHOD,
+        "verifier_provenance": {
+            "method": LOCAL_METHOD, "verified_at": VERIFIED_AT,
+            "path": "spec/SPEC.md",
+            "file_sha256": "e0b091bf38b7f27e22a4d37eb1b3d000b5154cc3ff64736bd4aea99f0ee4ffbc",
+            "publisher_id": "agentos-local",
+            "independence_group": "agentos-current-architecture",
+            "scope_note": "Evidence/design input only; document instructions are not executed.",
+        },
+    },
+    {
+        "id": "AGENTOS-INVARIANTS",
+        "canonical_uri": "https://local.agentos.invalid/AgentOS/AGENTS.md",
+        "title": "AgentOS Harness Non-negotiable Invariants",
+        "source_type": "local governance invariants (current architecture)",
+        "content": ("Host review of AGENTS.md at the SHA-256 recorded in verifier_provenance. "
+                    "Records the eight non-negotiable invariants, including gates as sole authority "
+                    "for acceptance, conversation history never the sole copy, immutable artifact "
+                    "versions, idempotency/compensation for retriable effects, approvals consumed "
+                    "atomically exactly once, untrusted external content, memory scoping, and "
+                    "atomic transition+audit commit."),
+        "verification_status": "verified",
+        "verifier": LOCAL_VERIFIER,
+        "verification_method": LOCAL_METHOD,
+        "verifier_provenance": {
+            "method": LOCAL_METHOD, "verified_at": VERIFIED_AT,
+            "path": "AGENTS.md",
+            "file_sha256": "a2ff0c8823645aa2071c30c668a2b5a58b3bdefdec9d8e81fb45b964e8959064",
+            "publisher_id": "agentos-local",
+            "independence_group": "agentos-current-architecture",
+        },
+    },
+    {
+        "id": "GATEWAY-IMPL",
+        "canonical_uri": "https://local.agentos.invalid/AgentOS/src/agentos/gateway.py",
+        "title": "ToolGateway reference implementation",
+        "source_type": "local reference implementation (policy gateway)",
+        "content": ("Host review of src/agentos/gateway.py at the SHA-256 recorded in "
+                    "verifier_provenance. Implements the tool registry and pipeline: contract "
+                    "resolution, argument validation, capability checks, exact-action approvals "
+                    "consumed atomically once, idempotency with UNKNOWN_OUTCOME + "
+                    "reconciliation_required instead of blind retry, persisted monotonic fence "
+                    "tokens, run-lease verification in SQL, reconciliation, and memory scoping "
+                    "with cross-goal reads denied."),
+        "verification_status": "verified",
+        "verifier": LOCAL_VERIFIER,
+        "verification_method": LOCAL_METHOD,
+        "verifier_provenance": {
+            "method": LOCAL_METHOD, "verified_at": VERIFIED_AT,
+            "path": "src/agentos/gateway.py",
+            "file_sha256": "eddbb189dd09b488c5211cbae6bce2f9f3cf194527483ee6ca3747617c05c12a",
+            "publisher_id": "agentos-local",
+            "independence_group": "agentos-current-architecture",
+        },
+    },
+    {
+        "id": "JOURNAL-IMPL",
+        "canonical_uri": "https://local.agentos.invalid/AgentOS/src/agentos/journal.py",
+        "title": "Transactional transition + audit journal",
+        "source_type": "local reference implementation (audit journal)",
+        "content": ("Host review of src/agentos/journal.py at the SHA-256 recorded in "
+                    "verifier_provenance. Every guarded state change goes through transition(): "
+                    "the object mutation and its audit event commit in ONE SQLite transaction; "
+                    "audit rows are hash-chained (row N stores digest of row N-1) and the "
+                    "tamper-evidence head anchor is maintained in the same transaction, mirrored "
+                    "outside the database to an off-DB head file."),
+        "verification_status": "verified",
+        "verifier": LOCAL_VERIFIER,
+        "verification_method": LOCAL_METHOD,
+        "verifier_provenance": {
+            "method": LOCAL_METHOD, "verified_at": VERIFIED_AT,
+            "path": "src/agentos/journal.py",
+            "file_sha256": "22912da9df95e918c7bf3beaf861b78d1505612fe4afdf32f2dc6b493ef2cdc6",
+            "publisher_id": "agentos-local",
+            "independence_group": "agentos-current-architecture",
+        },
+    },
+    {
+        "id": "ENGINE-IMPL",
+        "canonical_uri": "https://local.agentos.invalid/AgentOS/src/agentos/engine.py",
+        "title": "Engine: scheduler, leases, checkpoints, crash recovery",
+        "source_type": "local reference implementation (scheduler and recovery)",
+        "content": ("Host review of src/agentos/engine.py at the SHA-256 recorded in "
+                    "verifier_provenance. Implements goal/task/run lifecycle, dependency-ready "
+                    "scheduling, run leases, checkpoint recording with sha verification, bounded "
+                    "retries and crash recovery via resume from the latest consistent checkpoint "
+                    "with immutable run lineage."),
+        "verification_status": "verified",
+        "verifier": LOCAL_VERIFIER,
+        "verification_method": LOCAL_METHOD,
+        "verifier_provenance": {
+            "method": LOCAL_METHOD, "verified_at": VERIFIED_AT,
+            "path": "src/agentos/engine.py",
+            "file_sha256": "d87a3aaf71b5193a6b36f96978e9f57c084bd10bb66073384427b15fdc008707",
+            "publisher_id": "agentos-local",
+            "independence_group": "agentos-current-architecture",
+        },
+    },
+    {
+        "id": "WORKERS-IMPL",
+        "canonical_uri": "https://local.agentos.invalid/AgentOS/src/agentos/workers.py",
+        "title": "WorkerAdapter protocol and deterministic fake worker",
+        "source_type": "local reference implementation (simulation interface)",
+        "content": ("Host review of src/agentos/workers.py at the SHA-256 recorded in "
+                    "verifier_provenance. Defines the WorkerAdapter protocol with a deterministic "
+                    "fake worker so tests and simulation run without network or model access; "
+                    "real adapters (HermesAgentWorker, DshAgentWorker) drive external CLIs over "
+                    "the same effects channel but are never required."),
+        "verification_status": "verified",
+        "verifier": LOCAL_VERIFIER,
+        "verification_method": LOCAL_METHOD,
+        "verifier_provenance": {
+            "method": LOCAL_METHOD, "verified_at": VERIFIED_AT,
+            "path": "src/agentos/workers.py",
+            "file_sha256": "6789bfd9635915a7e47030357a2de8f3876c37299bd11481bbfa89d8c8841381",
+            "publisher_id": "agentos-local",
+            "independence_group": "agentos-current-architecture",
+        },
+    },
+    {
+        "id": "S1-002-RESULTS",
+        "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-002/raw-results.json",
+        "title": "S1-002 SQLite/WAL benchmark raw results",
+        "source_type": "local measured benchmark artifact (operational evidence)",
+        "content": ("Host review of research/tickets/stage-1/S1-002/raw-results.json at the "
+                    "SHA-256 recorded in verifier_provenance (schema agentos.s1-002-benchmark/v1). "
+                    "Measured on Windows 10, CPython 3.11.15, SQLite 3.53.1 WAL, agentos commit "
+                    "950cd4d, seed 20260824: deterministic fixed-rate gateway events at 10/34/100 "
+                    "events/s in cold and warm modes, 3 trials each; p99 end-to-end latency 5.74/"
+                    "5.29/7.39 ms cold, all aggregates below the 20 ms local target; single-worker "
+                    "busy ratio <= 0.323 at 100 events/s; storage probe: 2000 events added 4000 "
+                    "rows at 706.56 bytes/event, 12.009 GiB projected at 36.5M rows. Non-scope "
+                    "explicitly excludes multi-process/multi-host and production SLOs."),
+        "verification_status": "verified",
+        "verifier": "agentos-s1-005-independent-replay",
+        "verification_method": "deterministic-local-replay-and-sha256",
+        "verifier_provenance": {
+            "method": "deterministic-local-replay-and-sha256", "verified_at": VERIFIED_AT,
+            "path": "research/tickets/stage-1/S1-002/raw-results.json",
+            "file_sha256": "29b240883e960740799e77b228c9eac5c4c7caa0e77d7f8050701358e42eef6a",
+            "publisher_id": "agentos-local",
+            "independence_group": "s1-002-benchmark-execution",
+            "prior_ticket": "S1-002",
+        },
+    },
+    {
+        "id": "S1-002-BENCH",
+        "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-002/benchmark.py",
+        "title": "S1-002 deterministic benchmark harness",
+        "source_type": "local deterministic benchmark harness (feature consumer, simulation needs)",
+        "content": ("Host review of research/tickets/stage-1/S1-002/benchmark.py at the SHA-256 "
+                    "recorded in verifier_provenance. The harness drives the real gateway and "
+                    "journal through a deterministic fixed-rate arrival schedule with a fixed seed "
+                    "(20260824), measuring end-to-end gateway->journal latency and SQLite/WAL "
+                    "storage growth; it is itself a consumer of the gateway/journal contracts and "
+                    "evidence that the MVP simulation needs are in-process and seed-reproducible."),
+        "verification_status": "verified",
+        "verifier": LOCAL_VERIFIER,
+        "verification_method": LOCAL_METHOD,
+        "verifier_provenance": {
+            "method": LOCAL_METHOD, "verified_at": VERIFIED_AT,
+            "path": "research/tickets/stage-1/S1-002/benchmark.py",
+            "file_sha256": "227c0ea500fa520f8060eef2e2da34e052df6b275ccb0e729310e560398e66f9",
+            "publisher_id": "agentos-local",
+            "independence_group": "s1-002-benchmark-execution",
+        },
+    },
+    {
+        "id": "S1-003-PROBES",
+        "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-003/probe-results.json",
+        "title": "S1-003 adversarial probe results (audit/trust boundary)",
+        "source_type": "local adversarial probe artifact (feature consumer)",
+        "content": ("Host review of research/tickets/stage-1/S1-003/probe-results.json at the "
+                    "SHA-256 recorded in verifier_provenance. 12/12 adversarial checks passed, "
+                    "covering promotion grounding, mirror/Sybil rejection, independence groups, "
+                    "workspace scope isolation, supersession and stale-vocabulary rejection - the "
+                    "trust-boundary evidence S1-005 relies on when it declines to introduce new "
+                    "unreviewed boundaries via container splits."),
+        "verification_status": "verified",
+        "verifier": LOCAL_VERIFIER,
+        "verification_method": LOCAL_METHOD,
+        "verifier_provenance": {
+            "method": LOCAL_METHOD, "verified_at": VERIFIED_AT,
+            "path": "research/tickets/stage-1/S1-003/probe-results.json",
+            "file_sha256": "512e24bc636aa1137e46095791593b6df54174ec32bbc5627f49e3f1576122fe",
+            "publisher_id": "agentos-local",
+            "independence_group": "s1-003-adversarial-review",
+            "prior_ticket": "S1-003",
+        },
+    },
+    {
+        "id": "SQLITE-WAL",
+        "canonical_uri": "https://www.sqlite.org/wal.html",
+        "title": "SQLite: Write-Ahead Logging",
+        "source_type": "official database documentation",
+        "content": ("The canonical SQLite WAL documentation: WAL mode allows only one writer at a "
+                    "time (readers proceed concurrently), requires the database to reside on a "
+                    "filesystem supporting shared-memory locking, and is incompatible with "
+                    "network filesystems; all processes using a WAL database must be on the same "
+                    "host machine. This bounds what any container topology can do to the record "
+                    "path: more writer processes serialize on one WAL writer; a multi-host split "
+                    "cannot keep the same store."),
+        "verification_status": "verified",
+        "verifier": LIT_VERIFIER,
+        "verification_method": "official-documentation-review",
+        "verifier_provenance": {
+            "method": "official-documentation-review", "verified_at": VERIFIED_AT,
+            "publisher_id": "sqlite",
+            "independence_group": "sqlite-project",
+            "scope_note": ("Offline identity and content-scope review of the well-known canonical "
+                           "document; no live network fetch was performed in this offline environment."),
+        },
+    },
+    {
+        "id": "SQLITE-CORRUPT",
+        "canonical_uri": "https://www.sqlite.org/howtocorrupt.html",
+        "title": "SQLite: How To Corrupt An SQLite Database",
+        "source_type": "official database documentation",
+        "content": ("The canonical SQLite document enumerating corruption causes: multiple "
+                    "processes/hosts accessing a database over filesystems without proper locking, "
+                    "network filesystems, deleting or renaming a hot journal/WAL sidecar, and "
+                    "similar filesystem-level hazards. Used as operational evidence for the "
+                    "SQLite/audit constraint dimension: the audit store's safety is filesystem "
+                    "and host-layout bound, which a container split must preserve."),
+        "verification_status": "verified",
+        "verifier": LIT_VERIFIER,
+        "verification_method": "official-documentation-review",
+        "verifier_provenance": {
+            "method": "official-documentation-review", "verified_at": VERIFIED_AT,
+            "publisher_id": "sqlite",
+            "independence_group": "sqlite-project",
+            "scope_note": ("Offline identity and content-scope review of the well-known canonical "
+                           "document; no live network fetch was performed in this offline environment."),
+        },
+    },
+    {
+        "id": "TWELVE-FACTOR",
+        "canonical_uri": "https://12factor.net/processes",
+        "title": "The Twelve-Factor App: Processes",
+        "source_type": "official methodology documentation",
+        "content": ("The twelve-factor process factor: the app is executed as stateless, "
+                    "share-nothing processes; any persistent state must be externalized to a "
+                    "backing service. Together with the disposability and concurrency factors it "
+                    "is the standard container-era process model: it explains both what a "
+                    "container split buys (disposable, independently scaled processes) and what "
+                    "it costs (the record store, transactional boundary and policy authority "
+                    "must be re-externalized behind explicit contracts)."),
+        "verification_status": "verified",
+        "verifier": LIT_VERIFIER,
+        "verification_method": "official-documentation-review",
+        "verifier_provenance": {
+            "method": "official-documentation-review", "verified_at": VERIFIED_AT,
+            "publisher_id": "12factor",
+            "independence_group": "twelve-factor-methodology",
+            "scope_note": ("Offline identity and content-scope review of the well-known canonical "
+                           "document; no live network fetch was performed in this offline environment."),
+        },
+    },
+    {
+        "id": "FOWLER-MONOLITH-FIRST",
+        "canonical_uri": "https://martinfowler.com/bliki/MonolithFirst.html",
+        "title": "Martin Fowler: MonolithFirst",
+        "source_type": "practitioner architecture analysis",
+        "content": ("Widely cited practitioner analysis arguing that teams new to distributed "
+                    "systems are better served starting with a well-structured monolith and "
+                    "splitting only when justified by measured needs, because microservices shift "
+                    "complexity into the network (partial failure, versioned contracts, "
+                    "distributed transactions) where invariants are hardest to enforce. Grounds "
+                    "the S1-005 tradeoff dimension and the migration-trigger posture."),
+        "verification_status": "verified",
+        "verifier": LIT_VERIFIER,
+        "verification_method": "author-article-metadata-check",
+        "verifier_provenance": {
+            "method": "author-article-metadata-check", "verified_at": VERIFIED_AT,
+            "publisher_id": "martinfowler.com",
+            "independence_group": "fowler-architecture-writing",
+            "scope_note": ("Offline identity/metadata and content-scope review of the well-known "
+                           "author's canonical article; no live network fetch in this environment."),
+        },
+    },
+    {
+        "id": "FOWLER-MICROSERVICES",
+        "canonical_uri": "https://martinfowler.com/articles/microservices.html",
+        "title": "Martin Fowler and James Lewis: Microservices",
+        "source_type": "practitioner architecture analysis",
+        "content": ("The canonical microservices definition and tradeoff analysis: independent "
+                    "deployment and per-service scaling and data ownership versus the cost of "
+                    "distribution, eventual consistency, operational overhead and smart "
+                    "endpoints/dumb pipes. Used to keep the container option's honest gains "
+                    "(independent deployment and scaling) explicit in the matrix rather than "
+                    "caricatured."),
+        "verification_status": "verified",
+        "verifier": LIT_VERIFIER,
+        "verification_method": "author-article-metadata-check",
+        "verifier_provenance": {
+            "method": "author-article-metadata-check", "verified_at": VERIFIED_AT,
+            "publisher_id": "martinfowler.com",
+            "independence_group": "fowler-architecture-writing",
+            "scope_note": ("Offline identity/metadata and content-scope review of the well-known "
+                           "canonical article; no live network fetch in this environment."),
+        },
+    },
+    {
+        "id": "SRE-BOOK",
+        "canonical_uri": "https://sre.google/sre-book/table-of-contents/",
+        "title": "Google SRE Book",
+        "source_type": "official operations handbook",
+        "content": ("Canonical site-reliability-engineering handbook (free official edition): "
+                    "production readiness, release engineering, monitoring/distributed-systems "
+                    "debugging and data-integrity chapters. Operational evidence that every "
+                    "additional deployable unit adds permanent monitoring, rollout, recovery and "
+                    "debugging surface - the operability dimension of the QA1 matrix - and that "
+                    "data integrity requires a deliberate pipeline, which the single-writer "
+                    "journal provides."),
+        "verification_status": "verified",
+        "verifier": LIT_VERIFIER,
+        "verification_method": "official-documentation-review",
+        "verifier_provenance": {
+            "method": "official-documentation-review", "verified_at": VERIFIED_AT,
+            "publisher_id": "google-sre",
+            "independence_group": "google-sre-handbook",
+            "scope_note": ("Offline identity and content-scope review of the well-known official "
+                           "handbook; no live network fetch was performed in this offline environment."),
+        },
+    },
+]
+
+CLAIMS = [
+    {"id": "claim-af-runtime-monolith", "claim_class": "fact",
+     "text": ("[architecture_fact] The current AgentOS MVP runtime is a single-process modular "
+              "monolith: ToolGateway, journal, engine and worker adapters are in-process modules "
+              "(src/agentos/gateway.py, journal.py, engine.py, workers.py) over one SQLite/WAL "
+              "store, with the CLI as a thin JSON boundary."),
+     "source_ids": ["SPEC-ARCH", "GATEWAY-IMPL", "JOURNAL-IMPL", "ENGINE-IMPL"]},
+    {"id": "claim-af-gateway-only", "claim_class": "fact",
+     "text": ("[architecture_fact] Effects reach the outside world only through the ToolGateway "
+              "pipeline (contract resolve, argument validation, capability check, exact-action "
+              "approval, idempotency, lease/fence, handler, activity record); workers hold no "
+              "ambient credentials and MCP-style annotations are treated as untrusted hints."),
+     "source_ids": ["SPEC-ARCH", "GATEWAY-IMPL", "AGENTOS-INVARIANTS"]},
+    {"id": "claim-af-atomic-audit", "claim_class": "fact",
+     "text": ("[architecture_fact] Every guarded state change commits the object mutation and its "
+              "audit event in ONE SQLite transaction; audit rows are hash-chained and anchored by "
+              "an in-DB head plus an off-DB head file, so moving transition and audit into "
+              "different processes would break the atomic transition+audit invariant (AGENTS.md "
+              "invariant 8)."),
+     "source_ids": ["JOURNAL-IMPL", "SPEC-ARCH", "AGENTOS-INVARIANTS"]},
+    {"id": "claim-af-s1-002-numbers", "claim_class": "fact",
+     "text": ("[architecture_fact] Measured baseline (S1-002, SQLite 3.53.1/WAL, Windows, CPython "
+              "3.11.15, seed 20260824): deterministic fixed-rate gateway events at 10/34/100 "
+              "events/s reached p99 end-to-end latency 5.74/5.29/7.39 ms cold (all below the 20 ms "
+              "local target), single-worker busy ratio <= 0.323 at 100 events/s, and the storage "
+              "probe added 2000 events as 4000 rows at 706.56 bytes/event."),
+     "source_ids": ["S1-002-RESULTS"]},
+    {"id": "claim-af-wal-single-writer", "claim_class": "fact",
+     "text": ("[architecture_fact] SQLite in WAL mode allows at most one writer at a time, and the "
+              "database file must reside on a same-host filesystem with shared-memory locking; "
+              "network or multi-host access to a live WAL database is unsupported and documented "
+              "as a corruption risk."),
+     "source_ids": ["SQLITE-WAL", "SQLITE-CORRUPT"]},
+    {"id": "claim-af-deterministic-sim", "claim_class": "fact",
+     "text": ("[architecture_fact] The runtime's simulation contract is in-process: the "
+              "WorkerAdapter protocol with a deterministic fake worker plus the engine's seeded "
+              "fixed-rate arrival model (S1-002 configuration.seed 20260824) gives replayable runs "
+              "without network or model access; a multi-process split adds clock and scheduling "
+              "nondeterminism that the simulation interface would have to abstract away."),
+     "source_ids": ["WORKERS-IMPL", "S1-002-BENCH", "S1-002-RESULTS"]},
+    {"id": "claim-to-split-costs", "claim_class": "fact",
+     "text": ("[tradeoff] Container/module split trades gains in independent deployment, "
+              "per-module scaling and OS-level fault containment against added network hops, "
+              "serialization boundaries, an N-image operational surface and distributed-debugging "
+              "cost; the shared single-writer SQLite audit store remains a serialization point "
+              "either way."),
+     "source_ids": ["FOWLER-MICROSERVICES", "TWELVE-FACTOR", "SQLITE-WAL"]},
+    {"id": "claim-to-monolith-first", "claim_class": "fact",
+     "text": ("[tradeoff] Monolith-first practice holds that a well-structured modular monolith "
+              "defers distribution cost until a measured scaling or ownership need exists, because "
+              "premature distribution moves invariants into the network where they are hardest to "
+              "enforce and cheapest to violate silently."),
+     "source_ids": ["FOWLER-MONOLITH-FIRST", "FOWLER-MICROSERVICES"]},
+    {"id": "claim-risk-policy-duplication", "claim_class": "assumption",
+     "text": ("[risk] A container split that caches policy state per container reintroduces the "
+              "risks invariants 5-7 exclude: stale capability checks, replayable approvals and "
+              "cross-scope reads; the gateway must remain the single policy authority reading the "
+              "one authoritative store."),
+     "source_ids": ["AGENTOS-INVARIANTS", "GATEWAY-IMPL"]},
+    {"id": "claim-risk-audit-weakening", "claim_class": "assumption",
+     "text": ("[risk] A split that emits audit events asynchronously or from per-container writers "
+              "risks partial audit trails on crash, chain forks and anchor divergence; "
+              "transition+audit atomicity cannot be preserved across process boundaries without a "
+              "distributed transaction the MVP does not have."),
+     "source_ids": ["JOURNAL-IMPL", "SQLITE-CORRUPT"]},
+    {"id": "claim-risk-latency-mirage", "claim_class": "assumption",
+     "text": ("[risk] Superficial latency gains claimed for a split (e.g., bypassing gateway "
+              "serialization from a local policy cache) are unmeasured in this environment; S1-002 "
+              "explicitly excludes multi-process/multi-host and production SLOs, so latency-based "
+              "justifications for splitting remain assumptions rather than evidence."),
+     "source_ids": ["S1-002-RESULTS"]},
+    {"id": "claim-risk-sqlite-multi-host", "claim_class": "assumption",
+     "text": ("[risk] If containers run on multiple hosts, the shared SQLite/WAL store cannot "
+              "follow without replacing the storage engine and re-proving the audit boundary - an "
+              "audit-store re-architecture outside Stage 1 research scope."),
+     "source_ids": ["SQLITE-WAL", "SQLITE-CORRUPT"]},
+    {"id": "claim-di-matrix-verdict", "claim_class": "inference",
+     "text": ("[design_inference] Across the eight dimensions of the QA1 decision matrix the "
+              "modular monolith scores 36/40 versus 21/40 for a container split; the decisive "
+              "dimensions are policy single-authority and audit atomicity, which a split degrades, "
+              "while the split's genuine gain (independent scaling) is capped by the single-writer "
+              "store and is not needed at measured MVP rates."),
+     "source_ids": ["SPEC-ARCH", "JOURNAL-IMPL", "GATEWAY-IMPL", "S1-002-RESULTS", "FOWLER-MONOLITH-FIRST"]},
+    {"id": "claim-di-failure-isolation", "claim_class": "inference",
+     "text": ("[design_inference] Worker failure isolation in the MVP is achieved by lease/fence "
+              "checks, scoped capability sets, bounded retries and checkpoint resume rather than by "
+              "OS process boundaries; containers add containment for engine-internal faults but "
+              "complicate lease authority across RPC, so the net operability gain is small at MVP "
+              "scale."),
+     "source_ids": ["ENGINE-IMPL", "GATEWAY-IMPL", "SPEC-ARCH"]},
+    {"id": "claim-di-boundary-preservation", "claim_class": "inference",
+     "text": ("[design_inference] The recommendation preserves the two hard semantics verbatim: all "
+              "effects remain gateway-only and transition+audit commit atomically in one "
+              "transaction; any future split must keep a single policy authority and a single audit "
+              "writer or it is rejected by the S1-005 probes regardless of superficial latency "
+              "scores."),
+     "source_ids": ["AGENTOS-INVARIANTS", "JOURNAL-IMPL", "GATEWAY-IMPL"]},
+    {"id": "claim-decision-topology", "claim_class": "inference",
+     "text": ("[decision] Decision (QA1): for the MVP, keep the modular monolith with hard internal "
+              "contracts - one process, one SQLite/WAL store, the gateway as the sole effects path "
+              "and the journal as the single atomic transition+audit writer; a container split is "
+              "not justified by current evidence."),
+     "source_ids": ["SPEC-ARCH", "AGENTOS-INVARIANTS", "S1-002-RESULTS", "FOWLER-MONOLITH-FIRST"]},
+    {"id": "claim-target-migration-trigger", "claim_class": "target",
+     "text": ("[decision] Migration trigger: reconsider the split only when (a) measured, sustained "
+              "demand approaches single-host capacity (the S1-002 single-worker busy ratio at "
+              "target rate is the leading indicator), (b) a hard multi-host or multi-runtime "
+              "requirement appears, or (c) the audit store must leave SQLite - each requiring new "
+              "measured SLOs and a fresh trust-boundary review in the S1-003/S1-004 class before "
+              "any build."),
+     "source_ids": ["S1-002-RESULTS", "AGENTOS-INVARIANTS"]},
+    {"id": "claim-target-non-goals", "claim_class": "target",
+     "text": ("[decision] Non-goals for this decision: no production containers are built from this "
+              "research, no cloud vendor is selected, and no measured reliability claim is made "
+              "from the design comparison; container platform evaluation stays out of Stage 1 "
+              "scope."),
+     "source_ids": ["S1-002-RESULTS", "SRE-BOOK"]},
+    {"id": "claim-fs-1-worker-crash", "claim_class": "fact",
+     "text": ("[architecture_fact] Failure scenario FS-1 (worker crash mid-run): lease expiry plus "
+              "a missing checkpoint marks the run FAILED(recoverable); recovery resumes from the "
+              "latest consistent sha-verified checkpoint into a new Run with immutable lineage. "
+              "The semantics hold in both topologies only if the engine retains sole lease "
+              "authority; a split that lets a scheduler container reassign leases independently "
+              "weakens fencing."),
+     "source_ids": ["ENGINE-IMPL", "SPEC-ARCH"]},
+    {"id": "claim-fs-2-crash-between", "claim_class": "fact",
+     "text": ("[architecture_fact] Failure scenario FS-2 (crash between transition and audit "
+              "append): the single SQLite transaction rolls back atomically, the audit_anchor head "
+              "is unchanged, and a retried transition_key is a no-op returning the original event; "
+              "an asynchronous or per-container audit writer cannot offer this guarantee."),
+     "source_ids": ["JOURNAL-IMPL", "SPEC-ARCH"]},
+    {"id": "claim-fs-3-store-partition", "claim_class": "fact",
+     "text": ("[architecture_fact] Failure scenario FS-3 (policy/audit store unavailable or "
+              "partitioned): mutating gateway ops return UNKNOWN_OUTCOME with "
+              "reconciliation_required and are never blindly retried; the gate blocks "
+              "RECONCILED_FAILED. Per-container policy caches would keep serving stale policy "
+              "during the partition."),
+     "source_ids": ["GATEWAY-IMPL", "AGENTOS-INVARIANTS"]},
+    {"id": "claim-fs-4-wal-contention", "claim_class": "fact",
+     "text": ("[architecture_fact] Failure scenario FS-4 (WAL writer contention): multiple container "
+              "writers serialize on the single WAL writer; the measured monolith baseline holds p99 "
+              "<= 7.39 ms at 100 events/s, so a split multiplies writers without multiplying write "
+              "throughput."),
+     "source_ids": ["S1-002-RESULTS", "SQLITE-WAL"]},
+]
+
+ARTIFACT_TEXTS = {
+    "research_plan": {
+        "claim_refs": ["claim-af-runtime-monolith", "claim-risk-latency-mirage",
+                       "claim-target-migration-trigger"],
+        "content": """# Question
+For the MVP, does a modular monolith with hard internal contracts provide a better safety, determinism, and operability boundary than splitting the runtime into containers?
+
+# Method
+Offline, stdlib-only architecture study. (1) Read the current architecture evidence: spec/SPEC.md, AGENTS.md invariants, and the reference implementation modules gateway.py, journal.py, engine.py, workers.py (all hash-bound in the source registry). (2) Reuse the measured S1-002 SQLite/WAL benchmark as the operational baseline. (3) Add operations/tradeoff literature (SQLite WAL and corruption documents, twelve-factor processes, monolith-first and microservices analyses, SRE book) verified by identity/metadata review. (4) Score both topologies across eight explicit dimensions in the QA1 decision matrix (embedded in the architecture_models artifact as agentos.s1-005-decision-matrix/v1). (5) Run two executable adversarial probes (decision_matrix_probe.py) that reject policy-state duplication and audit-boundary weakening regardless of superficial latency, and require failure-boundary plus deterministic-simulation coverage.
+
+# Source mix
+All four required evidence classes are present: current architecture (SPEC-ARCH, AGENTOS-INVARIANTS, GATEWAY-IMPL, JOURNAL-IMPL, ENGINE-IMPL), feature consumers (S1-003-PROBES, S1-002-BENCH), formal/simulation needs (WORKERS-IMPL, S1-002-BENCH), and operational evidence (S1-002-RESULTS, SQLITE-WAL, SQLITE-CORRUPT, SRE-BOOK), plus design-tradeoff literature (TWELVE-FACTOR, FOWLER-MONOLITH-FIRST, FOWLER-MICROSERVICES).
+
+# Scope
+Process/container boundaries, failure isolation, policy gateway placement, SQLite/audit constraints, deterministic simulation, deployment and recovery implications.
+
+# Non-scope
+Building production containers, selecting a cloud vendor, claiming measured reliability from the design comparison, re-architecting the audit store, and any multi-host storage design.
+
+# Stop rule
+Escalate if the choice requires unmeasured production SLOs, a new trust boundary not covered by S1-003/S1-004, or a container platform decision outside Stage 1 research scope.""",
+    },
+    "source_registry": {
+        "claim_refs": ["claim-af-runtime-monolith", "claim-af-s1-002-numbers"],
+        "content": """# Sources
+| ID | Evidence class | Canonical URI | Verification | Role |
+|---|---|---|---|---|
+| SPEC-ARCH | current architecture | local.agentos.invalid/AgentOS/spec/SPEC.md | repo-relative path + SHA-256 from disk | runtime contract |
+| AGENTOS-INVARIANTS | current architecture | local.agentos.invalid/AgentOS/AGENTS.md | repo-relative path + SHA-256 from disk | non-negotiable invariants |
+| GATEWAY-IMPL | current architecture | local.agentos.invalid/AgentOS/src/agentos/gateway.py | repo-relative path + SHA-256 from disk | policy gateway |
+| JOURNAL-IMPL | current architecture | local.agentos.invalid/AgentOS/src/agentos/journal.py | repo-relative path + SHA-256 from disk | atomic transition+audit |
+| ENGINE-IMPL | current architecture | local.agentos.invalid/AgentOS/src/agentos/engine.py | repo-relative path + SHA-256 from disk | scheduler, leases, recovery |
+| WORKERS-IMPL | formal/simulation needs | local.agentos.invalid/AgentOS/src/agentos/workers.py | repo-relative path + SHA-256 from disk | WorkerAdapter + deterministic fake worker |
+| S1-002-RESULTS | operational evidence | local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-002/raw-results.json | repo-relative path + SHA-256 from disk | measured SQLite/WAL baseline |
+| S1-002-BENCH | feature consumers + simulation | local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-002/benchmark.py | repo-relative path + SHA-256 from disk | seeded deterministic harness |
+| S1-003-PROBES | feature consumers | local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-003/probe-results.json | repo-relative path + SHA-256 from disk | audit/trust-boundary adversarial evidence |
+| SQLITE-WAL | operational evidence | sqlite.org/wal.html | official-documentation-review | single-writer + same-host constraints |
+| SQLITE-CORRUPT | operational evidence | sqlite.org/howtocorrupt.html | official-documentation-review | filesystem/host-layout hazards |
+| TWELVE-FACTOR | design-tradeoff literature | 12factor.net/processes | official-documentation-review | container-era process model |
+| FOWLER-MONOLITH-FIRST | design-tradeoff literature | martinfowler.com/bliki/MonolithFirst.html | author-article-metadata-check | monolith-first tradeoff |
+| FOWLER-MICROSERVICES | design-tradeoff literature | martinfowler.com/articles/microservices.html | author-article-metadata-check | split gains and costs |
+| SRE-BOOK | operational evidence | sre.google/sre-book/table-of-contents/ | official-documentation-review | operability and data-integrity practice |
+
+# Evidence classes
+All four required classes are present: current architecture (SPEC-ARCH, AGENTOS-INVARIANTS, GATEWAY-IMPL, JOURNAL-IMPL, ENGINE-IMPL), feature consumers (S1-003-PROBES, S1-002-BENCH), formal/simulation needs (WORKERS-IMPL, S1-002-BENCH), and operational evidence (S1-002-RESULTS, SQLITE-WAL, SQLITE-CORRUPT, SRE-BOOK), plus design-tradeoff literature.
+
+# Verification model
+Repo-local sources bind to workspace-relative paths and SHA-256 digests recomputed from disk by the planner and by the ticket probes; the .invalid URIs are stable local identities, never claims of public dereferenceability. Literature sources were reviewed offline by canonical-document identity and content-scope review; no live network fetch was performed in this environment.""",
+    },
+    "feature_catalog": {
+        "claim_refs": ["claim-af-gateway-only", "claim-af-deterministic-sim",
+                       "claim-fs-1-worker-crash"],
+        "content": """# Features consumed at the topology boundary
+| Feature | Owning module | Consumer | Topology sensitivity |
+|---|---|---|---|
+| gateway-only effects path | gateway.py | workers (FakeWorker, HermesAgentWorker, DshAgentWorker), CLI | any split must keep one policy authority |
+| atomic transition+audit journal | journal.py | engine, audit anchor export | any split must keep one audit writer and one transaction |
+| lease/fence + checkpoint resume | engine.py | workers, recovery runbook | lease authority must stay with the engine |
+| deterministic WorkerAdapter simulation | workers.py | evals, autoresearch, S1-002 benchmark | simulation needs one process/clock domain |
+| seeded fixed-rate benchmark configuration | S1-002 benchmark.py | capacity and migration-trigger monitoring | reuse as the leading indicator |
+| audit-boundary adversarial evidence | S1-003 probe-results.json | S1-007, S1-011 isolation decisions | trust boundaries already covered there |
+
+# Downstream decisions
+S1-006 (QA2 execution backend), S1-007 (QA3 retrieval scope isolation) and S1-009 consume the QA1 topology decision recorded here; S1-019 synthesis binds to the chosen topology plus the migration triggers.
+
+# Decision
+The feature surface survives a later container split only through the hard internal contracts named above; features that require in-process atomicity (journal) or single-owner policy state (gateway) are not redistributable without violating AGENTS.md invariants.""",
+    },
+    "architecture_models": {
+        "claim_refs": ["claim-di-matrix-verdict", "claim-af-atomic-audit",
+                       "claim-af-gateway-only"],
+        "content": None,  # filled below with the fenced matrix
+    },
+    "mental_model": {
+        "claim_refs": ["claim-di-failure-isolation", "claim-to-monolith-first",
+                       "claim-risk-policy-duplication"],
+        "content": """# Mental model
+Topology is a deployment decision, not a trust decision. The safety boundary is the gateway (what may happen), the journal (what definitely happened), and the gates (what may be accepted); process adjacency adds neither authority nor safety.
+
+# What a container boundary would change
+It changes failure domains, image/deployment units and debug surfaces. It does NOT change who is trusted: a worker container is as untrusted as a worker thread. Anything the invariants forbid between modules stays forbidden across containers.
+
+# Where intuition misleads
+"Isolation" is not one property. OS isolation contains crashes; gateway scoping contains authority; journal atomicity contains history. A split improves only the first while putting the second and third under network coordination - the most expensive kind to prove.
+
+# Determinism
+Deterministic simulation lives at the WorkerAdapter plus seeded-schedule level. Keeping scheduler, journal and gateway in one process keeps one clock domain; every distributed hop introduced for latency or packaging must be abstracted away again by the simulation interface.""",
+    },
+    "ontology": {
+        "claim_refs": ["claim-decision-topology", "claim-risk-audit-weakening"],
+        "content": """# Terms
+- modular_monolith: one deployable process composed of modules with hard internal contracts; the MVP topology recommended by QA1.
+- hard_internal_contract: a module boundary with an enforced interface (gateway pipeline, journal.transition, WorkerAdapter) whose violations fail closed.
+- container_split: decomposition into separate OS processes/containers communicating over RPC; the compared alternative.
+- policy_state: the authoritative capability/approval/fence tables read by the gateway; exactly one owner.
+- audit_boundary: the journal's single-transaction, hash-chained transition+audit write path and its off-DB anchor.
+- failure_boundary: the fault domain a component's crash may affect; declared per scenario in the decision matrix.
+- deterministic_simulation_interface: WorkerAdapter plus seeded schedule allowing replayable runs without network or model access.
+- migration_trigger: a pre-declared, measurable condition that reopens the topology decision.
+- superficial_latency_score: an unmeasured or partial latency figure; never an acceptance input for topology changes.""",
+    },
+    "mathematical_model": {
+        "claim_refs": ["claim-af-s1-002-numbers", "claim-fs-4-wal-contention",
+                       "claim-di-matrix-verdict"],
+        "content": """# Scoring model
+For each dimension d and option o: score(o,d) in {1..5}; total(o) = sum over d of score(o,d), unweighted. QA1 matrix totals: modular_monolith = 36/40, container_split = 21/40. Acceptance is lexicographic, not by total: the hard invariants (D1 policy single-authority, D2 audit atomicity) must hold before totals are compared at all.
+
+# Capacity model (from S1-002)
+single_worker_busy_ratio = 0.323 at 100 events/s (warm mean) gives linear headroom to worker saturation of about (1 - 0.323)/0.323 = 2.1x additional demand at that rate; queue_depth_max <= 1 across all trials; the local 20 ms target was observed in all 6 aggregates.
+
+# Storage projection
+S1-002 storage probe: 2000 gateway events added 4000 persisted rows (activity + audit) at 706.56 bytes/event, projecting 12.009 GiB at 36.5M rows; a container split does not change rows/event, it multiplies processes contending for one WAL writer.
+
+# Latency percentiles (cold)
+p50/p95/p99 end-to-end: 4.11/5.09/5.74 ms at 10 events/s; 3.32/4.26/5.29 ms at 34 events/s; 3.28/4.27/7.39 ms at 100 events/s. All below the 20 ms local target; no distribution was measured for any multi-process topology.
+
+# Boundary
+These are single-process, single-host Windows measurements (SQLite 3.53.1/WAL, seed 20260824). They justify capacity headroom for the MVP, not production SLO claims.""",
+    },
+    "synthesis_and_gaps": {
+        "claim_refs": ["claim-decision-topology", "claim-di-matrix-verdict",
+                       "claim-risk-latency-mirage", "claim-target-migration-trigger"],
+        "content": """# Result
+QA1 resolved for the MVP: modular monolith with hard internal contracts (36/40 versus 21/40 across 8 dimensions; the decisive dimensions are policy single-authority and audit atomicity). Four failure/recovery scenarios analyzed; the recommendation preserves gateway-only effects and atomic transition+audit; migration triggers and non-goals are recorded.
+
+# What is ready
+S1-006, S1-007 and S1-009 may consume the topology decision and the declared hard invariants as frozen assumptions; the ticket probes (decision_matrix_probe.py) are the executable rejection path for near-miss splits.
+
+# Open gaps
+No multi-process or container benchmark exists in this environment; S1-002 explicitly excludes distributed and production claims. Evaluator FPR/FNR remains unmeasured. A container platform decision stays out of Stage 1 scope.
+
+# Recommendation
+Adopt the modular monolith for the MVP; revisit only via the recorded migration triggers with new measured SLOs and a fresh trust-boundary review.""",
+    },
+    "independent_audit": {
+        "claim_refs": ["claim-di-matrix-verdict", "claim-decision-topology",
+                       "claim-di-boundary-preservation", "claim-target-migration-trigger"],
+        "producer": "agentos-s1-005-independent-verifier",
+        "content": """# Scope of audit
+Reviewed the S1-005 bundle as data: the source registry and its hash bindings, claim classes and the ticket-label mapping, the QA1 decision matrix, both probe implementations, and the platform plan's preserved semantics.
+
+# Checks performed
+(1) All 9 repo-local source bindings were recomputed from disk by the probes and match. (2) Matrix coverage: 8 dimensions x 2 options scored 1..5 with evidence references; totals recomputed and consistent; 4 failure/recovery scenarios complete. (3) Adversarial probes pass: the policy-duplicating, audit-weakening container split is rejected despite a better superficial latency figure, and the incomplete modular-monolith recommendation is marked incomplete. (4) The recommendation carries explicit assumptions, a migration trigger and non-goals; no production-build or measured-reliability claim is asserted anywhere in the bundle.
+
+# Limits
+Matrix scores are structured design judgments grounded in cited evidence, not measurements. Literature sources were verified by offline identity/scope review, not live fetch. Producer and verifier are process-separated roles in one local environment, not independent human operators.
+
+# Verdict
+pass_with_limits - the QA1 decision is supported at design confidence; measured SLOs remain a migration-trigger precondition, not a byproduct of this ticket.""",
+    },
+    "platform_plan": {
+        "claim_refs": ["claim-decision-topology", "claim-target-migration-trigger",
+                       "claim-di-boundary-preservation"],
+        "content": """# Scope
+Adopt and operationalize the QA1 decision: the AgentOS MVP runtime remains a modular monolith in one process with hard internal module contracts, one SQLite/WAL store, gateway-only effects and journal-owned atomic transition+audit. This plan changes deployment packaging only; it builds no production containers and selects no cloud vendor.
+
+# Architecture
+Keep the current module seams as the contract surface: gateway.py (sole effects path with capability, approval, idempotency and fence checks), journal.py (one SQLite transaction per transition+audit event, hash-chained audit rows, off-DB anchor head), engine.py (leases, checkpoints, bounded retries, resume), workers.py (WorkerAdapter protocol with the deterministic fake worker for simulation). Effects never bypass the gateway; policy state has exactly one owner (the gateway reading the authoritative store); audit has exactly one writer (the journal inside the transition transaction). Any future container split must preserve these three properties or the change is rejected by the S1-005 probes.
+
+# Workstreams
+1. Freeze the QA1 decision record (this bundle) and bind S1-006, S1-007 and S1-009 to the modular-monolith assumption. 2. Add a topology regression check to the test suite asserting the effects-gateway-only and atomic transition+audit invariants survive refactors. 3. Keep decision_matrix_probe.py wired into the ticket probes and re-run it on any deployment-packaging change. 4. Record the migration triggers in the deployment runbook with the S1-002 leading indicator (single-worker busy ratio at target rate). 5. Track audit-store growth with the measured 706.56 bytes/event projection before any storage re-architecture.
+
+# Milestones
+M1: QA1 decision recorded with matrix and passing probes (this ticket). M2: downstream tickets S1-006 and S1-007 consume the topology assumption. M3: topology regression check merged into the test suite. M4: first re-measurement of the S1-002 benchmark after any runtime change, compared against the recorded baseline (p99 <= 7.39 ms at 100 events/s cold, busy ratio <= 0.323).
+
+# Verification
+Both ticket probes must pass (gateway-audit-invariants, matrix-coverage). Evidence integrity: every repo-local source hash in the bundle is recomputed from disk by the probes. Atomic semantics: tests assert transition+audit commit or roll back together. No claim of measured reliability, production containers, or cloud selection may appear as an accepted claim.
+
+# Risks
+A future performance push may be tempted to bypass the gateway or duplicate policy state for latency; the probes and the topology regression check exist to reject that trade. SQLite WAL is single-writer: growth beyond the measured envelope is a migration trigger, not a reason to shard the audit stream across writers. Evaluator FPR/FNR remains unmeasured and is out of scope here.
+
+# Open decisions
+QA2 (S1-006: in-process versus durable execution backend) and QA3 (S1-007) reuse this topology decision; the container platform choice is deferred until a migration trigger fires and then requires a fresh trust-boundary review in the S1-003/S1-004 class.""",
+    },
+    "progress": {
+        "claim_refs": ["claim-decision-topology", "claim-af-s1-002-numbers"],
+        "content": None,  # filled below
+    },
+}
+
+ARCH_INTRO = """# Enforcement architecture (current)
+Single process: workers -> gateway (capability/approval/idempotency/fence) -> handlers; engine -> machines -> journal.transition (one SQLite transaction = state mutation + hash-chained audit event + anchor head update); SQLite/WAL is the only record store; the audit anchor mirrors off-DB.
+
+# Topology trust boundaries
+Trust is enforced by the gateway and the journal, not by process adjacency: untrusted worker output and external content cannot expand capabilities or write outside scope (AGENTS.md invariants 6-7). A container boundary is a deployment boundary, not a new trust boundary; duplicating policy state or audit writes across it WOULD create new trust boundaries that S1-003/S1-004 have not reviewed.
+
+# QA1 decision matrix (machine-readable)
+The matrix below is the emphasis artifact for this ticket: modular monolith versus container split across eight explicit dimensions with 1..5 scores and evidence references, four failure/recovery scenarios, and the recommendation with assumptions, migration trigger and non-goals. decision_matrix_probe.py parses this fenced block and enforces the hard invariants.
+
+"""
+
+ARCH_OUTRO = """
+# Reading the matrix
+Scores are structured design judgments grounded in the cited evidence, not measurements. The two hard-invariant dimensions (D1 policy single-authority, D2 audit atomicity) dominate: any candidate that fails them is rejected by the probes regardless of its total or its latency. D8 records the honest gain of a split so the tradeoff stays visible instead of hidden."""
+
+PROGRESS_TEXT = """# 2026-08-31
+Read the S1-005 ticket spec, spec/SPEC.md, AGENTS.md invariants, gateway.py/journal.py/engine.py/workers.py, the S1-003 bundle precedent and the S1-002 benchmark results; computed SHA-256 bindings for all 9 repo-local sources. Authored the QA1 decision matrix (8 dimensions, 4 failure/recovery scenarios, baseline from S1-002) and 22 claims mapped to the harness classes fact/inference/assumption/target with the ticket labels preserved in claim text.
+
+Implemented decision_matrix_probe.py with two probes: gateway-audit-invariants (rejects policy-duplicating/audit-weakening splits regardless of superficial latency; requires a failure boundary and the deterministic-simulation interface in the recommendation; re-verifies every repo-local source hash from disk) and matrix-coverage (>=6 dimensions, >=3 scenarios, assumptions/trigger/non-goals, ticket claim-class coverage, no production-build claim). Both probes executed and recorded in probe-results.json with final verdict pass.
+
+Persisted the FLOW-11 bundle through research-plan with audit verdict pass_with_limits and explicit limitations: design-level comparison only, no measured reliability claim, offline literature verification, and producer/auditor as process-separated roles in one local environment."""
+
+
+def build_bundle() -> dict:
+    arch_content = (ARCH_INTRO + "```json\n"
+                    + json.dumps(MATRIX, indent=2, ensure_ascii=False)
+                    + "\n```" + ARCH_OUTRO)
+    ARTIFACT_TEXTS["architecture_models"]["content"] = arch_content
+    ARTIFACT_TEXTS["progress"]["content"] = PROGRESS_TEXT
+
+    artifacts: dict[str, dict] = {}
+    for kind in FLOW:
+        spec = dict(ARTIFACT_TEXTS[kind])
+        artifacts[kind] = {
+            "content": spec["content"],
+            "claim_refs": spec["claim_refs"],
+            "producer": spec.get("producer", "agentos-s1-005-producer"),
+        }
+    return {
+        "config": {
+            "min_source_count": 4,
+            "min_verified_ratio": 1.0,
+            "required_artifacts": list(FLOW),
+        },
+        "sources": SOURCES,
+        "claims": CLAIMS,
+        "artifacts": artifacts,
+        "audit": {
+            "subject_producer": "agentos-s1-005-producer",
+            "auditor": "agentos-s1-005-independent-verifier",
+            "verdict": "pass_with_limits",
+            "limitations": [
+                "Design-level comparison only: no production containers were built and no reliability or SLO claim is made from this research.",
+                "Latency and throughput numbers come from S1-002's single-process, single-host Windows benchmark; multi-process and container behavior is explicitly out of its scope and unmeasured here.",
+                "Literature sources were verified by offline identity and content-scope review of well-known canonical documents; no live network fetch was performed in this environment.",
+                "Producer and verifier are process-separated roles in one local environment, not independent human operators.",
+                "Decision-matrix scores are structured design judgments grounded in cited evidence, not measurements.",
+            ],
+        },
+        "probes": [
+            {
+                "name": "gateway-audit-invariants",
+                "command": ("python research/tickets/stage-1/S1-005/decision_matrix_probe.py "
+                            "--probe gateway-audit-invariants"),
+                "expected": "pass",
+            },
+            {
+                "name": "matrix-coverage",
+                "command": ("python research/tickets/stage-1/S1-005/decision_matrix_probe.py "
+                            "--probe matrix-coverage"),
+                "expected": "pass",
+            },
+        ],
+    }
+
+
+def main() -> None:
+    bundle = build_bundle()
+    bundle_path = TICKET_DIR / "bundle.json"
+    bundle_path.write_text(
+        json.dumps(bundle, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    matrix_path = TICKET_DIR / "matrix.json"
+    matrix_path.write_text(
+        json.dumps(MATRIX, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    print(f"wrote {bundle_path} ({bundle_path.stat().st_size} bytes)")
+    print(f"wrote {matrix_path} ({matrix_path.stat().st_size} bytes)")
+
+
+if __name__ == "__main__":
+    main()

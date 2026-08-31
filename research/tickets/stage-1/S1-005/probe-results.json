@@ -1,0 +1,99 @@
+{
+  "schema": "agentos.s1-005-probe-results/v1",
+  "ticket": "S1-005",
+  "probes": [
+    {
+      "probe": "gateway-audit-invariants",
+      "schema": "agentos.s1-005-probe-verdict/v1",
+      "status": "pass",
+      "observed": "pass",
+      "checks_total": 7,
+      "checks_failed": 0,
+      "failed_checks": [],
+      "checks": [
+        {
+          "name": "recommendation-preserves-gateway-audit-invariants",
+          "ok": true,
+          "detail": "effects_gateway_only, policy_state_single_owner, audit_boundary_atomic all hold"
+        },
+        {
+          "name": "recommendation-declares-failure-boundary-and-simulation-interface",
+          "ok": true,
+          "detail": "failure boundary and deterministic-simulation interface present"
+        },
+        {
+          "name": "recommendation-is-modular-monolith",
+          "ok": true,
+          "detail": "topology=modular_monolith"
+        },
+        {
+          "name": "near-miss-container-split-rejected-despite-better-latency",
+          "ok": true,
+          "detail": "violations=['policy_state_duplicated_or_unowned', 'audit_boundary_weakened']; superficial latency 1.9ms < measured baseline 7.3917ms; rejection is latency-independent"
+        },
+        {
+          "name": "near-miss-monolith-omitting-boundaries-marked-incomplete",
+          "ok": true,
+          "detail": "completeness gaps=['missing_failure_boundary', 'missing_deterministic_simulation_interface', 'missing_explicit_assumptions', 'missing_migration_trigger', 'missing_non_goals']"
+        },
+        {
+          "name": "repo-local-source-hashes-verified-from-disk",
+          "ok": true,
+          "detail": "9 file bindings checked; problems=[]"
+        },
+        {
+          "name": "platform-plan-states-gateway-only-effects-and-atomic-audit",
+          "ok": true,
+          "detail": "platform_plan must preserve gateway-only effects and atomic transition+audit"
+        }
+      ]
+    },
+    {
+      "probe": "matrix-coverage",
+      "schema": "agentos.s1-005-probe-verdict/v1",
+      "status": "pass",
+      "observed": "pass",
+      "checks_total": 7,
+      "checks_failed": 0,
+      "failed_checks": [],
+      "checks": [
+        {
+          "name": "at-least-6-dimensions-both-options-scored-with-evidence",
+          "ok": true,
+          "detail": "8 dimensions; problems=[]"
+        },
+        {
+          "name": "totals-consistent-with-dimension-scores",
+          "ok": true,
+          "detail": "declared={'modular_monolith': 36, 'container_split': 21, 'max': 40} recomputed={'modular_monolith': 36, 'container_split': 21}"
+        },
+        {
+          "name": "at-least-3-failure-recovery-scenarios-complete",
+          "ok": true,
+          "detail": "4 scenarios; problems=[]"
+        },
+        {
+          "name": "single-recommendation-with-assumptions-trigger-and-non-goals",
+          "ok": true,
+          "detail": "assumptions, migration trigger and non-goals present"
+        },
+        {
+          "name": "non-goals-cover-production-cloud-vendor-and-measured-reliability",
+          "ok": true,
+          "detail": "non_goals=no production containers will be built from this research no cloud vendor selection no measured reliability claim from this design comparison"
+        },
+        {
+          "name": "ticket-claim-class-coverage-present-and-mapped",
+          "ok": true,
+          "detail": "counts={'architecture_fact': 10, 'tradeoff': 2, 'design_inference': 3, 'risk': 4, 'decision': 3}; short={}; problems=[]"
+        },
+        {
+          "name": "no-production-build-or-measured-reliability-claim",
+          "ok": true,
+          "detail": "scope limits intact"
+        }
+      ]
+    }
+  ],
+  "final_verdict": "pass"
+}

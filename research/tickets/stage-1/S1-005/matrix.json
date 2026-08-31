@@ -1,0 +1,266 @@
+{
+  "schema": "agentos.s1-005-decision-matrix/v1",
+  "ticket": "S1-005",
+  "question": "QA1: for the MVP, does a modular monolith with hard internal contracts provide a better safety, determinism and operability boundary than splitting the runtime into containers?",
+  "options": {
+    "modular_monolith": "One process; gateway/journal/engine/workers as modules behind hard internal contracts; one SQLite/WAL store; in-process calls.",
+    "container_split": "Separate processes/containers for gateway, engine, workers and audit store; RPC between them; possibly more than one host."
+  },
+  "scoring": "Integer 1..5 per option per dimension; 5 is best for MVP safety, determinism and operability; evidence arrays cite bundle source ids; totals are unweighted sums; hard invariants gate before totals.",
+  "baseline": {
+    "measured_p99_end_to_end_ms_cold_100eps": 7.3917,
+    "source": "S1-002-RESULTS",
+    "note": "Single-process, single-host SQLite/WAL benchmark (seed 20260824); explicitly excludes multi-process/multi-host and production SLOs."
+  },
+  "dimensions": [
+    {
+      "id": "D1",
+      "name": "policy_gateway_enforcement",
+      "modular_monolith": {
+        "score": 5,
+        "evidence": [
+          "SPEC-ARCH",
+          "GATEWAY-IMPL",
+          "AGENTOS-INVARIANTS"
+        ],
+        "notes": "The in-process gateway is the only effects path; policy state is read from the one authoritative store; no cross-process copies exist."
+      },
+      "container_split": {
+        "score": 2,
+        "evidence": [
+          "SPEC-ARCH",
+          "AGENTOS-INVARIANTS"
+        ],
+        "notes": "The gateway becomes a network service and other containers are tempted to cache policy/capability state; a duplicated policy cache is a standing invariant-5..7 risk and creates an unreviewed trust boundary."
+      }
+    },
+    {
+      "id": "D2",
+      "name": "audit_atomicity_and_chain",
+      "modular_monolith": {
+        "score": 5,
+        "evidence": [
+          "JOURNAL-IMPL",
+          "SPEC-ARCH",
+          "AGENTOS-INVARIANTS"
+        ],
+        "notes": "Transition + hash-chained audit event + anchor head update commit in one SQLite transaction; rollback leaves state and audit consistent by construction."
+      },
+      "container_split": {
+        "score": 2,
+        "evidence": [
+          "JOURNAL-IMPL",
+          "SQLITE-CORRUPT"
+        ],
+        "notes": "Splitting transition and audit across processes/streams risks partial audit on crash, chain forks and anchor divergence; preserving invariant 8 would need a distributed transaction the MVP does not have."
+      }
+    },
+    {
+      "id": "D3",
+      "name": "worker_failure_isolation",
+      "modular_monolith": {
+        "score": 4,
+        "evidence": [
+          "ENGINE-IMPL",
+          "GATEWAY-IMPL",
+          "SPEC-ARCH"
+        ],
+        "notes": "Crash containment comes from lease/fence checks, scoped capability sets, bounded retries and checkpoint resume; an engine-internal fault remains a whole-process (host) failure domain."
+      },
+      "container_split": {
+        "score": 4,
+        "evidence": [
+          "ENGINE-IMPL",
+          "SPEC-ARCH"
+        ],
+        "notes": "OS boundaries contain module crashes better, but lease/fence authority must be re-proved across RPC and the shared audit store couples the containers anyway."
+      }
+    },
+    {
+      "id": "D4",
+      "name": "deterministic_simulation_replay",
+      "modular_monolith": {
+        "score": 5,
+        "evidence": [
+          "WORKERS-IMPL",
+          "S1-002-BENCH",
+          "S1-002-RESULTS"
+        ],
+        "notes": "One process keeps one clock domain: deterministic WorkerAdapter + seeded fixed-rate schedule replays runs offline (S1-002 seed 20260824)."
+      },
+      "container_split": {
+        "score": 3,
+        "evidence": [
+          "WORKERS-IMPL",
+          "S1-002-RESULTS"
+        ],
+        "notes": "Every RPC hop and separate scheduler adds nondeterminism the simulation interface must abstract away again; a simulation mode is in-process anyway."
+      }
+    },
+    {
+      "id": "D5",
+      "name": "sqlite_wal_storage_constraints",
+      "modular_monolith": {
+        "score": 5,
+        "evidence": [
+          "SQLITE-WAL",
+          "SQLITE-CORRUPT",
+          "S1-002-RESULTS"
+        ],
+        "notes": "Single writer and same-host file access hold by construction; measured p99 7.39 ms at 100 events/s leaves headroom."
+      },
+      "container_split": {
+        "score": 2,
+        "evidence": [
+          "SQLITE-WAL",
+          "SQLITE-CORRUPT"
+        ],
+        "notes": "N containers contend for the single WAL writer on one host; multi-host split of a live WAL database is unsupported and a documented corruption risk."
+      }
+    },
+    {
+      "id": "D6",
+      "name": "deployment_and_recovery",
+      "modular_monolith": {
+        "score": 5,
+        "evidence": [
+          "ENGINE-IMPL",
+          "SPEC-ARCH",
+          "SRE-BOOK"
+        ],
+        "notes": "One deployable unit; recovery is resume-from-latest-consistent-checkpoint; one set of logs, one audit anchor."
+      },
+      "container_split": {
+        "score": 2,
+        "evidence": [
+          "TWELVE-FACTOR",
+          "SRE-BOOK"
+        ],
+        "notes": "N images plus orchestration, service discovery and coordinated recovery; every recovery path now spans a process boundary."
+      }
+    },
+    {
+      "id": "D7",
+      "name": "operational_complexity",
+      "modular_monolith": {
+        "score": 5,
+        "evidence": [
+          "FOWLER-MONOLITH-FIRST",
+          "SRE-BOOK"
+        ],
+        "notes": "One runtime to monitor, upgrade and debug; hard module contracts give most of the maintainability benefit without the network."
+      },
+      "container_split": {
+        "score": 2,
+        "evidence": [
+          "FOWLER-MICROSERVICES",
+          "TWELVE-FACTOR"
+        ],
+        "notes": "Distributed debugging, versioned RPC contracts, partial-failure handling and per-container observability are new permanent operating costs."
+      }
+    },
+    {
+      "id": "D8",
+      "name": "independent_scaling_and_resource_isolation",
+      "modular_monolith": {
+        "score": 2,
+        "evidence": [
+          "S1-002-RESULTS",
+          "SPEC-ARCH"
+        ],
+        "notes": "One process shares CPU/memory; measured headroom at MVP rates is ample (busy ratio <= 0.323 at 100 events/s), so the constraint is not binding yet."
+      },
+      "container_split": {
+        "score": 4,
+        "evidence": [
+          "TWELVE-FACTOR",
+          "S1-002-RESULTS"
+        ],
+        "notes": "Per-module scaling and resource caps are the genuine gain; the shared single-writer SQLite store caps the benefit for the record path."
+      }
+    }
+  ],
+  "totals": {
+    "modular_monolith": 36,
+    "container_split": 21,
+    "max": 40
+  },
+  "failure_scenarios": [
+    {
+      "id": "FS-1",
+      "name": "worker crash mid-run",
+      "detection": "lease expiry with no heartbeat/progress and a missing or stale checkpoint",
+      "modular_monolith_recovery": "engine marks the run FAILED(recoverable) and resumes from the latest consistent sha-verified checkpoint into a new Run with immutable lineage; bounded retry budget applies",
+      "container_split_recovery": "same state machine only if the engine retains sole lease authority; a scheduler container reassigning leases independently weakens fencing and can double-execute",
+      "evidence": [
+        "ENGINE-IMPL",
+        "SPEC-ARCH",
+        "GATEWAY-IMPL"
+      ]
+    },
+    {
+      "id": "FS-2",
+      "name": "crash between transition and audit append",
+      "detection": "open SQLite transaction rolls back; audit_anchor head and row count unchanged",
+      "modular_monolith_recovery": "atomic rollback leaves state and audit consistent; a retried transition_key is a no-op returning the original event",
+      "container_split_recovery": "an asynchronous or per-container audit writer can lose or fork audit rows across the crash; the hash chain and anchor diverge and invariant 8 is broken",
+      "evidence": [
+        "JOURNAL-IMPL",
+        "SPEC-ARCH",
+        "SQLITE-CORRUPT"
+      ]
+    },
+    {
+      "id": "FS-3",
+      "name": "policy/audit store unavailable or partitioned",
+      "detection": "gateway op raises, or a mutating intent exists without a recorded outcome",
+      "modular_monolith_recovery": "mutating ops return UNKNOWN_OUTCOME with reconciliation_required and are never blindly retried; reconcile() distinguishes RECONCILED_SUCCEEDED/FAILED and the gate blocks the latter",
+      "container_split_recovery": "a split with per-container policy copies keeps serving stale policy during the partition (split-brain); detecting audit-mirror divergence across containers is not provided by the MVP",
+      "evidence": [
+        "GATEWAY-IMPL",
+        "AGENTOS-INVARIANTS"
+      ]
+    },
+    {
+      "id": "FS-4",
+      "name": "SQLite WAL writer contention",
+      "detection": "write-latency growth and busy timeouts on the record path",
+      "modular_monolith_recovery": "single in-process writer serializes by construction; measured baseline holds p99 <= 7.39 ms at 100 events/s",
+      "container_split_recovery": "each added container multiplies writers contending for the one WAL writer; a multi-host split cannot share the live WAL file at all without replacing the storage engine",
+      "evidence": [
+        "S1-002-RESULTS",
+        "SQLITE-WAL"
+      ]
+    }
+  ],
+  "recommendation": {
+    "topology": "modular_monolith",
+    "verdict": "recommended",
+    "effects_gateway_only": true,
+    "policy_state_single_owner": true,
+    "audit_boundary_atomic": true,
+    "failure_boundary": "Worker crash is contained by lease/fence checks, bounded retries and checkpoint resume; an engine/journal fault is the host failure domain recovered by SQLite transactional rollback plus resume-from-checkpoint.",
+    "deterministic_simulation_interface": "WorkerAdapter protocol with the deterministic fake worker plus the seeded fixed-rate arrival schedule (S1-002 configuration.seed 20260824) gives replayable runs with no network or model access, in one process/clock domain.",
+    "assumptions": [
+      "single-host MVP deployment",
+      "MVP event rates stay within the S1-002 measured envelope",
+      "workers are untrusted and all effects stay gateway-only",
+      "no hard multi-host or multi-runtime requirement exists today"
+    ],
+    "migration_trigger": [
+      "sustained measured demand approaches single-host capacity (S1-002 single-worker busy ratio at target rate is the leading indicator)",
+      "a hard requirement appears to run module runtimes on different hosts or with different runtime stacks",
+      "the audit store must leave SQLite, which requires a new formal trust-boundary review in the S1-003/S1-004 class",
+      "an organizational ownership split requires independent deployment cadence"
+    ],
+    "non_goals": [
+      "no production containers will be built from this research",
+      "no cloud vendor selection",
+      "no measured reliability claim from this design comparison"
+    ]
+  },
+  "probes_declared": [
+    "gateway-audit-invariants",
+    "matrix-coverage"
+  ]
+}

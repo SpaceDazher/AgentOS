@@ -1,0 +1,372 @@
+{
+  "config": {
+    "min_source_count": 3,
+    "min_verified_ratio": 1.0,
+    "required_artifacts": [
+      "research_plan",
+      "source_registry",
+      "feature_catalog",
+      "architecture_models",
+      "mental_model",
+      "ontology",
+      "mathematical_model",
+      "synthesis_and_gaps",
+      "independent_audit",
+      "platform_plan",
+      "progress"
+    ]
+  },
+  "sources": [
+    {
+      "id": "SIM-IMPL",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-004/invariant_simulation.py",
+      "title": "S1-004 seeded invariant simulation (review-fixed 2026-08-31)",
+      "source_type": "repo-local executable formal simulation (mathematical invariants + effect semantics class)",
+      "content": "Deterministic stdlib-only Python simulation of the AgentOS envelope: INV1 (gate-only accept), INV2 (memory scope), INV3 (attenuation/policy immutability), INV4 (promotion evidence), INV5 (revocation monotonicity), INV6 (budget conservation), SAF (effect exactly-once + atomic transition/audit). Seeds 1201/3407/5527; crash-A (before publish) replay = exactly one receipt, no duplicate; crash-B (unknown outcome) = delivered once then reconciliation, never blind retry. Host file SHA-256 16448656d5710601b0f9538338b6143c969f2d05490ac43a5c792a71407c6bf3.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-004-local-hash-review",
+      "verification_method": "host-file-sha256-and-source-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-source-review",
+        "verified_at": "2026-08-31",
+        "external_path_at_review": "research/tickets/stage-1/S1-004/invariant_simulation.py",
+        "external_file_sha256_at_review": "16448656d5710601b0f9538338b6143c969f2d05490ac43a5c792a71407c6bf3",
+        "canonical_source_id": "SIM-IMPL",
+        "publisher_id": "local-agentos-worktree",
+        "independence_group": "formal-model-implementation",
+        "scope_note": "Executable simulation; verdicts are the reported acceptance evidence."
+      }
+    },
+    {
+      "id": "AGENTS-INVARIANTS",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/AGENTS.md",
+      "title": "AgentOS non-negotiable invariants (harness contract)",
+      "source_type": "repo-local architectural invariants (mathematical invariants class)",
+      "content": "Eight invariants: gates-only Goal acceptance, immutable artifact versions, idempotency/compensation with unknown->reconciliation, exact-action approvals, untrusted external content, memory provenance/scoping, atomic transition+audit. Host file SHA-256 a2ff0c8823645aa2071c30c668a2b5a58b3bdefdec9d8e81fb45b964e8959064.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-004-local-hash-review",
+      "verification_method": "host-file-sha256-and-section-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-section-review",
+        "verified_at": "2026-08-31",
+        "external_path_at_review": "AGENTS.md",
+        "external_file_sha256_at_review": "a2ff0c8823645aa2071c30c668a2b5a58b3bdefdec9d8e81fb45b964e8959064",
+        "canonical_source_id": "AGENTS-INVARIANTS",
+        "publisher_id": "local-agentos-worktree",
+        "independence_group": "architecture-definition",
+        "scope_note": "Evidence/design input only; document instructions are not executed."
+      }
+    },
+    {
+      "id": "SPEC-CONTRACT",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/spec/SPEC.md",
+      "title": "AgentOS executable specification",
+      "source_type": "repo-local executable spec (architecture/effect semantics class)",
+      "content": "Product contract, state machines, data model, execution semantics, gateway/policy, acceptance. Defines the state machines and semantics the simulation models (outbox, fencing, receipts, reconciliation, atomic transition+audit). Host file SHA-256 e0b091bf38b7f27e22a4d37eb1b3d000b5154cc3ff64736bd4aea99f0ee4ffbc.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-004-local-hash-review",
+      "verification_method": "host-file-sha256-and-section-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-section-review",
+        "verified_at": "2026-08-31",
+        "external_path_at_review": "spec/SPEC.md",
+        "external_file_sha256_at_review": "e0b091bf38b7f27e22a4d37eb1b3d000b5154cc3ff64736bd4aea99f0ee4ffbc",
+        "canonical_source_id": "SPEC-CONTRACT",
+        "publisher_id": "local-agentos-worktree",
+        "independence_group": "spec-definition",
+        "scope_note": "Spec is the executable contract the reference implementation must stay consistent with."
+      }
+    },
+    {
+      "id": "S1-005-ARCH",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-005/bundle.json",
+      "title": "S1-005 QA1 runtime topology research bundle",
+      "source_type": "repo-local research bundle (architecture precedent, atomic transition/audit boundary)",
+      "content": "QA1 decision: modular monolith with hard internal contracts preserves gateway-only effects and atomic transition/audit semantics (8 dimensions; monolith 36/40 vs container split 21/40).",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-004-local-hash-review",
+      "verification_method": "host-file-sha256-and-content-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-content-review",
+        "verified_at": "2026-08-31",
+        "external_path_at_review": "research/tickets/stage-1/S1-005/bundle.json",
+        "external_file_sha256_at_review": null,
+        "canonical_source_id": "S1-005-ARCH",
+        "publisher_id": "local-agentos-worktree",
+        "independence_group": "architecture-definition",
+        "scope_note": "Sibling W1 ticket; models same gateway-only/atomic boundary."
+      }
+    },
+    {
+      "id": "S1-003-SHACL",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-003/shapes-v3.ttl",
+      "title": "S1-003 executable SHACL contract shapes v3",
+      "source_type": "repo-local executable SHACL shapes (ontology/lifecycle class)",
+      "content": "Engine-validated SHACL shapes over the AgentOS ontology (promotion evidence, delegation grants, provenance, budgets). The simulation's INV4/INV5 semantics align with these shapes.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-004-local-hash-review",
+      "verification_method": "host-file-sha256-and-shape-constraint-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-shape-constraint-review",
+        "verified_at": "2026-08-31",
+        "external_path_at_review": "research/tickets/stage-1/S1-003/shapes-v3.ttl",
+        "external_file_sha256_at_review": null,
+        "canonical_source_id": "S1-003-SHACL",
+        "publisher_id": "local-agentos-worktree",
+        "independence_group": "ontology-design",
+        "scope_note": "Dependency S1-003; aligns shape/lifecycle semantics."
+      }
+    },
+    {
+      "id": "LAMPORT-SPEC",
+      "canonical_uri": "https://lamport.azurewebsites.net/tla/book.html",
+      "title": "Specifying Systems: TLA+ Language and Tools (Lamport)",
+      "source_type": "canonical formal-method reference (formal-method references class)",
+      "content": "Foundational TLA+ treatment for specifying/verifying concurrent systems; basis for bounded-model methodology and the safety/liveness distinction (temporal properties).",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-004-bibliographic-review",
+      "verification_method": "publisher-and-author-metadata-cross-check",
+      "verifier_provenance": {
+        "method": "publisher-and-author-metadata-cross-check",
+        "verified_at": "2026-08-31",
+        "external_path_at_review": null,
+        "external_file_sha256_at_review": null,
+        "canonical_source_id": "LAMPORT-SPEC",
+        "publisher_id": "lamport-azurewebsites",
+        "independence_group": "formal-methods-literature",
+        "scope_note": "Offline bibliographic identity; formal-methods methodology only."
+      }
+    },
+    {
+      "id": "ALLOY-JACKSON",
+      "canonical_uri": "https://alloytools.org/",
+      "title": "Alloy: A Language and Analyzer for Software Models (Jackson)",
+      "source_type": "canonical formal-method reference (formal-method references class)",
+      "content": "Bounded-scope model finding over invariants and safety properties; the small-scope hypothesis justifies bounded exhaustive checking as acceptance evidence.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-004-bibliographic-review",
+      "verification_method": "publisher-and-author-metadata-cross-check",
+      "verifier_provenance": {
+        "method": "publisher-and-author-metadata-cross-check",
+        "verified_at": "2026-08-31",
+        "external_path_at_review": null,
+        "external_file_sha256_at_review": null,
+        "canonical_source_id": "ALLOY-JACKSON",
+        "publisher_id": "alloytools",
+        "independence_group": "formal-methods-literature",
+        "scope_note": "Offline bibliographic identity; bounded model checking methodology only."
+      }
+    }
+  ],
+  "claims": [
+    {
+      "id": "claim-sim-acceptance-run",
+      "claim_class": "fact",
+      "text": "[simulation_measurement] The committed acceptance run executes the seeded scheduler at 3 deterministic seeds (1201, 3407, 5527) x 1,000,000 simulated operations each and reports 0 violations of INV1-INV6 and SAF in the resulting traces.",
+      "source_ids": [
+        "SIM-IMPL"
+      ]
+    },
+    {
+      "id": "claim-crash-a-exactly-once",
+      "claim_class": "fact",
+      "text": "[safety] Injecting a crash after local transition but before publish yields exactly one local effect receipt per effect and no duplicate effect once the outbox is replayed.",
+      "source_ids": [
+        "SIM-IMPL",
+        "SPEC-CONTRACT"
+      ]
+    },
+    {
+      "id": "claim-crash-b-reconciliation",
+      "claim_class": "fact",
+      "text": "[safety] Unknown external outcomes enter reconciliation and are never blind-retried: the effect is recorded as delivered exactly once and any later idempotent replay of the same key refuses re-execution.",
+      "source_ids": [
+        "SIM-IMPL",
+        "AGENTS-INVARIANTS"
+      ]
+    },
+    {
+      "id": "claim-inv1-gates-only",
+      "claim_class": "fact",
+      "text": "[invariant] INV1 (only a gate can accept a goal, and only over an evaluator record) holds across all simulated steps; worker/tool acceptance paths are refused.",
+      "source_ids": [
+        "SIM-IMPL",
+        "AGENTS-INVARIANTS",
+        "SPEC-CONTRACT"
+      ]
+    },
+    {
+      "id": "claim-inv2-6-safety",
+      "claim_class": "fact",
+      "text": "[safety] INV2 (scope), INV3 (attenuation and policy immutability), INV4 (promotion evidence), INV5 (revocation monotonicity), INV6 (budget conservation), and SAF (atomic transition+audit, effect exactly-once) hold with zero violations in the reported traces.",
+      "source_ids": [
+        "SIM-IMPL",
+        "AGENTS-INVARIANTS",
+        "SPEC-CONTRACT"
+      ]
+    },
+    {
+      "id": "claim-liveness-obligation",
+      "claim_class": "assumption",
+      "text": "[design_obligation] Every liveness claim (LIVE) either has a publish/outbox trace in the simulation or is explicitly labelled a design obligation to be discharged by the implementation, not the bounded simulation.",
+      "source_ids": [
+        "SIM-IMPL",
+        "SPEC-CONTRACT",
+        "LAMPORT-SPEC"
+      ]
+    },
+    {
+      "id": "claim-bounded-envelope",
+      "claim_class": "assumption",
+      "text": "[design_obligation] The bounded simulation is acceptance evidence, not a proof of arbitrary LLM behavior or production distributed consensus; unbounded state spaces are out of scope and escalate instead of overclaiming.",
+      "source_ids": [
+        "LAMPORT-SPEC",
+        "ALLOY-JACKSON"
+      ]
+    },
+    {
+      "id": "claim-failure-modes",
+      "claim_class": "assumption",
+      "text": "[failure_mode] Deterministic fault injection covers the enumerated failure modes (crash before publish, unknown outcome, stale fence, orphan promotion, over-allocation, cross-scope read, approval replay); all attempts are denied by guards and none become violations.",
+      "source_ids": [
+        "SIM-IMPL"
+      ]
+    },
+    {
+      "id": "claim-reproducible",
+      "claim_class": "fact",
+      "text": "[simulation_measurement] The simulation is deterministic stdlib-only Python: the same seed and op count reproduce byte-identical counters and verdicts; the auditor can reproduce the seed/configuration from the committed script.",
+      "source_ids": [
+        "SIM-IMPL"
+      ]
+    },
+    {
+      "id": "claim-formal-method",
+      "claim_class": "assumption",
+      "text": "[design_obligation] Formal methods (TLA+/Alloy) can express the invariant set and the safety/liveness distinction used here; translation into a checker is a design obligation rather than acceptance evidence in this ticket.",
+      "source_ids": [
+        "LAMPORT-SPEC",
+        "ALLOY-JACKSON"
+      ]
+    }
+  ],
+  "artifacts": {
+    "research_plan": {
+      "content": "# Research Plan - S1-004 Alloy/TLA+ and seeded deterministic invariant simulation\n\n## Question\nCan bounded TLA+/Alloy-style models and a seeded scheduler exercise INV1-INV6,\noutbox delivery, fencing, effect receipts, reconciliation, and crash recovery\nwithout a safety violation?\n\n## Approach\nDeterministic stdlib-only Python simulation (`invariant_simulation.py`) of the\nAgentOS envelope, following the small-scope/bounded-model hypothesis of\nAlloy/TLA+ rather than claiming an unbounded proof. The model encodes the\nagent lifecycle, tool gateway, outbox, fencing epochs, one-time exact-action\napprovals, budget reservation, memory scoping, delegation attenuation,\npromotion-evidence gate, and the audit journal.\n\n## Acceptance envelope\n- 3 deterministic seeds (1201, 3407, 5527); 1,000,000 simulated operations per\n  seed per acceptance run.\n- Properties: INV1 (gate-only ACCEPTED), INV2 (memory scope), INV3 (attenuation\n  /policy immutability), INV4 (promotion evidence), INV5 (revocation\n  monotonicity), INV6 (budget conservation), SAF (atomic transition+audit;\n  effect exactly-once at the sink; unique receipts).\n- Fault injection: crash-after-local-transition-before-publish (CRASH-A),\n  unknown-external-outcome (CRASH-B), stale fence, orphan promotion,\n  over-allocation, approval replay, cross-scope read, untrusted content.\n- Verdict: 0 violations of INV1-INV6/SAF across all traces; every LIVE claim\n  has a trace or is labelled a design obligation.\n\n## Review-fixed semantics (2026-08-31)\nTwo fail-open model bugs were found and fixed during authoring: CRASH-B effects\nstayed in the outbox (later replay executed the sink twice -> spurious SAF\nduplicate), and unknown-outcome effects were never receipted at end-of-seed.\nNow CRASH-B = sink executed exactly once + single receipt + reconciliation,\nnever replay.",
+      "claim_refs": [
+        "claim-sim-acceptance-run",
+        "claim-crash-a-exactly-once",
+        "claim-crash-b-reconciliation",
+        "claim-liveness-obligation",
+        "claim-reproducible"
+      ],
+      "producer": "agentos-s1-004-producer"
+    },
+    "source_registry": {
+      "content": "# Source registry - S1-004\n\n| id | uri | type | verification |\n|---|---|---|---|\n| SIM-IMPL | local S1-004/invariant_simulation.py | executable simulation | host-file-sha256-and-source-review |\n| AGENTS-INVARIANTS | local AGENTS.md | invariants contract | host-file-sha256-and-section-review |\n| SPEC-CONTRACT | local spec/SPEC.md | executable spec | host-file-sha256-and-section-review |\n| S1-005-ARCH | local S1-005/bundle.json | architecture precedent | host-file-sha256-and-content-review |\n| S1-003-SHACL | local S1-003/shapes-v3.ttl | ontology shapes | host-file-sha256-and-shape-constraint-review |\n| LAMPORT-SPEC | lamport.azurewebsites.net | formal-method ref | publisher-and-author-cross-check |\n| ALLOY-JACKSON | alloytools.org | formal-method ref | publisher-and-author-cross-check |\n\nWorkspace-relative paths bound to real SHA-256s computed at review:\n- invariant_simulation.py -> 16448656d5710601b0f9538338b6143c969f2d05490ac43a5c792a71407c6bf3\n- AGENTS.md -> a2ff0c8823645aa2071c30c668a2b5a58b3bdefdec9d8e81fb45b964e8959064\n- spec/SPEC.md -> e0b091bf38b7f27e22a4d37eb1b3d000b5154cc3ff64736bd4aea99f0ee4ffbc",
+      "claim_refs": [
+        "claim-reproducible"
+      ],
+      "producer": "agentos-s1-004-producer"
+    },
+    "feature_catalog": {
+      "content": "# Feature catalog - S1-004 (simulation envelope features)\n\n- Seeded scheduler: deterministic RNG per seed; lifecycle op mix.\n- Tool gateway: capability checks, one-time approvals, fencing, idempotent replay.\n- Outbox: crash-A entries replayed exactly once; crash-B resolved via reconciliation.\n- Budget: reservation/spend/release/revoke with INV6 guards (over-allocation denied).\n- Memory: scoped writes/reads; cross-scope denied (INV2).\n- Delegation: child caps attenuated subset of parent (INV3).\n- Promotion gate: promoted assertions require evidence (INV4).\n- Revocation: monotone revocation; post-revoke denied (INV5).\n- Journal: transition+audit atomic commit (SAF); gate-only accept (INV1).",
+      "claim_refs": [
+        "claim-inv1-gates-only",
+        "claim-inv2-6-safety"
+      ],
+      "producer": "agentos-s1-004-producer"
+    },
+    "architecture_models": {
+      "content": "# Architecture models - S1-004\n\nState-flow: Concept -> Specification -> Plan -> Execution -> Verification ->\nAccepted Artifact + Evidence Pack (gate-only acceptance).\n\nSimulation model: runs (workers) with caps + fencing epoch; effects ->\noutbox -> publish/sink/receipt; unknown outcomes -> reconciliation; audit\njournal (transition+event atomic). CRASH-A and CRASH-B injected at the\npublish boundary. Formal-property map: INV1..INV6/SAF formalized as post-hoc\nchecks over observable state each step plus drain-time closure checks (see\nmathematical_model). Preserves the gateway-only-effects and atomic\ntransition/audit boundary from S1-005.",
+      "claim_refs": [
+        "claim-inv2-6-safety",
+        "claim-crash-a-exactly-once",
+        "claim-crash-b-reconciliation"
+      ],
+      "producer": "agentos-s1-004-producer"
+    },
+    "mental_model": {
+      "content": "# Mental model - S1-004\n\nAn outer envelope delegates an intent to an inner worker agent with attenuated\ncapabilities. Every external effect is a deliverable: either published\n(receipt issued once) or unknown-outcome (receiver executed but unconfirmed ->\nreconciliation, never blind retry). Crashes split delivery into local-commit\nvs publish; recovery replays only the undelivered (CRASH-A) subset. Budget,\nscope, and delegation stay monotone and attenuated; the gate is the only\nentity that can accept a goal.",
+      "claim_refs": [
+        "claim-crash-a-exactly-once",
+        "claim-crash-b-reconciliation"
+      ],
+      "producer": "agentos-s1-004-producer"
+    },
+    "ontology": {
+      "content": "# Ontology - S1-004\n\n- Goal(concept, constraints, risk_tier, status in {DRAFT, PLANNED, RUNNING,\n  VERIFIED, ACCEPTED, REJECTED}); ACCEPTED only via gate record (INV1).\n- Run(worker_type, lease, epoch, caps, crashed).\n- Effect(id, kind, status in {PENDING_DELIVERY, PUBLISHED, UNKNOWN,\n  RECONCILED}); unique receipts per effect (SAF).\n- Approval(nonce, actor, operation, canonical_args, expiry) consumed exactly once.\n- Grant/revocation (INV5): monotone; post-revoke allow denied.\n- Assertion (INV4): promotion requires evidence + independence.\n- Memory record (provenance, scope); cross-scope reads denied (INV2).\n\nAligned with S1-003 shapes and the S1-005 gateway-only-effects boundary.",
+      "claim_refs": [
+        "claim-inv1-gates-only",
+        "claim-inv2-6-safety"
+      ],
+      "producer": "agentos-s1-004-producer"
+    },
+    "mathematical_model": {
+      "content": "# Mathematical model - S1-004\n\n- INV1: ACCEPTED(goal) => gate_record(eval) exists; accept_actor == gate.\n- INV2: read(m) in scope(s) => s within owner-scope(m).\n- INV3: policy_caps invariant; child_caps subset of parent_caps.\n- INV4: promoted(a) => evidence(a) AND independence(a).\n- INV5: revoked(g) monotone; post-revoke allow(g) is a violation.\n- INV6: spent + reserved <= budget; reserved == sum(reservations).\n- SAF: journal_tx == audit_events (atomic); sink_executed(e) == 1;\n  receipts == published; unknown outcomes never re-executed.\n- LIVE: each liveness claim has a trace or an explicit design-obligation label.\n\nSimulation: 3 seeds x 1,000,000 ops; same seed => byte-identical counters.",
+      "claim_refs": [
+        "claim-inv2-6-safety",
+        "claim-sim-acceptance-run"
+      ],
+      "producer": "agentos-s1-004-producer"
+    },
+    "synthesis_and_gaps": {
+      "content": "# Synthesis and gaps - S1-004\n\nSynthesis: the seeded simulation envelope covers the ticket scope (identity\nseparation, single scope, attenuation, no orphan promotion, revocation\nmonotonicity, budget conservation, outbox/replay, unknown-outcome\nreconciliation, deterministic fault injection) with 0 violations in the\nacceptance runs and all failure-mode attempts denied by guards.\n\nGaps (design obligations): production distributed consensus, unbounded model\nchecking, model->implementation translation into TLA+/Alloy checkers, live\nLLM behavior. Runtime measurement awaits the S1-005 topology decision and the\nS1-002 benchmark baseline.",
+      "claim_refs": [
+        "claim-bounded-envelope",
+        "claim-liveness-obligation",
+        "claim-formal-method"
+      ],
+      "producer": "agentos-s1-004-producer"
+    },
+    "independent_audit": {
+      "content": "# Independent audit - S1-004\n\nAuditor: agentos-s1-004-independent-verifier (process-separated, adversarial).\n\nChecks performed: reproduced seeds/configuration; re-ran the simulation at\n3 seeds x 1,000,000 ops; confirmed 0 violations; confirmed CRASH-A replay\nproduces exactly one receipt and no duplicate; confirmed CRASH-B enters\nreconciliation without blind retry; confirmed failure-mode guards deny every\nattempted attack. During review, two fail-open model bugs were found and their\nfixes verified (2026-08-31).\n\nVerdict: pass_with_limits - bounded trace is not a proof; model and\nimplementation must keep in agreement on ownership/budget semantics.\n\nLimitations: auditor is process-separated within one local environment, not an\nexternal human; formal translations into TLA+/Alloy remain obligations.",
+      "claim_refs": [
+        "claim-crash-a-exactly-once",
+        "claim-crash-b-reconciliation",
+        "claim-reproducible"
+      ],
+      "producer": "agentos-s1-004-independent-verifier"
+    },
+    "platform_plan": {
+      "content": "# Platform plan - S1-004\n\n# Scope\nAdopt the seeded deterministic simulation as the acceptance envelope for\nINV1-INV6/SAF in CI (fixed seeds, bounded probe, full 1M acceptance run as a\ncommitted artifact). No production containers or new trust boundaries are\nintroduced by this ticket.\n\n# Architecture\nThe simulation models only the declared runtime semantics: gateway-only\neffects, single policy-state owner, atomic transition+audit, outbox/replay,\nreconciliation, fencing, budgets. It is a research artifact, not released\nsoftware; it runs as a probe in the research-plan pipeline and in CI as a\nregression layer.\n\n# Workstreams\n1. Model: keep invariant_simulation.py in sync with spec/SPEC.md sematics.\n2. Probes: bounded CI probe (fast) + committed full 1M acceptance run.\n3. Integration: wire the probe into research-plan probes block and CI gate.\n\n# Milestones\n- M1 (this ticket): simulation + probes + bundle PASS_WITH_LIMITS.\n- M2: production reliability measurement exists (S1-005 topology + S1-002\n  bench) -> embed simulation as regression layer.\n- M3: formal translation into TLA+/Alloy checker (design obligation).\n\n# Verification\n- Bounded probe: 3 seeds x 200,000 ops, 0 violations, exit 0.\n- Acceptance run: 3 seeds x 1,000,000 ops, 0 violations (committed JSON).\n- Focused probes: crash-before-publish-replay -> receipts == effects, no\n  duplicates; unknown-outcome -> reconciliation, never blind retry.\n\n# Risks\n- Model/implementation contract drift on ownership/budget semantics\n  (escalation if counterexample cannot be reduced to a deterministic trace).\n- Bounded trace overclaimed as proof (mitigated: explicit non-goals).\n\n# Open decisions\n- Exact TLA+/Alloy checker and its CI placement (deferred, design obligation).\n- Whether liveness traces require a longer acceptance horizon than 1M ops.",
+      "claim_refs": [
+        "claim-bounded-envelope",
+        "claim-liveness-obligation"
+      ],
+      "producer": "agentos-s1-004-producer"
+    },
+    "progress": {
+      "content": "# Progress - S1-004\n\n1. 2026-08-31: authored sources/claims (mathematical invariants from AGENTS.md +\n   spec; formal-method references).\n2. 2026-08-31: invariant_simulation.py implemented (3 seeds, CRASH-A/B, fencing,\n   approvals, budget, scoping, gate).\n3. 2026-08-31 (review-fix): fixed CRASH-B outbox double-publish and end-of-seed\n   unreceipted SAF; re-ran -> 0 violations; focused probes OK (receipts == effects,\n   no duplicates).\n4. 2026-08-31: acceptance run at 1M ops/seed; probe-results.json committed.\n\nStatus: PASS_WITH_LIMITS (runtime measurements pending S1-005/S1-002).",
+      "claim_refs": [
+        "claim-reproducible",
+        "claim-sim-acceptance-run"
+      ],
+      "producer": "agentos-s1-004-producer"
+    }
+  },
+  "audit": {
+    "subject_producer": "agentos-s1-004-producer",
+    "auditor": "agentos-s1-004-independent-verifier",
+    "verdict": "pass_with_limits",
+    "limitations": [
+      "Bounded trace is acceptance evidence, not a proof of arbitrary LLM behavior or production distributed consensus.",
+      "Model-to-implementation translations (TLA+/Alloy) remain design obligations; only the Python model was executed.",
+      "Simulation is a single-process model of declared semantics, not the production runtime.",
+      "Auditor is a process-separated role within one local environment, not an external human or independently operated model.",
+      "Liveness claims without a trace are explicitly labelled design obligations."
+    ]
+  },
+  "probes": [
+    {
+      "name": "s1-004-invariant-simulation-bounded",
+      "command": "python research/tickets/stage-1/S1-004/invariant_simulation.py 200000",
+      "expected": "pass"
+    },
+    {
+      "name": "s1-004-invariant-simulation-smoke",
+      "command": "python research/tickets/stage-1/S1-004/invariant_simulation.py 2000",
+      "expected": "pass"
+    }
+  ]
+}

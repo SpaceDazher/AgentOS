@@ -1,0 +1,155 @@
+{
+  "schema": "agentos.s1-011-comparison-probe/v1",
+  "probe": "s1-011-comparison-acceptance",
+  "expected": "pass",
+  "observed": "pass",
+  "status": "pass",
+  "dimensions": [
+    "evidence_independence",
+    "implementation_complexity",
+    "operator_load",
+    "provenance_and_audit",
+    "retraction_semantics",
+    "safety_under_disagreement"
+  ],
+  "transitions_defined": [
+    "challenged->promoted:challenge_dismissed_by_operator",
+    "challenged->retracted:challenge_upheld_by_operator",
+    "challenged->superseded:challenge_resolved_by_supersession",
+    "promoted->challenged:challenge_raised",
+    "promoted->retracted:retraction_raised",
+    "promoted->superseded:superseded_by_successor",
+    "proposed->rejected:intake_rejection",
+    "proposed->under_review:review_opened",
+    "under_review->promoted:evidence_gate_passed",
+    "under_review->rejected:evidence_gate_failed"
+  ],
+  "s1_003_status_vocabulary": [
+    "proposed",
+    "under_review",
+    "promoted",
+    "challenged",
+    "retracted",
+    "superseded",
+    "rejected"
+  ],
+  "total_checks": 12,
+  "passed_checks": 12,
+  "failures": [],
+  "checks": [
+    {
+      "check": "A0_sources_at_least_four_all_verified",
+      "passed": true,
+      "detail": {
+        "count": 9,
+        "all_verified": true
+      }
+    },
+    {
+      "check": "A1_at_least_five_dimensions",
+      "passed": true,
+      "detail": [
+        "evidence_independence",
+        "implementation_complexity",
+        "operator_load",
+        "provenance_and_audit",
+        "retraction_semantics",
+        "safety_under_disagreement"
+      ]
+    },
+    {
+      "check": "A1_each_dimension_names_both_designs",
+      "passed": true,
+      "detail": "6 dimension claims"
+    },
+    {
+      "check": "A1_synthesis_carries_full_table",
+      "passed": true,
+      "detail": {
+        "dimensions_found_in_synthesis": [
+          "evidence_independence",
+          "implementation_complexity",
+          "operator_load",
+          "provenance_and_audit",
+          "retraction_semantics",
+          "safety_under_disagreement"
+        ]
+      }
+    },
+    {
+      "check": "A2_mvp_recommendation_complete",
+      "passed": true,
+      "detail": {
+        "claim_found": true,
+        "missing_fragments": []
+      }
+    },
+    {
+      "check": "A2_no_truth_oracle_claimed",
+      "passed": true,
+      "detail": {
+        "has_disclaimer": true
+      }
+    },
+    {
+      "check": "A3_transition_table_parses",
+      "passed": true,
+      "detail": {
+        "parse_error": null,
+        "rows": 10
+      }
+    },
+    {
+      "check": "A3_every_lifecycle_transition_defined",
+      "passed": true,
+      "detail": {
+        "missing_from_artifact": [],
+        "extra_in_artifact": []
+      }
+    },
+    {
+      "check": "A4_machine_states_equal_s1_003_vocabulary",
+      "passed": true,
+      "detail": {
+        "shapes_v3_statuses": [
+          "proposed",
+          "under_review",
+          "promoted",
+          "challenged",
+          "retracted",
+          "superseded",
+          "rejected"
+        ],
+        "machine_states": [
+          "proposed",
+          "under_review",
+          "promoted",
+          "challenged",
+          "retracted",
+          "superseded",
+          "rejected"
+        ]
+      }
+    },
+    {
+      "check": "A4_transition_states_within_s1_003_vocabulary",
+      "passed": true,
+      "detail": "all inside vocabulary"
+    },
+    {
+      "check": "A4_alignment_claim_present",
+      "passed": true,
+      "detail": "claim-s1-003-alignment"
+    },
+    {
+      "check": "A5_probes_block_wires_both_probes",
+      "passed": true,
+      "detail": {
+        "names": [
+          "s1-011-comparison-acceptance",
+          "s1-011-lifecycle-adversarial"
+        ]
+      }
+    }
+  ]
+}

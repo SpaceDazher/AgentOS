@@ -1,0 +1,547 @@
+{
+  "schema": "agentos.s1-011-lifecycle-probe/v1",
+  "probe": "s1-011-lifecycle-adversarial",
+  "expected": "pass",
+  "observed": "pass",
+  "status": "pass",
+  "total_checks": 31,
+  "passed_checks": 31,
+  "failures": [],
+  "checks": [
+    {
+      "check": "A1_control_promotes",
+      "passed": true,
+      "detail": {
+        "applied": true,
+        "event": {
+          "seq": 3,
+          "type": "transition",
+          "guard": "evidence_gate_passed",
+          "assertion": "A1",
+          "from": "under_review",
+          "to": "promoted",
+          "actor": "gate",
+          "actor_scope": "workspace-knowledge",
+          "detail": ""
+        },
+        "guard": "evidence_gate_passed",
+        "from": "under_review",
+        "to": "promoted"
+      }
+    },
+    {
+      "check": "A2_control_promotes",
+      "passed": true,
+      "detail": {
+        "applied": true,
+        "event": {
+          "seq": 7,
+          "type": "transition",
+          "guard": "evidence_gate_passed",
+          "assertion": "A2",
+          "from": "under_review",
+          "to": "promoted",
+          "actor": "gate",
+          "actor_scope": "workspace-knowledge",
+          "detail": ""
+        },
+        "guard": "evidence_gate_passed",
+        "from": "under_review",
+        "to": "promoted"
+      }
+    },
+    {
+      "check": "P1_text_agrees_with_existing_promoted_claim",
+      "passed": true,
+      "detail": {
+        "message": "M-single",
+        "existing": "A1"
+      }
+    },
+    {
+      "check": "P1_single_source_never_promotes",
+      "passed": true,
+      "detail": {
+        "refusal": "evidence_gate_failed:insufficient_evidence_count;insufficient_distinct_canonical_sources;insufficient_independence_groups",
+        "reasons": "insufficient_evidence_count;insufficient_distinct_canonical_sources;insufficient_independence_groups",
+        "status": "under_review"
+      }
+    },
+    {
+      "check": "P1_gate_reasons_independent_provenance",
+      "passed": true,
+      "detail": "insufficient_evidence_count;insufficient_distinct_canonical_sources;insufficient_independence_groups"
+    },
+    {
+      "check": "P1_mirror_delta_zero",
+      "passed": true,
+      "detail": {
+        "canonical": [
+          1,
+          1
+        ],
+        "groups": [
+          1,
+          1
+        ],
+        "mirror_promotes": false
+      }
+    },
+    {
+      "check": "P1_control_two_groups_promotes",
+      "passed": true,
+      "detail": {
+        "applied": true,
+        "event": {
+          "seq": 19,
+          "type": "transition",
+          "guard": "evidence_gate_passed",
+          "assertion": "M2",
+          "from": "under_review",
+          "to": "promoted",
+          "actor": "gate",
+          "actor_scope": "workspace-knowledge",
+          "detail": ""
+        },
+        "guard": "evidence_gate_passed",
+        "from": "under_review",
+        "to": "promoted"
+      }
+    },
+    {
+      "check": "B0_intake_rejected",
+      "passed": true,
+      "detail": {
+        "applied": true,
+        "event": {
+          "seq": 22,
+          "type": "transition",
+          "guard": "intake_rejection",
+          "assertion": "B0",
+          "from": "proposed",
+          "to": "rejected",
+          "actor": "operator",
+          "actor_scope": null,
+          "detail": "intake: incomplete EvidenceShape provenance (no independence_group)"
+        },
+        "guard": "intake_rejection",
+        "from": "proposed",
+        "to": "rejected"
+      }
+    },
+    {
+      "check": "P2_view_before_contains_A2",
+      "passed": true,
+      "detail": [
+        "A1",
+        "A2",
+        "M2"
+      ]
+    },
+    {
+      "check": "P2_challenge_removes_from_view",
+      "passed": true,
+      "detail": {
+        "view_after_challenge": [
+          "A1",
+          "M2"
+        ]
+      }
+    },
+    {
+      "check": "P2_retraction_marker_added",
+      "passed": true,
+      "detail": [
+        26
+      ]
+    },
+    {
+      "check": "P2_nothing_deleted_row_counts",
+      "passed": true,
+      "detail": {
+        "assertions_before": 6,
+        "assertions_after": 6,
+        "events_before": 22,
+        "events_after": 26
+      }
+    },
+    {
+      "check": "P2_audit_history_append_only_prefix",
+      "passed": true,
+      "detail": "pre-challenge journal is an exact prefix of the final journal"
+    },
+    {
+      "check": "P2_immutable_assertion_hashes_unchanged",
+      "passed": true,
+      "detail": "every assertion payload re-hashes to its declaration-time digest"
+    },
+    {
+      "check": "P2_view_invalidated_after_retraction",
+      "passed": true,
+      "detail": {
+        "view_after_retraction": [
+          "A1",
+          "M2"
+        ]
+      }
+    },
+    {
+      "check": "P2_audit_history_preserved",
+      "passed": true,
+      "detail": [
+        "assertion_declared",
+        "transition",
+        "transition",
+        "promotion_recorded",
+        "transition",
+        "challenge_recorded",
+        "transition",
+        "retraction_recorded"
+      ]
+    },
+    {
+      "check": "P2_direct_retraction_invalidates_view",
+      "passed": true,
+      "detail": {
+        "view": [
+          "A1"
+        ]
+      }
+    },
+    {
+      "check": "P2_challenge_dismissal_restores_view",
+      "passed": true,
+      "detail": {
+        "view": [
+          "A1"
+        ]
+      }
+    },
+    {
+      "check": "P3_promoted_superseded_with_successor",
+      "passed": true,
+      "detail": {
+        "applied": true,
+        "event": {
+          "seq": 41,
+          "type": "transition",
+          "guard": "superseded_by_successor",
+          "assertion": "A3",
+          "from": "promoted",
+          "to": "superseded",
+          "actor": "operator",
+          "actor_scope": null,
+          "detail": ""
+        },
+        "guard": "superseded_by_successor",
+        "from": "promoted",
+        "to": "superseded"
+      }
+    },
+    {
+      "check": "P3_challenge_resolved_by_supersession",
+      "passed": true,
+      "detail": {
+        "applied": true,
+        "event": {
+          "seq": 49,
+          "type": "transition",
+          "guard": "challenge_resolved_by_supersession",
+          "assertion": "A3b",
+          "from": "challenged",
+          "to": "superseded",
+          "actor": "operator",
+          "actor_scope": null,
+          "detail": "challenge resolved by publishing corrected successor"
+        },
+        "guard": "challenge_resolved_by_supersession",
+        "from": "challenged",
+        "to": "superseded"
+      }
+    },
+    {
+      "check": "P3_terminal_and_undefined_refused_fail_closed",
+      "passed": true,
+      "detail": [
+        "terminal_state_no_outgoing_transitions",
+        "terminal_state_no_outgoing_transitions",
+        "terminal_state_no_outgoing_transitions",
+        "undefined_transition"
+      ]
+    },
+    {
+      "check": "P3_refusals_change_no_status",
+      "passed": true,
+      "detail": "status snapshot identical after refusals"
+    },
+    {
+      "check": "P3_refusals_audited",
+      "passed": true,
+      "detail": 6
+    },
+    {
+      "check": "P3_all_states_from_s1_003_vocabulary",
+      "passed": true,
+      "detail": [
+        "challenged",
+        "promoted",
+        "proposed",
+        "rejected",
+        "retracted",
+        "superseded",
+        "under_review"
+      ]
+    },
+    {
+      "check": "P3_every_transition_defined_with_guard",
+      "passed": true,
+      "detail": {
+        "challenged->promoted": "challenge_dismissed_by_operator",
+        "challenged->retracted": "challenge_upheld_by_operator",
+        "challenged->superseded": "challenge_resolved_by_supersession",
+        "promoted->challenged": "challenge_raised",
+        "promoted->retracted": "retraction_raised",
+        "promoted->superseded": "superseded_by_successor",
+        "proposed->rejected": "intake_rejection",
+        "proposed->under_review": "review_opened",
+        "under_review->promoted": "evidence_gate_passed",
+        "under_review->rejected": "evidence_gate_failed"
+      }
+    },
+    {
+      "check": "P3_non_terminal_states_have_exits",
+      "passed": true,
+      "detail": [
+        "proposed",
+        "under_review",
+        "promoted",
+        "challenged"
+      ]
+    },
+    {
+      "check": "P3_terminal_states_have_no_exits",
+      "passed": true,
+      "detail": [
+        "rejected",
+        "retracted",
+        "superseded"
+      ]
+    },
+    {
+      "check": "P3_transition_targets_valid",
+      "passed": true,
+      "detail": "all targets in vocabulary"
+    },
+    {
+      "check": "P3_all_transitions_exercised",
+      "passed": true,
+      "detail": {
+        "missing": [],
+        "exercised": [
+          [
+            "challenged",
+            "promoted"
+          ],
+          [
+            "challenged",
+            "retracted"
+          ],
+          [
+            "challenged",
+            "superseded"
+          ],
+          [
+            "promoted",
+            "challenged"
+          ],
+          [
+            "promoted",
+            "retracted"
+          ],
+          [
+            "promoted",
+            "superseded"
+          ],
+          [
+            "proposed",
+            "rejected"
+          ],
+          [
+            "proposed",
+            "under_review"
+          ],
+          [
+            "under_review",
+            "promoted"
+          ],
+          [
+            "under_review",
+            "rejected"
+          ]
+        ]
+      }
+    },
+    {
+      "check": "P3_journal_matches_status_history",
+      "passed": true,
+      "detail": {
+        "A1": [
+          "under_review",
+          "promoted",
+          "challenged",
+          "promoted"
+        ],
+        "A2": [
+          "under_review",
+          "promoted",
+          "challenged",
+          "retracted"
+        ],
+        "A3": [
+          "under_review",
+          "promoted",
+          "superseded"
+        ],
+        "A3b": [
+          "under_review",
+          "promoted",
+          "challenged",
+          "superseded"
+        ],
+        "A3c": [
+          "under_review",
+          "promoted"
+        ],
+        "B0": [
+          "rejected"
+        ],
+        "M-mirror": [
+          "under_review",
+          "rejected"
+        ],
+        "M-single": [
+          "under_review",
+          "rejected"
+        ],
+        "M2": [
+          "under_review",
+          "promoted",
+          "retracted"
+        ]
+      }
+    },
+    {
+      "check": "P3_terminal_statuses_stable",
+      "passed": true,
+      "detail": {
+        "A2": "retracted",
+        "M2": "retracted",
+        "A3": "superseded",
+        "A3b": "superseded",
+        "B0": "rejected",
+        "M-single": "rejected",
+        "M-mirror": "rejected"
+      }
+    }
+  ],
+  "transitions_exercised": [
+    [
+      "challenged",
+      "promoted"
+    ],
+    [
+      "challenged",
+      "retracted"
+    ],
+    [
+      "challenged",
+      "superseded"
+    ],
+    [
+      "promoted",
+      "challenged"
+    ],
+    [
+      "promoted",
+      "retracted"
+    ],
+    [
+      "promoted",
+      "superseded"
+    ],
+    [
+      "proposed",
+      "rejected"
+    ],
+    [
+      "proposed",
+      "under_review"
+    ],
+    [
+      "under_review",
+      "promoted"
+    ],
+    [
+      "under_review",
+      "rejected"
+    ]
+  ],
+  "details": {
+    "view_final": [
+      "A1",
+      "A3c"
+    ],
+    "statuses_final": {
+      "A1": "promoted",
+      "A2": "retracted",
+      "A3": "superseded",
+      "A3b": "superseded",
+      "A3c": "promoted",
+      "A4": "proposed",
+      "B0": "rejected",
+      "M-mirror": "rejected",
+      "M-single": "rejected",
+      "M2": "retracted"
+    },
+    "assertion_rows": 10,
+    "audit_rows": 55,
+    "refusals": [
+      {
+        "assertion": "M-single",
+        "from": "under_review",
+        "to": "promoted",
+        "reason": "evidence_gate_failed:insufficient_evidence_count;insufficient_distinct_canonical_sources;insufficient_independence_groups"
+      },
+      {
+        "assertion": "M-mirror",
+        "from": "under_review",
+        "to": "promoted",
+        "reason": "evidence_gate_failed:insufficient_distinct_canonical_sources;insufficient_independence_groups"
+      },
+      {
+        "assertion": "M2",
+        "from": "retracted",
+        "to": "promoted",
+        "reason": "terminal_state_no_outgoing_transitions"
+      },
+      {
+        "assertion": "A3",
+        "from": "superseded",
+        "to": "challenged",
+        "reason": "terminal_state_no_outgoing_transitions"
+      },
+      {
+        "assertion": "B0",
+        "from": "rejected",
+        "to": "under_review",
+        "reason": "terminal_state_no_outgoing_transitions"
+      },
+      {
+        "assertion": "A4",
+        "from": "proposed",
+        "to": "promoted",
+        "reason": "undefined_transition"
+      }
+    ]
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "schema": "agentos.ticket-evaluation-record/v1",
+  "ticket_id": "S1-011",
+  "recorded_at": "2026-08-31T17:38:44Z",
+  "db_root": ".agentos-research/platform-stage-1",
+  "campaign_id": "rcamp_6250NPAHDPWBCE8W01M1CECYRT",
+  "goal_id": "goal_JPWBTFD8DFDECQ9J01M1CECYRT",
+  "evaluation_id": "reval_Z11BREGR69DYXA8S01M1CECZJW",
+  "evaluation_version": 1,
+  "result": "pass_with_limits",
+  "artifact_chain_hash": "4415c23fa0d4e398a894bf23f1f3d17a8590c8d971d95e3b966f1c53aef69e78",
+  "evidence_pack": {
+    "schema": "agentos.evidence-pack/v3",
+    "path": ".agentos-research/platform-stage-1/goals/goal_JPWBTFD8DFDECQ9J01M1CECYRT/evidence-pack.json",
+    "sha256": "569dd3dee53028924f0ff6f6c3d2b35512ffaa7b9f8db8e8adeb8b38e1cf19db",
+    "chain_fresh": true,
+    "latest_evaluation_valid": true,
+    "embedded_sha256_matches": true
+  },
+  "probes": [
+    {
+      "command": "python research/tickets/stage-1/S1-011/lifecycle_probe.py",
+      "detail": "{\"schema\": \"agentos.s1-011-lifecycle-probe/v1\", \"probe\": \"s1-011-lifecycle-adversarial\", \"status\": \"pass\", \"observed\": \"pass\", \"expected\": \"pass\", \"total_checks\": 31, \"passed_checks\": 31, \"failures\": [], \"results_file\": \"D:\\\\DeepSeek Harnes\\\\AgentOS-main\\\\research\\\\tickets\\\\stage-1\\\\S1-011\\\\probe-results.json\"}",
+      "expected": "pass",
+      "name": "s1-011-lifecycle-adversarial",
+      "observed": "pass",
+      "passed": true,
+      "result": "pass"
+    },
+    {
+      "command": "python research/tickets/stage-1/S1-011/comparison_probe.py",
+      "detail": "{\"schema\": \"agentos.s1-011-comparison-probe/v1\", \"probe\": \"s1-011-comparison-acceptance\", \"status\": \"pass\", \"observed\": \"pass\", \"expected\": \"pass\", \"total_checks\": 12, \"passed_checks\": 12, \"failures\": [], \"results_file\": \"D:\\\\DeepSeek Harnes\\\\AgentOS-main\\\\research\\\\tickets\\\\stage-1\\\\S1-011\\\\comparison-results.json\"}",
+      "expected": "pass",
+      "name": "s1-011-comparison-acceptance",
+      "observed": "pass",
+      "passed": true,
+      "result": "pass"
+    }
+  ],
+  "wiki_check": {
+    "ok": true,
+    "files": 498,
+    "links_checked": 1335,
+    "issues": []
+  },
+  "limitations": [
+    "The auditor role is process-separated and adversarial but is not an external human or independently operated model.",
+    "Literature identity (Doyle, Dung, PROV-O) was verified by inheritance from the S1-001 verified queue plus a local hash check of the S1-001 bundle; this offline run performed no new live publisher or W3C page review.",
+    "No measured operator data exists yet; operator-load statements are design hypotheses until the S1-013 pilot runs.",
+    "The lifecycle state machine is a deterministic research model over the S1-003 contract, not a production knowledge graph or runtime knowledge service.",
+    "Evidence-threshold calibration, Beta/Sybil pressure, and dispute UX are explicitly deferred to S1-012, S1-013, and S1-014."
+  ],
+  "note": "S1-011 authored + validated: bundle.json with 7 verified sources, lifecycle + comparison probes pass (31/31, 12/12). research-plan PASS is a research evaluation; it never sets Goal ACCEPTED (release gate only)."
+}

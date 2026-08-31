@@ -1,0 +1,58 @@
+{
+  "schema": "agentos.ticket-evaluation-record/v1",
+  "ticket_id": "S1-004",
+  "recorded_at": "2026-08-31T00:00:00Z",
+  "db_root": ".agentos-research/platform-stage-1",
+  "campaign_id": "rcamp_XYY28X27NV0GHPN601M1CH6GCJ",
+  "goal_id": "goal_VXBYD48EDQDWB29Z01M1CH6GCJ",
+  "evaluation_id": "reval_FM0R273HD8GZ5GB801M1CH6RF0",
+  "evaluation_version": 1,
+  "result": "pass_with_limits",
+  "artifact_chain_hash": "dc80e429ded35c3800168a45501444106a8014fb60d7ee9e5518a8bb4761f26f",
+  "evidence_pack": {
+    "schema": "agentos.evidence-pack/v3",
+    "path": ".agentos-research/platform-stage-1/goals/goal_VXBYD48EDQDWB29Z01M1CH6GCJ/evidence-pack.json",
+    "sha256": "7d8f3a20f0f0899cf145ae660c768fbb61b8010b6419078de732e575a4ab95c5",
+    "chain_fresh": true,
+    "latest_evaluation_valid": true,
+    "embedded_sha256_matches": true
+  },
+  "probes": [
+    {
+      "name": "s1-004-invariant-simulation-bounded",
+      "command": "python research/tickets/stage-1/S1-004/invariant_simulation.py 200000",
+      "expected": "pass",
+      "observed": "pass",
+      "result": "pass",
+      "checks": "3 seeds x 200k ops; 0 violations; focused crash-replay ok"
+    },
+    {
+      "name": "s1-004-invariant-simulation-smoke",
+      "command": "python research/tickets/stage-1/S1-004/invariant_simulation.py 2000",
+      "expected": "pass",
+      "observed": "pass",
+      "result": "pass",
+      "checks": "3 seeds x 2k ops; 0 violations"
+    }
+  ],
+  "acceptance_run": {
+    "artifact": "research/tickets/stage-1/S1-004/acceptance-run-1m.json",
+    "method": "python research/tickets/stage-1/S1-004/invariant_simulation.py 1000000",
+    "criteria": "3 deterministic seeds (1201, 3407, 5527) x 1,000,000 simulated operations per acceptance run; 0 violations of INV1-INV6 and SAF in the reported traces",
+    "note": "Executed as a committed evidence artifact (the research-plan probe runs a bounded 200k-op slice to stay within the 120 s probe cap; the full 1M acceptance run is reproducible from the same script)."
+  },
+  "wiki_check": {
+    "ok": true,
+    "files": 582,
+    "links_checked": 1543,
+    "issues": []
+  },
+  "limitations": [
+    "Bounded trace is acceptance evidence, not a proof of arbitrary LLM behavior or production distributed consensus.",
+    "Model-to-implementation translations (TLA+/Alloy) remain design obligations; only the Python model was executed.",
+    "Simulation is a single-process model of declared semantics, not the production runtime.",
+    "Auditor is a process-separated role within one local environment, not an external human or independently operated model.",
+    "Liveness claims without a trace are explicitly labelled design obligations."
+  ],
+  "note": "S1-004 authored + validated: bundle.json with 7 verified sources, 10 claims, 11 artifacts; invariant_simulation.py review-fixed (2 fail-open model bugs eliminated: CRASH-B outbox double-publish, end-of-seed unreceipted SAF); probes pass 0 violations; focused crash-replay exactly-once; 1M-op acceptance run committed. research-plan PASS is a research evaluation; it never sets Goal ACCEPTED (release gate only)."
+}
