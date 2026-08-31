@@ -1,0 +1,53 @@
+{
+  "schema": "agentos.ticket-evaluation-record/v1",
+  "ticket_id": "S1-006",
+  "recorded_at": "2026-08-31T17:30:00Z",
+  "db_root": ".agentos-research/platform-stage-1",
+  "campaign_id": "rcamp_99A0A5QP80XXQNZM01M1CDFEAC",
+  "goal_id": "goal_65FSWZA2TY1RQZF601M1CDFEAC",
+  "evaluation_id": "reval_1EHTV5604BX0YFQN01M1CDFED5",
+  "evaluation_version": 1,
+  "result": "pass_with_limits",
+  "artifact_chain_hash": "e8f45e65171ae4c293ca0fb54e5e52bcc311cbaea3af426d97d3e58239c5c80d",
+  "evidence_pack": {
+    "schema": "agentos.evidence-pack/v3",
+    "path": "research/tickets/stage-1/S1-006/results/evidence/evidence-pack-32d18eebe85fe24e0e725c8f664a62b8eff2738c25000436c7401c2bb7fce74c.json",
+    "canonical_runtime_path": ".agentos-research/platform-stage-1/goals/goal_65FSWZA2TY1RQZF601M1CDFEAC/evidence-pack.json",
+    "sha256": "32d18eebe85fe24e0e725c8f664a62b8eff2738c25000436c7401c2bb7fce74c",
+    "payload_sha256": "8e38d5b173df0bb3e8c8d3e1541ad2901ab4664ab4f6e44bf06b91b777264f74",
+    "chain_fresh": true,
+    "latest_evaluation_valid": true
+  },
+  "wiki_check": {
+    "ok": true,
+    "files": 2170,
+    "links_checked": 5942,
+    "issues": []
+  },
+  "decision": {
+    "question": "QA2 execution backend: in-process scheduler versus durable-execution engine",
+    "recommendation": "in-process scheduler (current AgentOS coordinator, ADR-0002); the durable engine is documented provider-neutral as a single-writer stateful boundary (event history + transactional outbox inside) with measurable migration triggers",
+    "scores_normalized": {
+      "in_process": 4.0,
+      "durable_engine": 3.04
+    },
+    "sensitivity": "222 deterministic runs (16 per-dimension weight +-50% perturbations, 200 seeded random integer weight compositions); zero winner flips",
+    "probes": {
+      "A_unsafe_resume": "REJECTED - resume re-executed a real external effect and force-appended a second receipt through the production simulator path; FAIL regardless of latency or recovery advantage",
+      "B_incomparable": "REJECTED as INCOMPARABLE/NO_DATA - the candidate's workload hash diverged from the frozen manifest; it can never win",
+      "C_blind_retry": "REJECTED - unknown external outcomes retried without recorded reconciliation evidence; FAIL"
+    },
+    "migration_trigger": "revisit only when a measurable trigger fires: sustained load beyond the single-process S1-002 envelope (10-100 ev/s research band), an availability-domain requirement, or a new trust boundary; the durable prototype starts with the state boundary (event history + outbox inside a single-writer component) and re-runs this frozen benchmark before any migration; rollback is trivial (no core change landed)",
+    "non_goals": "no production Temporal/Cadence/Step Functions installation, no vendor/cloud choice, no production SLO or availability claims, no core runtime changes, no SQLite/Postgres or S1-005 topology re-decision"
+  },
+  "limitations": [
+    "Model-based comparison on a same-host research station: durable-engine costs combine S1-005 E1/E2 measurements with documented lease/visibility assumptions (100 ms lease timeout, 105 ms modeled recovery); no vendor engine was installed.",
+    "S1-002 is not a production SLO and S1-005 measurements are same-host bounded; multi-host partition behaviour and vendor timer semantics are unknown and excluded from scoring.",
+    "The durable-engine candidate scored 0 on crash-recovery-time and 1 on throughput-latency under the frozen linear ratio mapping; this is a documented extreme of the modelled lease timeout, not a measured production gap.",
+    "Producer and verifier labels are process-separated roles in one local environment, not external human auditors.",
+    "Migration triggers are symbolic until the follow-up benchmark measures them."
+  ],
+  "note": "research-plan PASS_WITH_LIMITS is a research evaluation; it never sets Goal ACCEPTED (release gate only)",
+  "research_revision": 1,
+  "recorded_corrective_round": "R1-final"
+}
