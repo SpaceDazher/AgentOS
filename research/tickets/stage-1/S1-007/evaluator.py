@@ -1072,8 +1072,9 @@ def evaluate(runs_manifest: Path, rerun_manifest: Path,
     margin = abs(base_scores["per_scope"] - base_scores["shared_rls"])
     near_tie = margin < rubric["tie_policy"]["near_tie_threshold"]
 
-    sens = sensitivity_analysis(base_scores, weights, rng_seed=42,
-                                vectors=200)
+    sens = sensitivity_analysis(scores, weights, rng_seed=42,
+                                vectors=200,
+                                base_expected=base_scores)
 
     limitations = []
     limitations.append(
