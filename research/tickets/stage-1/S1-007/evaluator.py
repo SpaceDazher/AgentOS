@@ -822,19 +822,27 @@ def weighted_scores(scores: dict, weights: dict) -> dict:
     return out
 
 
-def sensitivity_analysis(base_scores: dict, base_weights: dict,
-                         rng_seed: int = 42, vectors: int = 200) -> dict:
+def sensitivity_analysis(dim_scores: dict, weights: dict,
+                         rng_seed: int = 42, vectors: int = 200,
+                         base_expected: dict | None = None) -> dict:
+    """Weight perturbation analysis over the per-dimension score matrix.
+    `dim_scores` maps dimension id -> {variant: score}; unknown (None)
+    cells are excluded from each reweighting per the frozen rubric."""
+    base_scores = weighted_scores(dim_scores, weights)
+    if base_expected is not None and base_expected != base_scores:
+        raise EvalError("base score drift between evaluation and "
+                        "sensitivity input")
     flips = []
     winner = max(base_scores, key=lambda k: base_scores[k])
-    dims = sorted(base_weights)
+    dims = sorted(weights)
     # one-at-a-time +-50%
     for dim in dims:
         for factor in (0.5, 1.5):
-            ws = dict(base_weights)
-            ws[dim] = base_weights[dim] * factor
+            ws = dict(weights)
+            ws[dim] = weights[dim] * factor
             z = sum(ws.values())
             ws = {d: w / z for d, w in ws.items()}
-            sc = weighted_scores(base_scores, ws)
+            sc = weighted_scores(dim_scores, ws)
             w2 = max(sc, key=lambda k: sc[k])
             if w2 != winner:
                 flips.append({"kind": "oat", "dim": dim,
@@ -844,11 +852,11 @@ def sensitivity_analysis(base_scores: dict, base_weights: dict,
         raw = [rng.random() for _ in dims]
         z = sum(raw)
         ws = {d: r / z for d, r in zip(dims, raw)}
-        sc = weighted_scores(base_scores, ws)
+        sc = weighted_scores(dim_scores, ws)
         w2 = max(sc, key=lambda k: sc[k])
         if w2 != winner:
             flips.append({"kind": "random", "vector": i, "winner": w2})
-    return {"base_scores": base_scores, "base_weights": base_weights,
+    return {"base_scores": base_scores, "base_weights": weights,
             "oat_weight_factors": [0.5, 1.5],
             "random_vectors": vectors, "random_seed": rng_seed,
             "flips": flips, "flip_count": len(flips),
