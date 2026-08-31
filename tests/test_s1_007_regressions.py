@@ -516,8 +516,8 @@ class TestISODerivation(unittest.TestCase):
         self.assertIn("NO_DATA", analysis)
         # a signal above tolerance is a finding, never silently a pass
         synthetic = {"variants": {"per_scope": {
-            "arms": {"valid_foreign_id": {"median_ns": 5000},
-                     "nonexistent_id": {"median_ns": 2000}}}}}
+            "median_paired_diff_ns": 3000, "tolerance_ns": 2000,
+            "per_seed": [], "pooled_samples": 600}}}
         contract = json.loads((S1007 / "isolation-contract.json")
                               .read_text(encoding="utf-8"))
         out = evaluator.analyze_timing(synthetic, contract)
