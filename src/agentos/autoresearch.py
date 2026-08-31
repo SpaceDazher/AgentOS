@@ -190,27 +190,23 @@ def CampaignManifest(**kw) -> FrozenManifest:  # noqa: N802
     return make_manifest(**kw)
 
 
-def _skip_inaccessible_entries(directory: str,
-                               names: list[str]) -> list[str]:
-    """copytree ignore-callback: skip entries that cannot be listed.
+def _ignore_generated_entries(_directory: str,
+                              names: list[str]) -> list[str]:
+    """Ignore only explicit non-authoritative generated/cache entries.
 
-    A live workspace can contain generated artifacts locked by another
-    sandbox identity (e.g. an unreadable wiki projection directory): such
-    entries cannot be copied and are not part of the mutable candidate
-    surface. Everything accessible is copied unchanged."""
-    import os
-    skipped = []
-    for name in names:
-        full = os.path.join(directory, name)
-        try:
-            if os.path.isdir(full):
-                with os.scandir(full):
-                    pass
-            else:
-                os.stat(full)
-        except OSError:
-            skipped.append(name)
-    return skipped
+    Permission and I/O failures for every other entry propagate from
+    ``copytree``. Silently dropping an unreadable source, specification or
+    evaluator file would make the candidate surface incomplete and must fail
+    closed instead of weakening the frozen-eval boundary.
+    """
+    generated_dirs = {
+        ".agentos-demo", ".pytest_cache", ".mypy_cache", ".ruff_cache",
+        "__pycache__",
+    }
+    return [
+        name for name in names
+        if name in generated_dirs or name.endswith((".pyc", ".pyo"))
+    ]
 
 
 class Autoresearch:
@@ -328,7 +324,7 @@ class Autoresearch:
                 srcp = self.repo_source / item
                 if srcp.exists():
                     shutil.copytree(srcp, wt / item, dirs_exist_ok=True,
-                                    ignore=_skip_inaccessible_entries)
+                                    ignore=_ignore_generated_entries)
         return wt
 
     @staticmethod

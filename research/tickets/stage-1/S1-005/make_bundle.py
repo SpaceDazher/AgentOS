@@ -117,10 +117,16 @@ def validate_experiments_data(data: dict) -> dict:
     tree matching the current HEAD, review R3, finding 4)."""
     import subprocess as sp
     try:
-        head = sp.run(["git", "rev-parse", "HEAD"], capture_output=True,
-                      text=True, timeout=30).stdout.strip()
-    except (OSError, sp.TimeoutExpired):
-        head = None
+        proc = sp.run(["git", "rev-parse", "HEAD"], cwd=ROOT,
+                      capture_output=True, text=True, timeout=30)
+    except (OSError, sp.TimeoutExpired) as exc:
+        raise SystemExit(f"cannot resolve repository HEAD: {exc}") from exc
+    head = proc.stdout.strip()
+    if proc.returncode != 0 or len(head) != 40 or \
+            any(c not in "0123456789abcdef" for c in head):
+        raise SystemExit(
+            "cannot resolve a valid repository HEAD: "
+            f"{proc.stderr.strip() or head!r}")
     try:
         validate_experiment_result(data, expected_commit=head,
                                    verify_script_hashes=True)
@@ -133,7 +139,8 @@ def run_experiments(out_path=None) -> dict:
     """Re-execute experiments.py as a fresh subprocess (review R2, F1).
     A previously saved result is removed first: publishing a saved run
     without fresh verification is forbidden. The fresh output must exit 0
-    and is strictly validated; its SHA-256 and provenance are returned."""
+    and is strictly validated; the schema-valid artifact is returned
+    unchanged. Callers hash the file bytes separately when binding it."""
     out_path = Path(out_path) if out_path else \
         TICKET / "results" / "boundary-experiments.json"
     if out_path.exists():
@@ -150,8 +157,6 @@ def run_experiments(out_path=None) -> dict:
         raise SystemExit("experiments did not write the output file")
     data = json.loads(out_path.read_text(encoding="utf-8"))
     validate_experiments_data(data)
-    data["output_sha256"] = hashlib.sha256(out_path.read_bytes()).hexdigest()
-    data["executed_at_fresh"] = True
     return data
 
 

@@ -466,6 +466,8 @@ def _git_commit() -> str | None:
         out = subprocess.run(
             ["git", "rev-parse", "HEAD"], capture_output=True, text=True,
             timeout=30)
+        if out.returncode != 0:
+            return None
         return out.stdout.strip() or None
     except (OSError, subprocess.TimeoutExpired):
         return None
@@ -476,6 +478,8 @@ def _git_tree_sha() -> str | None:
         out = subprocess.run(
             ["git", "rev-parse", "HEAD^{tree}"], capture_output=True,
             text=True, timeout=30)
+        if out.returncode != 0:
+            return None
         return out.stdout.strip() or None
     except (OSError, subprocess.TimeoutExpired):
         return None
@@ -488,6 +492,8 @@ def _git_dirty() -> bool:
             text=True, timeout=60)
     except (OSError, subprocess.TimeoutExpired):
         return True  # fail closed: unknown state counts as dirty
+    if out.returncode != 0:
+        return True  # fail closed: an unreadable Git state is not clean
     for line in out.stdout.splitlines():
         # the benchmark's own output file is written by this very run and
         # is not part of the candidate surface
@@ -590,18 +596,43 @@ def validate_experiment_result(data: dict, *, expected_commit: str | None = None
             fail(f"missing required provenance field {field!r}")
     commit = data["commit"]
     tree = data["tree_sha"]
-    if not isinstance(commit, str) or len(commit) != 40             or any(c not in "0123456789abcdef" for c in commit):
+    if not isinstance(commit, str) or len(commit) != 40 or \
+            any(c not in "0123456789abcdef" for c in commit):
         fail(f"commit is not a 40-hex sha: {commit!r}")
-    if not isinstance(tree, str) or len(tree) != 40             or any(c not in "0123456789abcdef" for c in tree):
+    if not isinstance(tree, str) or len(tree) != 40 or \
+            any(c not in "0123456789abcdef" for c in tree):
         fail(f"tree_sha is not a 40-hex sha: {tree!r}")
+    repo_root = Path(__file__).resolve().parents[4]
+    try:
+        tree_proc = subprocess.run(
+            ["git", "rev-parse", f"{commit}^{{tree}}"], cwd=repo_root,
+            capture_output=True, text=True, timeout=30)
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        fail(f"cannot resolve recorded commit tree: {exc}")
+    if tree_proc.returncode != 0:
+        fail("recorded commit is not resolvable in the repository: "
+             f"{tree_proc.stderr.strip() or commit}")
+    actual_tree = tree_proc.stdout.strip()
+    if actual_tree != tree:
+        fail(f"tree_sha does not match commit {commit}: recorded {tree}, "
+             f"actual {actual_tree}")
     if data.get("dirty") is not False:
         fail("experiments must run on a clean committed tree (dirty=false)")
     if expected_commit and commit != expected_commit:
         fail(f"commit mismatch: recorded {commit} != expected "
              f"{expected_commit}")
     if verify_script_hashes:
+        required_scripts = {"experiments.py", "evaluator.py"}
+        script_hashes = data.get("script_hashes")
+        if not isinstance(script_hashes, dict) or \
+                set(script_hashes) != required_scripts:
+            fail("script_hashes must contain exactly "
+                 f"{sorted(required_scripts)}")
         here = Path(__file__).resolve().parent
-        for name, recorded in data["script_hashes"].items():
+        for name, recorded in script_hashes.items():
+            if not isinstance(recorded, str) or len(recorded) != 64 or \
+                    any(c not in "0123456789abcdef" for c in recorded):
+                fail(f"script hash for {name} is not a 64-hex sha256")
             script = here / name
             if not script.is_file():
                 fail(f"script hash names a missing file: {name}")
@@ -623,8 +654,10 @@ def validate_experiment_result(data: dict, *, expected_commit: str | None = None
         if not isinstance(rounds, int) or rounds <= 0:
             fail(f"{key}: rounds missing or non-positive")
         counts = block.get("validated_counts")
-        if not isinstance(counts, dict) or len(counts) != 3:
-            fail(f"{key}: raw validated_counts missing")
+        required_count_keys = {"in_process", "pipe", "tcp"}
+        if not isinstance(counts, dict) or set(counts) != required_count_keys:
+            fail(f"{key}: validated_counts keys must be exactly "
+                 f"{sorted(required_count_keys)}")
         for transport, count in counts.items():
             if not isinstance(count, int) or count < rounds:
                 fail(f"{key}: validated count for {transport} below rounds")
