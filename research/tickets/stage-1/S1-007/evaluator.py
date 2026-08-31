@@ -331,6 +331,37 @@ def _check_retrieval_obs(obs, run, counters, findings, expected=None,
     if decision != "allow":
         raise EvalError(f"run {run['run_id']}: unknown decision {decision}")
 
+    # ISO3: any cache hit must carry epoch revalidation and a verifiable
+    # binding (checked on every allow response, before decision-timeline
+    # comparisons, so a stale hit is never hidden by an ISO4 finding)
+    events = obs.get("cache_events", [])
+    if "hit_no_revalidation" in events:
+        counters["ISO3"] += 1
+        findings.append({"iso": "ISO3", "target": target,
+                         "why": "cache hit without revalidation"})
+    if "hit" in events:
+        if "epoch_revalidation" not in obs.get("policy_checks", []):
+            counters["ISO3"] += 1
+            findings.append({"iso": "ISO3", "target": target,
+                             "why": "hit without epoch revalidation check"})
+        binding = obs.get("cache_entry_binding")
+        if not isinstance(binding, dict) or \
+                not all((binding.get("scope"), binding.get("epoch"),
+                         binding.get("digest"))):
+            counters["ISO3"] += 1
+            findings.append({"iso": "ISO3", "target": target,
+                             "why": "unverifiable cache binding"})
+        else:
+            if binding["scope"] != eff:
+                counters["ISO3"] += 1
+                findings.append({"iso": "ISO3", "target": target,
+                                 "why": "cross-scope cache hit"})
+            current = (expected or {}).get("epochs", {}).get(eff)
+            if current is not None and binding["epoch"] != current:
+                counters["ISO3"] += 1
+                findings.append({"iso": "ISO3", "target": target,
+                                 "why": "stale epoch served"})
+
     if expected is None:
         return  # unreachable: bulk rows carry their expected row
 
@@ -373,10 +404,16 @@ def _check_retrieval_obs(obs, run, counters, findings, expected=None,
             counters["ISO2"] += 1
             findings.append({"iso": "ISO2", "target": target,
                              "why": "pre-filter aggregate count"})
-        if meta.get("result_count") != len(objects):
-            counters["ISO2"] += 1
-            findings.append({"iso": "ISO2", "target": target,
-                             "why": "result_count mismatch"})
+        if obs.get("op") == "paginate":
+            if meta.get("result_count") != len(objects):
+                counters["ISO2"] += 1
+                findings.append({"iso": "ISO2", "target": target,
+                                 "why": "result_count mismatch"})
+        else:  # aggregate: counts describe matched authorized rows
+            if meta.get("result_count") != len(authorized):
+                counters["ISO2"] += 1
+                findings.append({"iso": "ISO2", "target": target,
+                                 "why": "aggregate count mismatch"})
         return
 
     # ---- single retrieve ----
@@ -427,38 +464,7 @@ def _check_retrieval_obs(obs, run, counters, findings, expected=None,
             findings.append({"iso": "ISO2", "target": target,
                              "why": "content mismatch vs fixtures"})
 
-    # ISO3: every cache hit must carry epoch revalidation and a verifiable
-    # binding (scope + current epoch + digest)
-    events = obs.get("cache_events", [])
-    if "hit_no_revalidation" in events:
-        counters["ISO3"] += 1
-        findings.append({"iso": "ISO3", "target": target,
-                         "why": "cache hit without revalidation"})
-    if "hit" in events:
-        if "epoch_revalidation" not in obs.get("policy_checks", []):
-            counters["ISO3"] += 1
-            findings.append({"iso": "ISO3", "target": target,
-                             "why": "hit without epoch revalidation check"})
-        binding = obs.get("cache_entry_binding")
-        if not isinstance(binding, dict) or \
-                not all((binding.get("scope"), binding.get("epoch"),
-                         binding.get("digest"))):
-            counters["ISO3"] += 1
-            findings.append({"iso": "ISO3", "target": target,
-                             "why": "unverifiable cache binding"})
-        else:
-            if binding["scope"] != eff:
-                counters["ISO3"] += 1
-                findings.append({"iso": "ISO3", "target": target,
-                                 "why": "cross-scope cache hit"})
-            current = expected["epochs"].get(eff)
-            if current is not None and binding["epoch"] != current:
-                counters["ISO3"] += 1
-                findings.append({"iso": "ISO3", "target": target,
-                                 "why": "stale epoch served"})
-
-    # ISO6: window ops must apply the same policy contract (checked in
-    # the window branch above); ISO3 cache checks below apply to retrieves
+    # ISO3 block already ran above for every allow response
 
 
 def _check_reindex_obs(obs, exp, run, counters, findings):
@@ -904,7 +910,9 @@ def evaluate_probes(probes: dict, oracle: Oracle) -> dict:
     return rejections
 
 
-def analyze_timing(timing: dict, contract: dict) -> dict:
+def analyze_timing(timing: dict, contract: dict | None = None) -> dict:
+    if not contract:
+        contract = load(TICKET / "isolation-contract.json")
     frozen = contract["timing_probe_contract"]
     tol_rule = frozen["tolerance"]
     out = {"frozen_methodology": {

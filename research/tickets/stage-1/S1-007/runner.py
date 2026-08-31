@@ -268,15 +268,16 @@ class VariantBase:
                 obs["policy_checks"].append("membership_denied")
                 return None, "policy_denied"
             return eff, None
-        known = {self.world.scope_ids[s] for s in self.world.scopes} | \
-                set(self.world.scopes)
-        if claimed_scope not in known:
+        alias = {self.world.scope_ids[s]: s for s in self.world.scopes}
+        claimed_short = alias.get(claimed_scope, claimed_scope)
+        if claimed_short not in self.world.scopes:
             obs["policy_checks"].append("scope_unknown")
             return None, "unknown_scope"
-        if eff is None or claimed_scope not in (eff,
-                                                self.world.scope_ids.get(eff)):
+        if eff is None or claimed_short != eff:
             obs["policy_checks"].append("membership_denied")
-            return None, "forged_scope"
+            # the canonical effective scope is reported unchanged; the
+            # forged claim never widens it and the request denies
+            return eff, "forged_scope"
         return eff, None
 
     def policy_check(self, actor: str, eff: str, obs: dict) -> bool:
@@ -378,16 +379,16 @@ class VariantBase:
                    dict(self.epochs)}
         eff, reason = self.resolve_effective_scope(actor, claimed_scope, obs)
         obs["effective_scope"] = eff
-        if eff is None:
+        if eff is None or reason is not None:
             obs["decision"] = "deny"
-            obs["reason_class"] = reason
+            obs["reason_class"] = reason or "policy_denied"
             obs["response"] = dict(self.world.deny_body)
             obs["response_digest"] = sha_json(obs["response"])
             self.audit.append({"event": "retrieval.deny", "actor": actor,
-                               "effective_scope": None,
-                               "generic_reason_class": reason})
+                               "effective_scope": eff,
+                               "generic_reason_class": obs["reason_class"]})
             obs["audit_event"] = {"event": "retrieval.deny",
-                                  "generic_reason_class": reason}
+                                  "generic_reason_class": obs["reason_class"]}
             return obs
         obs["policy_epoch_current"] = self.epochs[eff]
         if not self.policy_check(actor, eff, obs):

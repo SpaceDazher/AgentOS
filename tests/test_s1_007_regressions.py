@@ -67,6 +67,18 @@ def sha(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def seal_manifest(path: Path) -> None:
+    """Recompute the runner's manifest digest after a mutation so the
+    mutation under test (and not a digest mismatch) is what fires."""
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    doc.pop("manifest_digest", None)
+    digest = sha(json.dumps(doc, sort_keys=True,
+                            separators=(",", ":")).encode("utf-8"))
+    doc["manifest_digest"] = digest
+    path.write_text(json.dumps(doc, indent=2, sort_keys=True),
+                    encoding="utf-8")
+
+
 class GoldenFixture:
     """Builds the full positive pipeline ONCE into a temp dir using the
     real runner (two executor identities) and the real evaluator."""
@@ -199,10 +211,10 @@ class TestMatrixFailClosed(unittest.TestCase):
     def _rewrite_manifest(self, base: Path, which: str, mutator) -> None:
         path = base / which / "run-manifest.json"
         doc = json.loads(path.read_text(encoding="utf-8"))
-        doc.pop("manifest_digest", None)
         mutator(doc)
         path.write_text(json.dumps(doc, indent=2, sort_keys=True),
                         encoding="utf-8")
+        seal_manifest(path)
 
     def test_missing_run_rejected(self):
         base = GoldenFixture.fresh_copy(
@@ -214,8 +226,8 @@ class TestMatrixFailClosed(unittest.TestCase):
         doc = json.loads(manifest.read_text(encoding="utf-8"))
         doc["runs"] = [r for r in doc["runs"]
                        if "same-scope-authorized__101" not in r["run_id"]]
-        doc.pop("manifest_digest", None)
         manifest.write_text(json.dumps(doc, sort_keys=True))
+        seal_manifest(manifest)
         with self.assertRaises(evaluator.EvalError):
             self._evaluate(base)
 
@@ -233,9 +245,9 @@ class TestMatrixFailClosed(unittest.TestCase):
         extra["sha256"] = sha((base / "run-a" / "runs" / "999.json")
                               .read_bytes())
         doc["runs"].append(extra)
-        doc.pop("manifest_digest", None)
         (base / "run-a" / "run-manifest.json").write_text(
             json.dumps(doc, sort_keys=True), encoding="utf-8")
+        seal_manifest(base / "run-a" / "run-manifest.json")
         with self.assertRaises(evaluator.EvalError):
             self._evaluate(base)
 
@@ -245,9 +257,9 @@ class TestMatrixFailClosed(unittest.TestCase):
         doc = json.loads((base / "run-a" / "run-manifest.json")
                          .read_text(encoding="utf-8"))
         doc["runs"].append(dict(doc["runs"][0]))
-        doc.pop("manifest_digest", None)
         (base / "run-a" / "run-manifest.json").write_text(
             json.dumps(doc, sort_keys=True), encoding="utf-8")
+        seal_manifest(base / "run-a" / "run-manifest.json")
         with self.assertRaises(evaluator.EvalError):
             self._evaluate(base)
 
@@ -257,9 +269,9 @@ class TestMatrixFailClosed(unittest.TestCase):
         doc = json.loads((base / "run-a" / "run-manifest.json")
                          .read_text(encoding="utf-8"))
         doc["runs"][0]["path"] = "../../" + doc["runs"][0]["path"]
-        doc.pop("manifest_digest", None)
         (base / "run-a" / "run-manifest.json").write_text(
             json.dumps(doc, sort_keys=True), encoding="utf-8")
+        seal_manifest(base / "run-a" / "run-manifest.json")
         with self.assertRaises(evaluator.EvalError):
             self._evaluate(base)
 
@@ -292,9 +304,9 @@ class TestMatrixFailClosed(unittest.TestCase):
         for r in doc["runs"]:
             if r["run_id"] == "shared_rls|foreign-id-valid|101":
                 r["sha256"] = sha(run_file.read_bytes())
-        doc.pop("manifest_digest", None)
         (base / "run-a" / "run-manifest.json").write_text(
             json.dumps(doc, sort_keys=True), encoding="utf-8")
+        seal_manifest(base / "run-a" / "run-manifest.json")
         with self.assertRaises(evaluator.EvalError):
             self._evaluate(base)
 
@@ -342,9 +354,9 @@ class TestMatrixFailClosed(unittest.TestCase):
         for r in doc["runs"]:
             if r["run_id"] == "per_scope|same-scope-authorized|101":
                 r["sha256"] = sha(run_file.read_bytes())
-        doc.pop("manifest_digest", None)
         (base / "run-a" / "run-manifest.json").write_text(
             json.dumps(doc, sort_keys=True), encoding="utf-8")
+        seal_manifest(base / "run-a" / "run-manifest.json")
         with self.assertRaises(evaluator.EvalError):
             self._evaluate(base)
 
@@ -377,9 +389,9 @@ class TestISODerivation(unittest.TestCase):
         for r in doc["runs"]:
             if r["run_id"] == run_id:
                 r["sha256"] = sha(path.read_bytes())
-        doc.pop("manifest_digest", None)
         (base / "run-a" / "run-manifest.json").write_text(
             json.dumps(doc, sort_keys=True), encoding="utf-8")
+        seal_manifest(base / "run-a" / "run-manifest.json")
         return base
 
     def _evaluate_verdict(self, base: Path):
