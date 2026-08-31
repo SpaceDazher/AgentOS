@@ -715,6 +715,11 @@ class RunnerSemanticsR2Tests(TestCase):
         self.assertGreater(high["metrics"]["max_queue_depth"], 1)
         self.assertTrue(any(item["waiting_us"] > 0
                             for item in high["raw_observations"]))
+        ev.validate_raw_run(high)
+
+    def test_rounded_open_loop_timing_remains_verifiable(self):
+        run = rn.simulate("durable_engine", "nominal", 202, "S1")
+        ev.validate_raw_run(run)
 
     def test_s1_observes_commit_crash_and_replayed_delivery(self):
         run = rn.simulate("in_process", "low", 101, "S1")

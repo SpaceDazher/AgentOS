@@ -283,7 +283,9 @@ def validate_raw_run(data: dict, *, allow_safety_failure: bool = False) -> None:
         except (KeyError, TypeError, ValueError) as exc:
             raise EvalError(
                 f"{data.get('run_id')}: malformed open-loop timing") from exc
-        if round(dispatch_start - arrival, 2) != waiting or waiting < 0:
+        # All three values are independently serialized to 0.01 us. Their
+        # reconstructed difference may therefore differ by one quantum.
+        if abs((dispatch_start - arrival) - waiting) > 0.011 or waiting < 0:
             raise EvalError(
                 f"{data.get('run_id')}: waiting time != raw arrival/dispatch")
     recorded_latency = metrics.get("latency_us") or {}
