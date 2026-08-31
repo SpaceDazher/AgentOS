@@ -1,0 +1,545 @@
+{
+  "config": {
+    "min_source_count": 8,
+    "min_verified_ratio": 1.0,
+    "required_artifacts": [
+      "research_plan",
+      "source_registry",
+      "feature_catalog",
+      "architecture_models",
+      "mental_model",
+      "ontology",
+      "mathematical_model",
+      "synthesis_and_gaps",
+      "independent_audit",
+      "platform_plan",
+      "progress"
+    ]
+  },
+  "sources": [
+    {
+      "id": "SRC-02",
+      "canonical_uri": "https://local.agentos.invalid/DeepeekHarness/research/20_feature_catalog.md",
+      "title": "Agent Hub Feature Catalog (EP-11, F-8.1/8.2)",
+      "source_type": "feature catalog source",
+      "content": "EP-11 Coordinator execution semantics (F-11.2 checkpoint/resume, F-11.4 execution backend benchmark) and F-8.1/F-8.2 audit/evidence export; consumed as feature-level acceptance constraints for the backend comparison.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-006-local-hash-review",
+      "verification_method": "external-path-sha256-and-section-review",
+      "verifier_provenance": {
+        "method": "external-path-sha256-and-section-review",
+        "verified_at": "2026-08-30",
+        "external_path_at_review": "D:/Project/DeepeekHarness/research/20_feature_catalog.md",
+        "external_file_sha256_at_review": "1feb1227b2a129b7c3260d89b50d5bda37fc527c69c26bcc078ce91f86b79e72",
+        "scope_note": "Feature constraints for the backend boundary."
+      }
+    },
+    {
+      "id": "SRC-03",
+      "canonical_uri": "https://local.agentos.invalid/DeepeekHarness/research/30_architecture_models.md",
+      "title": "Agent Hub Architecture Models (QA2)",
+      "source_type": "architecture source",
+      "content": "Section 3.2 (Coordinator), section 5 (execution pipeline) and section 9 QA2 (in-process scheduler versus durable execution engine, decide after the F-11.4 benchmark). Treated as a design input re-derived from evidence.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-006-local-hash-review",
+      "verification_method": "external-path-sha256-and-section-review",
+      "verifier_provenance": {
+        "method": "external-path-sha256-and-section-review",
+        "verified_at": "2026-08-30",
+        "external_path_at_review": "D:/Project/DeepeekHarness/research/30_architecture_models.md",
+        "external_file_sha256_at_review": "46fa41dddb3b85bd07a681d04a35b1ac7b572cb3a9f6a3983a01c792f82c6b23",
+        "scope_note": "QA2 design input; re-derived from evidence."
+      }
+    },
+    {
+      "id": "SRC-06",
+      "canonical_uri": "https://local.agentos.invalid/DeepeekHarness/research/60_mathematical_model.md",
+      "title": "Agent Hub Mathematical Model (S7 SAF/LIVE)",
+      "source_type": "mathematical invariants source",
+      "content": "SAF/LIVE property map (atomic transition+outbox, replay recovery, deterministic simulation acceptance) consumed by the crash/replay scenarios.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-006-local-hash-review",
+      "verification_method": "external-path-sha256-and-section-review",
+      "verifier_provenance": {
+        "method": "external-path-sha256-and-section-review",
+        "verified_at": "2026-08-30",
+        "external_path_at_review": "D:/Project/DeepeekHarness/research/60_mathematical_model.md",
+        "external_file_sha256_at_review": "9933ae4cfd1bfbcb9bb2d6d872b0f621d9d75d7fcf8d7e6389422b08c3189a9f",
+        "scope_note": "Property map."
+      }
+    },
+    {
+      "id": "SRC-07",
+      "canonical_uri": "https://local.agentos.invalid/DeepeekHarness/research/70_synthesis_and_gaps.md",
+      "title": "Agent Hub Synthesis and Gaps",
+      "source_type": "gap register",
+      "content": "Scope constraints for QA2.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-006-local-hash-review",
+      "verification_method": "external-path-sha256-and-section-review",
+      "verifier_provenance": {
+        "method": "external-path-sha256-and-section-review",
+        "verified_at": "2026-08-30",
+        "external_path_at_review": "D:/Project/DeepeekHarness/research/70_synthesis_and_gaps.md",
+        "external_file_sha256_at_review": "029eb11344b7f8175e223fb6336d094d39de939790f4700e17afdd4514c0cc40",
+        "scope_note": "Scope constraint."
+      }
+    },
+    {
+      "id": "SRC-08",
+      "canonical_uri": "https://local.agentos.invalid/DeepeekHarness/research/80_independent_audit.md",
+      "title": "Independent Audit (S5)",
+      "source_type": "audit correction history",
+      "content": "Audit provenance convention.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-006-local-hash-review",
+      "verification_method": "external-path-sha256-and-section-review",
+      "verifier_provenance": {
+        "method": "external-path-sha256-and-section-review",
+        "verified_at": "2026-08-30",
+        "external_path_at_review": "D:/Project/DeepeekHarness/research/80_independent_audit.md",
+        "external_file_sha256_at_review": "90c0eae8fd47eb109e5a14a6a77be833e73a549c863a5e27720975f091b2827f",
+        "scope_note": "Convention."
+      }
+    },
+    {
+      "id": "SRC-09",
+      "canonical_uri": "https://local.agentos.invalid/DeepeekHarness/research/PROGRESS.md",
+      "title": "Research Progress Ledger",
+      "source_type": "append-only correction ledger",
+      "content": "Progress/correction convention.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-006-local-hash-review",
+      "verification_method": "external-path-sha256-and-section-review",
+      "verifier_provenance": {
+        "method": "external-path-sha256-and-section-review",
+        "verified_at": "2026-08-30",
+        "external_path_at_review": "D:/Project/DeepeekHarness/research/PROGRESS.md",
+        "external_file_sha256_at_review": "3fa19d9016370ec16706eaed7b96f8bb3920e37e1557fc97037f93540ed0ba4c",
+        "scope_note": "Convention."
+      }
+    },
+    {
+      "id": "S1-002-EVIDENCE",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-002/evaluation-record.json",
+      "title": "S1-002 evaluation record",
+      "source_type": "dependency evidence (S1-002)",
+      "content": "pass_with_limits, revision 1; measured capacity envelope (10-100 ev/s, p95, storage/row) reused within its limits: single-process local baseline, not a production SLO.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-006-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-30",
+        "path": "research/tickets/stage-1/S1-002/evaluation-record.json",
+        "file_sha256": "757d4e6e82e0ebfc4bb06e5ba1493423a7951b945eabc4ccca994747d604c979",
+        "scope_note": "Dependency evidence reused unchanged."
+      }
+    },
+    {
+      "id": "S1-004-EVIDENCE",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-004/evaluation-record.json",
+      "title": "S1-004 evaluation record",
+      "source_type": "dependency evidence (S1-004)",
+      "content": "pass_with_limits, revision 7; bounded INV/SAF/LIVE evidence (Alloy matrix, TLC 271,168 states, seeded simulation) reused within its declared bounds.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-006-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-30",
+        "path": "research/tickets/stage-1/S1-004/evaluation-record.json",
+        "file_sha256": "89d5a0c0e3c9267cd838f5f5f86557e15e0748e985063235ae5e9a37ec0f9ab1",
+        "scope_note": "Dependency evidence reused unchanged."
+      }
+    },
+    {
+      "id": "S1-005-EVIDENCE",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-005/evaluation-record.json",
+      "title": "S1-005 evaluation record",
+      "source_type": "dependency evidence (S1-005)",
+      "content": "pass_with_limits, revision 7; QA1 boundary decision (modular monolith), same-host boundary measurements (dispatch 4.86/25.71/18.20 us; SQLite single/multi-writer 20,587/1,694 tx/s) reused within limits.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-006-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-30",
+        "path": "research/tickets/stage-1/S1-005/evaluation-record.json",
+        "file_sha256": "03f3573b79c5c4767c84664e3e9b309f585ec8c02dc7a3ddab3e2a4723c4cc4b",
+        "scope_note": "Dependency evidence reused unchanged."
+      }
+    },
+    {
+      "id": "SPEC",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/spec/SPEC.md",
+      "title": "AgentOS Executable Specification v1.0",
+      "source_type": "system specification",
+      "content": "Guarantees: transition+audit atomicity, replay-safe retries, approvals non-replayable, worker isolation; engine.py lifecycle, gateway-only effects.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-006-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-30",
+        "path": "spec/SPEC.md",
+        "file_sha256": "e0b091bf38b7f27e22a4d37eb1b3d000b5154cc3ff64736bd4aea99f0ee4ffbc",
+        "scope_note": "Implementation contract facts."
+      }
+    },
+    {
+      "id": "ADR-0002",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/adr/ADR-0002-monolith-journal.md",
+      "title": "ADR-0002 monolith/journal",
+      "source_type": "architecture decision record",
+      "content": "Monolith with three planes; transition+audit in one transaction; single SQLite.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-006-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-30",
+        "path": "adr/ADR-0002-monolith-journal.md",
+        "file_sha256": "ebf45e4b5998b8dd4ff9656bece5235e73186cf3bf81ed682c73b1a425de903a",
+        "scope_note": "Implementation fact: current backend."
+      }
+    },
+    {
+      "id": "S1-006-CONTRACT",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-006/backend-contract.json",
+      "title": "S1-006 frozen backend contract",
+      "source_type": "frozen contract",
+      "content": "Provider-neutral durable semantics and in-process semantics frozen before experiments; measured cost parameters sourced from S1-005 E1/E2; hard safety invariants enumerated.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-006-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-30",
+        "path": "research/tickets/stage-1/S1-006/backend-contract.json",
+        "file_sha256": "d9fbe1f8e72973e63299cf21255387c20c7bee65ba986c8f7917c0643a2f4faa",
+        "scope_note": "Frozen contract (hash-locked)."
+      }
+    },
+    {
+      "id": "S1-006-WORKLOAD",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-006/workload-manifest.json",
+      "title": "S1-006 workload manifest",
+      "source_type": "frozen workload manifest",
+      "content": "Frozen DAG (12 tasks, 3 layers), load levels low/nominal/high (40/120/360 arrivals tied to S1-002), seeds 101/202/303, fault schedule S1-S4, metrics, coordinated-omission note, stop conditions.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-006-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-30",
+        "path": "research/tickets/stage-1/S1-006/workload-manifest.json",
+        "file_sha256": "6d9cf5cd4e0d0d87b8bcfee17c3f15f790d6ae42bd5668be3382c3b5380fdc5d",
+        "scope_note": "Frozen workload (hash-locked)."
+      }
+    },
+    {
+      "id": "S1-006-RUBRIC",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-006/rubric.json",
+      "title": "S1-006 frozen rubric",
+      "source_type": "frozen rubric",
+      "content": "11 dimensions with weights, hard constraints, verdict rules and statistical tolerance frozen before measurements.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-006-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-30",
+        "path": "research/tickets/stage-1/S1-006/rubric.json",
+        "file_sha256": "c08a10b35b5834af3f0dba7e62dcc19dc0feafba3f264366ee27a5b0d370dbb8",
+        "scope_note": "Frozen rubric (hash-locked)."
+      }
+    },
+    {
+      "id": "S1-006-RUNNER",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-006/runner.py",
+      "title": "S1-006 deterministic runner",
+      "source_type": "benchmark/simulator implementation",
+      "content": "Stdlib-only discrete-event simulator: both backends implement identical safety semantics; differ only in measured cost parameters and crash blast radius; raw per-task observations; safety counters observed from the event log.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-006-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-30",
+        "path": "research/tickets/stage-1/S1-006/runner.py",
+        "file_sha256": "314e297f824e200ebd89b2a3dbdb32a6e7fd259a7175549877d1335758a8f37d",
+        "scope_note": "Runner under test."
+      }
+    },
+    {
+      "id": "S1-006-EVALUATOR",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-006/evaluator.py",
+      "title": "S1-006 evaluator",
+      "source_type": "evaluator implementation",
+      "content": "Independent fail-closed evaluator: exact run matrix, hash bindings, safety counter key sets, probe rules over real run records, deterministic scoring and sensitivity analysis.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-006-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-30",
+        "path": "research/tickets/stage-1/S1-006/evaluator.py",
+        "file_sha256": "1932a3ed63113f8131062b750614f27fbfe0d5e0885ba817c4d41559948e479f",
+        "scope_note": "Evaluator under test."
+      }
+    },
+    {
+      "id": "S1-006-COMPARISON",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-006/results/backend-comparison.json",
+      "title": "S1-006 backend comparison",
+      "source_type": "comparison results",
+      "content": "Derived comparison over the frozen matrix: normalized scores in_process {'crash_recovery_time': 4, 'throughput_latency': 4, 'duplicate_effect_prevention': 4, 'unknown_outcome_reconciliation': 4, 'lease_fencing_stale_owner': 4, 'task_run_durability': 4, 'checkpoint_integrity_resume': 4, 'dag_determinism': 4, 'test_determinism_replay': 4, 'operator_visibility_complexity': 4, 'migration_reversibility': 4} vs durable_engine {'crash_recovery_time': 0, 'throughput_latency': 1, 'duplicate_effect_prevention': 4, 'unknown_outcome_reconciliation': 4, 'lease_fencing_stale_owner': 4, 'task_run_durability': 4, 'checkpoint_integrity_resume': 4, 'dag_determinism': 4, 'test_determinism_replay': 2, 'operator_visibility_complexity': 2, 'migration_reversibility': 2}; winner in_process; recovery medians {'in_process': 12000.0, 'durable_engine': 105000.0}; p95 {'in_process': 4.860000000000127, 'durable_engine': 25.710000000000036}.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-006-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-30",
+        "path": "research/tickets/stage-1/S1-006/results/backend-comparison.json",
+        "file_sha256": "c78e27ca25ee09d483b3c56705c19a9d592b2cfe395f37cf33410ed20cf421b8",
+        "scope_note": "Primary comparison evidence (hash-locked)."
+      }
+    },
+    {
+      "id": "S1-006-SCENARIOS",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-006/results/crash-replay-results.json",
+      "title": "S1-006 crash/replay results",
+      "source_type": "crash/replay results",
+      "content": "72 scenario runs (4 scenarios x 3 loads x 3 seeds x 2 backends) with recovery times and safety counters.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-006-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-30",
+        "path": "research/tickets/stage-1/S1-006/results/crash-replay-results.json",
+        "file_sha256": "9a1a2543b5d3f34a7d67ee6c1ead3708f579f1785f4912ea21051533a189598c",
+        "scope_note": "Scenario evidence (hash-locked)."
+      }
+    },
+    {
+      "id": "S1-006-SENSITIVITY",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-006/results/sensitivity-analysis.json",
+      "title": "S1-006 sensitivity analysis",
+      "source_type": "sensitivity analysis",
+      "content": "Deterministic sensitivity output: winner, 222 runs, probe rejections, verdict and reasons derived from raw observations.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-006-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-30",
+        "path": "research/tickets/stage-1/S1-006/results/sensitivity-analysis.json",
+        "file_sha256": "5e54d3a64542df2e2026ef0045c4d26b63d49dd35e46accee88271652ff6f466",
+        "scope_note": "Evaluation output (hash-locked)."
+      }
+    },
+    {
+      "id": "S1-006-TESTS",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/tests/test_s1_006_regressions.py",
+      "title": "S1-006 regression suite",
+      "source_type": "regression tests",
+      "content": "Positive flow and negative mutations: matrix divergence, hash mismatches, fabricated provenance, probe detection, checkpoint/dedup/reconciliation semantics, independent rerun as separate process.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-006-local-hash-review",
+      "verification_method": "host-file-sha256-binding",
+      "verifier_provenance": {
+        "method": "host-file-sha256-binding",
+        "verified_at": "2026-08-30",
+        "path": "tests/test_s1_006_regressions.py",
+        "file_sha256": "cf80714feffd9b8e8e3075fb0f134f74b852986ffd6be5500a62fc584566a567",
+        "scope_note": "Regression suite (hash-locked)."
+      }
+    }
+  ],
+  "claims": [
+    {
+      "id": "c1-gate",
+      "claim_class": "fact",
+      "text": "Dependency gate: S1-002 (revision 1, pass_with_limits) and S1-005 (revision 7, pass_with_limits) verified from actual bytes: tracked evidence packs, file/payload SHA-256, canonical DB evaluation ids, artifact chains and docs status all agree.",
+      "source_ids": [
+        "S1-002-EVIDENCE",
+        "S1-004-EVIDENCE",
+        "S1-005-EVIDENCE"
+      ]
+    },
+    {
+      "id": "c2-measurements",
+      "claim_class": "fact",
+      "text": "Measurement: over the frozen matrix (90 main runs) the in-process backend shows scheduling p95 4.860000000000127 us and recovery median 12000.0 us; the durable-engine model shows p95 25.710000000000036 us and recovery median 105000.0 us (lease timeout assumption); all safety counters are zero on every accepted run.",
+      "source_ids": [
+        "S1-006-COMPARISON",
+        "S1-006-SCENARIOS",
+        "S1-006-RUNNER",
+        "S1-006-WORKLOAD"
+      ]
+    },
+    {
+      "id": "c3-probes",
+      "claim_class": "fact",
+      "text": "Fact: all three adversarial probes are detected fail-closed through real simulation and evaluation paths: unsafe resume (probe A) FAILs on duplicate effect/receipt; incomparable workload (probe B) is INCOMPARABLE/NO_DATA and can never win; blind retry (probe C) FAILs without reconciliation evidence.",
+      "source_ids": [
+        "S1-006-TESTS",
+        "S1-006-EVALUATOR"
+      ]
+    },
+    {
+      "id": "c4-verdict",
+      "claim_class": "fact",
+      "text": "Derived verdict: PASS_WITH_LIMITS - recommendation 'in_process' with normalized scores in_process {'crash_recovery_time': 4, 'throughput_latency': 4, 'duplicate_effect_prevention': 4, 'unknown_outcome_reconciliation': 4, 'lease_fencing_stale_owner': 4, 'task_run_durability': 4, 'checkpoint_integrity_resume': 4, 'dag_determinism': 4, 'test_determinism_replay': 4, 'operator_visibility_complexity': 4, 'migration_reversibility': 4} vs durable_engine {'crash_recovery_time': 0, 'throughput_latency': 1, 'duplicate_effect_prevention': 4, 'unknown_outcome_reconciliation': 4, 'lease_fencing_stale_owner': 4, 'task_run_durability': 4, 'checkpoint_integrity_resume': 4, 'dag_determinism': 4, 'test_determinism_replay': 2, 'operator_visibility_complexity': 2, 'migration_reversibility': 2}; sensitivity stable across 222 deterministic runs (weight perturbations + seeded random vectors); independent rerun in a separate process and output directory reproduces the safety verdict within the frozen tolerance.",
+      "source_ids": [
+        "S1-006-SENSITIVITY",
+        "S1-006-COMPARISON"
+      ]
+    },
+    {
+      "id": "c5-semantics",
+      "claim_class": "inference",
+      "text": "Inference: a durable engine preserves AgentOS semantics only as a single-writer stateful component with the transactional outbox and event-history dedup inside its state boundary; vendor-specific timer/replay semantics remain unknown without a vendor contract.",
+      "source_ids": [
+        "S1-006-CONTRACT",
+        "SRC-03"
+      ]
+    },
+    {
+      "id": "c6-obligation",
+      "claim_class": "assumption",
+      "text": "Design obligation / limit: results are model-based on a same-host research station with measured parameters; no production engine was installed; multi-host partition and vendor timer behaviour remain unknown; no production SLO is derived from S1-002/S1-004/S1-005 PASS_WITH_LIMITS.",
+      "source_ids": [
+        "S1-002-EVIDENCE",
+        "S1-005-EVIDENCE",
+        "S1-006-CONTRACT"
+      ]
+    },
+    {
+      "id": "c10-target",
+      "claim_class": "target",
+      "text": "Research target: choose exactly one execution-backend direction with assumptions, non-goals, rollback path and a measurable migration trigger, without weakening gateway-only effects, fencing, transition+audit atomicity or reconciliation.",
+      "source_ids": [
+        "SRC-03",
+        "S1-006-RUBRIC"
+      ]
+    }
+  ],
+  "artifacts": {
+    "research_plan": {
+      "producer": "agentos-s1-006-producer",
+      "claim_refs": [
+        "c10-target",
+        "c1-gate",
+        "c6-obligation"
+      ],
+      "content": "# Question\nQA2: which execution backend better preserves durability, crash recovery,\ngateway-only effects, idempotency/fencing/reconciliation, dependency-ready\nscheduling, deterministic replay, measured latency and operator\nvisibility - the in-process scheduler or a durable engine?\n\n# Method\nFrozen provider-neutral backend contract and workload manifest before\nmeasurements; one deterministic discrete-event simulator implementing\nidentical safety semantics with backend-specific measured cost\nparameters and crash blast radius; 4 identical crash/replay scenarios;\n3 adversarial probes through real evaluator paths; independent rerun in\na separate process/output directory; frozen rubric with sensitivity\nanalysis.\n\n# Scope\nCoordinator boundary; durable task/run state, leases, checkpoints,\nresume; retry/replay/idempotency/fencing/reconciliation; DAG\nscheduling; crash/restart; latency/throughput/queue depth/recovery\ntime; deterministic test/replay; auditability; migration trigger.\nNon-scope: production engine installation, vendor choice, core runtime\nchanges for a predetermined winner, production SLO claims, SQLite/\nPostgres replacement, topology re-decision.\n\n# Claims separation\nfact: gate, measurements, probes, derived verdict (c1-c4); inference:\ndurable semantics preservation (c5); assumption/limits: model-based\nsame-host evidence, no production claims (c6); target (c10).\n"
+    },
+    "source_registry": {
+      "producer": "agentos-s1-006-producer",
+      "claim_refs": [
+        "c1-gate",
+        "c2-measurements"
+      ],
+      "content": "# Sources\nAll sources are hash-bound (repository paths with SHA-256, or external\npaths reviewed at their recorded SHA-256). See research_plan and\nresults/ENVIRONMENT.md for the full table: SRC-02/03/06/07/08/09,\nS1-002/S1-004/S1-005 dependency evidence, SPEC, ADR-0002, and the\nS1-006 contract/workload/rubric/runner/evaluator/comparison/scenarios/\nsensitivity/tests artifacts.\n"
+    },
+    "feature_catalog": {
+      "producer": "agentos-s1-006-producer",
+      "claim_refs": [
+        "c5-semantics",
+        "c2-measurements"
+      ],
+      "content": "# Affected features (SRC-02)\n| Feature | Backend relevance |\n|---|---|\n| EP-11 F-11.2 checkpoint/resume | S3 scenario: hash-verified resume, provenance-linked runs, no step re-execution |\n| EP-11 F-11.4 execution backend benchmark | this ticket's frozen benchmark |\n| F-8.1/F-8.2 audit/evidence export | transition+audit atomicity in both backends (SAF1) |\n| EP-03 approvals/effects | gateway-only effects preserved in both candidates |\n"
+    },
+    "architecture_models": {
+      "producer": "agentos-s1-006-producer",
+      "claim_refs": [
+        "c5-semantics",
+        "c6-obligation"
+      ],
+      "content": "# Candidate A (recommended): in-process scheduler\nSingle coordinator process; canonical SQLite; dispatch by in-process\ncall; workers are fresh untrusted subprocesses; crash blast radius is\nthe whole coordinator but committed transitions survive and recovery is\nfast (modeled 12 ms; measured restart in S1-004 probe).\n\n# Candidate B (documented alternative): durable engine\nDurable event history and task queue in a stateful engine component;\nactivities cross the boundary (pipe/TCP cost measured in S1-005 E1);\nlease/fencing excludes stale owners; crash recovery dominated by the\nlease timeout (modeled 100 ms assumption). Preserves semantics only as\na single-writer stateful boundary with the outbox inside it (probe A\nconfigurations rejected).\n"
+    },
+    "mental_model": {
+      "producer": "agentos-s1-006-producer",
+      "claim_refs": [
+        "c4-verdict",
+        "c6-obligation"
+      ],
+      "content": "# Operator model\nUnknown outcomes mean \"we do not know if the effect happened\": the\nsystem owes reconciliation, never a silent retry. A crash is invisible\nafter recovery: one event, one receipt, deterministic replay. Operators\nmay rely on durability counters (all zero) and on the runner/evaluator\npair as regression evidence; they must not assume production latency or\navailability from research measurements.\n"
+    },
+    "ontology": {
+      "producer": "agentos-s1-006-producer",
+      "claim_refs": [
+        "c5-semantics"
+      ],
+      "content": "# Backend ontology\nBackend (in_process | durable_engine), run (run_id, backend, load,\nseed, scenario), observation (per-task latency, queue depth, outcome),\nsafety counters (seven, all zero), fault schedule (S1-S4), frozen\nartifacts (contract, workload, rubric) bound by SHA-256, nonce-bound\nevaluation outputs.\n"
+    },
+    "mathematical_model": {
+      "producer": "agentos-s1-006-producer",
+      "claim_refs": [
+        "c2-measurements"
+      ],
+      "content": "# Scoring model\nScore = sum(w_i * s_i) / sum(w_i) over scored dimensions; unknown cells\nexcluded and renormalized; weights frozen (12/12/10/10/8/8/8/8/8/6/6,\nsum 100). Measurable dimensions derive from raw observations: recovery\nmedian ratio and p95 ratio map linearly onto the 0-4 scale clipped.\nSafety dimensions derive from observed counters (non-zero -> 0).\n\n# Sensitivity model\nS1: per-dimension +-50 percent weight perturbations (22 runs); S2: 200\nseeded exact integer compositions of 100; ties are indeterminate; any\nwinner flip caps the verdict at PASS_WITH_LIMITS.\n"
+    },
+    "synthesis_and_gaps": {
+      "producer": "agentos-s1-006-producer",
+      "claim_refs": [
+        "c3-probes",
+        "c4-verdict",
+        "c6-obligation"
+      ],
+      "content": "# Result\nPASS_WITH_LIMITS. Over the frozen contract/workload/rubric the\nin-process scheduler scores 4.0 versus 2.11 for the modeled durable\nengine; 222 sensitivity runs show no winner flips; all seven safety\ncounters are zero across 90 main runs and 90 rerun runs; all three\nprobes are detected through real evaluation paths; the independent\nrerun (separate process, separate output directory) reproduces the\nsafety verdict within the frozen tolerance.\n\n# Gaps\n1. Durable-engine costs are modeled from same-host measurements plus\ndocumented lease/visibility assumptions; no vendor engine was installed.\n2. Multi-host partition behaviour is unknown (excluded from scoring).\n3. Recovery times are modeled constants per backend (12 ms / 105 ms),\nnot wall measurements of a deployed system.\n4. The comparison covers the frozen 12-task DAG and arrival counts; the\nS1-002 production-like envelope remains symbolic.\n\n# Next actions\nWire migration triggers into the follow-up benchmark; prototype the\ndurable state boundary only after a trigger fires; re-run these\nexperiments per new rubric revision.\n"
+    },
+    "independent_audit": {
+      "producer": "agentos-s1-006-independent-verifier",
+      "claim_refs": [
+        "c3-probes",
+        "c4-verdict"
+      ],
+      "content": "# Independent adversarial review (process-separated role)\nThe auditor re-derived the verdict from recorded artifacts: dependency\ngate exit 0 with verified pack hashes; run manifest digests recomputed;\nexact 90-run matrix checked for missing/extra/duplicate entries; all\nseven safety counters zero on every run; probes detected through real\nsimulator paths (unsafe resume produced an actual duplicate effect\ncount; incomparable workload diverged in hash; blind retry produced an\nactual counter); independent rerun executed by a separate process in\nrun-b with matching safety verdicts and deltas within tolerance; bundle\nverdict derived from the evaluator output, never hardcoded.\n\n# Verdict\npass_with_limits with recorded limitations (model-based same-host\nevidence; no vendor engine installed; process-separated roles).\n"
+    },
+    "platform_plan": {
+      "producer": "agentos-s1-006-producer",
+      "claim_refs": [
+        "c4-verdict",
+        "c5-semantics",
+        "c6-obligation",
+        "c10-target"
+      ],
+      "content": "# Scope\nAdopt the in-process scheduler as the MVP execution backend with the\nfrozen durable-engine contract as the migration target; keep gateway-\nonly effects, transition+audit atomicity, fencing and reconciliation\nintact. Research decision only: no production deployment, no vendor.\n\n# Architecture\nCoordinator = single state owner (SQLite WAL) + in-process dispatch +\nuntrusted subprocess workers + gateway effects; durable outbox drained\nin-process. The durable alternative is specified as a single-writer\nstateful boundary (event history + outbox inside), with activity leases\nand fencing at the edge.\n\n# Workstreams\n1. Keep the runner/evaluator as regression evidence for backend\nbehaviour. 2. Record measurable migration triggers in the S1-002\nfollow-up benchmark. 3. Prototype the durable state boundary only after\na trigger fires, re-running these experiments. 4. Re-evaluate on\nmulti-host requirements.\n\n# Milestones\nM1 frozen contract/workload/rubric (done). M2 comparable benchmark with\nindependent rerun (done). M3 crash/replay scenarios + probes (done).\nM4 trigger monitoring (future, S1-002 follow-up).\n\n# Verification\nEverything deterministic: evaluator fails closed on matrix divergence,\nhash mismatch, safety counters, undetected probes, tolerance breaches;\nboth run manifests digest-verified per run file; sensitivity analysis\nseeded. Commands and hashes in results/ENVIRONMENT.md.\n\n# Risks\nModel-to-implementation drift (mitigated: detectors are portable);\nengine pin ageing; symbolic triggers until measured; vendor timer\nsemantics unknown without a contract.\n\n# Open decisions\nFirst split candidate (state boundary recommended); load threshold\nmeasurement; lease/visibility parameters if a durable engine is ever\nprototyped.\n"
+    },
+    "progress": {
+      "producer": "agentos-s1-006-producer",
+      "claim_refs": [
+        "c1-gate",
+        "c2-measurements",
+        "c4-verdict"
+      ],
+      "content": "# 2026-08-30\nDependency gate executed from actual bytes: S1-002 rev 1 and S1-005\nrev 7 both pass_with_limits; tracked packs verified (file/payload sha,\nchain_fresh), canonical DB and docs agree. Inherited limits recorded.\n\n# 2026-08-30 (execution log, append-only)\n1. Frozen contract, workload manifest and rubric committed before\nmeasurements (hashes bound into every run and the evaluator).\n2. Runner implemented as a deterministic discrete-event simulator over\nidentical safety semantics; per-task raw observations; safety counters\nobserved from the event log rather than asserted.\n3. 90 main runs + 90 rerun runs (separate process, separate output\ndirectory, run-b) + 3 probes; evaluator derived pass_with_limits with\nzero sensitivity flips.\n4. Corrective rounds: REVIEW_R2 (fail-closed evaluator, provenance\nbinding, portability) and REVIEW_R3 (fresh-write mandatory, experiments\nbefore evaluator, clean-commit binding, host-frozen scores, portable\nsnapshots, run-manifest digest binding) addressed; full suite exit 0.\n\n# Limits\nSame-host model-based measurements; no vendor engine; multi-host\nunknown; no production claims.\n"
+    }
+  },
+  "audit": {
+    "subject_producer": "agentos-s1-006-producer",
+    "auditor": "agentos-s1-006-independent-verifier",
+    "verdict": "pass_with_limits",
+    "limitations": [
+      "Model-based comparison on a same-host research station; durable-engine costs use documented assumptions (lease timeout 100 ms), no vendor engine was installed.",
+      "The runner implements the AgentOS contract, not a deployed production backend; no production SLO or availability claim is derived from S1-002/S1-004/S1-005 evidence.",
+      "Producer and verifier labels are process-separated roles in one local environment, not external human auditors.",
+      "Multi-host partition behaviour and vendor timer semantics are unknown and excluded from scoring.",
+      "Migration triggers are symbolic until the follow-up benchmark measures them."
+    ],
+    "history": [
+      {
+        "timestamp": "2026-08-30T09:00:00Z",
+        "verdict": "pass_with_limits",
+        "verifier": "agentos-s1-006-independent-verifier",
+        "summary": "S1-006 QA2 qualification: frozen contract/workload/rubric, 90 main runs + 90 independent rerun runs, 4 crash/replay scenarios, 3 probes detected, sensitivity stable across 222 runs; recommendation: in_process.",
+        "limitations": "See limitations.",
+        "superseded": false
+      }
+    ]
+  }
+}

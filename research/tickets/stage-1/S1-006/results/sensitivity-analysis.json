@@ -1,0 +1,69 @@
+{
+  "schema": "agentos.s1-006.evaluation/v1",
+  "rubric_sha256": "c08a10b35b5834af3f0dba7e62dcc19dc0feafba3f264366ee27a5b0d370dbb8",
+  "run_nonce": "s1-006-bec7f7949995-41254106dd2f-rerun",
+  "runs_binding": {
+    "path": "D:\\Project\\AgentOS\\research\\tickets\\stage-1\\S1-006\\results\\run-b\\run-manifest.json",
+    "sha256": "749ec515717e56d91beb68080273524d89dbdff60fa75f267aa8028cb932aed5"
+  },
+  "scores_normalized": {
+    "in_process": {
+      "crash_recovery_time": 4,
+      "throughput_latency": 4,
+      "duplicate_effect_prevention": 4,
+      "unknown_outcome_reconciliation": 4,
+      "lease_fencing_stale_owner": 4,
+      "task_run_durability": 4,
+      "checkpoint_integrity_resume": 4,
+      "dag_determinism": 4,
+      "test_determinism_replay": 4,
+      "operator_visibility_complexity": 4,
+      "migration_reversibility": 4
+    },
+    "durable_engine": {
+      "crash_recovery_time": 0,
+      "throughput_latency": 1,
+      "duplicate_effect_prevention": 4,
+      "unknown_outcome_reconciliation": 4,
+      "lease_fencing_stale_owner": 4,
+      "task_run_durability": 4,
+      "checkpoint_integrity_resume": 4,
+      "dag_determinism": 4,
+      "test_determinism_replay": 2,
+      "operator_visibility_complexity": 2,
+      "migration_reversibility": 2
+    }
+  },
+  "recovery_median_us": {
+    "in_process": 12000.0,
+    "durable_engine": 105000.0
+  },
+  "p95_us": {
+    "in_process": 4.860000000000127,
+    "durable_engine": 25.710000000000036
+  },
+  "winner": "in_process",
+  "recommendation": {
+    "topology": "in_process"
+  },
+  "probe_rejections": {
+    "A_unsafe_resume": "FAIL",
+    "B_incomparable": "INCOMPARABLE/NO_DATA",
+    "C_blind_retry": "FAIL"
+  },
+  "sensitivity": {
+    "base_scores": {
+      "in_process": 4.0,
+      "durable_engine": 3.04
+    },
+    "base_winner": "in_process",
+    "runs": 222,
+    "flips": 0,
+    "stable": true
+  },
+  "verdict": "PASS_WITH_LIMITS",
+  "reasons": [
+    "inherited limits: S1-002 is not a production SLO; S1-005 is same-host bounded and does not prove multi-host reliability",
+    "a candidate scored 0 on at least one dimension (documented extreme, not a safety violation; safety counters remain zero)"
+  ]
+}
