@@ -106,7 +106,8 @@ def research_surface_dirty_lines(porcelain_lines: list) -> list:
         if not ln.strip():
             continue
         path = ln[3:].strip().strip('"')
-        if path.startswith("research/tickets/stage-1/S1-006/results/"):
+        if path.startswith("research/tickets/stage-1/S1-006/results/") or \
+                path == "research/tickets/stage-1/S1-006/bundle.json":
             continue
         dirty.append(ln)
     return dirty

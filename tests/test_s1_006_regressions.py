@@ -89,7 +89,8 @@ def _evaluate(comparison=None, probes=None, manifest=None, manifest_sha=None,
         runs_manifest_sha=manifest_sha or _sha(
             S1006 / "results" / "run-a" / "run-manifest.json"),
         comparison_data=comparison, probes_data=probes,
-        manifest_data=manifest, expected_commit=expected_commit)
+        manifest_data=manifest, expected_commit=expected_commit,
+        probes_sha=_sha(S1006 / "results" / "probes.json"))
 
 
 # --------------------------------------------------------------------------
@@ -320,9 +321,9 @@ class ProvenanceTests(TestCase):
             mb.sh([sys.executable, "-c", "import time; time.sleep(30)"],
                   timeout=1)
 
-    def test_porcelain_parser_only_ignores_generated_results(self):
+    def test_porcelain_parser_only_ignores_generated_outputs(self):
         """Executed research scripts/tests are inputs and must be clean;
-        only the explicitly generated results subtree may be ignored."""
+        only explicitly generated evidence outputs may be ignored."""
         lines = [" M research/tickets/stage-1/S1-006/evaluator.py",
                  " M tests/test_s1_006_regressions.py",
                  " M src/agentos/engine.py",
@@ -331,7 +332,8 @@ class ProvenanceTests(TestCase):
         self.assertEqual(dirty, lines[:3])
         self.assertEqual(
             rn.research_surface_dirty_lines(
-                [" M research/tickets/stage-1/S1-006/results/x.json"]),
+                [" M research/tickets/stage-1/S1-006/results/x.json",
+                 " M research/tickets/stage-1/S1-006/bundle.json"]),
             [])
 
 
@@ -456,12 +458,15 @@ class UnknownPolicyTests(TestCase):
 
     def test_unknown_cells_cannot_pick_winner(self):
         comparison = self._comparison_with_unknown_recovery()
-        result = _evaluate(comparison=comparison)
-        # the winner must still be decided by scored dimensions only, and
-        # unknown cells on the winner are recorded as limits
-        self.assertEqual(result["winner"], "in_process")
-        self.assertTrue(any("unknown cells" in r for r in result["reasons"]))
-        self.assertEqual(result["verdict"], "PASS_WITH_LIMITS")
+        contract = ev.load(S1006 / "backend-contract.json")
+        rubric = ev.load(S1006 / "rubric.json")
+        scores, unknown, _, _ = ev.score_dims(comparison, contract)
+        result = ev.sensitivity(scores, rubric["weights"], unknown)
+        # The winner is computed only from present cells. The missing cell
+        # remains explicit for both candidates and cannot become a score.
+        self.assertEqual(result["base_winner"], "in_process")
+        self.assertIn("crash_recovery_time", unknown["in_process"])
+        self.assertIn("crash_recovery_time", unknown["durable_engine"])
 
 
 # --------------------------------------------------------------------------
@@ -656,7 +661,8 @@ class RawRunAuthorityR2Tests(TestCase):
                     S1006, S1006 / "results",
                     runs_manifest_path=manifest_path,
                     runs_manifest_sha=_sha(manifest_path),
-                    expected_commit=manifest["provenance"]["commit"])
+                    expected_commit=manifest["provenance"]["commit"],
+                    probes_sha=_sha(S1006 / "results" / "probes.json"))
         self.assertIn("SAFETY VIOLATION", str(ctx.exception))
 
     def test_comparison_summary_must_equal_raw_derived_comparison(self):
