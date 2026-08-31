@@ -196,7 +196,7 @@ def build(gate: dict, evaluation: dict, probe_evidence: dict,
                  "canonical DB evaluation ids, artifact chain hashes and "
                  "docs status all agree.",
          "source_ids": ["S1-003-EVIDENCE", "S1-005-EVIDENCE"]},
-        {"id": "c2-iso", "claim_class": "security_invariant",
+        {"id": "c2-iso", "claim_class": "fact",
          "text": f"Under the frozen isolation contract both honest variants "
                  f"hold ISO1-ISO8 with zero violations across the accepted "
                  f"fixture set (2 variants x 14 cases x 3 seeds x 2 "
@@ -210,7 +210,7 @@ def build(gate: dict, evaluation: dict, probe_evidence: dict,
                  f"plus canonical scope binding survive projection and "
                  f"retrieval on every disclosed object.",
          "source_ids": ["SRC-03", "SRC-05", "IMPL-INVARIANTS"]},
-        {"id": "c3-probes", "claim_class": "security_invariant",
+        {"id": "c3-probes", "claim_class": "fact",
          "text": "Adversarial probe candidates are detected fail-closed "
                  "through the evaluator's own ISO rules on real runner "
                  "paths: A existence-oracle detail leak -> ISO2 FAIL; B "
@@ -219,7 +219,7 @@ def build(gate: dict, evaluation: dict, probe_evidence: dict,
                  "ISO2 FAIL; D forged-scope acceptance -> ISO7 FAIL plus "
                  "provenance-dropping projection -> ISO5 INCOMPARABLE.",
          "source_ids": ["SRC-03", "IMPL-INVARIANTS"]},
-        {"id": "c4-timing", "claim_class": "test_measurement",
+        {"id": "c4-timing", "claim_class": "fact",
          "text": "The bounded local existence-oracle timing probe (frozen "
                  "methodology: 200 samples x 8 inner repeats x 3 seeds per "
                  "arm, median-of-seed-medians, tolerance max(10%, 1us)) "
@@ -231,7 +231,7 @@ def build(gate: dict, evaluation: dict, probe_evidence: dict,
                  "This is a bounded local measurement, not a production SLO "
                  "and not proof of absence of all side channels.",
          "source_ids": ["SRC-06"]},
-        {"id": "c5-decision", "claim_class": "architecture_tradeoff",
+        {"id": "c5-decision", "claim_class": "inference",
          "text": f"QA3 decision: {winner} wins under the frozen rubric "
                  f"(per_scope {scores['per_scope']} vs shared_rls "
                  f"{scores['shared_rls']}); sensitivity across 212 weight "
@@ -250,7 +250,7 @@ def build(gate: dict, evaluation: dict, probe_evidence: dict,
                  f"(0 rebuild steps for per-scope projections vs 2 for a "
                  f"shared predicate layer).",
          "source_ids": ["SRC-03", "SRC-07", "IMPL-GATEWAY"]},
-        {"id": "c6-overhead", "claim_class": "test_measurement",
+        {"id": "c6-overhead", "claim_class": "fact",
          "text": "Overhead accounting in the local model: per-scope "
                  "projection carries a modeled fixed per-index overhead "
                  "(3 x 256 bytes) versus one shared index (256 bytes) - "
@@ -265,7 +265,7 @@ def build(gate: dict, evaluation: dict, probe_evidence: dict,
                  "Both effects are small at MVP scale; the overhead constant "
                  "is a declared model assumption.",
          "source_ids": ["SRC-06"]},
-        {"id": "c7-migration", "claim_class": "fact",
+        {"id": "c7-migration", "claim_class": "inference",
          "text": "Adopted policy: per-scope index projections bound to the "
                  "canonical (tenant, workspace, goal) scope with the frozen "
                  "cache/invalidation semantics; rollback path is symmetric "
