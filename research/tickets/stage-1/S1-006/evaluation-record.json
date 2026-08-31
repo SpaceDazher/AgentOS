@@ -1,53 +1,62 @@
 {
   "schema": "agentos.ticket-evaluation-record/v1",
   "ticket_id": "S1-006",
-  "recorded_at": "2026-08-31T18:55:00Z",
+  "recorded_at": "2026-08-31T19:15:54Z",
   "db_root": ".agentos-research/platform-stage-1",
-  "campaign_id": "rcamp_M1TM6M77SNGZYN9F01M1CF4R6F",
-  "goal_id": "goal_JTRCP0334WBHE00G01M1CF4R6F",
-  "evaluation_id": "reval_CAPVNG086DJSBNHX01M1CF4RAP",
+  "campaign_id": "rcamp_X67VNWB5H1QM08PK01M1CKXMNW",
+  "goal_id": "goal_2T78EACBA51SH24M01M1CKXMNW",
+  "evaluation_id": "reval_3R5R2WNN81E4ZMWW01M1CKXMRE",
   "evaluation_version": 1,
   "result": "pass_with_limits",
-  "artifact_chain_hash": "8c544790d053bb459e94f222ef2b78b72d2edf424dae55e970e54cd5645cb72b",
+  "artifact_chain_hash": "f5e45f4f59f2f5fd08e57a27afc9c7c6e8ea502b1b034da613c757e8d24bfe53",
   "evidence_pack": {
     "schema": "agentos.evidence-pack/v3",
-    "path": "research/tickets/stage-1/S1-006/results/evidence/evidence-pack-250f4ab7d6bcfd1b1572aa4e0d01555a220b2ca45c22ed916a5e912cf48ce217.json",
-    "canonical_runtime_path": ".agentos-research/platform-stage-1/goals/goal_JTRCP0334WBHE00G01M1CF4R6F/evidence-pack.json",
-    "sha256": "250f4ab7d6bcfd1b1572aa4e0d01555a220b2ca45c22ed916a5e912cf48ce217",
-    "payload_sha256": "7afd7ad238c84c9befb63d667d754c8126663c6870025a52967b565eaaf28b37",
+    "path": "research/tickets/stage-1/S1-006/results/evidence/evidence-pack-615e39d622acef5bc2b331c9c7d3fadadafe4b7825275799eb0518775d0fd4df.json",
+    "canonical_runtime_path": ".agentos-research/platform-stage-1/goals/goal_2T78EACBA51SH24M01M1CKXMNW/evidence-pack.json",
+    "sha256": "615e39d622acef5bc2b331c9c7d3fadadafe4b7825275799eb0518775d0fd4df",
+    "payload_sha256": "80058f8345015a550eb18bbcd19a31b9fa771b411603ed3904f7815ccdf4d3ce",
     "chain_fresh": true,
     "latest_evaluation_valid": true
   },
   "wiki_check": {
     "ok": true,
-    "files": 2274,
-    "links_checked": 6186,
+    "files": 2378,
+    "links_checked": 6430,
     "issues": []
+  },
+  "experiment_binding": {
+    "commit": "30cdd80d8b47168522248fac5516cc7f773a018a",
+    "tree_sha": "abc0d9f26b5dc3e8603988fd76955a17a7a4a193",
+    "run_a_manifest_sha256": "a846abeb0df4bc0518a9691cb91ed23b97bb8c56ba3483e29197502b866fb4af",
+    "probes_sha256": "234a0bb36186b01dae9bde2fc12fe4941f44f23e31083938989c63ca3d1cd8dc",
+    "run_a_executor": "agentos-s1-006-producer",
+    "run_b_executor": "agentos-s1-006-independent-verifier",
+    "dirty": false
   },
   "decision": {
     "question": "QA2 execution backend: in-process scheduler versus durable-execution engine",
-    "recommendation": "in-process scheduler (current AgentOS coordinator, ADR-0002); the durable engine is documented provider-neutral as a single-writer stateful boundary (event history + transactional outbox inside) with measurable migration triggers",
+    "recommendation": "in-process scheduler (current AgentOS coordinator, ADR-0002); keep the durable engine as a provider-neutral migration option only after a measurable trigger and a vendor-specific qualification run",
     "scores_normalized": {
-      "in_process": 4.0,
-      "durable_engine": 3.04
+      "in_process": 3.88,
+      "durable_engine": 3.2
     },
-    "sensitivity": "222 deterministic runs (16 per-dimension weight +-50% perturbations, 200 seeded random integer weight compositions); zero winner flips",
+    "sensitivity": "222 deterministic runs (22 per-dimension weight +-50% perturbations, 200 seeded random integer weight compositions); zero flips and zero ties",
     "probes": {
-      "A_unsafe_resume": "REJECTED - resume re-executed a real external effect and force-appended a second receipt through the production simulator path; FAIL regardless of latency or recovery advantage",
-      "B_incomparable": "REJECTED as INCOMPARABLE/NO_DATA - the candidate's workload hash diverged from the frozen manifest; it can never win",
-      "C_blind_retry": "REJECTED - unknown external outcomes retried without recorded reconciliation evidence; FAIL"
+      "A_unsafe_resume": "REJECTED - an actual second effect and receipt were produced in the raw ledgers; FAIL regardless of weighted score",
+      "B_incomparable": "REJECTED as INCOMPARABLE/NO_DATA - the workload hash diverged from the frozen manifest",
+      "C_blind_retry": "REJECTED - raw retry records lacked reconciliation evidence; FAIL"
     },
-    "migration_trigger": "revisit only when a measurable trigger fires: sustained load beyond the single-process S1-002 envelope (10-100 ev/s research band), an availability-domain requirement, or a new trust boundary; the durable prototype starts with the state boundary (event history + outbox inside a single-writer component) and re-runs this frozen benchmark before any migration; rollback is trivial (no core change landed)",
-    "non_goals": "no production Temporal/Cadence/Step Functions installation, no vendor/cloud choice, no production SLO or availability claims, no core runtime changes, no SQLite/Postgres or S1-005 topology re-decision"
+    "migration_trigger": "revisit only when a production-like benchmark proves sustained demand beyond the current single-process envelope, an availability-domain requirement appears, or a new trust boundary is introduced; re-run this qualification against the selected vendor before migration",
+    "non_goals": "no production vendor installation, no production SLO or availability claim, no core runtime migration, and no re-decision of the S1-005 topology"
   },
   "limitations": [
     "Model-based comparison on a same-host research station: durable-engine costs combine S1-005 E1/E2 measurements with documented lease/visibility assumptions (100 ms lease timeout, 105 ms modeled recovery); no vendor engine was installed.",
-    "S1-002 is not a production SLO and S1-005 measurements are same-host bounded; multi-host partition behaviour and vendor timer semantics are unknown and excluded from scoring.",
-    "The durable-engine candidate scored 0 on crash-recovery-time and 1 on throughput-latency under the frozen linear ratio mapping; this is a documented extreme of the modelled lease timeout, not a measured production gap.",
+    "Low/nominal arrival rates link to the S1-002 planning envelope; the 20,000/s high load is an explicit simulator saturation probe, not a production profile.",
+    "Multi-host partition behaviour and vendor timer semantics are unknown and excluded from scoring.",
     "Producer and verifier labels are process-separated roles in one local environment, not external human auditors.",
-    "Migration triggers are symbolic until the follow-up benchmark measures them."
+    "Migration triggers remain design obligations until a production-like follow-up benchmark measures them."
   ],
-  "note": "research-plan PASS_WITH_LIMITS is a research evaluation; it never sets Goal ACCEPTED (release gate only). Revision 3 supersedes revision 2: corrective round R1 (commit 3f749d2) plus namespace-safe test-module loading verified in full-suite discovery; experiments re-executed on the clean committed tree 262560c (dirty=false).",
-  "research_revision": 3,
-  "recorded_corrective_round": "R1-final"
+  "note": "research-plan PASS_WITH_LIMITS is a research evaluation; it never sets Goal ACCEPTED. Revision 5 supersedes revision 4 after R2 added raw-run authority, real commit/outbox/replay and checkpoint/fencing traces, open-loop saturation, exact provenance and dependency binding, behavioral probes, and deterministic S2 fault coverage.",
+  "research_revision": 5,
+  "recorded_corrective_round": "R2-final"
 }

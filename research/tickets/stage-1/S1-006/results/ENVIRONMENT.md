@@ -1,71 +1,71 @@
-# S1-006 — Environment, commands, and provenance
+# S1-006 — Environment, commands, and provenance (R2)
 
-Ticket: `research/tickets/stage-1/S1-006` — QA2 execution backend:
-in-process scheduler versus durable-execution engine (provider-neutral).
+Ticket: QA2 execution backend — in-process scheduler versus a
+provider-neutral durable-execution engine.
 
-## Runtime
+## Runtime and frozen execution identity
 
-- Python 3.12.6, stdlib only for all research tooling (no new Core AgentOS
-  dependencies).
-- Same host as S1-002/S1-005 measurements; canonical DB root
+- Python 3.12.6; S1-006 tooling is stdlib-only.
+- Same Windows host as S1-002/S1-005; canonical DB root:
   `.agentos-research/platform-stage-1`.
+- Final experiment commit:
+  `30cdd80d8b47168522248fac5516cc7f773a018a`.
+- Final experiment tree:
+  `abc0d9f26b5dc3e8603988fd76955a17a7a4a193`.
+- run-a executor: `agentos-s1-006-producer`; run-b executor:
+  `agentos-s1-006-independent-verifier`; both recorded `dirty=false`.
+- Every evidence script records both its executed disk-byte SHA-256 and
+  commit-blob SHA-256. The evaluator re-resolves the commit tree and checks
+  the exact required script set.
 
-## Dependency gate (executed before research)
-
-```powershell
-py research/tickets/stage-1/S1-006/dependency_gate.py
-```
-
-- exit 0; S1-002 (rev 1, pass_with_limits) and S1-005 (rev 7,
-  pass_with_limits) verified against the canonical DB, tracked evidence
-  packs, file/payload SHA-256 and docs status.
-- Inherited limits carried into S1-006: S1-002 is not a production SLO;
-  S1-005 measurements are same-host and bounded, not multi-host/container
-  reliability.
-
-## Simulation chain (deterministic, stdlib-only)
+## Reproduction
 
 ```powershell
-py research/tickets/stage-1/S1-006/runner.py --mode main   --out research/tickets/stage-1/S1-006/results/run-a
-py research/tickets/stage-1/S1-006/runner.py --mode rerun  --out research/tickets/stage-1/S1-006/results/run-b
-py research/tickets/stage-1/S1-006/runner.py --mode probes --out research/tickets/stage-1/S1-006/results
-py research/tickets/stage-1/S1-006/evaluator.py --runs-manifest research/tickets/stage-1/S1-006/results/run-a/run-manifest.json --runs-manifest-sha <sha>
-py research/tickets/stage-1/S1-006/make_bundle.py
+py -3.12 research/tickets/stage-1/S1-006/dependency_gate.py
+py -3.12 research/tickets/stage-1/S1-006/make_bundle.py
+py -3.12 -m unittest tests.test_s1_006_regressions -v
+$env:PYTHONPATH = "src"
+py -3.12 -m agentos.cli research-plan --topic "S1-006 QA2 execution backend in process versus durable engine" --bundle "research/tickets/stage-1/S1-006/bundle.json" --db ".agentos-research/platform-stage-1"
+py -3.12 -m agentos.cli wiki-check --db ".agentos-research/platform-stage-1"
 ```
 
-- The runner is a discrete-event deterministic simulator over the frozen
-  backend contract: both backends implement identical AgentOS semantics
-  (atomic transition+audit/outbox, gateway-only effects, reconciliation
-  for unknown outcomes, lease/fencing, checkpoint-hash resume,
-  deduplicated at-least-once delivery) and differ only in measured cost
-  parameters (S1-005 E1/E2) and crash blast radius.
-- run matrix: 2 backends x 3 loads x 3 seeds = 18 throughput runs plus
-  4 crash/replay scenarios x 3 loads x 3 seeds x 2 backends = 72 scenario
-  runs; 90 runs per executor, 90 more in the independent rerun.
-- Observed semantics per scenario run: S3 checkpoint resumes are executed
-  only through the registered, content-hash-verified `CheckpointStore`
-  (recorded in `resumes`); S4 lease expiry performs a real at-least-once
-  redelivery absorbed by the local dedup (recorded in `redeliveries`,
-  never a second receipt); S2 unknown outcomes enter reconciliation and
-  are retried only after recorded resolution (`reconciled_unknown_outcomes`).
-- Model-based metrics come from measured parameters (S1-005 E1 dispatch
-  4.86/25.71 us; E2 SQLite 20,587 tx/s single vs 1,694 tx/s multi-writer);
-  they are research measurements, not production SLO claims.
+Observed before publication: dependency gate exit 0; bundle pipeline exit 0;
+68/68 S1-006 regression tests; research-plan exit 0 with
+`pass_with_limits`; wiki check `ok=true` (2378 files, 6430 links).
 
-## Fail-closed rules encoded in the pipeline
+## Evidence authority
 
-- dependency gate: any pack/record/DB/docs divergence -> BLOCKED;
-- runner: non-zero exit, timeout, missing output file -> failure;
-- evaluator: run-matrix divergence (missing/extra/duplicate), hash
-  divergence vs frozen contract/workload/rubric, safety-counter key set
-  mismatch, non-zero safety counter, empty raw observations, missing
-  terminal reason, dirty working tree, expected-commit mismatch, mixed
-  commit/tree provenance across compared runs, undetected probe ->
-  FAIL/error exit;
-- make_bundle: runs the evaluator and experiments as subprocesses and
-  requires exit 0 (timeouts are converted to failures), fresh
-  nonce-bound evaluator output, and schema-correct results; the bundle
-  verdict is derived, never hardcoded;
-- independent rerun: `run-b` is produced by a separate runner process in
-  a separate output directory; safety verdicts must match run-a and
-  latency deltas stay within the frozen 2x tolerance.
+- run-a manifest SHA-256:
+  `a846abeb0df4bc0518a9691cb91ed23b97bb8c56ba3483e29197502b866fb4af`.
+- digest-bound probes SHA-256:
+  `234a0bb36186b01dae9bde2fc12fe4941f44f23e31083938989c63ca3d1cd8dc`.
+- 90 run-a + 90 run-b records. The evaluator loads only files named by
+  each manifest, verifies their SHA-256, derives counters/latency/throughput/
+  queue depth from raw observations and ledgers, then requires the saved
+  comparison projection to equal the derived comparison.
+- Rerun result: identical verdict; all normalized-score and metric deltas
+  are 0, below the frozen 0.01 tolerances.
+- Sensitivity: 22 per-dimension perturbations + 200 seeded integer
+  compositions = 222; zero flips and zero ties.
+
+## Scenario semantics
+
+- S1: atomic transition/outbox commit is recorded before coordinator crash;
+  pending delivery is replayed after recovery.
+- S2: every seed contains a deterministic unknown-outcome injection, and
+  every such decision has reconciliation evidence before retry.
+- S3: a registered content hash is verified; resume creates a distinct new
+  run with `resumed_from_run_id` and no completed-step re-execution.
+- S4: duplicate delivery reaches the gateway, is absorbed by dedup, and a
+  stale lower fencing token is explicitly rejected.
+- Probe A produces a real second effect and receipt; probe C records actual
+  blind retries; probe B carries a divergent workload hash.
+- Repeated 12-task DAG instances are dependency-valid. Low/nominal are
+  planning-envelope loads; high (20,000/s) is an explicit same-host
+  saturation probe that produces measurable queue pressure.
+
+## Result and limits
+
+Derived score: in-process 3.88 versus modeled durable engine 3.20.
+Verdict: `PASS_WITH_LIMITS`. No production SLO, vendor-engine, multi-host,
+or external-auditor claim is made.

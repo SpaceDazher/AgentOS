@@ -1,987 +1,2927 @@
 {
  "backend": "durable_engine",
- "commit": "262560c95d20e563a8ae6b8df5d595888336ba25",
- "contract_sha256": "d9fbe1f8e72973e63299cf21255387c20c7bee65ba986c8f7917c0643a2f4faa",
+ "blind_retry_records": [],
+ "checkpoint_registry": {
+  "durable_engine-nominal-101:t0:108": "87336310dc1c282bd1e44855cc43386f60427bd61440a0268e45ba048368c337",
+  "durable_engine-nominal-101:t0:14": "2f1da614f1ed54df9921469bc9775ee4a3a19ec05f704f9eeb8755d2d7680760",
+  "durable_engine-nominal-101:t0:28": "5a4b4f0e37a09188ab858934ecf3b23230f48a5fe8953309455daad70fdc399e",
+  "durable_engine-nominal-101:t0:39": "885f046f7a4af4020d392c3d34b0dadf58a0931ad1837e0037b14975222a4097",
+  "durable_engine-nominal-101:t0:4": "60d029a227796d9c92ddb33c02b2215e37ef2ef57ae87080a3bb260f4f84debf",
+  "durable_engine-nominal-101:t0:48": "97cd9d54162bee57da0afc4c6b6b5437d8c193565aa7011a472f55f2486ff4b8",
+  "durable_engine-nominal-101:t0:61": "cf4330c78c018a7db0339e13e5a555e024ef1fc4aec030a569174092b1c45d56",
+  "durable_engine-nominal-101:t0:72": "f40e47779d0c5db606b28bd764c140c5b842c919de411696a4d5081b82f50926",
+  "durable_engine-nominal-101:t0:85": "4103ff1c86f706ffdda7b771858032a454a47f4123a7fe8a318d6af60f034f63",
+  "durable_engine-nominal-101:t0:96": "2cd067397314b42ba93f037b3f34c55a063cddf1cab3168174df3e8f16224c79",
+  "durable_engine-nominal-101:t10:10": "78fe7b71fc536dee4a9f9812c559614562d835a97cbd0e0a6b328f1701ed2280",
+  "durable_engine-nominal-101:t10:104": "4fa459dcfb4783b71573a7a3ca19ad3629c9a5b896cd271231ebfb59f153e37f",
+  "durable_engine-nominal-101:t10:118": "b5036a20fefc513315c790897cefd3c646f5b2cb27e91c7780648279713ee610",
+  "durable_engine-nominal-101:t10:23": "f99a3fa1b762421c27c814852d874e4e3eeee2e443384b9c09db474a21103f89",
+  "durable_engine-nominal-101:t10:35": "d29d21085b9d8138330abc8c37acf1538797e6d05c2b36a717a8904b0de1dd3c",
+  "durable_engine-nominal-101:t10:44": "2400c023aa7651caac25cf3dbe502c2b4302aa052410412015f9655b4842b8be",
+  "durable_engine-nominal-101:t10:58": "392e1eae0e5b70712fdf5d1515f819cb791907399268071abe037a913659663a",
+  "durable_engine-nominal-101:t10:71": "05ccd7ffe5165200ff94733ae4f03351720d345173e8d3f0a96bd1bd461e2e9e",
+  "durable_engine-nominal-101:t10:81": "eb68c08d410c604fb93257d309de4bb75988e752ea8c7ed7ca455d6480e6b03d",
+  "durable_engine-nominal-101:t10:94": "96d23887832e8ea081824081dafb1e6e8700274b7190744dac0fd3555d3b3a7d",
+  "durable_engine-nominal-101:t11:107": "b418e00773d199c56cb77c3c322e2bb66e2fcf34233ae0ba97afa552b9539b88",
+  "durable_engine-nominal-101:t11:117": "10eb784b304d55bc2888b860a669b4807873147e231b6f483e747b894202790f",
+  "durable_engine-nominal-101:t11:22": "b3b2d8b4b4350978865c272f86f19cdb198d6c3960fcf9ca3d0f9f41839992ed",
+  "durable_engine-nominal-101:t11:32": "703514a61af644e6c286a130ae9fff64aad03e1a0a2ffcb2801c14828cb2f1bd",
+  "durable_engine-nominal-101:t11:43": "6c8239ba35824a5ada694d614e29eedc22daabe6332dcd4a0f293a28cab608dd",
+  "durable_engine-nominal-101:t11:55": "3a8f2fdb1f7ed5433cb14f6cd2110e97d9015af7983bbdd0bbec6b7f6b3e1212",
+  "durable_engine-nominal-101:t11:68": "a0e4cf02e00b7cbb6e4c337bc5ed19c4283e6056f4b45669033646f54d83690e",
+  "durable_engine-nominal-101:t11:7": "fbb8321f1052587f5da796d043a037db71eae0f4e130f301e927d55f8e8bcd8c",
+  "durable_engine-nominal-101:t11:78": "086a26d2a0f2666f7c17a96bfd529e61f34557bbbd61c60f13d3272356fe085b",
+  "durable_engine-nominal-101:t11:93": "dfff4c7626c125d290eb218456333c57dbaedf7fd9b8716b79e987e45f0783b8",
+  "durable_engine-nominal-101:t1:0": "c23079679c779e431134ef01fce2da3165968c3bd4d13c55a70bd4965b9a5c04",
+  "durable_engine-nominal-101:t1:111": "0a976fd678180b943d07cea7a2b0fca3d6fced6265ee6b3df06425d1bd8da55b",
+  "durable_engine-nominal-101:t1:13": "4e8b9704560972403b51cadca8158d6a6d256a723b326efcf065c88affe1747e",
+  "durable_engine-nominal-101:t1:24": "7480ac020e962fc22fe3c0be517533bf0e031a140fc87637bb45557db8090daa",
+  "durable_engine-nominal-101:t1:37": "2ee12485d6cf3f2dcf68c7416dec2bad78bbf0f371f4fb03d73f5aadac3d5048",
+  "durable_engine-nominal-101:t1:50": "04ee117995df818712086ce302fe6793d462904bed94f102e395ab38f7e18e00",
+  "durable_engine-nominal-101:t1:62": "aac45eb4a91a8ca1a6b99c03100de13d6a8a26ac2e15f714c15276cfd0b19b4d",
+  "durable_engine-nominal-101:t1:73": "a25e20921d7e9d9bbb325048943a621f4e070c911332ab1c3591175b44804df0",
+  "durable_engine-nominal-101:t1:86": "e5836d6b755dece95e00e3c6eee032e20c1e7434f0ff006c39957eeebedb47e4",
+  "durable_engine-nominal-101:t1:97": "b27e3b162382725c9921659d9d2e1a24b422a70c6b9ae26877da0076322fcc3e",
+  "durable_engine-nominal-101:t2:101": "0f8fb951ba2bc3a5002c2618775230d580ded64a440325f9e122c794dbc09905",
+  "durable_engine-nominal-101:t2:110": "59600bbd93c85a1409366199bfe8b58f9f245c0f5afae8bb989083223610a30c",
+  "durable_engine-nominal-101:t2:12": "7d3cf053b811b0dbaafd7251ece809d081176397142c3d4405a6bd7797ee6c41",
+  "durable_engine-nominal-101:t2:2": "1e87ba293e1f529a2a0a55df9ea5e3ff06f0e9a742bb6fd86d4113a425afed2c",
+  "durable_engine-nominal-101:t2:26": "864975651bec7bf2642542d6190db2d855736a7d51dbfca36552bcddf439f6c3",
+  "durable_engine-nominal-101:t2:36": "538f06d20fd244266ae17e265554edcad8db2dddac78fafd8cc36924503ff89d",
+  "durable_engine-nominal-101:t2:49": "418e1d847884a35968cb2833625c9d6cb04f06d98f08e4a0b277f0c329d8febb",
+  "durable_engine-nominal-101:t2:60": "0700a428636b5cdbcb62fee62b3185457fab9f21e65c13924185261560dbd578",
+  "durable_engine-nominal-101:t2:77": "a4aeef997b60de762b769c738563ab07eed778cfbeff367fe5256deb9ac3965b",
+  "durable_engine-nominal-101:t2:87": "6a23c41db7401257e184565fb1fce70dfc803b414e73ebd0e75cd9e13558d962",
+  "durable_engine-nominal-101:t3:1": "58d46ca7388f7e6c6d63582163bd183771b98f924f7cb603ac2a51072ee53096",
+  "durable_engine-nominal-101:t3:109": "c621036a0b35263fac7cc8f38f90fc767f88a2c20ed1cf3025bb62c57a7043b0",
+  "durable_engine-nominal-101:t3:16": "affc35e226aae7e7b486dea01028e3f01a4a8fa69e624fee68d87e056ae7680e",
+  "durable_engine-nominal-101:t3:25": "fad7e6422d32a18f7dac852ee1496873cfb9288dfec6005feba675947a5b6c3f",
+  "durable_engine-nominal-101:t3:38": "7880bf4aeda8892587bd987b8775f2cd3403401298e4931975fbe3e6ce0aa013",
+  "durable_engine-nominal-101:t3:53": "1b0b550c6afa7e5742a994b6a849713579f90542a0291703b85730d7c9c20cd8",
+  "durable_engine-nominal-101:t3:66": "5e8d5b4a6dd2bd5d1f1ef3b56249f3701f1efd6b80c990d0a1f89689584889dc",
+  "durable_engine-nominal-101:t3:75": "b2535cb97264d63d5b96d066e01e9dc905b55672e04c88d42a01a1296a8ad96b",
+  "durable_engine-nominal-101:t3:84": "baeb0a9fcbe9a23af70f0cc01262d3ac06308bced2624a696da37d2528f950fd",
+  "durable_engine-nominal-101:t3:98": "f96fc6a0085253b57c3c26ad837f36a6f44ed9c922c000daa3eab46bb86691f5",
+  "durable_engine-nominal-101:t4:100": "bc05ac09687adc5570da2b78e33d70beb6ab664b9ce617913957eebee40baf77",
+  "durable_engine-nominal-101:t4:112": "36d7ac6c0207b01fd31e69e2561c2b293f3715180e43116167e33405b7362f44",
+  "durable_engine-nominal-101:t4:15": "301a1a592c1214c8ad49747b87e5f43c99396fdc3f7412d97937e96e71a476dc",
+  "durable_engine-nominal-101:t4:29": "09becc61d943dd7b41a7f9809220b6886c477cda05f36be6ea2d17b255c71b38",
+  "durable_engine-nominal-101:t4:41": "1d34aefce5d5de6f26970151929ea2d30a88191918d20d55f5a54d0894ecdbe6",
+  "durable_engine-nominal-101:t4:51": "9626c8af1205a2b0c3f064abc5ccb2a5aa651248c12bf553f6973860bfa49469",
+  "durable_engine-nominal-101:t4:6": "04035e78aced858b869fd37dace6eeca56c51d014a277c74646e3e79803d451d",
+  "durable_engine-nominal-101:t4:63": "4bbc86b2134c02fee706b274768ebbc3fa9ac7e363b2eeb97c4806e8926544de",
+  "durable_engine-nominal-101:t4:74": "fc853c5af4917dc1548c6f65c28832e06eacdc391e918a8660807f828e7ea4ec",
+  "durable_engine-nominal-101:t4:91": "ebb805c7ea420bcd99538fad3bb37a7d36404f4ba9dbfe06b90cb118cbcdd0cb",
+  "durable_engine-nominal-101:t5:103": "bac63c18c25147ad72fd85953e83e86df44d8f7d710627bd337f2dd68ccf9040",
+  "durable_engine-nominal-101:t5:114": "ef4785d87736cfb2da825822e06ae945578aa3bb10437a431f2311f142756ef6",
+  "durable_engine-nominal-101:t5:17": "0583f5428cdd73ff656ff8cbc10188f7279ddbaee41b6b35dbdcd63b328fdcb9",
+  "durable_engine-nominal-101:t5:27": "25953eb230648cc53170e63fd1e0bbe742c39e2d3ef5ed510a21b61b90c79972",
+  "durable_engine-nominal-101:t5:3": "04ef1d05a28841fbd4116a18dbc13f5331fc122633c8f42d621c9a23774f2fde",
+  "durable_engine-nominal-101:t5:45": "567e60934037e2d92ad23f2582244f7e308ca8ebcddadb17598217724a8c4183",
+  "durable_engine-nominal-101:t5:52": "18eecc72f86c6c47f204aebe8c12580d9a65e0c35262bf41994e6c836befd148",
+  "durable_engine-nominal-101:t5:64": "75e9282620070b4cb8207abd951aaa1bc5a846719a92b789540988bd7b4269a5",
+  "durable_engine-nominal-101:t5:80": "63b454690150ea4af65ebc01cde7b74c68ce0438bb02c269258656eca305460b",
+  "durable_engine-nominal-101:t5:89": "4762ad85988622551480af91cd5c7b61d7a9fdee79d6e7584e878b98e4cdc886",
+  "durable_engine-nominal-101:t6:102": "dfeacdee05f18f47577123bedbf27bbb17c650e6a3d454b54b64e7b7c1f924d7",
+  "durable_engine-nominal-101:t6:113": "a8cc266dc6e91134b5f2cb867cfdf1cb4aa9f3e1d5a4672956e79f6bb13894ed",
+  "durable_engine-nominal-101:t6:18": "cbea2960d4d76dfa8fa85ab87e26cbf7a5ff967ab2a04b4d54a319269c406cde",
+  "durable_engine-nominal-101:t6:33": "e9c85e464a5753b97dbfae591c34c70b62962fd70dca2f0779daa72c5ac58836",
+  "durable_engine-nominal-101:t6:42": "4cd57f370b67cc1f3aa69139fb59aa474e47cab5dacb01399f071cb6edfdb163",
+  "durable_engine-nominal-101:t6:56": "4d36fc858af796d4f2dc9e4ae4234db54ba7885b68cf43c5c6d7b857dd08a44f",
+  "durable_engine-nominal-101:t6:69": "3be19a2787deadb623c3df9a016d664c4e1e74e23b77c8ac5430cfe99da506a4",
+  "durable_engine-nominal-101:t6:79": "2aa44e13c649ffe0e334692e4f6e9a681305753064457142f7809de5a6532847",
+  "durable_engine-nominal-101:t6:8": "b41941930cc98c916289b7bf7cc7af73a469653e559d6544e43ed82d5880e07d",
+  "durable_engine-nominal-101:t6:88": "b351ec379b531ab57db058942c59cca1c4f6200e83bae51f1e49af70ced32577",
+  "durable_engine-nominal-101:t7:115": "d78e245e13c2e9a7f038abfbd8e821f53e6947f32a646119a8e135899e68cc7f",
+  "durable_engine-nominal-101:t7:21": "ba341b7ac94cf118329e76d1c7238daece2ccd88768c48e35e9454cf2cfec6fc",
+  "durable_engine-nominal-101:t7:30": "e6b97d52deee4e513c9a68b60e50a19ef1e05785df6e1f0906befb64f58325a3",
+  "durable_engine-nominal-101:t7:40": "6f149e5a1e6864326c3febb12edf521f53233f4205f4e4b253290f522a13a931",
+  "durable_engine-nominal-101:t7:5": "e34a7e40b3f258a56844d083524fea424b43a1b51b493f9c7d507b269fb11908",
+  "durable_engine-nominal-101:t7:54": "2076767f121820fd77a589c24b3c5cb847698882c998764f541065c306732f01",
+  "durable_engine-nominal-101:t7:67": "71738f923fc1040258ce5b3605a83a9f38c5b535ea2ea5396fb25ebfb1d265ea",
+  "durable_engine-nominal-101:t7:76": "179f4dfeb5fcbcbba7679127850997f0a90305cbba1e381b6651fc3e7328702a",
+  "durable_engine-nominal-101:t7:90": "8873210be1651ce7599a150f1f522c606e99173e6923f7c6ae2c0ae5e91cd726",
+  "durable_engine-nominal-101:t7:99": "6db0f2b46d652a6e4a6d67d5831f8e67c8fcb478d0be1d0e1c0ffcd95468d93c",
+  "durable_engine-nominal-101:t8:106": "b19560dfdcdb9de5a3c9c48095fc21d60a7032bdde3ce2107abd368c2846eeda",
+  "durable_engine-nominal-101:t8:11": "11ecb24953ec762285652dc481bcdcb573452cf6c679231867296db27b3b8b60",
+  "durable_engine-nominal-101:t8:116": "739f0056602d3a0ac1396e03c513a24c2ac8403896020f774dc66e3d2f880071",
+  "durable_engine-nominal-101:t8:19": "c270d6a36c204955900f99e81e35558c5ccde0cc2db472de7dac81c199f50366",
+  "durable_engine-nominal-101:t8:31": "5c4ddf9ea42b9054c3c8616993fbaf8209fc0fe3e324a63f7f0e6e412c668dea",
+  "durable_engine-nominal-101:t8:47": "f77ea49f9b4b7711207b8dece3d2ddb66c71d1ba0727c2e4cb792b2a550f5f68",
+  "durable_engine-nominal-101:t8:57": "d43bbd85d8c76d365a7922bac5a1ed4e205f8ae2a8e7771385063643f6a14537",
+  "durable_engine-nominal-101:t8:65": "31d7b3a4c90a0bbc8eddf9d3f7258f637cefb02bfe24b9b6ca1be894e8d13e4c",
+  "durable_engine-nominal-101:t8:82": "30a96cfdbebd619bc5ffd7ea7dd5db94904d0846d83bf559a95bcdfab6b63775",
+  "durable_engine-nominal-101:t8:92": "a07572048e941300df9e6dec7f50b37b0d81ff11a8772c4956f3217b9df11197",
+  "durable_engine-nominal-101:t9:105": "dae9e961c8357f22a940718c202fad4b86ce0ddf548d364c35d64d25209660b5",
+  "durable_engine-nominal-101:t9:119": "481816c912b9aeaeb664f91c10ffc5618f4e40cc7a5ea07c9ba0d110a1cb97f1",
+  "durable_engine-nominal-101:t9:20": "10071ee455767067b3cfa2ff8048be836dc9451364feb4c1fbe43f4b06dcf462",
+  "durable_engine-nominal-101:t9:34": "ad3d808b0f2b121182a170044ae786b99d9064c00e9401ad19f3c79b94f09163",
+  "durable_engine-nominal-101:t9:46": "03d9a712c00bca725521fa70df2fb9b2f5102e4eac8e4a6509a93fb55a597e99",
+  "durable_engine-nominal-101:t9:59": "6d3df7fd17cf03b88a703a8c969a6e058c595b6965ff8b5b28c33dfe35fe5427",
+  "durable_engine-nominal-101:t9:70": "96020c4806206771e9fd9b3cb2e3db45717724273faf212bfd259480cacbca7b",
+  "durable_engine-nominal-101:t9:83": "431a4e7ce33ff6296325a0d99963a2c0f6ae83510de4ee446e748f97d150feba",
+  "durable_engine-nominal-101:t9:9": "c4724aedecd832e3f0d452491725847fd09e6d8320a2e048094b1517fbf5dc9b",
+  "durable_engine-nominal-101:t9:95": "6e793e40776fb05551e72a4e1b927c51672f588b2b63e50800acd018a2a9a0c0"
+ },
+ "commit": "30cdd80d8b47168522248fac5516cc7f773a018a",
+ "contract_sha256": "d5f1496b2f85548fdd5e9f407ad62865db3fbd19b4827dac7493cc61354cc223",
+ "delivery_attempt_counts": {
+  "t0#108": 1,
+  "t0#14": 1,
+  "t0#28": 1,
+  "t0#39": 1,
+  "t0#4": 1,
+  "t0#48": 1,
+  "t0#61": 1,
+  "t0#72": 1,
+  "t0#85": 1,
+  "t0#96": 1,
+  "t1#0": 1,
+  "t1#111": 1,
+  "t1#13": 1,
+  "t1#24": 1,
+  "t1#37": 1,
+  "t1#50": 1,
+  "t1#62": 1,
+  "t1#73": 1,
+  "t1#86": 1,
+  "t1#97": 1,
+  "t10#10": 1,
+  "t10#104": 1,
+  "t10#118": 1,
+  "t10#23": 1,
+  "t10#35": 1,
+  "t10#44": 1,
+  "t10#58": 1,
+  "t10#71": 1,
+  "t10#81": 1,
+  "t10#94": 1,
+  "t11#107": 1,
+  "t11#117": 1,
+  "t11#22": 1,
+  "t11#32": 1,
+  "t11#43": 1,
+  "t11#55": 1,
+  "t11#68": 1,
+  "t11#7": 1,
+  "t11#78": 1,
+  "t11#93": 1,
+  "t2#101": 1,
+  "t2#110": 1,
+  "t2#12": 1,
+  "t2#2": 1,
+  "t2#26": 1,
+  "t2#36": 1,
+  "t2#49": 1,
+  "t2#60": 1,
+  "t2#77": 1,
+  "t2#87": 1,
+  "t3#1": 1,
+  "t3#109": 1,
+  "t3#16": 1,
+  "t3#25": 1,
+  "t3#38": 1,
+  "t3#53": 1,
+  "t3#66": 1,
+  "t3#75": 1,
+  "t3#84": 1,
+  "t3#98": 1,
+  "t4#100": 1,
+  "t4#112": 1,
+  "t4#15": 1,
+  "t4#29": 1,
+  "t4#41": 1,
+  "t4#51": 1,
+  "t4#6": 1,
+  "t4#63": 1,
+  "t4#74": 1,
+  "t4#91": 1,
+  "t5#103": 1,
+  "t5#114": 1,
+  "t5#17": 1,
+  "t5#27": 1,
+  "t5#3": 1,
+  "t5#45": 1,
+  "t5#52": 1,
+  "t5#64": 1,
+  "t5#80": 1,
+  "t5#89": 1,
+  "t6#102": 1,
+  "t6#113": 1,
+  "t6#18": 1,
+  "t6#33": 1,
+  "t6#42": 1,
+  "t6#56": 1,
+  "t6#69": 1,
+  "t6#79": 1,
+  "t6#8": 1,
+  "t6#88": 1,
+  "t7#115": 1,
+  "t7#21": 1,
+  "t7#30": 1,
+  "t7#40": 1,
+  "t7#5": 1,
+  "t7#54": 1,
+  "t7#67": 1,
+  "t7#76": 1,
+  "t7#90": 1,
+  "t7#99": 1,
+  "t8#106": 1,
+  "t8#11": 1,
+  "t8#116": 1,
+  "t8#19": 1,
+  "t8#31": 1,
+  "t8#47": 1,
+  "t8#57": 1,
+  "t8#65": 1,
+  "t8#82": 1,
+  "t8#92": 1,
+  "t9#105": 1,
+  "t9#119": 1,
+  "t9#20": 1,
+  "t9#34": 1,
+  "t9#46": 1,
+  "t9#59": 1,
+  "t9#70": 1,
+  "t9#83": 1,
+  "t9#9": 1,
+  "t9#95": 1
+ },
  "dirty": false,
+ "effect_attempt_counts": {
+  "t0#108": 1,
+  "t0#14": 1,
+  "t0#28": 1,
+  "t0#39": 1,
+  "t0#4": 1,
+  "t0#48": 1,
+  "t0#61": 1,
+  "t0#72": 1,
+  "t0#85": 1,
+  "t0#96": 1,
+  "t1#0": 1,
+  "t1#111": 1,
+  "t1#13": 1,
+  "t1#24": 1,
+  "t1#37": 1,
+  "t1#50": 1,
+  "t1#62": 1,
+  "t1#73": 1,
+  "t1#86": 1,
+  "t1#97": 1,
+  "t10#10": 1,
+  "t10#104": 1,
+  "t10#118": 1,
+  "t10#23": 1,
+  "t10#35": 1,
+  "t10#44": 1,
+  "t10#58": 1,
+  "t10#71": 1,
+  "t10#81": 1,
+  "t10#94": 1,
+  "t11#107": 1,
+  "t11#117": 1,
+  "t11#22": 1,
+  "t11#32": 1,
+  "t11#43": 1,
+  "t11#55": 1,
+  "t11#68": 1,
+  "t11#7": 1,
+  "t11#78": 1,
+  "t11#93": 1,
+  "t2#101": 1,
+  "t2#110": 1,
+  "t2#12": 1,
+  "t2#2": 1,
+  "t2#26": 1,
+  "t2#36": 1,
+  "t2#49": 1,
+  "t2#60": 1,
+  "t2#77": 1,
+  "t2#87": 1,
+  "t3#1": 1,
+  "t3#109": 1,
+  "t3#16": 1,
+  "t3#25": 1,
+  "t3#38": 1,
+  "t3#53": 1,
+  "t3#66": 1,
+  "t3#75": 1,
+  "t3#84": 1,
+  "t3#98": 1,
+  "t4#100": 1,
+  "t4#112": 1,
+  "t4#15": 1,
+  "t4#29": 1,
+  "t4#41": 1,
+  "t4#51": 1,
+  "t4#6": 1,
+  "t4#63": 1,
+  "t4#74": 1,
+  "t4#91": 1,
+  "t5#103": 1,
+  "t5#114": 1,
+  "t5#17": 1,
+  "t5#27": 1,
+  "t5#3": 1,
+  "t5#45": 1,
+  "t5#52": 1,
+  "t5#64": 1,
+  "t5#80": 1,
+  "t5#89": 1,
+  "t6#102": 1,
+  "t6#113": 1,
+  "t6#18": 1,
+  "t6#33": 1,
+  "t6#42": 1,
+  "t6#56": 1,
+  "t6#69": 1,
+  "t6#79": 1,
+  "t6#8": 1,
+  "t6#88": 1,
+  "t7#115": 1,
+  "t7#21": 1,
+  "t7#30": 1,
+  "t7#40": 1,
+  "t7#5": 1,
+  "t7#54": 1,
+  "t7#67": 1,
+  "t7#76": 1,
+  "t7#90": 1,
+  "t7#99": 1,
+  "t8#106": 1,
+  "t8#11": 1,
+  "t8#116": 1,
+  "t8#19": 1,
+  "t8#31": 1,
+  "t8#47": 1,
+  "t8#57": 1,
+  "t8#65": 1,
+  "t8#82": 1,
+  "t8#92": 1,
+  "t9#105": 1,
+  "t9#119": 1,
+  "t9#20": 1,
+  "t9#34": 1,
+  "t9#46": 1,
+  "t9#59": 1,
+  "t9#70": 1,
+  "t9#83": 1,
+  "t9#9": 1,
+  "t9#95": 1
+ },
  "load": "nominal",
  "metrics": {
   "latency_us": {
-   "p50": 25.710000000000036,
-   "p95": 25.710000000000036,
-   "p99": 25.710000000000036
+   "p50": 25.71,
+   "p95": 25.71,
+   "p99": 25.71
   },
   "max_queue_depth": 1,
   "recovery_times": [],
   "tasks": 120,
-  "throughput_tasks_per_second": 10020.5
+  "throughput_tasks_per_second": 34.3
  },
  "mutations": [],
+ "outbox": {
+  "t0#108": {
+   "commit_index": 108,
+   "committed": true,
+   "delivered": true,
+   "task": "t0"
+  },
+  "t0#14": {
+   "commit_index": 14,
+   "committed": true,
+   "delivered": true,
+   "task": "t0"
+  },
+  "t0#28": {
+   "commit_index": 28,
+   "committed": true,
+   "delivered": true,
+   "task": "t0"
+  },
+  "t0#39": {
+   "commit_index": 39,
+   "committed": true,
+   "delivered": true,
+   "task": "t0"
+  },
+  "t0#4": {
+   "commit_index": 4,
+   "committed": true,
+   "delivered": true,
+   "task": "t0"
+  },
+  "t0#48": {
+   "commit_index": 48,
+   "committed": true,
+   "delivered": true,
+   "task": "t0"
+  },
+  "t0#61": {
+   "commit_index": 61,
+   "committed": true,
+   "delivered": true,
+   "task": "t0"
+  },
+  "t0#72": {
+   "commit_index": 72,
+   "committed": true,
+   "delivered": true,
+   "task": "t0"
+  },
+  "t0#85": {
+   "commit_index": 85,
+   "committed": true,
+   "delivered": true,
+   "task": "t0"
+  },
+  "t0#96": {
+   "commit_index": 96,
+   "committed": true,
+   "delivered": true,
+   "task": "t0"
+  },
+  "t1#0": {
+   "commit_index": 0,
+   "committed": true,
+   "delivered": true,
+   "task": "t1"
+  },
+  "t1#111": {
+   "commit_index": 111,
+   "committed": true,
+   "delivered": true,
+   "task": "t1"
+  },
+  "t1#13": {
+   "commit_index": 13,
+   "committed": true,
+   "delivered": true,
+   "task": "t1"
+  },
+  "t1#24": {
+   "commit_index": 24,
+   "committed": true,
+   "delivered": true,
+   "task": "t1"
+  },
+  "t1#37": {
+   "commit_index": 37,
+   "committed": true,
+   "delivered": true,
+   "task": "t1"
+  },
+  "t1#50": {
+   "commit_index": 50,
+   "committed": true,
+   "delivered": true,
+   "task": "t1"
+  },
+  "t1#62": {
+   "commit_index": 62,
+   "committed": true,
+   "delivered": true,
+   "task": "t1"
+  },
+  "t1#73": {
+   "commit_index": 73,
+   "committed": true,
+   "delivered": true,
+   "task": "t1"
+  },
+  "t1#86": {
+   "commit_index": 86,
+   "committed": true,
+   "delivered": true,
+   "task": "t1"
+  },
+  "t1#97": {
+   "commit_index": 97,
+   "committed": true,
+   "delivered": true,
+   "task": "t1"
+  },
+  "t10#10": {
+   "commit_index": 10,
+   "committed": true,
+   "delivered": true,
+   "task": "t10"
+  },
+  "t10#104": {
+   "commit_index": 104,
+   "committed": true,
+   "delivered": true,
+   "task": "t10"
+  },
+  "t10#118": {
+   "commit_index": 118,
+   "committed": true,
+   "delivered": true,
+   "task": "t10"
+  },
+  "t10#23": {
+   "commit_index": 23,
+   "committed": true,
+   "delivered": true,
+   "task": "t10"
+  },
+  "t10#35": {
+   "commit_index": 35,
+   "committed": true,
+   "delivered": true,
+   "task": "t10"
+  },
+  "t10#44": {
+   "commit_index": 44,
+   "committed": true,
+   "delivered": true,
+   "task": "t10"
+  },
+  "t10#58": {
+   "commit_index": 58,
+   "committed": true,
+   "delivered": true,
+   "task": "t10"
+  },
+  "t10#71": {
+   "commit_index": 71,
+   "committed": true,
+   "delivered": true,
+   "task": "t10"
+  },
+  "t10#81": {
+   "commit_index": 81,
+   "committed": true,
+   "delivered": true,
+   "task": "t10"
+  },
+  "t10#94": {
+   "commit_index": 94,
+   "committed": true,
+   "delivered": true,
+   "task": "t10"
+  },
+  "t11#107": {
+   "commit_index": 107,
+   "committed": true,
+   "delivered": true,
+   "task": "t11"
+  },
+  "t11#117": {
+   "commit_index": 117,
+   "committed": true,
+   "delivered": true,
+   "task": "t11"
+  },
+  "t11#22": {
+   "commit_index": 22,
+   "committed": true,
+   "delivered": true,
+   "task": "t11"
+  },
+  "t11#32": {
+   "commit_index": 32,
+   "committed": true,
+   "delivered": true,
+   "task": "t11"
+  },
+  "t11#43": {
+   "commit_index": 43,
+   "committed": true,
+   "delivered": true,
+   "task": "t11"
+  },
+  "t11#55": {
+   "commit_index": 55,
+   "committed": true,
+   "delivered": true,
+   "task": "t11"
+  },
+  "t11#68": {
+   "commit_index": 68,
+   "committed": true,
+   "delivered": true,
+   "task": "t11"
+  },
+  "t11#7": {
+   "commit_index": 7,
+   "committed": true,
+   "delivered": true,
+   "task": "t11"
+  },
+  "t11#78": {
+   "commit_index": 78,
+   "committed": true,
+   "delivered": true,
+   "task": "t11"
+  },
+  "t11#93": {
+   "commit_index": 93,
+   "committed": true,
+   "delivered": true,
+   "task": "t11"
+  },
+  "t2#101": {
+   "commit_index": 101,
+   "committed": true,
+   "delivered": true,
+   "task": "t2"
+  },
+  "t2#110": {
+   "commit_index": 110,
+   "committed": true,
+   "delivered": true,
+   "task": "t2"
+  },
+  "t2#12": {
+   "commit_index": 12,
+   "committed": true,
+   "delivered": true,
+   "task": "t2"
+  },
+  "t2#2": {
+   "commit_index": 2,
+   "committed": true,
+   "delivered": true,
+   "task": "t2"
+  },
+  "t2#26": {
+   "commit_index": 26,
+   "committed": true,
+   "delivered": true,
+   "task": "t2"
+  },
+  "t2#36": {
+   "commit_index": 36,
+   "committed": true,
+   "delivered": true,
+   "task": "t2"
+  },
+  "t2#49": {
+   "commit_index": 49,
+   "committed": true,
+   "delivered": true,
+   "task": "t2"
+  },
+  "t2#60": {
+   "commit_index": 60,
+   "committed": true,
+   "delivered": true,
+   "task": "t2"
+  },
+  "t2#77": {
+   "commit_index": 77,
+   "committed": true,
+   "delivered": true,
+   "task": "t2"
+  },
+  "t2#87": {
+   "commit_index": 87,
+   "committed": true,
+   "delivered": true,
+   "task": "t2"
+  },
+  "t3#1": {
+   "commit_index": 1,
+   "committed": true,
+   "delivered": true,
+   "task": "t3"
+  },
+  "t3#109": {
+   "commit_index": 109,
+   "committed": true,
+   "delivered": true,
+   "task": "t3"
+  },
+  "t3#16": {
+   "commit_index": 16,
+   "committed": true,
+   "delivered": true,
+   "task": "t3"
+  },
+  "t3#25": {
+   "commit_index": 25,
+   "committed": true,
+   "delivered": true,
+   "task": "t3"
+  },
+  "t3#38": {
+   "commit_index": 38,
+   "committed": true,
+   "delivered": true,
+   "task": "t3"
+  },
+  "t3#53": {
+   "commit_index": 53,
+   "committed": true,
+   "delivered": true,
+   "task": "t3"
+  },
+  "t3#66": {
+   "commit_index": 66,
+   "committed": true,
+   "delivered": true,
+   "task": "t3"
+  },
+  "t3#75": {
+   "commit_index": 75,
+   "committed": true,
+   "delivered": true,
+   "task": "t3"
+  },
+  "t3#84": {
+   "commit_index": 84,
+   "committed": true,
+   "delivered": true,
+   "task": "t3"
+  },
+  "t3#98": {
+   "commit_index": 98,
+   "committed": true,
+   "delivered": true,
+   "task": "t3"
+  },
+  "t4#100": {
+   "commit_index": 100,
+   "committed": true,
+   "delivered": true,
+   "task": "t4"
+  },
+  "t4#112": {
+   "commit_index": 112,
+   "committed": true,
+   "delivered": true,
+   "task": "t4"
+  },
+  "t4#15": {
+   "commit_index": 15,
+   "committed": true,
+   "delivered": true,
+   "task": "t4"
+  },
+  "t4#29": {
+   "commit_index": 29,
+   "committed": true,
+   "delivered": true,
+   "task": "t4"
+  },
+  "t4#41": {
+   "commit_index": 41,
+   "committed": true,
+   "delivered": true,
+   "task": "t4"
+  },
+  "t4#51": {
+   "commit_index": 51,
+   "committed": true,
+   "delivered": true,
+   "task": "t4"
+  },
+  "t4#6": {
+   "commit_index": 6,
+   "committed": true,
+   "delivered": true,
+   "task": "t4"
+  },
+  "t4#63": {
+   "commit_index": 63,
+   "committed": true,
+   "delivered": true,
+   "task": "t4"
+  },
+  "t4#74": {
+   "commit_index": 74,
+   "committed": true,
+   "delivered": true,
+   "task": "t4"
+  },
+  "t4#91": {
+   "commit_index": 91,
+   "committed": true,
+   "delivered": true,
+   "task": "t4"
+  },
+  "t5#103": {
+   "commit_index": 103,
+   "committed": true,
+   "delivered": true,
+   "task": "t5"
+  },
+  "t5#114": {
+   "commit_index": 114,
+   "committed": true,
+   "delivered": true,
+   "task": "t5"
+  },
+  "t5#17": {
+   "commit_index": 17,
+   "committed": true,
+   "delivered": true,
+   "task": "t5"
+  },
+  "t5#27": {
+   "commit_index": 27,
+   "committed": true,
+   "delivered": true,
+   "task": "t5"
+  },
+  "t5#3": {
+   "commit_index": 3,
+   "committed": true,
+   "delivered": true,
+   "task": "t5"
+  },
+  "t5#45": {
+   "commit_index": 45,
+   "committed": true,
+   "delivered": true,
+   "task": "t5"
+  },
+  "t5#52": {
+   "commit_index": 52,
+   "committed": true,
+   "delivered": true,
+   "task": "t5"
+  },
+  "t5#64": {
+   "commit_index": 64,
+   "committed": true,
+   "delivered": true,
+   "task": "t5"
+  },
+  "t5#80": {
+   "commit_index": 80,
+   "committed": true,
+   "delivered": true,
+   "task": "t5"
+  },
+  "t5#89": {
+   "commit_index": 89,
+   "committed": true,
+   "delivered": true,
+   "task": "t5"
+  },
+  "t6#102": {
+   "commit_index": 102,
+   "committed": true,
+   "delivered": true,
+   "task": "t6"
+  },
+  "t6#113": {
+   "commit_index": 113,
+   "committed": true,
+   "delivered": true,
+   "task": "t6"
+  },
+  "t6#18": {
+   "commit_index": 18,
+   "committed": true,
+   "delivered": true,
+   "task": "t6"
+  },
+  "t6#33": {
+   "commit_index": 33,
+   "committed": true,
+   "delivered": true,
+   "task": "t6"
+  },
+  "t6#42": {
+   "commit_index": 42,
+   "committed": true,
+   "delivered": true,
+   "task": "t6"
+  },
+  "t6#56": {
+   "commit_index": 56,
+   "committed": true,
+   "delivered": true,
+   "task": "t6"
+  },
+  "t6#69": {
+   "commit_index": 69,
+   "committed": true,
+   "delivered": true,
+   "task": "t6"
+  },
+  "t6#79": {
+   "commit_index": 79,
+   "committed": true,
+   "delivered": true,
+   "task": "t6"
+  },
+  "t6#8": {
+   "commit_index": 8,
+   "committed": true,
+   "delivered": true,
+   "task": "t6"
+  },
+  "t6#88": {
+   "commit_index": 88,
+   "committed": true,
+   "delivered": true,
+   "task": "t6"
+  },
+  "t7#115": {
+   "commit_index": 115,
+   "committed": true,
+   "delivered": true,
+   "task": "t7"
+  },
+  "t7#21": {
+   "commit_index": 21,
+   "committed": true,
+   "delivered": true,
+   "task": "t7"
+  },
+  "t7#30": {
+   "commit_index": 30,
+   "committed": true,
+   "delivered": true,
+   "task": "t7"
+  },
+  "t7#40": {
+   "commit_index": 40,
+   "committed": true,
+   "delivered": true,
+   "task": "t7"
+  },
+  "t7#5": {
+   "commit_index": 5,
+   "committed": true,
+   "delivered": true,
+   "task": "t7"
+  },
+  "t7#54": {
+   "commit_index": 54,
+   "committed": true,
+   "delivered": true,
+   "task": "t7"
+  },
+  "t7#67": {
+   "commit_index": 67,
+   "committed": true,
+   "delivered": true,
+   "task": "t7"
+  },
+  "t7#76": {
+   "commit_index": 76,
+   "committed": true,
+   "delivered": true,
+   "task": "t7"
+  },
+  "t7#90": {
+   "commit_index": 90,
+   "committed": true,
+   "delivered": true,
+   "task": "t7"
+  },
+  "t7#99": {
+   "commit_index": 99,
+   "committed": true,
+   "delivered": true,
+   "task": "t7"
+  },
+  "t8#106": {
+   "commit_index": 106,
+   "committed": true,
+   "delivered": true,
+   "task": "t8"
+  },
+  "t8#11": {
+   "commit_index": 11,
+   "committed": true,
+   "delivered": true,
+   "task": "t8"
+  },
+  "t8#116": {
+   "commit_index": 116,
+   "committed": true,
+   "delivered": true,
+   "task": "t8"
+  },
+  "t8#19": {
+   "commit_index": 19,
+   "committed": true,
+   "delivered": true,
+   "task": "t8"
+  },
+  "t8#31": {
+   "commit_index": 31,
+   "committed": true,
+   "delivered": true,
+   "task": "t8"
+  },
+  "t8#47": {
+   "commit_index": 47,
+   "committed": true,
+   "delivered": true,
+   "task": "t8"
+  },
+  "t8#57": {
+   "commit_index": 57,
+   "committed": true,
+   "delivered": true,
+   "task": "t8"
+  },
+  "t8#65": {
+   "commit_index": 65,
+   "committed": true,
+   "delivered": true,
+   "task": "t8"
+  },
+  "t8#82": {
+   "commit_index": 82,
+   "committed": true,
+   "delivered": true,
+   "task": "t8"
+  },
+  "t8#92": {
+   "commit_index": 92,
+   "committed": true,
+   "delivered": true,
+   "task": "t8"
+  },
+  "t9#105": {
+   "commit_index": 105,
+   "committed": true,
+   "delivered": true,
+   "task": "t9"
+  },
+  "t9#119": {
+   "commit_index": 119,
+   "committed": true,
+   "delivered": true,
+   "task": "t9"
+  },
+  "t9#20": {
+   "commit_index": 20,
+   "committed": true,
+   "delivered": true,
+   "task": "t9"
+  },
+  "t9#34": {
+   "commit_index": 34,
+   "committed": true,
+   "delivered": true,
+   "task": "t9"
+  },
+  "t9#46": {
+   "commit_index": 46,
+   "committed": true,
+   "delivered": true,
+   "task": "t9"
+  },
+  "t9#59": {
+   "commit_index": 59,
+   "committed": true,
+   "delivered": true,
+   "task": "t9"
+  },
+  "t9#70": {
+   "commit_index": 70,
+   "committed": true,
+   "delivered": true,
+   "task": "t9"
+  },
+  "t9#83": {
+   "commit_index": 83,
+   "committed": true,
+   "delivered": true,
+   "task": "t9"
+  },
+  "t9#9": {
+   "commit_index": 9,
+   "committed": true,
+   "delivered": true,
+   "task": "t9"
+  },
+  "t9#95": {
+   "commit_index": 95,
+   "committed": true,
+   "delivered": true,
+   "task": "t9"
+  }
+ },
  "raw_observations": [
   {
+   "arrival_us": 0.0,
+   "completion_us": 174.31,
+   "dag_instance": 0,
+   "decision_id": "t1#0",
+   "dispatch_start_us": 0.0,
    "dispatch_us": 25.71,
    "i": 0,
-   "latency_us": 100.01,
-   "outcome": "unknown_reconciled",
+   "latency_us": 25.71,
+   "outcome": "ack",
    "queue_depth": 1,
-   "task": "t1"
+   "task": "t1",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 29411.76,
+   "completion_us": 29586.07,
+   "dag_instance": 0,
+   "decision_id": "t3#1",
+   "dispatch_start_us": 29411.76,
    "dispatch_us": 25.71,
    "i": 1,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t3"
+   "task": "t3",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 58823.53,
+   "completion_us": 58997.84,
+   "dag_instance": 0,
+   "decision_id": "t2#2",
+   "dispatch_start_us": 58823.53,
    "dispatch_us": 25.71,
    "i": 2,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t2"
+   "task": "t2",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 88235.29,
+   "completion_us": 88409.6,
+   "dag_instance": 0,
+   "decision_id": "t5#3",
+   "dispatch_start_us": 88235.29,
    "dispatch_us": 25.71,
    "i": 3,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t5"
+   "task": "t5",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 117647.06,
+   "completion_us": 117821.37,
+   "dag_instance": 0,
+   "decision_id": "t0#4",
+   "dispatch_start_us": 117647.06,
    "dispatch_us": 25.71,
    "i": 4,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t0"
+   "task": "t0",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 147058.82,
+   "completion_us": 147233.13,
+   "dag_instance": 0,
+   "decision_id": "t7#5",
+   "dispatch_start_us": 147058.82,
    "dispatch_us": 25.71,
    "i": 5,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t7"
+   "task": "t7",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 176470.59,
+   "completion_us": 176644.9,
+   "dag_instance": 0,
+   "decision_id": "t4#6",
+   "dispatch_start_us": 176470.59,
    "dispatch_us": 25.71,
    "i": 6,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t4"
+   "task": "t4",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 205882.35,
+   "completion_us": 206056.66,
+   "dag_instance": 0,
+   "decision_id": "t11#7",
+   "dispatch_start_us": 205882.35,
    "dispatch_us": 25.71,
    "i": 7,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t11"
+   "task": "t11",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 235294.12,
+   "completion_us": 235468.43,
+   "dag_instance": 0,
+   "decision_id": "t6#8",
+   "dispatch_start_us": 235294.12,
    "dispatch_us": 25.71,
    "i": 8,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t6"
+   "task": "t6",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 264705.88,
+   "completion_us": 264880.19,
+   "dag_instance": 0,
+   "decision_id": "t9#9",
+   "dispatch_start_us": 264705.88,
    "dispatch_us": 25.71,
    "i": 9,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t9"
+   "task": "t9",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 294117.65,
+   "completion_us": 294291.96,
+   "dag_instance": 0,
+   "decision_id": "t10#10",
+   "dispatch_start_us": 294117.65,
    "dispatch_us": 25.71,
    "i": 10,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t10"
+   "task": "t10",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 323529.41,
+   "completion_us": 323703.72,
+   "dag_instance": 0,
+   "decision_id": "t8#11",
+   "dispatch_start_us": 323529.41,
    "dispatch_us": 25.71,
    "i": 11,
-   "latency_us": 100.01,
-   "outcome": "unknown_reconciled",
+   "latency_us": 25.71,
+   "outcome": "ack",
    "queue_depth": 1,
-   "task": "t8"
+   "task": "t8",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 352941.18,
+   "completion_us": 353115.49,
+   "dag_instance": 1,
+   "decision_id": "t2#12",
+   "dispatch_start_us": 352941.18,
    "dispatch_us": 25.71,
    "i": 12,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t5"
+   "task": "t2",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 382352.94,
+   "completion_us": 382527.25,
+   "dag_instance": 1,
+   "decision_id": "t1#13",
+   "dispatch_start_us": 382352.94,
    "dispatch_us": 25.71,
    "i": 13,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t7"
+   "task": "t1",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 411764.71,
+   "completion_us": 411939.02,
+   "dag_instance": 1,
+   "decision_id": "t0#14",
+   "dispatch_start_us": 411764.71,
    "dispatch_us": 25.71,
    "i": 14,
-   "latency_us": 100.01,
-   "outcome": "unknown_reconciled",
+   "latency_us": 25.71,
+   "outcome": "ack",
    "queue_depth": 1,
-   "task": "t1"
+   "task": "t0",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 441176.47,
+   "completion_us": 441350.78,
+   "dag_instance": 1,
+   "decision_id": "t4#15",
+   "dispatch_start_us": 441176.47,
    "dispatch_us": 25.71,
    "i": 15,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t4"
+   "task": "t4",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 470588.24,
+   "completion_us": 470762.55,
+   "dag_instance": 1,
+   "decision_id": "t3#16",
+   "dispatch_start_us": 470588.24,
    "dispatch_us": 25.71,
    "i": 16,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t3"
+   "task": "t3",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 500000.0,
+   "completion_us": 500174.31,
+   "dag_instance": 1,
+   "decision_id": "t5#17",
+   "dispatch_start_us": 500000.0,
    "dispatch_us": 25.71,
    "i": 17,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t2"
+   "task": "t5",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 529411.76,
+   "completion_us": 529586.07,
+   "dag_instance": 1,
+   "decision_id": "t6#18",
+   "dispatch_start_us": 529411.76,
    "dispatch_us": 25.71,
    "i": 18,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t1"
+   "task": "t6",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 558823.53,
+   "completion_us": 558997.84,
+   "dag_instance": 1,
+   "decision_id": "t8#19",
+   "dispatch_start_us": 558823.53,
    "dispatch_us": 25.71,
    "i": 19,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t7"
+   "task": "t8",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 588235.29,
+   "completion_us": 588409.6,
+   "dag_instance": 1,
+   "decision_id": "t9#20",
+   "dispatch_start_us": 588235.29,
    "dispatch_us": 25.71,
    "i": 20,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t8"
+   "task": "t9",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 617647.06,
+   "completion_us": 617821.37,
+   "dag_instance": 1,
+   "decision_id": "t7#21",
+   "dispatch_start_us": 617647.06,
    "dispatch_us": 25.71,
    "i": 21,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t5"
+   "task": "t7",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 647058.82,
+   "completion_us": 647233.13,
+   "dag_instance": 1,
+   "decision_id": "t11#22",
+   "dispatch_start_us": 647058.82,
    "dispatch_us": 25.71,
    "i": 22,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t3"
+   "task": "t11",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 676470.59,
+   "completion_us": 676644.9,
+   "dag_instance": 1,
+   "decision_id": "t10#23",
+   "dispatch_start_us": 676470.59,
    "dispatch_us": 25.71,
    "i": 23,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t7"
+   "task": "t10",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 705882.35,
+   "completion_us": 706056.66,
+   "dag_instance": 2,
+   "decision_id": "t1#24",
+   "dispatch_start_us": 705882.35,
    "dispatch_us": 25.71,
    "i": 24,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t5"
+   "task": "t1",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 735294.12,
+   "completion_us": 735468.43,
+   "dag_instance": 2,
+   "decision_id": "t3#25",
+   "dispatch_start_us": 735294.12,
    "dispatch_us": 25.71,
    "i": 25,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t3"
+   "task": "t3",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 764705.88,
+   "completion_us": 764880.19,
+   "dag_instance": 2,
+   "decision_id": "t2#26",
+   "dispatch_start_us": 764705.88,
    "dispatch_us": 25.71,
    "i": 26,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t10"
+   "task": "t2",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 794117.65,
+   "completion_us": 794291.96,
+   "dag_instance": 2,
+   "decision_id": "t5#27",
+   "dispatch_start_us": 794117.65,
    "dispatch_us": 25.71,
    "i": 27,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t6"
+   "task": "t5",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 823529.41,
+   "completion_us": 823703.72,
+   "dag_instance": 2,
+   "decision_id": "t0#28",
+   "dispatch_start_us": 823529.41,
    "dispatch_us": 25.71,
    "i": 28,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t6"
+   "task": "t0",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 852941.18,
+   "completion_us": 853115.49,
+   "dag_instance": 2,
+   "decision_id": "t4#29",
+   "dispatch_start_us": 852941.18,
    "dispatch_us": 25.71,
    "i": 29,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t3"
+   "task": "t4",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 882352.94,
+   "completion_us": 882527.25,
+   "dag_instance": 2,
+   "decision_id": "t7#30",
+   "dispatch_start_us": 882352.94,
    "dispatch_us": 25.71,
    "i": 30,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t1"
+   "task": "t7",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 911764.71,
+   "completion_us": 911939.02,
+   "dag_instance": 2,
+   "decision_id": "t8#31",
+   "dispatch_start_us": 911764.71,
    "dispatch_us": 25.71,
    "i": 31,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t6"
+   "task": "t8",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 941176.47,
+   "completion_us": 941350.78,
+   "dag_instance": 2,
+   "decision_id": "t11#32",
+   "dispatch_start_us": 941176.47,
    "dispatch_us": 25.71,
    "i": 32,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t7"
+   "task": "t11",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 970588.24,
+   "completion_us": 970762.55,
+   "dag_instance": 2,
+   "decision_id": "t6#33",
+   "dispatch_start_us": 970588.24,
    "dispatch_us": 25.71,
    "i": 33,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t4"
+   "task": "t6",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 1000000.0,
+   "completion_us": 1000174.31,
+   "dag_instance": 2,
+   "decision_id": "t9#34",
+   "dispatch_start_us": 1000000.0,
    "dispatch_us": 25.71,
    "i": 34,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t3"
+   "task": "t9",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 1029411.76,
+   "completion_us": 1029586.07,
+   "dag_instance": 2,
+   "decision_id": "t10#35",
+   "dispatch_start_us": 1029411.76,
    "dispatch_us": 25.71,
    "i": 35,
-   "latency_us": 100.01,
-   "outcome": "ack",
+   "latency_us": 25.71,
+   "outcome": "unknown_reconciled",
    "queue_depth": 1,
-   "task": "t1"
+   "task": "t10",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 1058823.53,
+   "completion_us": 1058997.84,
+   "dag_instance": 3,
+   "decision_id": "t2#36",
+   "dispatch_start_us": 1058823.53,
    "dispatch_us": 25.71,
    "i": 36,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t10"
+   "task": "t2",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 1088235.29,
+   "completion_us": 1088409.6,
+   "dag_instance": 3,
+   "decision_id": "t1#37",
+   "dispatch_start_us": 1088235.29,
    "dispatch_us": 25.71,
    "i": 37,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t9"
+   "task": "t1",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 1117647.06,
+   "completion_us": 1117821.37,
+   "dag_instance": 3,
+   "decision_id": "t3#38",
+   "dispatch_start_us": 1117647.06,
    "dispatch_us": 25.71,
    "i": 38,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t10"
+   "task": "t3",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 1147058.82,
+   "completion_us": 1147233.13,
+   "dag_instance": 3,
+   "decision_id": "t0#39",
+   "dispatch_start_us": 1147058.82,
    "dispatch_us": 25.71,
    "i": 39,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t5"
+   "task": "t0",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 1176470.59,
+   "completion_us": 1176644.9,
+   "dag_instance": 3,
+   "decision_id": "t7#40",
+   "dispatch_start_us": 1176470.59,
    "dispatch_us": 25.71,
    "i": 40,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t10"
+   "task": "t7",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 1205882.35,
+   "completion_us": 1206056.66,
+   "dag_instance": 3,
+   "decision_id": "t4#41",
+   "dispatch_start_us": 1205882.35,
    "dispatch_us": 25.71,
    "i": 41,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t4"
+   "task": "t4",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 1235294.12,
+   "completion_us": 1235468.43,
+   "dag_instance": 3,
+   "decision_id": "t6#42",
+   "dispatch_start_us": 1235294.12,
    "dispatch_us": 25.71,
    "i": 42,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t6"
+   "task": "t6",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 1264705.88,
+   "completion_us": 1264880.19,
+   "dag_instance": 3,
+   "decision_id": "t11#43",
+   "dispatch_start_us": 1264705.88,
    "dispatch_us": 25.71,
    "i": 43,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t6"
+   "task": "t11",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 1294117.65,
+   "completion_us": 1294291.96,
+   "dag_instance": 3,
+   "decision_id": "t10#44",
+   "dispatch_start_us": 1294117.65,
    "dispatch_us": 25.71,
    "i": 44,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t3"
+   "task": "t10",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 1323529.41,
+   "completion_us": 1323703.72,
+   "dag_instance": 3,
+   "decision_id": "t5#45",
+   "dispatch_start_us": 1323529.41,
    "dispatch_us": 25.71,
    "i": 45,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t6"
+   "task": "t5",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 1352941.18,
+   "completion_us": 1353115.49,
+   "dag_instance": 3,
+   "decision_id": "t9#46",
+   "dispatch_start_us": 1352941.18,
    "dispatch_us": 25.71,
    "i": 46,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t1"
+   "task": "t9",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 1382352.94,
+   "completion_us": 1382527.25,
+   "dag_instance": 3,
+   "decision_id": "t8#47",
+   "dispatch_start_us": 1382352.94,
    "dispatch_us": 25.71,
    "i": 47,
-   "latency_us": 100.01,
-   "outcome": "ack",
+   "latency_us": 25.71,
+   "outcome": "unknown_reconciled",
    "queue_depth": 1,
-   "task": "t6"
+   "task": "t8",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 1411764.71,
+   "completion_us": 1411939.02,
+   "dag_instance": 4,
+   "decision_id": "t0#48",
+   "dispatch_start_us": 1411764.71,
    "dispatch_us": 25.71,
    "i": 48,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t11"
+   "task": "t0",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 1441176.47,
+   "completion_us": 1441350.78,
+   "dag_instance": 4,
+   "decision_id": "t2#49",
+   "dispatch_start_us": 1441176.47,
    "dispatch_us": 25.71,
    "i": 49,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t10"
+   "task": "t2",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 1470588.24,
+   "completion_us": 1470762.55,
+   "dag_instance": 4,
+   "decision_id": "t1#50",
+   "dispatch_start_us": 1470588.24,
    "dispatch_us": 25.71,
    "i": 50,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t6"
+   "task": "t1",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 1500000.0,
+   "completion_us": 1500174.31,
+   "dag_instance": 4,
+   "decision_id": "t4#51",
+   "dispatch_start_us": 1500000.0,
    "dispatch_us": 25.71,
    "i": 51,
-   "latency_us": 100.01,
-   "outcome": "ack",
+   "latency_us": 25.71,
+   "outcome": "nack",
    "queue_depth": 1,
-   "task": "t0"
+   "task": "t4",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 1529411.76,
+   "completion_us": 1529586.07,
+   "dag_instance": 4,
+   "decision_id": "t5#52",
+   "dispatch_start_us": 1529411.76,
    "dispatch_us": 25.71,
    "i": 52,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t7"
+   "task": "t5",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 1558823.53,
+   "completion_us": 1558997.84,
+   "dag_instance": 4,
+   "decision_id": "t3#53",
+   "dispatch_start_us": 1558823.53,
    "dispatch_us": 25.71,
    "i": 53,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t3"
+   "task": "t3",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 1588235.29,
+   "completion_us": 1588409.6,
+   "dag_instance": 4,
+   "decision_id": "t7#54",
+   "dispatch_start_us": 1588235.29,
    "dispatch_us": 25.71,
    "i": 54,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "unknown_reconciled",
    "queue_depth": 1,
-   "task": "t8"
+   "task": "t7",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 1617647.06,
+   "completion_us": 1617821.37,
+   "dag_instance": 4,
+   "decision_id": "t11#55",
+   "dispatch_start_us": 1617647.06,
    "dispatch_us": 25.71,
    "i": 55,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t1"
+   "task": "t11",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 1647058.82,
+   "completion_us": 1647233.13,
+   "dag_instance": 4,
+   "decision_id": "t6#56",
+   "dispatch_start_us": 1647058.82,
    "dispatch_us": 25.71,
    "i": 56,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t5"
+   "task": "t6",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 1676470.59,
+   "completion_us": 1676644.9,
+   "dag_instance": 4,
+   "decision_id": "t8#57",
+   "dispatch_start_us": 1676470.59,
    "dispatch_us": 25.71,
    "i": 57,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t0"
+   "task": "t8",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 1705882.35,
+   "completion_us": 1706056.66,
+   "dag_instance": 4,
+   "decision_id": "t10#58",
+   "dispatch_start_us": 1705882.35,
    "dispatch_us": 25.71,
    "i": 58,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t5"
+   "task": "t10",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 1735294.12,
+   "completion_us": 1735468.43,
+   "dag_instance": 4,
+   "decision_id": "t9#59",
+   "dispatch_start_us": 1735294.12,
    "dispatch_us": 25.71,
    "i": 59,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t11"
+   "task": "t9",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 1764705.88,
+   "completion_us": 1764880.19,
+   "dag_instance": 5,
+   "decision_id": "t2#60",
+   "dispatch_start_us": 1764705.88,
    "dispatch_us": 25.71,
    "i": 60,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t5"
+   "task": "t2",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 1794117.65,
+   "completion_us": 1794291.96,
+   "dag_instance": 5,
+   "decision_id": "t0#61",
+   "dispatch_start_us": 1794117.65,
    "dispatch_us": 25.71,
    "i": 61,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t0"
+   "task": "t0",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 1823529.41,
+   "completion_us": 1823703.72,
+   "dag_instance": 5,
+   "decision_id": "t1#62",
+   "dispatch_start_us": 1823529.41,
    "dispatch_us": 25.71,
    "i": 62,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t4"
+   "task": "t1",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 1852941.18,
+   "completion_us": 1853115.49,
+   "dag_instance": 5,
+   "decision_id": "t4#63",
+   "dispatch_start_us": 1852941.18,
    "dispatch_us": 25.71,
    "i": 63,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t9"
+   "task": "t4",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 1882352.94,
+   "completion_us": 1882527.25,
+   "dag_instance": 5,
+   "decision_id": "t5#64",
+   "dispatch_start_us": 1882352.94,
    "dispatch_us": 25.71,
    "i": 64,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t2"
+   "task": "t5",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 1911764.71,
+   "completion_us": 1911939.02,
+   "dag_instance": 5,
+   "decision_id": "t8#65",
+   "dispatch_start_us": 1911764.71,
    "dispatch_us": 25.71,
    "i": 65,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t0"
+   "task": "t8",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 1941176.47,
+   "completion_us": 1941350.78,
+   "dag_instance": 5,
+   "decision_id": "t3#66",
+   "dispatch_start_us": 1941176.47,
    "dispatch_us": 25.71,
    "i": 66,
-   "latency_us": 100.01,
-   "outcome": "unknown_reconciled",
+   "latency_us": 25.71,
+   "outcome": "ack",
    "queue_depth": 1,
-   "task": "t6"
+   "task": "t3",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 1970588.24,
+   "completion_us": 1970762.55,
+   "dag_instance": 5,
+   "decision_id": "t7#67",
+   "dispatch_start_us": 1970588.24,
    "dispatch_us": 25.71,
    "i": 67,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t2"
+   "task": "t7",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 2000000.0,
+   "completion_us": 2000174.31,
+   "dag_instance": 5,
+   "decision_id": "t11#68",
+   "dispatch_start_us": 2000000.0,
    "dispatch_us": 25.71,
    "i": 68,
-   "latency_us": 100.01,
-   "outcome": "ack",
+   "latency_us": 25.71,
+   "outcome": "unknown_reconciled",
    "queue_depth": 1,
-   "task": "t4"
+   "task": "t11",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 2029411.76,
+   "completion_us": 2029586.07,
+   "dag_instance": 5,
+   "decision_id": "t6#69",
+   "dispatch_start_us": 2029411.76,
    "dispatch_us": 25.71,
    "i": 69,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t1"
+   "task": "t6",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 2058823.53,
+   "completion_us": 2058997.84,
+   "dag_instance": 5,
+   "decision_id": "t9#70",
+   "dispatch_start_us": 2058823.53,
    "dispatch_us": 25.71,
    "i": 70,
-   "latency_us": 100.01,
-   "outcome": "nack",
+   "latency_us": 25.71,
+   "outcome": "ack",
    "queue_depth": 1,
-   "task": "t2"
+   "task": "t9",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 2088235.29,
+   "completion_us": 2088409.6,
+   "dag_instance": 5,
+   "decision_id": "t10#71",
+   "dispatch_start_us": 2088235.29,
    "dispatch_us": 25.71,
    "i": 71,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t6"
+   "task": "t10",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 2117647.06,
+   "completion_us": 2117821.37,
+   "dag_instance": 6,
+   "decision_id": "t0#72",
+   "dispatch_start_us": 2117647.06,
    "dispatch_us": 25.71,
    "i": 72,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t10"
+   "task": "t0",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 2147058.82,
+   "completion_us": 2147233.13,
+   "dag_instance": 6,
+   "decision_id": "t1#73",
+   "dispatch_start_us": 2147058.82,
    "dispatch_us": 25.71,
    "i": 73,
-   "latency_us": 100.01,
-   "outcome": "unknown_reconciled",
+   "latency_us": 25.71,
+   "outcome": "ack",
    "queue_depth": 1,
-   "task": "t11"
+   "task": "t1",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 2176470.59,
+   "completion_us": 2176644.9,
+   "dag_instance": 6,
+   "decision_id": "t4#74",
+   "dispatch_start_us": 2176470.59,
    "dispatch_us": 25.71,
    "i": 74,
-   "latency_us": 100.01,
-   "outcome": "ack",
+   "latency_us": 25.71,
+   "outcome": "unknown_reconciled",
    "queue_depth": 1,
-   "task": "t5"
+   "task": "t4",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 2205882.35,
+   "completion_us": 2206056.66,
+   "dag_instance": 6,
+   "decision_id": "t3#75",
+   "dispatch_start_us": 2205882.35,
    "dispatch_us": 25.71,
    "i": 75,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t10"
+   "task": "t3",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 2235294.12,
+   "completion_us": 2235468.43,
+   "dag_instance": 6,
+   "decision_id": "t7#76",
+   "dispatch_start_us": 2235294.12,
    "dispatch_us": 25.71,
    "i": 76,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t9"
+   "task": "t7",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 2264705.88,
+   "completion_us": 2264880.19,
+   "dag_instance": 6,
+   "decision_id": "t2#77",
+   "dispatch_start_us": 2264705.88,
    "dispatch_us": 25.71,
    "i": 77,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t7"
+   "task": "t2",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 2294117.65,
+   "completion_us": 2294291.96,
+   "dag_instance": 6,
+   "decision_id": "t11#78",
+   "dispatch_start_us": 2294117.65,
    "dispatch_us": 25.71,
    "i": 78,
-   "latency_us": 100.01,
-   "outcome": "ack",
+   "latency_us": 25.71,
+   "outcome": "nack",
    "queue_depth": 1,
-   "task": "t2"
+   "task": "t11",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 2323529.41,
+   "completion_us": 2323703.72,
+   "dag_instance": 6,
+   "decision_id": "t6#79",
+   "dispatch_start_us": 2323529.41,
    "dispatch_us": 25.71,
    "i": 79,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t7"
+   "task": "t6",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 2352941.18,
+   "completion_us": 2353115.49,
+   "dag_instance": 6,
+   "decision_id": "t5#80",
+   "dispatch_start_us": 2352941.18,
    "dispatch_us": 25.71,
    "i": 80,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t8"
+   "task": "t5",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 2382352.94,
+   "completion_us": 2382527.25,
+   "dag_instance": 6,
+   "decision_id": "t10#81",
+   "dispatch_start_us": 2382352.94,
    "dispatch_us": 25.71,
    "i": 81,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t4"
+   "task": "t10",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 2411764.71,
+   "completion_us": 2411939.02,
+   "dag_instance": 6,
+   "decision_id": "t8#82",
+   "dispatch_start_us": 2411764.71,
    "dispatch_us": 25.71,
    "i": 82,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t2"
+   "task": "t8",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 2441176.47,
+   "completion_us": 2441350.78,
+   "dag_instance": 6,
+   "decision_id": "t9#83",
+   "dispatch_start_us": 2441176.47,
    "dispatch_us": 25.71,
    "i": 83,
-   "latency_us": 100.01,
-   "outcome": "ack",
+   "latency_us": 25.71,
+   "outcome": "unknown_reconciled",
    "queue_depth": 1,
-   "task": "t11"
+   "task": "t9",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 2470588.24,
+   "completion_us": 2470762.55,
+   "dag_instance": 7,
+   "decision_id": "t3#84",
+   "dispatch_start_us": 2470588.24,
    "dispatch_us": 25.71,
    "i": 84,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t8"
+   "task": "t3",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 2500000.0,
+   "completion_us": 2500174.31,
+   "dag_instance": 7,
+   "decision_id": "t0#85",
+   "dispatch_start_us": 2500000.0,
    "dispatch_us": 25.71,
    "i": 85,
-   "latency_us": 100.01,
-   "outcome": "ack",
+   "latency_us": 25.71,
+   "outcome": "nack",
    "queue_depth": 1,
-   "task": "t10"
+   "task": "t0",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 2529411.76,
+   "completion_us": 2529586.07,
+   "dag_instance": 7,
+   "decision_id": "t1#86",
+   "dispatch_start_us": 2529411.76,
    "dispatch_us": 25.71,
    "i": 86,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t0"
+   "task": "t1",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 2558823.53,
+   "completion_us": 2558997.84,
+   "dag_instance": 7,
+   "decision_id": "t2#87",
+   "dispatch_start_us": 2558823.53,
    "dispatch_us": 25.71,
    "i": 87,
-   "latency_us": 100.01,
-   "outcome": "unknown_reconciled",
+   "latency_us": 25.71,
+   "outcome": "ack",
    "queue_depth": 1,
-   "task": "t1"
+   "task": "t2",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 2588235.29,
+   "completion_us": 2588409.6,
+   "dag_instance": 7,
+   "decision_id": "t6#88",
+   "dispatch_start_us": 2588235.29,
    "dispatch_us": 25.71,
    "i": 88,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t1"
+   "task": "t6",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 2617647.06,
+   "completion_us": 2617821.37,
+   "dag_instance": 7,
+   "decision_id": "t5#89",
+   "dispatch_start_us": 2617647.06,
    "dispatch_us": 25.71,
    "i": 89,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t0"
+   "task": "t5",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 2647058.82,
+   "completion_us": 2647233.13,
+   "dag_instance": 7,
+   "decision_id": "t7#90",
+   "dispatch_start_us": 2647058.82,
    "dispatch_us": 25.71,
    "i": 90,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t9"
+   "task": "t7",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 2676470.59,
+   "completion_us": 2676644.9,
+   "dag_instance": 7,
+   "decision_id": "t4#91",
+   "dispatch_start_us": 2676470.59,
    "dispatch_us": 25.71,
    "i": 91,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t5"
+   "task": "t4",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 2705882.35,
+   "completion_us": 2706056.66,
+   "dag_instance": 7,
+   "decision_id": "t8#92",
+   "dispatch_start_us": 2705882.35,
    "dispatch_us": 25.71,
    "i": 92,
-   "latency_us": 100.01,
-   "outcome": "ack",
+   "latency_us": 25.71,
+   "outcome": "nack",
    "queue_depth": 1,
-   "task": "t8"
+   "task": "t8",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 2735294.12,
+   "completion_us": 2735468.43,
+   "dag_instance": 7,
+   "decision_id": "t11#93",
+   "dispatch_start_us": 2735294.12,
    "dispatch_us": 25.71,
    "i": 93,
-   "latency_us": 100.01,
-   "outcome": "unknown_reconciled",
+   "latency_us": 25.71,
+   "outcome": "ack",
    "queue_depth": 1,
-   "task": "t11"
+   "task": "t11",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 2764705.88,
+   "completion_us": 2764880.19,
+   "dag_instance": 7,
+   "decision_id": "t10#94",
+   "dispatch_start_us": 2764705.88,
    "dispatch_us": 25.71,
    "i": 94,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t7"
+   "task": "t10",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 2794117.65,
+   "completion_us": 2794291.96,
+   "dag_instance": 7,
+   "decision_id": "t9#95",
+   "dispatch_start_us": 2794117.65,
    "dispatch_us": 25.71,
    "i": 95,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t1"
+   "task": "t9",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 2823529.41,
+   "completion_us": 2823703.72,
+   "dag_instance": 8,
+   "decision_id": "t0#96",
+   "dispatch_start_us": 2823529.41,
    "dispatch_us": 25.71,
    "i": 96,
-   "latency_us": 100.01,
-   "outcome": "ack",
+   "latency_us": 25.71,
+   "outcome": "nack",
    "queue_depth": 1,
-   "task": "t10"
+   "task": "t0",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 2852941.18,
+   "completion_us": 2853115.49,
+   "dag_instance": 8,
+   "decision_id": "t1#97",
+   "dispatch_start_us": 2852941.18,
    "dispatch_us": 25.71,
    "i": 97,
-   "latency_us": 100.01,
-   "outcome": "nack",
+   "latency_us": 25.71,
+   "outcome": "ack",
    "queue_depth": 1,
-   "task": "t11"
+   "task": "t1",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 2882352.94,
+   "completion_us": 2882527.25,
+   "dag_instance": 8,
+   "decision_id": "t3#98",
+   "dispatch_start_us": 2882352.94,
    "dispatch_us": 25.71,
    "i": 98,
-   "latency_us": 100.01,
-   "outcome": "ack",
+   "latency_us": 25.71,
+   "outcome": "unknown_reconciled",
    "queue_depth": 1,
-   "task": "t9"
+   "task": "t3",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 2911764.71,
+   "completion_us": 2911939.02,
+   "dag_instance": 8,
+   "decision_id": "t7#99",
+   "dispatch_start_us": 2911764.71,
    "dispatch_us": 25.71,
    "i": 99,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t9"
+   "task": "t7",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 2941176.47,
+   "completion_us": 2941350.78,
+   "dag_instance": 8,
+   "decision_id": "t4#100",
+   "dispatch_start_us": 2941176.47,
    "dispatch_us": 25.71,
    "i": 100,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t7"
+   "task": "t4",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 2970588.24,
+   "completion_us": 2970762.55,
+   "dag_instance": 8,
+   "decision_id": "t2#101",
+   "dispatch_start_us": 2970588.24,
    "dispatch_us": 25.71,
    "i": 101,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t10"
+   "task": "t2",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 3000000.0,
+   "completion_us": 3000174.31,
+   "dag_instance": 8,
+   "decision_id": "t6#102",
+   "dispatch_start_us": 3000000.0,
    "dispatch_us": 25.71,
    "i": 102,
-   "latency_us": 100.01,
-   "outcome": "unknown_reconciled",
+   "latency_us": 25.71,
+   "outcome": "ack",
    "queue_depth": 1,
-   "task": "t2"
+   "task": "t6",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 3029411.76,
+   "completion_us": 3029586.07,
+   "dag_instance": 8,
+   "decision_id": "t5#103",
+   "dispatch_start_us": 3029411.76,
    "dispatch_us": 25.71,
    "i": 103,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t10"
+   "task": "t5",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 3058823.53,
+   "completion_us": 3058997.84,
+   "dag_instance": 8,
+   "decision_id": "t10#104",
+   "dispatch_start_us": 3058823.53,
    "dispatch_us": 25.71,
    "i": 104,
-   "latency_us": 100.01,
-   "outcome": "nack",
+   "latency_us": 25.71,
+   "outcome": "ack",
    "queue_depth": 1,
-   "task": "t2"
+   "task": "t10",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 3088235.29,
+   "completion_us": 3088409.6,
+   "dag_instance": 8,
+   "decision_id": "t9#105",
+   "dispatch_start_us": 3088235.29,
    "dispatch_us": 25.71,
    "i": 105,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t3"
+   "task": "t9",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 3117647.06,
+   "completion_us": 3117821.37,
+   "dag_instance": 8,
+   "decision_id": "t8#106",
+   "dispatch_start_us": 3117647.06,
    "dispatch_us": 25.71,
    "i": 106,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t11"
+   "task": "t8",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 3147058.82,
+   "completion_us": 3147233.13,
+   "dag_instance": 8,
+   "decision_id": "t11#107",
+   "dispatch_start_us": 3147058.82,
    "dispatch_us": 25.71,
    "i": 107,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t8"
+   "task": "t11",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 3176470.59,
+   "completion_us": 3176644.9,
+   "dag_instance": 9,
+   "decision_id": "t0#108",
+   "dispatch_start_us": 3176470.59,
    "dispatch_us": 25.71,
    "i": 108,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t7"
+   "task": "t0",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 3205882.35,
+   "completion_us": 3206056.66,
+   "dag_instance": 9,
+   "decision_id": "t3#109",
+   "dispatch_start_us": 3205882.35,
    "dispatch_us": 25.71,
    "i": 109,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t2"
+   "task": "t3",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 3235294.12,
+   "completion_us": 3235468.43,
+   "dag_instance": 9,
+   "decision_id": "t2#110",
+   "dispatch_start_us": 3235294.12,
    "dispatch_us": 25.71,
    "i": 110,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t1"
+   "task": "t2",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 3264705.88,
+   "completion_us": 3264880.19,
+   "dag_instance": 9,
+   "decision_id": "t1#111",
+   "dispatch_start_us": 3264705.88,
    "dispatch_us": 25.71,
    "i": 111,
-   "latency_us": 100.01,
-   "outcome": "nack",
+   "latency_us": 25.71,
+   "outcome": "ack",
    "queue_depth": 1,
-   "task": "t2"
+   "task": "t1",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 3294117.65,
+   "completion_us": 3294291.96,
+   "dag_instance": 9,
+   "decision_id": "t4#112",
+   "dispatch_start_us": 3294117.65,
    "dispatch_us": 25.71,
    "i": 112,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t4"
+   "task": "t4",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 3323529.41,
+   "completion_us": 3323703.72,
+   "dag_instance": 9,
+   "decision_id": "t6#113",
+   "dispatch_start_us": 3323529.41,
    "dispatch_us": 25.71,
    "i": 113,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t5"
+   "task": "t6",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 3352941.18,
+   "completion_us": 3353115.49,
+   "dag_instance": 9,
+   "decision_id": "t5#114",
+   "dispatch_start_us": 3352941.18,
    "dispatch_us": 25.71,
    "i": 114,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t6"
+   "task": "t5",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 3382352.94,
+   "completion_us": 3382527.25,
+   "dag_instance": 9,
+   "decision_id": "t7#115",
+   "dispatch_start_us": 3382352.94,
    "dispatch_us": 25.71,
    "i": 115,
-   "latency_us": 100.01,
-   "outcome": "nack",
+   "latency_us": 25.71,
+   "outcome": "ack",
    "queue_depth": 1,
-   "task": "t1"
+   "task": "t7",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 3411764.71,
+   "completion_us": 3411939.02,
+   "dag_instance": 9,
+   "decision_id": "t8#116",
+   "dispatch_start_us": 3411764.71,
    "dispatch_us": 25.71,
    "i": 116,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t0"
+   "task": "t8",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 3441176.47,
+   "completion_us": 3441350.78,
+   "dag_instance": 9,
+   "decision_id": "t11#117",
+   "dispatch_start_us": 3441176.47,
    "dispatch_us": 25.71,
    "i": 117,
-   "latency_us": 100.01,
-   "outcome": "unknown_reconciled",
+   "latency_us": 25.71,
+   "outcome": "ack",
    "queue_depth": 1,
-   "task": "t8"
+   "task": "t11",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 3470588.24,
+   "completion_us": 3470762.55,
+   "dag_instance": 9,
+   "decision_id": "t10#118",
+   "dispatch_start_us": 3470588.24,
    "dispatch_us": 25.71,
    "i": 118,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t8"
+   "task": "t10",
+   "waiting_us": 0.0
   },
   {
+   "arrival_us": 3500000.0,
+   "completion_us": 3500174.31,
+   "dag_instance": 9,
+   "decision_id": "t9#119",
+   "dispatch_start_us": 3500000.0,
    "dispatch_us": 25.71,
    "i": 119,
-   "latency_us": 100.01,
+   "latency_us": 25.71,
    "outcome": "ack",
    "queue_depth": 1,
-   "task": "t11"
+   "task": "t9",
+   "waiting_us": 0.0
   }
  ],
- "reconciled_unknown_outcomes": 10,
+ "receipt_counts": {
+  "t0#108": 1,
+  "t0#14": 1,
+  "t0#28": 1,
+  "t0#39": 1,
+  "t0#4": 1,
+  "t0#48": 1,
+  "t0#61": 1,
+  "t0#72": 1,
+  "t0#85": 1,
+  "t0#96": 1,
+  "t1#0": 1,
+  "t1#111": 1,
+  "t1#13": 1,
+  "t1#24": 1,
+  "t1#37": 1,
+  "t1#50": 1,
+  "t1#62": 1,
+  "t1#73": 1,
+  "t1#86": 1,
+  "t1#97": 1,
+  "t10#10": 1,
+  "t10#104": 1,
+  "t10#118": 1,
+  "t10#23": 1,
+  "t10#35": 1,
+  "t10#44": 1,
+  "t10#58": 1,
+  "t10#71": 1,
+  "t10#81": 1,
+  "t10#94": 1,
+  "t11#107": 1,
+  "t11#117": 1,
+  "t11#22": 1,
+  "t11#32": 1,
+  "t11#43": 1,
+  "t11#55": 1,
+  "t11#68": 1,
+  "t11#7": 1,
+  "t11#78": 1,
+  "t11#93": 1,
+  "t2#101": 1,
+  "t2#110": 1,
+  "t2#12": 1,
+  "t2#2": 1,
+  "t2#26": 1,
+  "t2#36": 1,
+  "t2#49": 1,
+  "t2#60": 1,
+  "t2#77": 1,
+  "t2#87": 1,
+  "t3#1": 1,
+  "t3#109": 1,
+  "t3#16": 1,
+  "t3#25": 1,
+  "t3#38": 1,
+  "t3#53": 1,
+  "t3#66": 1,
+  "t3#75": 1,
+  "t3#84": 1,
+  "t3#98": 1,
+  "t4#100": 1,
+  "t4#112": 1,
+  "t4#15": 1,
+  "t4#29": 1,
+  "t4#41": 1,
+  "t4#51": 1,
+  "t4#6": 1,
+  "t4#63": 1,
+  "t4#74": 1,
+  "t4#91": 1,
+  "t5#103": 1,
+  "t5#114": 1,
+  "t5#17": 1,
+  "t5#27": 1,
+  "t5#3": 1,
+  "t5#45": 1,
+  "t5#52": 1,
+  "t5#64": 1,
+  "t5#80": 1,
+  "t5#89": 1,
+  "t6#102": 1,
+  "t6#113": 1,
+  "t6#18": 1,
+  "t6#33": 1,
+  "t6#42": 1,
+  "t6#56": 1,
+  "t6#69": 1,
+  "t6#79": 1,
+  "t6#8": 1,
+  "t6#88": 1,
+  "t7#115": 1,
+  "t7#21": 1,
+  "t7#30": 1,
+  "t7#40": 1,
+  "t7#5": 1,
+  "t7#54": 1,
+  "t7#67": 1,
+  "t7#76": 1,
+  "t7#90": 1,
+  "t7#99": 1,
+  "t8#106": 1,
+  "t8#11": 1,
+  "t8#116": 1,
+  "t8#19": 1,
+  "t8#31": 1,
+  "t8#47": 1,
+  "t8#57": 1,
+  "t8#65": 1,
+  "t8#82": 1,
+  "t8#92": 1,
+  "t9#105": 1,
+  "t9#119": 1,
+  "t9#20": 1,
+  "t9#34": 1,
+  "t9#46": 1,
+  "t9#59": 1,
+  "t9#70": 1,
+  "t9#83": 1,
+  "t9#9": 1,
+  "t9#95": 1
+ },
+ "reconciled_unknown_outcomes": 7,
+ "reconciliations": {
+  "t10#35": "resolved-by-evidence",
+  "t11#68": "resolved-by-evidence",
+  "t3#98": "resolved-by-evidence",
+  "t4#74": "resolved-by-evidence",
+  "t7#54": "resolved-by-evidence",
+  "t8#47": "resolved-by-evidence",
+  "t9#83": "resolved-by-evidence"
+ },
  "redeliveries": 0,
  "resumes": [],
- "rubric_sha256": "c08a10b35b5834af3f0dba7e62dcc19dc0feafba3f264366ee27a5b0d370dbb8",
+ "rubric_sha256": "af7379ce06b97dc5d7394801c4b27530a416a71928fecf0b1b501b474c20c19f",
  "run_id": "durable_engine-nominal-101",
  "safety_counters": {
   "allow_after_revocation_count": 0,
@@ -993,9 +2933,1000 @@
   "stale_owner_completion_count": 0
  },
  "scenario": "throughput",
+ "scenario_events": [
+  {
+   "decision_id": "t1#0",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t1#0",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t3#1",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t3#1",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t2#2",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t2#2",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t5#3",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t5#3",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t0#4",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t0#4",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t7#5",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t7#5",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t4#6",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t4#6",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t11#7",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t11#7",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t6#8",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t6#8",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t9#9",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t9#9",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t10#10",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t10#10",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t8#11",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t8#11",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t2#12",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t2#12",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t1#13",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t1#13",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t0#14",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t0#14",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t4#15",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t4#15",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t3#16",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t3#16",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t5#17",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t5#17",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t6#18",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t6#18",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t8#19",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t8#19",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t9#20",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t9#20",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t7#21",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t7#21",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t11#22",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t11#22",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t10#23",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t10#23",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t1#24",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t1#24",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t3#25",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t3#25",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t2#26",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t2#26",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t5#27",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t5#27",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t0#28",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t0#28",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t4#29",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t4#29",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t7#30",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t7#30",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t8#31",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t8#31",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t11#32",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t11#32",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t6#33",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t6#33",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t9#34",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t9#34",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t10#35",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t10#35",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t10#35",
+   "event": "unknown_outcome_reconciled"
+  },
+  {
+   "decision_id": "t2#36",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t2#36",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t1#37",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t1#37",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t3#38",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t3#38",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t0#39",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t0#39",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t7#40",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t7#40",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t4#41",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t4#41",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t6#42",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t6#42",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t11#43",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t11#43",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t10#44",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t10#44",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t5#45",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t5#45",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t9#46",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t9#46",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t8#47",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t8#47",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t8#47",
+   "event": "unknown_outcome_reconciled"
+  },
+  {
+   "decision_id": "t0#48",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t0#48",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t2#49",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t2#49",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t1#50",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t1#50",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t4#51",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t4#51",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t5#52",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t5#52",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t3#53",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t3#53",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t7#54",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t7#54",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t7#54",
+   "event": "unknown_outcome_reconciled"
+  },
+  {
+   "decision_id": "t11#55",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t11#55",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t6#56",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t6#56",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t8#57",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t8#57",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t10#58",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t10#58",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t9#59",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t9#59",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t2#60",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t2#60",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t0#61",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t0#61",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t1#62",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t1#62",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t4#63",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t4#63",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t5#64",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t5#64",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t8#65",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t8#65",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t3#66",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t3#66",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t7#67",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t7#67",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t11#68",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t11#68",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t11#68",
+   "event": "unknown_outcome_reconciled"
+  },
+  {
+   "decision_id": "t6#69",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t6#69",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t9#70",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t9#70",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t10#71",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t10#71",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t0#72",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t0#72",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t1#73",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t1#73",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t4#74",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t4#74",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t4#74",
+   "event": "unknown_outcome_reconciled"
+  },
+  {
+   "decision_id": "t3#75",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t3#75",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t7#76",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t7#76",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t2#77",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t2#77",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t11#78",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t11#78",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t6#79",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t6#79",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t5#80",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t5#80",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t10#81",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t10#81",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t8#82",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t8#82",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t9#83",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t9#83",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t9#83",
+   "event": "unknown_outcome_reconciled"
+  },
+  {
+   "decision_id": "t3#84",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t3#84",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t0#85",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t0#85",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t1#86",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t1#86",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t2#87",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t2#87",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t6#88",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t6#88",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t5#89",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t5#89",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t7#90",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t7#90",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t4#91",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t4#91",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t8#92",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t8#92",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t11#93",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t11#93",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t10#94",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t10#94",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t9#95",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t9#95",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t0#96",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t0#96",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t1#97",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t1#97",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t3#98",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t3#98",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t3#98",
+   "event": "unknown_outcome_reconciled"
+  },
+  {
+   "decision_id": "t7#99",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t7#99",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t4#100",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t4#100",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t2#101",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t2#101",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t6#102",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t6#102",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t5#103",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t5#103",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t10#104",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t10#104",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t9#105",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t9#105",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t8#106",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t8#106",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t11#107",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t11#107",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t0#108",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t0#108",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t3#109",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t3#109",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t2#110",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t2#110",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t1#111",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t1#111",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t4#112",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t4#112",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t6#113",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t6#113",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t5#114",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t5#114",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t7#115",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t7#115",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t8#116",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t8#116",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t11#117",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t11#117",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t10#118",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t10#118",
+   "event": "effect_delivered"
+  },
+  {
+   "decision_id": "t9#119",
+   "event": "transition_outbox_committed"
+  },
+  {
+   "decision_id": "t9#119",
+   "event": "effect_delivered"
+  }
+ ],
  "schema": "agentos.s1-006.run/v1",
  "seed": 101,
+ "stale_completion_attempts": [],
  "terminal_reason": "completed",
- "tree_sha": "304681cfaf61a1eb2a971fb56432db83b1aaf636",
- "workload_sha256": "6d9cf5cd4e0d0d87b8bcfee17c3f15f790d6ae42bd5668be3382c3b5380fdc5d"
+ "tree_sha": "abc0d9f26b5dc3e8603988fd76955a17a7a4a193",
+ "workload_sha256": "d5e0cd77cea0397423e607380bf6d880dfa97e0f47167b583b01f65da2a6c3c0"
 }

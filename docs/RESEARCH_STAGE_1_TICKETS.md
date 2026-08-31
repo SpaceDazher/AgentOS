@@ -539,27 +539,33 @@ python -m agentos.cli research-plan --topic "S1-005 QA1 runtime topology modular
 
 ### S1-006 — QA2 execution backend: in-process versus durable engine
 
-- **Status:** `PASS_WITH_LIMITS` - corrective round R1 recorded
-  2026-08-31 (research revision 3; experiments re-executed on the clean
-  committed tree `262560c...`, dirty=false, commit/tree provenance bound
-  per compared run, evaluator nonce-bound to the frozen experiment
-  digest): goal `goal_JTRCP0334WBHE00G01M1CF4R6F`, evaluation
-  `reval_CAPVNG086DJSBNHX01M1CF4RAP`, artifact chain `8c544790...`,
+- **Status:** `PASS_WITH_LIMITS` - corrective round R2 recorded
+  2026-08-31 (research revision 5; 90+90 runs re-executed on clean
+  committed tree `30cdd80...`, dirty=false, disk bytes and commit blobs
+  bound for every evidence script, evaluator derived all counters and
+  metrics from the manifest-named raw runs): goal
+  `goal_2T78EACBA51SH24M01M1CKXMNW`, evaluation
+  `reval_3R5R2WNN81E4ZMWW01M1CKXMRE`, artifact chain `f5e45f4f...`,
   tracked content-addressed evidence-pack/v3 `chain_fresh=true` at
-  `results/evidence/`. Decision: in-process scheduler (4.00 vs durable
-  engine 3.04 normalized under the frozen 11-dimension rubric);
-  sensitivity 222 deterministic runs with zero winner flips; 90 main
-  runs + 90 independent rerun runs (separate process, run-b), all seven
+  `results/evidence/`. Decision: in-process scheduler (3.88 vs durable
+  engine 3.20 normalized under the frozen 11-dimension rubric);
+  sensitivity 222 deterministic runs (22 perturbations + 200 seeded
+  compositions), zero flips/ties; 90 main runs + 90 isolated rerun runs
+  (separate process, output, executor id), all seven
   safety counters zero on every accepted run; probes A (unsafe resume),
   B (incomparable workload) and C (blind retry) detected fail-closed
-  through the real simulator/evaluator paths; S3 resumes only via
-  registered content-hash-verified checkpoints, S4 at-least-once
-  redelivery absorbed by dedup, S2 unknown outcomes reconciled before
-  any retry. Limits: model-based same-host comparison (durable-engine
+  from digest-bound behavioral traces; S1 records atomic transition +
+  outbox commit, crash, and replay; S3 resumes into a new run only via
+  registered content-hash-verified checkpoints; S4 records a stale
+  fencing rejection and deduplicated redelivery; every S2 run injects
+  and reconciles an unknown outcome before retry. Repeated DAG instances
+  are dependency-valid and high load creates observed queue pressure.
+  Limits: model-based same-host comparison (durable-engine
   costs combine S1-005 E1/E2 measurements with documented 100 ms lease
-  assumption); no vendor engine installed; multi-host partition and
-  vendor timer semantics unknown and excluded from scoring; migration
-  triggers symbolic until the follow-up benchmark measures them.
+  assumption); the 20,000/s saturation load is a simulator stress probe,
+  not a production profile; no vendor engine installed; multi-host
+  partition and vendor timer semantics unknown and excluded from
+  scoring; migration triggers remain unmeasured design obligations.
 - **Priority:** `P1`
 - **Wave:** `W2`
 - **Owner:** `architecture`
