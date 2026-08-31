@@ -1,33 +1,48 @@
 {
   "schema": "agentos.ticket-evaluation-record/v1",
   "ticket_id": "S1-002",
-  "recorded_at": "2026-08-29T18:11:54Z",
+  "recorded_at": "2026-08-30T09:00:00Z",
   "db_root": ".agentos-research/platform-stage-1",
-  "campaign_id": "rcamp_B8C76HY2WSJ5694Q01M179DDQZ",
-  "goal_id": "goal_CF3WM3F9XK34BA4701M179DDQZ",
-  "evaluation_id": "reval_584BN73YBC5Q9DJ101M179DEEP",
-  "evaluation_version": 1,
+  "campaign_id": "rcamp_1274765Z0YACZ2G601M17PW2AN",
+  "goal_id": "goal_RTG9X8N2KMNYMAJN01M17PW2AN",
+  "evaluation_id": "reval_NB5XC5R6GDQBXZMQ01M17PW2Y2",
+  "evaluation_version": 2,
+  "supersedes": {
+    "evaluation_id": "reval_584BN73YBC5Q9DJ101M179DEEP",
+    "evaluation_version": 1,
+    "goal_id": "goal_CF3WM3F9XK34BA4701M179DDQZ",
+    "why": "review-fix 2026-08-30: benchmark made reproducible from the repository (benchmark.py, raw JSON committed, bundle hash/byte declarations corrected) and a machine-checked probes block added (bench_probe.py)."
+  },
   "result": "pass_with_limits",
-  "artifact_chain_hash": "a69b444f71d7f085eff9f7b61870b632ab75c68312495f15680756d6fff0da8a",
+  "artifact_chain_hash": "09cb240f0a395df05d35fad88a6cd4485942f75b1e8bc6f10fc1aea9b72a8d6c",
   "evidence_pack": {
     "schema": "agentos.evidence-pack/v3",
-    "path": ".agentos-research\\platform-stage-1\\goals\\goal_CF3WM3F9XK34BA4701M179DDQZ\\evidence-pack.json",
-    "sha256": "241504795c19e4df213199799ca5e8377689856280ae7718c020eb1a2c7432c0",
+    "path": ".agentos-research\\platform-stage-1\\goals\\goal_RTG9X8N2KMNYMAJN01M17PW2AN\\evidence-pack.json",
+    "sha256": "09a9ddbc82c0a94e54f0121da4451a61a11299ab3edca18e62cb9974bdff5455",
     "chain_fresh": true,
     "latest_evaluation_valid": true,
     "embedded_sha256_matches": true
   },
+  "probes": [
+    {
+      "name": "s1-002-reproducibility",
+      "command": "python research/tickets/stage-1/S1-002/bench_probe.py",
+      "expected": "pass",
+      "observed": "pass",
+      "result": "pass"
+    }
+  ],
   "wiki_check": {
     "ok": true,
-    "files": 143,
-    "links_checked": 384,
+    "files": 309,
+    "links_checked": 814,
     "issues": []
   },
   "limitations": [
     "The benchmark is a short single-process local SQLite/WAL baseline with deterministic arrivals and a small read handler, not production traffic.",
     "Distributed worker count, external calls, revocation, fan-out, failover, and multi-region behavior remain unverified.",
-    "The auditor role is adversarial and process-separated but not an external human or independently operated model.",
+    "The auditor role is adversarial and process-separated but not an external human or independently operated model; see docs/RESEARCH_STAGE_1_TICKETS.md for the explicit decision and S1-020 lift condition.",
     "The 20 ms p95 value remains an internal target; no production SLO or customer commitment is authorized."
   ],
-  "note": "research-plan PASS is a research evaluation; it never sets Goal ACCEPTED (release gate only)"
+  "note": "review-fix 2026-08-30: the benchmark was re-executed from the repository (1728 events, 353.28 B/persisted-row reproduced; wall-clock latency is a live measurement and varies run-to-run); deterministic reproducibility is enforced by the machine-checked probe bench_probe.py and raw-results.json is committed and hash-consistent with the bundle. research-plan PASS is a research evaluation; it never sets Goal ACCEPTED (release gate only)"
 }
