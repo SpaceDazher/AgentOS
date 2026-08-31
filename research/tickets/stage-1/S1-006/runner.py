@@ -53,6 +53,32 @@ def _git(args: list) -> str | None:
         return None
 
 
+def _git_lines(args: list) -> list:
+    """Raw git stdout lines (no global strip: porcelain status columns
+    are positional and the leading space of ' M path' matters)."""
+    try:
+        out = subprocess.run(["git", *args], capture_output=True,
+                             text=True, timeout=30, cwd=str(ROOT))
+        return out.stdout.splitlines()
+    except (OSError, subprocess.TimeoutExpired):
+        return []
+
+
+def research_surface_dirty_lines(porcelain_lines: list) -> list:
+    """Dirty porcelain lines outside the mutable research surface
+    (research/tickets/, tests/). Platform code (src/, evals/, spec/,
+    docs/, adr/) still flags the tree dirty."""
+    dirty = []
+    for ln in porcelain_lines:
+        if not ln.strip():
+            continue
+        path = ln[3:].strip().strip('"')
+        if path.startswith("research/tickets/") or path.startswith("tests/"):
+            continue
+        dirty.append(ln)
+    return dirty
+
+
 _PROV_CACHE: dict | None = None
 
 
@@ -68,18 +94,8 @@ def provenance() -> dict:
     # dirty flag excludes the ticket's own research directory: it is the
     # mutable research surface written by this run; executed-script
     # integrity is bound via script_hashes instead (review R3 flow).
-    status = _git(["status", "--porcelain"]) or ""
-    dirty_lines = []
-    for ln in status.splitlines():
-        if not ln.strip():
-            continue
-        path = ln[3:].strip().strip('"')
-        # the research ticket directory and its regression tests are the
-        # mutable research surface written by this run; executed-platform
-        # code (src/, evals/, spec/, docs/, adr/) still flags dirty
-        if path.startswith("research/tickets/") or path.startswith("tests/"):
-            continue
-        dirty_lines.append(ln)
+    dirty_lines = research_surface_dirty_lines(
+        _git_lines(["status", "--porcelain"]))
     return {
         "python": sys.version.split()[0],
         "platform": platform.platform(),

@@ -73,16 +73,23 @@ class PositiveFlowTests(TestCase):
     """Full evaluation through the production CLI path."""
 
     def test_full_pipeline_accepts_and_recommends(self):
-        proc = subprocess.run(
-            [sys.executable, str(S1006 / "evaluator.py"),
-             "--runs-manifest",
-             str(S1006 / "results" / "run-a" / "run-manifest.json"),
-             "--runs-manifest-sha", _sha(
-                 S1006 / "results" / "run-a" / "run-manifest.json")],
-            capture_output=True, text=True, timeout=600,
-            cwd=str(ROOT), env={"SYSTEMROOT": "x"})
-        self.assertEqual(proc.returncode, 0, proc.stderr)
-        result = json.loads(proc.stdout)
+        """Production CLI path; the evaluation is written to a temporary
+        --out so the published nonce-bound sensitivity result is never
+        clobbered by a nonce-less test invocation."""
+        import tempfile
+        with tempfile.TemporaryDirectory() as td:
+            out = Path(td) / "evaluation.json"
+            proc = subprocess.run(
+                [sys.executable, str(S1006 / "evaluator.py"),
+                 "--runs-manifest",
+                 str(S1006 / "results" / "run-a" / "run-manifest.json"),
+                 "--runs-manifest-sha", _sha(
+                     S1006 / "results" / "run-a" / "run-manifest.json"),
+                 "--out", str(out)],
+                capture_output=True, text=True, timeout=600,
+                cwd=str(ROOT))
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            result = json.loads(proc.stdout)
         self.assertEqual(result["verdict"], "PASS_WITH_LIMITS")
         self.assertEqual(result["winner"], "in_process")
         self.assertTrue(result["sensitivity"]["stable"])
@@ -92,6 +99,12 @@ class PositiveFlowTests(TestCase):
         self.assertEqual(result["probe_rejections"]["B_incomparable"],
                          "INCOMPARABLE/NO_DATA")
         self.assertEqual(result["probe_rejections"]["C_blind_retry"], "FAIL")
+
+    def test_published_sensitivity_stays_nonce_bound(self):
+        recorded = ev.load(S1006 / "results" / "sensitivity-analysis.json")
+        nonce = recorded.get("run_nonce")
+        self.assertTrue(nonce and nonce.startswith("s1-006-"),
+                        "published evaluation lost its producer nonce")
 
     def test_both_backends_fully_scored(self):
         recorded = ev.load(S1006 / "results" / "sensitivity-analysis.json")
@@ -274,6 +287,23 @@ class ProvenanceTests(TestCase):
         with self.assertRaises(SystemExit):
             mb.sh([sys.executable, "-c", "import time; time.sleep(30)"],
                   timeout=1)
+
+    def test_porcelain_first_line_modified_file_excluded(self):
+        """Regression (REVIEW_R1 finding 7): a globally stripped status
+        output dropped the leading status column of the FIRST porcelain
+        line, so a modified research-surface file as line #1 wrongly
+        flagged the tree dirty."""
+        lines = [" M research/tickets/stage-1/S1-006/evaluator.py",
+                 " M tests/test_s1_006_regressions.py",
+                 " M src/agentos/engine.py",
+                 "?? research/tickets/stage-1/S1-006/REVIEW_R1.md"]
+        dirty = rn.research_surface_dirty_lines(lines)
+        self.assertEqual(dirty, [" M src/agentos/engine.py"])
+        # a clean research surface -> no dirty lines
+        self.assertEqual(
+            rn.research_surface_dirty_lines(
+                [" M tests/x.py", "?? research/tickets/stage-1/S1-006/y"]),
+            [])
 
 
 # --------------------------------------------------------------------------
@@ -506,7 +536,19 @@ class IndependentRerunTests(TestCase):
 
     def test_fresh_subprocess_reproduces_main_matrix(self):
         """A separate runner process with the same frozen inputs
-        reproduces run-a byte-for-byte (independent rerun discipline)."""
+        reproduces run-a's frozen content: identical contract/workload/
+        rubric bindings, metrics, safety counters and raw observations.
+        Git provenance fields (commit/tree_sha/dirty) legitimately track
+        the executing tree, so they are compared for internal
+        consistency only, not against run-a's recorded commit."""
+        run_a = ev.load(S1006 / "results" / "run-a" / "run-manifest.json")
+        run_b = ev.load(S1006 / "results" / "run-b" / "run-manifest.json")
+        frozen_keys = ("schema", "run_id", "backend", "load", "seed",
+                       "scenario", "mutations", "contract_sha256",
+                       "workload_sha256", "rubric_sha256", "metrics",
+                       "resumes", "redeliveries",
+                       "reconciled_unknown_outcomes", "safety_counters",
+                       "raw_observations", "terminal_reason")
         with tempfile.TemporaryDirectory() as td:
             out = Path(td) / "run-x"
             proc = subprocess.run(
@@ -515,10 +557,30 @@ class IndependentRerunTests(TestCase):
                 capture_output=True, text=True, timeout=900, cwd=str(ROOT))
             self.assertEqual(proc.returncode, 0, proc.stderr)
             fresh = ev.load(out / "run-manifest.json")
-            main = ev.load(S1006 / "results" / "run-a" / "run-manifest.json")
-            fresh_runs = {r["run_id"]: r["sha256"] for r in fresh["runs"]}
-            main_runs = {r["run_id"]: r["sha256"] for r in main["runs"]}
-            self.assertEqual(fresh_runs, main_runs)
+            fresh_files = {e["run_id"]: ev.load(out / e["file"])
+                           for e in fresh["runs"]}
+        # 1) the independent rerun manifest (run-b) matches run-a
+        #    byte-for-byte on every frozen run file
+        for entry_a in run_a["runs"]:
+            entry_b = next(e for e in run_b["runs"]
+                           if e["run_id"] == entry_a["run_id"])
+            self.assertEqual(entry_a["sha256"], entry_b["sha256"],
+                             entry_a["run_id"])
+        # 2) a fresh subprocess reproduces the frozen content of every
+        #    run despite executing on the current HEAD
+        for entry in fresh["runs"]:
+            entry_a = next(e for e in run_a["runs"]
+                           if e["run_id"] == entry["run_id"])
+            fresh_run = fresh_files[entry["run_id"]]
+            recorded_run = ev.load(S1006 / "results" / "run-a"
+                                   / entry_a["file"])
+            for key in frozen_keys:
+                self.assertEqual(
+                    fresh_run[key], recorded_run[key],
+                    f"{entry['run_id']}.{key} diverged")
+            # provenance is internally consistent with the executing tree
+            self.assertEqual(fresh_run["commit"], fresh["provenance"]["commit"])
+            self.assertFalse(fresh_run["dirty"])
 
 
 if __name__ == "__main__":  # pragma: no cover

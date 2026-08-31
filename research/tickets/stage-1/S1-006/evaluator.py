@@ -387,6 +387,11 @@ def main(argv=None) -> int:
     ap.add_argument("--runs-manifest-sha", default=None,
                     help="sha256 of the frozen run manifest")
     ap.add_argument("--expected-commit", default=None)
+    ap.add_argument("--out", default=None,
+                    help="output path for the evaluation result; defaults "
+                         "to <results>/sensitivity-analysis.json (the "
+                         "published, nonce-bound location used by "
+                         "make_bundle.py)")
     args = ap.parse_args(argv)
     ticket = Path(args.ticket).resolve()
     results = Path(args.results).resolve() if args.results \
@@ -402,7 +407,10 @@ def main(argv=None) -> int:
     except EvalError as exc:
         print(json.dumps({"verdict": "FAIL", "error": str(exc)}, indent=2))
         return 1
-    (results / "sensitivity-analysis.json").write_text(
+    out_path = Path(args.out).resolve() if args.out else \
+        results / "sensitivity-analysis.json"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(
         json.dumps(result, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8")
     print(json.dumps(result, indent=2, ensure_ascii=False))
