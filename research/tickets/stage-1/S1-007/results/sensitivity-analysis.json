@@ -1,7 +1,7 @@
 {
-  "commit": "bdb7e4bcacfdadafb090381a80b6aee55b6232b4",
+  "commit": "18b292a33f47b353e1f9aff4a00b92ebf5422a4a",
   "contract_hashes": {
-    "corpus-manifest.json": "d894973e8819c0d94e863ca1a84aaf3fdf63ae73c998cbb69b1d7247105d7dd9",
+    "corpus-manifest.json": "a03c537bf530b7cdc69d6756e3277e5b4c4ee04dbe1de4a33ed5d394e912cfa9",
     "fixtures.json": "de6d459158764c1221935200d15a23ec8e8097f4d78d8f34bb836437753edbe1",
     "isolation-contract.json": "30dfa3469e372f5ed05f173df521d3c0b1cd6f00bab2f3bba3bf0e0d3beb9d5b",
     "rubric.json": "fd3ff0ff8e3534d61e4de113aeca9067d933221a796e3695f92998b75d8564eb",
@@ -13,9 +13,9 @@
       "confidence": "high",
       "dimension": "D1 content/existence/metadata isolation",
       "evidence_refs": [
-        "iso:shared_rls:ISO1=0",
-        "iso:shared_rls:ISO2=0",
-        "timing:shared_rls:WITHIN_TOLERANCE"
+        "iso:per_scope:ISO1=0",
+        "iso:per_scope:ISO2=0",
+        "timing:per_scope:WITHIN_TOLERANCE"
       ],
       "limitation": null,
       "missing_evidence": null,
@@ -43,7 +43,7 @@
       "confidence": "high",
       "dimension": "D2 correctness of authorization placement (authorize before materialize)",
       "evidence_refs": [
-        "materialize_before_policy=0"
+        "per_scope:materialize_before_policy=0"
       ],
       "limitation": null,
       "missing_evidence": null,
@@ -56,7 +56,7 @@
       "confidence": "high",
       "dimension": "D2 correctness of authorization placement (authorize before materialize)",
       "evidence_refs": [
-        "materialize_before_policy=0"
+        "shared_rls:materialize_before_policy=0"
       ],
       "limitation": null,
       "missing_evidence": null,
@@ -69,10 +69,10 @@
       "confidence": "high",
       "dimension": "D3 cache invalidation and revoke/move behavior",
       "evidence_refs": [
-        "iso:ISO3=0",
-        "iso:ISO4=0",
-        "stale_invalidated=9",
-        "invalidation_ops=9"
+        "per_scope:ISO3=0",
+        "per_scope:ISO4=0",
+        "per_scope:stale_invalidated=9",
+        "per_scope:invalidation_ops=9"
       ],
       "limitation": null,
       "missing_evidence": null,
@@ -85,10 +85,10 @@
       "confidence": "high",
       "dimension": "D3 cache invalidation and revoke/move behavior",
       "evidence_refs": [
-        "iso:ISO3=0",
-        "iso:ISO4=0",
-        "stale_invalidated=9",
-        "invalidation_ops=9"
+        "shared_rls:ISO3=0",
+        "shared_rls:ISO4=0",
+        "shared_rls:stale_invalidated=9",
+        "shared_rls:invalidation_ops=9"
       ],
       "limitation": null,
       "missing_evidence": null,
@@ -101,8 +101,8 @@
       "confidence": "high",
       "dimension": "D4 projection/provenance integrity",
       "evidence_refs": [
-        "iso:ISO5=0",
-        "provenance_share=0.8462"
+        "per_scope:ISO5=0",
+        "per_scope:provenance_share=0.8462"
       ],
       "limitation": null,
       "missing_evidence": null,
@@ -115,8 +115,8 @@
       "confidence": "high",
       "dimension": "D4 projection/provenance integrity",
       "evidence_refs": [
-        "iso:ISO5=0",
-        "provenance_share=0.8462"
+        "shared_rls:ISO5=0",
+        "shared_rls:provenance_share=0.8462"
       ],
       "limitation": null,
       "missing_evidence": null,
@@ -129,7 +129,7 @@
       "confidence": "high",
       "dimension": "D5 bulk/pagination/background-job isolation",
       "evidence_refs": [
-        "iso:ISO6=0"
+        "per_scope:ISO6=0"
       ],
       "limitation": null,
       "missing_evidence": null,
@@ -142,7 +142,7 @@
       "confidence": "high",
       "dimension": "D5 bulk/pagination/background-job isolation",
       "evidence_refs": [
-        "iso:ISO6=0"
+        "shared_rls:ISO6=0"
       ],
       "limitation": null,
       "missing_evidence": null,
@@ -155,11 +155,11 @@
       "confidence": "high",
       "dimension": "D6 failure blast radius",
       "evidence_refs": [
-        "fault:shared_rls:{\"corrupt_entry_affected_scopes\": 1, \"predicate_bypass_affected_scopes\": 2}"
+        "fault:per_scope:{\"corrupt_entry_affected_scopes\": 1, \"predicate_bypass_affected_scopes\": 1}"
       ],
       "limitation": "in-model fault injection, not production fault data",
       "missing_evidence": null,
-      "score": 3.25,
+      "score": 4.0,
       "variant": "per_scope",
       "weight": 0.08
     },
@@ -181,8 +181,8 @@
       "confidence": "high",
       "dimension": "D7 auditability and counterexample quality",
       "evidence_refs": [
-        "audit_share=0.8696",
-        "protected_in_audit=0"
+        "per_scope:audit_share=0.8696",
+        "per_scope:protected_in_audit=0"
       ],
       "limitation": null,
       "missing_evidence": null,
@@ -195,8 +195,8 @@
       "confidence": "high",
       "dimension": "D7 auditability and counterexample quality",
       "evidence_refs": [
-        "audit_share=0.8696",
-        "protected_in_audit=0"
+        "shared_rls:audit_share=0.8696",
+        "shared_rls:protected_in_audit=0"
       ],
       "limitation": null,
       "missing_evidence": null,
@@ -209,7 +209,7 @@
       "confidence": "high",
       "dimension": "D8 deterministic testing/replay",
       "evidence_refs": [
-        "cross-executor"
+        "cross-executor determinism share: 4.0000"
       ],
       "limitation": null,
       "missing_evidence": null,
@@ -222,7 +222,7 @@
       "confidence": "high",
       "dimension": "D8 deterministic testing/replay",
       "evidence_refs": [
-        "cross-executor"
+        "cross-executor determinism share: 4.0000"
       ],
       "limitation": null,
       "missing_evidence": null,
@@ -265,12 +265,12 @@
       "confidence": "high",
       "dimension": "D10 storage/latency/resource overhead in the local model",
       "evidence_refs": [
-        "storage:per_scope:1388B vs 876B",
-        "rows_scanned:per_scope:51 vs 105"
+        "storage:per_scope:1388B (max 1388B)",
+        "rows_scanned:per_scope:51 (max 105)"
       ],
       "limitation": "local model with a frozen fixed per-index overhead constant (INDEX_FIXED_OVERHEAD_BYTES=256)",
       "missing_evidence": "production storage/latency data",
-      "score": 2.2337,
+      "score": 2.9714,
       "variant": "per_scope",
       "weight": 0.07
     },
@@ -279,12 +279,12 @@
       "confidence": "high",
       "dimension": "D10 storage/latency/resource overhead in the local model",
       "evidence_refs": [
-        "storage:shared_rls:876B vs 1388B",
-        "rows_scanned:shared_rls:105 vs 51"
+        "storage:shared_rls:876B (max 1388B)",
+        "rows_scanned:shared_rls:105 (max 105)"
       ],
       "limitation": "local model with a frozen fixed per-index overhead constant (INDEX_FIXED_OVERHEAD_BYTES=256)",
       "missing_evidence": "production storage/latency data",
-      "score": 2.2337,
+      "score": 3.2622,
       "variant": "shared_rls",
       "weight": 0.07
     },
@@ -926,12 +926,12 @@
   "reasons": [
     "inference-type dimensions present (D9, D11); bounded local timing; model-based overhead constant"
   ],
-  "run_nonce": "s1-007-bdb7e4bcacfd-8e07245d2a29",
+  "run_nonce": "s1-007-18b292a33f47-89d524c88c74",
   "schema": "agentos.s1-007.evaluation/v1",
-  "score_margin": 0.17,
+  "score_margin": 0.2096,
   "scores_normalized": {
-    "per_scope": 3.7183,
-    "shared_rls": 3.5483
+    "per_scope": 3.8299,
+    "shared_rls": 3.6203
   },
   "scores_per_dimension": {
     "D1": {
@@ -939,8 +939,8 @@
       "shared_rls": 4.0
     },
     "D10": {
-      "per_scope": 2.2337,
-      "shared_rls": 2.2337
+      "per_scope": 2.9714,
+      "shared_rls": 3.2622
     },
     "D11": {
       "per_scope": 4.0,
@@ -963,7 +963,7 @@
       "shared_rls": 4.0
     },
     "D6": {
-      "per_scope": 3.25,
+      "per_scope": 4.0,
       "shared_rls": 3.25
     },
     "D7": {
@@ -981,8 +981,8 @@
   },
   "sensitivity": {
     "base_scores": {
-      "per_scope": 3.7183,
-      "shared_rls": 3.5483
+      "per_scope": 3.8299,
+      "shared_rls": 3.6203
     },
     "base_weights": {
       "D1": 0.16,
@@ -999,16 +999,20 @@
     },
     "flip_count": 0,
     "flips": [],
+    "oat_perturbations_executed": 22,
     "oat_weight_factors": [
       0.5,
       1.5
     ],
+    "policy": "weights-only perturbation; every scored cell was a measured number, so no unknown-bound swing applies (unknown-bound analysis would activate only if a cell scored NO_DATA)",
     "random_seed": 42,
     "random_vectors": 200,
+    "total_perturbations_executed": 222,
     "winner_stable": true
   },
   "timing_analysis": {
     "frozen_methodology": {
+      "inner_repeats": 32,
       "sample_count": 200,
       "seeds": [
         101,
@@ -1023,59 +1027,55 @@
       },
       "warmup": 20
     },
-    "rerun_note": "rerun timing is an independent local measurement; main paired-signal per variant: {'per_scope': 6, 'shared_rls': 150}; rerun: {'per_scope': 3, 'shared_rls': 172}; cross-executor timing deltas are expected OS-scheduling noise on a microsecond-scale in-process path and never gate the safety verdict",
+    "producer_summaries_ignored": true,
+    "rerun": {
+      "digest_bound": true,
+      "note": "the rerun timing artifact is digest-bound to its manifest and independently recomputed; verdict divergences between executors are local-scheduling findings recorded as limitations, never producer-accepted claims",
+      "recomputed_variants": {
+        "per_scope": {
+          "control_median_ns": 9046,
+          "note": "statistic, tolerance and verdict recomputed by the evaluator from raw hash-bound paired samples; not a production SLO, not proof of absence of all side channels",
+          "pooled_samples": 600,
+          "recomputed": true,
+          "signal_ns": 18,
+          "tolerance_ns": 2000,
+          "verdict": "WITHIN_TOLERANCE"
+        },
+        "shared_rls": {
+          "control_median_ns": 8428,
+          "note": "statistic, tolerance and verdict recomputed by the evaluator from raw hash-bound paired samples; not a production SLO, not proof of absence of all side channels",
+          "pooled_samples": 600,
+          "recomputed": true,
+          "signal_ns": 193,
+          "tolerance_ns": 2000,
+          "verdict": "WITHIN_TOLERANCE"
+        }
+      },
+      "sha256": "d2e9437e95145964e8fefecceef32914fc881b003f5a6d2bbfeeb11bdf3b1e1d",
+      "verdict_divergences": []
+    },
     "variants": {
       "per_scope": {
-        "note": "bounded local paired-interleaved measurement; not a production SLO, not proof of absence of all side channels",
-        "per_seed": [
-          {
-            "median_diff_ns": 19,
-            "sample_count": 200,
-            "seed": 101
-          },
-          {
-            "median_diff_ns": -13,
-            "sample_count": 200,
-            "seed": 202
-          },
-          {
-            "median_diff_ns": -10,
-            "sample_count": 200,
-            "seed": 303
-          }
-        ],
+        "control_median_ns": 7556,
+        "note": "statistic, tolerance and verdict recomputed by the evaluator from raw hash-bound paired samples; not a production SLO, not proof of absence of all side channels",
         "pooled_samples": 600,
-        "signal_ns": 6,
+        "recomputed": true,
+        "signal_ns": 19,
         "tolerance_ns": 2000,
         "verdict": "WITHIN_TOLERANCE"
       },
       "shared_rls": {
-        "note": "bounded local paired-interleaved measurement; not a production SLO, not proof of absence of all side channels",
-        "per_seed": [
-          {
-            "median_diff_ns": 150,
-            "sample_count": 200,
-            "seed": 101
-          },
-          {
-            "median_diff_ns": 153,
-            "sample_count": 200,
-            "seed": 202
-          },
-          {
-            "median_diff_ns": 150,
-            "sample_count": 200,
-            "seed": 303
-          }
-        ],
+        "control_median_ns": 8456,
+        "note": "statistic, tolerance and verdict recomputed by the evaluator from raw hash-bound paired samples; not a production SLO, not proof of absence of all side channels",
         "pooled_samples": 600,
-        "signal_ns": 150,
+        "recomputed": true,
+        "signal_ns": 244,
         "tolerance_ns": 2000,
         "verdict": "WITHIN_TOLERANCE"
       }
     }
   },
-  "tree_sha": "8720bac566337284eb4d1c04cb310111822015a8",
+  "tree_sha": "ee131cdfbff045b8a5e9aae3997a9dacfc628697",
   "verdict": "PASS_WITH_LIMITS",
   "winner": "per_scope"
 }

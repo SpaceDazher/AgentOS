@@ -1,0 +1,92 @@
+{
+  "case_id": "count-rank-snippet-aggregation",
+  "contract_hashes": {
+    "corpus-manifest.json": "a03c537bf530b7cdc69d6756e3277e5b4c4ee04dbe1de4a33ed5d394e912cfa9",
+    "fixtures.json": "de6d459158764c1221935200d15a23ec8e8097f4d78d8f34bb836437753edbe1",
+    "isolation-contract.json": "30dfa3469e372f5ed05f173df521d3c0b1cd6f00bab2f3bba3bf0e0d3beb9d5b",
+    "rubric.json": "fd3ff0ff8e3534d61e4de113aeca9067d933221a796e3695f92998b75d8564eb",
+    "threat-model.json": "cd45c5998c4e0cb2c0e80f17585d1ac1cbe1fea7b71de1f5f4a48904b5cd36e8"
+  },
+  "final_state": {
+    "cache_entries": 0,
+    "storage": {
+      "index_count": 3,
+      "index_entries": 7,
+      "payload_bytes_est": 1388
+    }
+  },
+  "iso_counters": {
+    "ISO1": 0,
+    "ISO2": 0,
+    "ISO3": 0,
+    "ISO4": 0,
+    "ISO5": 0,
+    "ISO6": 0,
+    "ISO7": 0,
+    "ISO8": 0
+  },
+  "metrics": {
+    "cache_hits": 0,
+    "cache_misses": 0,
+    "index_writes_scope_bound": 0,
+    "invalidation_ops": 0,
+    "policy_evaluations": 1,
+    "rows_scanned": 2,
+    "stale_invalidated": 0
+  },
+  "observations": [
+    {
+      "actor": "bruno",
+      "cache_events": [],
+      "decision": "allow",
+      "effective_scope": "SCP-B",
+      "materialize_before_policy_check": 0,
+      "op": "aggregate",
+      "policy_checks": [
+        "scope_resolution_canonical",
+        "policy_version_valid"
+      ],
+      "policy_epoch_at_step": {
+        "SCP-A": 1,
+        "SCP-B": 1,
+        "SCP-C": 1
+      },
+      "query_id": "q-common",
+      "response": {
+        "meta": {
+          "ranks": [
+            {
+              "id": "art-0102-beta",
+              "rank": 1
+            },
+            {
+              "id": "mem-0101-beta",
+              "rank": 2
+            }
+          ],
+          "result_count": 2,
+          "snippets": [
+            {
+              "id": "art-0102-beta",
+              "snippet": "beta: design artifact wi"
+            },
+            {
+              "id": "mem-0101-beta",
+              "snippet": "beta: private customer l"
+            }
+          ],
+          "total_count": 2
+        },
+        "objects": [],
+        "result": "ok"
+      },
+      "response_digest": "3e3125ad56ba87e16594df58b5c070c643723028aff628b958c881e0717739e1",
+      "rows_scanned": 2
+    }
+  ],
+  "provenance_digest": "f44b750742cb0b115f07cfff7e49cc12b857bbdaec2a66ad0901d3b442f6e928",
+  "run_id": "per_scope|count-rank-snippet-aggregation|303",
+  "schema": "agentos.s1-007.run/v1",
+  "seed": 303,
+  "variant": "per_scope"
+}

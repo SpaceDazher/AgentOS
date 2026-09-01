@@ -1,0 +1,124 @@
+{
+  "case_id": "pagination-leak",
+  "contract_hashes": {
+    "corpus-manifest.json": "a03c537bf530b7cdc69d6756e3277e5b4c4ee04dbe1de4a33ed5d394e912cfa9",
+    "fixtures.json": "de6d459158764c1221935200d15a23ec8e8097f4d78d8f34bb836437753edbe1",
+    "isolation-contract.json": "30dfa3469e372f5ed05f173df521d3c0b1cd6f00bab2f3bba3bf0e0d3beb9d5b",
+    "rubric.json": "fd3ff0ff8e3534d61e4de113aeca9067d933221a796e3695f92998b75d8564eb",
+    "threat-model.json": "cd45c5998c4e0cb2c0e80f17585d1ac1cbe1fea7b71de1f5f4a48904b5cd36e8"
+  },
+  "final_state": {
+    "cache_entries": 0,
+    "storage": {
+      "index_count": 1,
+      "index_entries": 7,
+      "payload_bytes_est": 876
+    }
+  },
+  "iso_counters": {
+    "ISO1": 0,
+    "ISO2": 0,
+    "ISO3": 0,
+    "ISO4": 0,
+    "ISO5": 0,
+    "ISO6": 0,
+    "ISO7": 0,
+    "ISO8": 0
+  },
+  "metrics": {
+    "cache_hits": 0,
+    "cache_misses": 0,
+    "index_writes_scope_bound": 0,
+    "invalidation_ops": 0,
+    "policy_evaluations": 2,
+    "rows_scanned": 14,
+    "stale_invalidated": 0
+  },
+  "observations": [
+    {
+      "actor": "bruno",
+      "cache_events": [],
+      "decision": "allow",
+      "effective_scope": "SCP-B",
+      "limit": 1,
+      "materialize_before_policy_check": 0,
+      "offset": 0,
+      "op": "paginate",
+      "policy_checks": [
+        "scope_resolution_canonical",
+        "policy_version_valid"
+      ],
+      "policy_epoch_at_step": {
+        "SCP-A": 1,
+        "SCP-B": 1,
+        "SCP-C": 1
+      },
+      "query_id": "q-common",
+      "response": {
+        "meta": {
+          "ranks": [],
+          "result_count": 1,
+          "snippets": [],
+          "total_count": 2
+        },
+        "objects": [
+          {
+            "content": "beta: design artifact wireframes hash 91bc... internal only",
+            "digest": "7f0c8b809a87e51756d343a986b6a9100e18eccf72190b68fad5b6781235be10",
+            "id": "art-0102-beta",
+            "kind": "artifact_object",
+            "provenance": {
+              "canonical_source_id": "src-design-8",
+              "created_by_activity": "act-2002",
+              "independence_group": "ig-design",
+              "publisher_id": "agent-install-11",
+              "resolver_version": "resolver-v3"
+            },
+            "scope": "SCP-B",
+            "version": 1
+          }
+        ],
+        "result": "ok"
+      },
+      "response_digest": "1370ac91f91ec7ddcef56a32da43a4b5dbf7856f7bcf32e39185b2e18338b28f",
+      "rows_scanned": 7
+    },
+    {
+      "actor": "bruno",
+      "cache_events": [],
+      "decision": "allow",
+      "effective_scope": "SCP-B",
+      "limit": 10,
+      "materialize_before_policy_check": 0,
+      "offset": 99,
+      "op": "paginate",
+      "policy_checks": [
+        "scope_resolution_canonical",
+        "policy_version_valid"
+      ],
+      "policy_epoch_at_step": {
+        "SCP-A": 1,
+        "SCP-B": 1,
+        "SCP-C": 1
+      },
+      "query_id": "q-common",
+      "response": {
+        "meta": {
+          "ranks": [],
+          "result_count": 0,
+          "snippets": [],
+          "total_count": 2
+        },
+        "objects": [],
+        "result": "ok"
+      },
+      "response_digest": "a6d979011725b4fadc3ca2d888d92dbaef3e95f96f03fecd26798818599ef02b",
+      "rows_scanned": 7
+    }
+  ],
+  "provenance_digest": "54335aa657615550eb730749d257351189895b3079d595574647c53bdcb72ad2",
+  "run_id": "shared_rls|pagination-leak|101",
+  "schema": "agentos.s1-007.run/v1",
+  "seed": 101,
+  "variant": "shared_rls"
+}

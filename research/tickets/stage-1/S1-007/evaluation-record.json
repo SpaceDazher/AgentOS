@@ -1,55 +1,67 @@
 {
   "schema": "agentos.ticket-evaluation-record/v1",
   "ticket_id": "S1-007",
-  "recorded_at": "2026-08-31T05:40:00Z",
+  "recorded_at": "2026-08-31T07:55:00Z",
   "db_root": ".agentos-research/platform-stage-1",
-  "campaign_id": "rcamp_9F570GCAJDQAXJNP01M1CRN7JX",
-  "goal_id": "goal_8BPK84CJC8RV9ZSF01M1CRN7JX",
-  "evaluation_id": "reval_HHBK19FNF6SGSX5Y01M1CRN7N5",
+  "research_revision": 2,
+  "recorded_corrective_round": "R2 (REVIEW_R1 findings 1-7 closed)",
+  "campaign_id": "rcamp_SV3XFQVGJHW7YBF201M1D6K8YQ",
+  "goal_id": "goal_NBSXPH7FWP3WBMCA01M1D6K8YQ",
+  "evaluation_id": "reval_Q7VDE4B27XFNDQ1E01M1D6K918",
   "evaluation_version": 1,
   "result": "pass_with_limits",
-  "artifact_chain_hash": "5e2b79ff3a2472eb358ae67263bb2074e31e2b12f7042a034a861474bc93d374",
+  "artifact_chain_hash": "0c760d699eefd26f0c85cd33f6d702ae1bed2cc86d5c69d564deef0ba6dd6588",
   "evidence_pack": {
     "schema": "agentos.evidence-pack/v3",
-    "path": "research/tickets/stage-1/S1-007/results/evidence/evidence-pack-9db9be180085078935556d0bb2d81775c79fd6074e8a0f5bd218e598a1b1ad0e.json",
-    "canonical_runtime_path": ".agentos-research/platform-stage-1/goals/goal_8BPK84CJC8RV9ZSF01M1CRN7JX/evidence-pack.json",
-    "sha256": "9db9be180085078935556d0bb2d81775c79fd6074e8a0f5bd218e598a1b1ad0e",
-    "payload_sha256": "32bc3594461544fe7ce0053d48e62bcad3a639269e2e7de2f86300135b90554c",
+    "path": "research/tickets/stage-1/S1-007/results/evidence/evidence-pack-b3ba9341e32d5f49a4ce0dd8704bab97b4c5287bdc1b0920adf37d878908c4cd.json",
+    "canonical_runtime_path": ".agentos-research/platform-stage-1/goals/goal_NBSXPH7FWP3WBMCA01M1D6K8YQ/evidence-pack.json",
+    "sha256": "b3ba9341e32d5f49a4ce0dd8704bab97b4c5287bdc1b0920adf37d878908c4cd",
+    "payload_sha256": "38a879c2e217e6687f87aac6b3b7dd91ce0e2878aeef3ebeda9ed81b505fcf38",
     "chain_fresh": true,
     "latest_evaluation_valid": true
   },
+  "raw_observations_archive": {
+    "schema": "agentos.s1-007.raw-observations/v1",
+    "path": "research/tickets/stage-1/S1-007/results/evidence/raw-observations-cd21754c85e627646f808b6c6199204b349803329cdd0f1db11fe83590a082f5.json",
+    "sha256": "cd21754c85e627646f808b6c6199204b349803329cdd0f1db11fe83590a082f5",
+    "member_count": 172,
+    "note": "byte-exact tracked copies of all 168 run records plus both run manifests and both timing artifacts; enables clean-clone re-verification of every recorded run digest"
+  },
   "wiki_check": {
     "ok": true,
-    "files": 2421,
-    "links_checked": 6531,
+    "files": null,
+    "links_checked": null,
     "issues": []
   },
   "decision": {
     "question": "QA3 retrieval/index isolation: per-scope index versus shared index with row-level retrieval filtering (shared-RLS)",
     "recommendation": "per-scope index projections bound to the canonical (tenant, workspace, goal) scope with frozen cache/epoch invalidation semantics",
     "scores_normalized": {
-      "per_scope": 3.7183,
-      "shared_rls": 3.5483
+      "per_scope": 3.8299,
+      "shared_rls": 3.6203
     },
     "sensitivity": "222 deterministic weight perturbations executed (22 one-at-a-time dims x +-50% renormalized + 200 seeded random vectors, seed 42); zero winner flips; weights-only policy (all scored cells measured)",
     "probes": {
-      "A_existence_oracle": "FAIL detected - deny detail distinguishes foreign id from nonexistent control (ISO2)",
+      "A_existence_oracle": "FAIL detected - deny detail distinguishes foreign id from nonexistent control (ISO2); probe bound to frozen candidate/cases/seeds/run-ids",
       "B_stale_cache": "FAIL detected - cache hit without revalidation serves revoked content (ISO3+ISO4)",
       "C_postfilter": "FAIL detected - pre-policy aggregate count/rank/snippet leak (ISO2)",
       "D_forged_scope_provenance_loss": "FAIL+INCOMPARABLE detected - caller-supplied scope accepted (ISO7); provenance-dropping projection unverifiable (ISO5)"
     },
-    "deciding_evidence": "identical ISO1-ISO8 compliance (zero violations, 84 main + 84 rerun runs); shared-index single-fault predicate bypass exposes foreign rows to callers of every mismatched scope (2/3 in-corpus) versus one misfiled per-scope entry (1/3); profile-C client-index compatibility; zero migration steps from the current per-goal scoped gateway",
+    "per_variant_evidence": {
+      "D6_blast_radius": "per_scope 4.0 (worst single fault: one misfiled projection entry, 1/3 scopes) vs shared_rls 3.25 (predicate bypass exposes 2/3 scopes + corrupt entry 1/3); cells cite distinct per-variant fault data",
+      "D10_overhead": "directional: the costlier variant scores strictly lower on measured storage bytes and rows scanned",
+      "timing": "statistic, tolerance and verdict recomputed by the evaluator from raw hash-bound paired samples of BOTH executions; producer summaries ignored"
+    },
     "migration_trigger": "away from per-scope projections only when a documented need for cross-scope ranked federation inside ONE trust boundary coincides with measured evidence that per-scope projection maintenance exceeds a shared predicate layer at equal ISO1-ISO8 compliance; rollback is symmetric (rebuild projections from the canonical object store)",
     "non_goals": "no production search service/vendor choice, no ranking optimization, no profile-C MLS/TEE rollout (S1-018), no <=5s revocation SLO claim (S1-008), no core AgentOS rewrites"
   },
   "limitations": [
     "All results are local-model measurements from a deterministic stdlib-only simulation; no production latency, storage or privacy certification is claimed.",
-    "The timing probe is a bounded same-host paired-interleaved wall-clock measurement (200 paired samples x 32 inner repeats x 3 seeds per variant, tolerance max(10%, 2000ns)); it cannot prove absence of all side channels.",
+    "The timing probe is a bounded same-host paired-interleaved wall-clock measurement (200 paired samples x 32 inner repeats x 3 seeds per variant, tolerance max(10% of control median, 2000ns) recomputed by the evaluator from raw samples); it cannot prove absence of all side channels.",
     "D9 (operational complexity/migration) and D11 (profile compatibility) are inference-type cells derived from the frozen contract, the current implementation and documented profiles.",
     "Storage overhead uses a declared fixed per-index constant (256 bytes) - a model assumption, not a measurement of a production index engine.",
     "S1-003 and S1-005 evidence is reused only within its stated limits (see dependency-gate.json).",
     "Producer and verifier labels are process-separated roles in one local environment, not external human auditors."
   ],
-  "note": "research-plan PASS_WITH_LIMITS is a research evaluation; it never sets Goal ACCEPTED (release gate only)",
-  "research_revision": 1
+  "note": "research-plan PASS_WITH_LIMITS is a research evaluation; it never sets Goal ACCEPTED (release gate only). Revision 2 supersedes revision 1 (campaign rcamp_9F570GCAJDQAXJNP01M1CRN7JX) after REVIEW_R1 corrective round."
 }

@@ -1,5 +1,6 @@
 {
   "frozen_methodology": {
+    "inner_repeats": 32,
     "sample_count": 200,
     "seeds": [
       101,
@@ -14,54 +15,50 @@
     },
     "warmup": 20
   },
-  "rerun_note": "rerun timing is an independent local measurement; main paired-signal per variant: {'per_scope': 6, 'shared_rls': 150}; rerun: {'per_scope': 3, 'shared_rls': 172}; cross-executor timing deltas are expected OS-scheduling noise on a microsecond-scale in-process path and never gate the safety verdict",
+  "producer_summaries_ignored": true,
+  "rerun": {
+    "digest_bound": true,
+    "note": "the rerun timing artifact is digest-bound to its manifest and independently recomputed; verdict divergences between executors are local-scheduling findings recorded as limitations, never producer-accepted claims",
+    "recomputed_variants": {
+      "per_scope": {
+        "control_median_ns": 9046,
+        "note": "statistic, tolerance and verdict recomputed by the evaluator from raw hash-bound paired samples; not a production SLO, not proof of absence of all side channels",
+        "pooled_samples": 600,
+        "recomputed": true,
+        "signal_ns": 18,
+        "tolerance_ns": 2000,
+        "verdict": "WITHIN_TOLERANCE"
+      },
+      "shared_rls": {
+        "control_median_ns": 8428,
+        "note": "statistic, tolerance and verdict recomputed by the evaluator from raw hash-bound paired samples; not a production SLO, not proof of absence of all side channels",
+        "pooled_samples": 600,
+        "recomputed": true,
+        "signal_ns": 193,
+        "tolerance_ns": 2000,
+        "verdict": "WITHIN_TOLERANCE"
+      }
+    },
+    "sha256": "d2e9437e95145964e8fefecceef32914fc881b003f5a6d2bbfeeb11bdf3b1e1d",
+    "verdict_divergences": []
+  },
   "schema": "agentos.s1-007.timing-analysis/v1",
   "variants": {
     "per_scope": {
-      "note": "bounded local paired-interleaved measurement; not a production SLO, not proof of absence of all side channels",
-      "per_seed": [
-        {
-          "median_diff_ns": 19,
-          "sample_count": 200,
-          "seed": 101
-        },
-        {
-          "median_diff_ns": -13,
-          "sample_count": 200,
-          "seed": 202
-        },
-        {
-          "median_diff_ns": -10,
-          "sample_count": 200,
-          "seed": 303
-        }
-      ],
+      "control_median_ns": 7556,
+      "note": "statistic, tolerance and verdict recomputed by the evaluator from raw hash-bound paired samples; not a production SLO, not proof of absence of all side channels",
       "pooled_samples": 600,
-      "signal_ns": 6,
+      "recomputed": true,
+      "signal_ns": 19,
       "tolerance_ns": 2000,
       "verdict": "WITHIN_TOLERANCE"
     },
     "shared_rls": {
-      "note": "bounded local paired-interleaved measurement; not a production SLO, not proof of absence of all side channels",
-      "per_seed": [
-        {
-          "median_diff_ns": 150,
-          "sample_count": 200,
-          "seed": 101
-        },
-        {
-          "median_diff_ns": 153,
-          "sample_count": 200,
-          "seed": 202
-        },
-        {
-          "median_diff_ns": 150,
-          "sample_count": 200,
-          "seed": 303
-        }
-      ],
+      "control_median_ns": 8456,
+      "note": "statistic, tolerance and verdict recomputed by the evaluator from raw hash-bound paired samples; not a production SLO, not proof of absence of all side channels",
       "pooled_samples": 600,
-      "signal_ns": 150,
+      "recomputed": true,
+      "signal_ns": 244,
       "tolerance_ns": 2000,
       "verdict": "WITHIN_TOLERANCE"
     }

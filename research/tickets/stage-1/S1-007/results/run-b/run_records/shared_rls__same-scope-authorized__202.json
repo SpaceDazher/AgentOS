@@ -1,0 +1,110 @@
+{
+  "case_id": "same-scope-authorized",
+  "contract_hashes": {
+    "corpus-manifest.json": "a03c537bf530b7cdc69d6756e3277e5b4c4ee04dbe1de4a33ed5d394e912cfa9",
+    "fixtures.json": "de6d459158764c1221935200d15a23ec8e8097f4d78d8f34bb836437753edbe1",
+    "isolation-contract.json": "30dfa3469e372f5ed05f173df521d3c0b1cd6f00bab2f3bba3bf0e0d3beb9d5b",
+    "rubric.json": "fd3ff0ff8e3534d61e4de113aeca9067d933221a796e3695f92998b75d8564eb",
+    "threat-model.json": "cd45c5998c4e0cb2c0e80f17585d1ac1cbe1fea7b71de1f5f4a48904b5cd36e8"
+  },
+  "final_state": {
+    "cache_entries": 1,
+    "storage": {
+      "index_count": 1,
+      "index_entries": 7,
+      "payload_bytes_est": 876
+    }
+  },
+  "iso_counters": {
+    "ISO1": 0,
+    "ISO2": 0,
+    "ISO3": 0,
+    "ISO4": 0,
+    "ISO5": 0,
+    "ISO6": 0,
+    "ISO7": 0,
+    "ISO8": 0
+  },
+  "metrics": {
+    "cache_hits": 0,
+    "cache_misses": 1,
+    "index_writes_scope_bound": 0,
+    "invalidation_ops": 0,
+    "policy_evaluations": 1,
+    "rows_scanned": 1,
+    "stale_invalidated": 0
+  },
+  "observations": [
+    {
+      "actor": "alice",
+      "audit_event": {
+        "event": "retrieval.allow",
+        "result_count": 1
+      },
+      "cache_events": [
+        "miss",
+        "fill"
+      ],
+      "claimed_scope": null,
+      "decision": "allow",
+      "effective_scope": "SCP-A",
+      "materialize_before_policy_check": 0,
+      "op": "retrieve",
+      "policy_checks": [
+        "scope_resolution_canonical",
+        "policy_version_valid"
+      ],
+      "policy_epoch_at_step": {
+        "SCP-A": 1,
+        "SCP-B": 1,
+        "SCP-C": 1
+      },
+      "policy_epoch_current": 1,
+      "query_id": "q-runbook",
+      "requested_version": null,
+      "response": {
+        "meta": {
+          "ranks": [
+            {
+              "id": "mem-0001-alpha",
+              "rank": 1
+            }
+          ],
+          "result_count": 1,
+          "snippets": [
+            {
+              "id": "mem-0001-alpha",
+              "snippet": "alpha: deployment runboo"
+            }
+          ]
+        },
+        "objects": [
+          {
+            "content": "alpha: deployment runbook step 3 requires signing the release with the staging KMS key",
+            "digest": "3329765533cbf21c8aed1f7ed37bae0ea1a18d2fb9bcb572e5095367b38a7c3d",
+            "id": "mem-0001-alpha",
+            "kind": "memory_record",
+            "provenance": {
+              "canonical_source_id": "src-tool-fs-17",
+              "created_by_activity": "act-1001",
+              "independence_group": "ig-ops",
+              "publisher_id": "agent-install-7",
+              "resolver_version": "resolver-v3"
+            },
+            "scope": "SCP-A",
+            "version": 1
+          }
+        ],
+        "result": "ok"
+      },
+      "response_digest": "a7ac43020a66ec4429304c7d1ffbf5fda49368789649b516ca7cbdb59df6c59f",
+      "rows_scanned": 1,
+      "target_id": "mem-0001-alpha"
+    }
+  ],
+  "provenance_digest": "f44b750742cb0b115f07cfff7e49cc12b857bbdaec2a66ad0901d3b442f6e928",
+  "run_id": "shared_rls|same-scope-authorized|202",
+  "schema": "agentos.s1-007.run/v1",
+  "seed": 202,
+  "variant": "shared_rls"
+}
