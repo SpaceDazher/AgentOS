@@ -701,12 +701,13 @@ python -m agentos.cli research-plan --topic "S1-007 QA3 retrieval and index isol
 ### S1-008 — Revocation latency validation (≤5 seconds)
 
 - **Status:** `PASS_WITH_LIMITS` — measured 2026-09-01 (research revision 1):
-  goal `goal_5YJ2AHPMWP3EV2D501M1DM9JWH`, evaluation
-  `reval_S1-008_REVOCATION_LATENCY`, artifact chain
-  `edcb7529…`, evidence-pack content-addressed at
-  `results/evidence/evidence-pack-b9695fea…`. Main and independent
-  rerun each: 4 paths × 2 cache × 3 loads × 3 seeds = 72 observations,
-  228 trials (204 mandatory + 24 probes), 0 hard counters, max latency
+  goal `goal_1E6TYGJ9DY2DFCJ901M1FK71V4`, evaluation
+  `reval_2C3YT4FV9YMPF50201M1FK71WD`, artifact chain
+  `e7e1da05…`, evidence-pack content-addressed at
+  `results/evidence/evidence-pack-56c80986…`. Main and independent
+  rerun each: 4 paths × 2 cache × 3 loads × 3 seeds × 5 trials =
+  360 mandatory (72 cells × 5 trials), 24 fault scenarios, 18 probes
+  A–F = 402 total per run, 0 hard counters, max latency
   <2.2 ms < 5000 ms; all adversarial probes A–F detected fail-closed.
   Limits: same-host model-only enforcement (no production topology);
   process-separated (not external) auditor; local model cannot prove
