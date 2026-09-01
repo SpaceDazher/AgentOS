@@ -516,13 +516,17 @@ class TestISODerivation(unittest.TestCase):
         self.assertIn("NO_DATA", analysis)
         # a raw-sampled signal above tolerance is a finding, never a pass;
         # the statistic is recomputed from raw paired samples
+        raw_big = {"paired_diffs_ns": [50_000] * 600,
+                   "control_samples_ns": [3_000] * 600,
+                   "seed_order": [101, 202, 303]}
         synthetic = {"methodology": {"sample_count": 200, "warmup": 20,
                                      "inner_repeats": 32,
                                      "seeds": [101, 202, 303]},
-                     "variants": {"per_scope": {"raw": {
-                         "paired_diffs_ns": [50_000] * 600,
-                         "control_samples_ns": [3_000] * 600,
-                         "seed_order": [101, 202, 303]}}}}
+                     "variants": {"per_scope": {"raw": raw_big},
+                                  "shared_rls": {"raw": {
+                                      "paired_diffs_ns": [100] * 600,
+                                      "control_samples_ns": [100] * 600,
+                                      "seed_order": [101, 202, 303]}}}}
         contract = json.loads((S1007 / "isolation-contract.json")
                               .read_text(encoding="utf-8"))
         out = evaluator.recompute_timing(synthetic, contract)
