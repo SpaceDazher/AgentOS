@@ -615,34 +615,38 @@ python -m agentos.cli research-plan --topic "S1-006 QA2 execution backend in pro
 
 ### S1-007 — QA3 retrieval and index isolation
 
-- **Status:** `PASS_WITH_LIMITS` - recorded 2026-08-31 (research
-  revision 1; goal `goal_8BPK84CJC8RV9ZSF01M1CRN7JX`, evaluation
-  `reval_HHBK19FNF6SGSX5Y01M1CRN7N5`, artifact chain `5e2b79ff...`,
-  tracked content-addressed evidence-pack/v3 `chain_fresh=true` at
-  `results/evidence/`): dependency gate proved S1-003 (rev 24, pass) and
-  S1-005 (rev 7, pass_with_limits) from tracked packs and the canonical
-  DB. Decision: **per-scope index projections** bound to the canonical
-  (tenant, workspace, goal) scope win under the frozen 11-dimension
-  rubric (3.7183 vs shared-RLS 3.5483); sensitivity 212 deterministic
-  weight perturbations, zero winner flips. Evidence: 2 variants x 14
-  cases x 3 seeds x 2 executors = 168 runs on one frozen
-  contract/corpus/rubric (commit `bdb7e4bc...`, dirty=false, distinct
-  executor identities and output directories); evaluator re-derived
-  ISO1-ISO8 = 0 for both honest variants from raw observations;
-  deny bodies byte-identical across foreign/nonexistent/forged/
-  malformed/unknown classes; provenance plus canonical scope binding
-  survive projection/retrieval; probes A/B/C/D detected fail-closed
-  through real evaluator rules (ISO2 / ISO3+ISO4 / ISO2 /
-  ISO7+ISO5); bounded paired-interleaved timing probe within the frozen
-  tolerance for both variants. Limits: local model only (no production
-  latency/storage/privacy claims); timing cannot prove absence of all
-  side channels; D9/D11 are inference-type cells; storage overhead uses
-  a declared 256-byte per-index model constant; profile-C MLS/TEE stays
-  S1-018, the <=5s revocation SLO stays S1-008. Migration trigger away
-  from per-scope projections requires documented cross-scope ranked
-  federation inside one trust boundary PLUS measured maintenance
-  evidence at equal ISO compliance; rollback is a projection rebuild
-  from the canonical object store.
+- **Status:** `PASS_WITH_LIMITS` - corrective round R2 recorded
+  2026-08-31 (research revision 3; closes all REVIEW_R1 P1 findings:
+  exact raw evidence now tracked - 168 byte-addressed run records plus
+  both manifests and timing artifacts under `results/run-*/run_records/`
+  and a content-addressed `raw-observations-4fbaaee6...` archive bound
+  in the evaluation record; per-variant decision-matrix cells with
+  directional D10; timing statistic/tolerance/verdict recomputed by the
+  evaluator from raw hash-bound paired samples of BOTH executions;
+  strict script/blob provenance with documented CRLF policy; probes
+  bound to the frozen A/B/C/D matrix; sensitivity reported as 222
+  executed perturbations): goal `goal_VG8XJR44A5SXS7CT01M1D6YYHV`,
+  evaluation `reval_PGTCEQ18BJET9M4N01M1D6YYK6`, artifact chain
+  `d44a4e10...`, tracked content-addressed evidence-pack/v3
+  `chain_fresh=true` at `results/evidence/`. Dependency gate proved
+  S1-003 (rev 24, pass) and S1-005 (rev 7, pass_with_limits). Decision:
+  **per-scope index projections** bound to the canonical (tenant,
+  workspace, goal) scope win under the frozen 11-dimension rubric
+  (3.8299 vs shared-RLS 3.6203, per-variant cells); sensitivity 222
+  deterministic weight perturbations, zero winner flips. Evidence: 2
+  variants x 14 cases x 3 seeds x 2 executors = 168 runs on one frozen
+  contract/corpus/rubric (commit `e19ef427...`, dirty=false, distinct
+  executor identities); evaluator re-derived ISO1-ISO8 = 0 for both
+  honest variants from raw observations; deny bodies byte-identical
+  across all equivalence classes; probes A/B/C/D detected fail-closed
+  through real evaluator rules; bounded paired-interleaved timing probe
+  within the frozen tolerance. Limits: local model only; timing cannot
+  prove absence of all side channels; D9/D11 remain inference; profile
+  C stays S1-018, the <=5s revocation SLO stays S1-008. Migration
+  trigger away from per-scope projections requires documented
+  cross-scope ranked federation inside one trust boundary PLUS measured
+  maintenance evidence at equal ISO compliance; rollback is a
+  projection rebuild from the canonical object store.
 - **Priority:** `P0`
 - **Wave:** `W2`
 - **Owner:** `security`
