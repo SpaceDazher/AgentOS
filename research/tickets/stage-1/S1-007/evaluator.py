@@ -1297,6 +1297,15 @@ def evaluate(runs_manifest: Path, rerun_manifest: Path,
             if c["id"] in ("D9", "D11"):
                 cell_info = dict(cells[c["id"]])
                 cell_info["score"] = cells[c["id"]][variant]["score"]
+            elif c["id"] == "D8":
+                cell_info = {
+                    "score": cells["D8"][variant],
+                    "claim_type": "test_measurement",
+                    "confidence": "high",
+                    "evidence_refs": [f"cross-executor determinism share: "
+                                      f"{cells['D8'][variant]:.4f}"],
+                    "limitation": None,
+                    "missing_evidence": None}
             else:
                 raw_cell = cells[c["id"]][variant]
                 cell_info = {
