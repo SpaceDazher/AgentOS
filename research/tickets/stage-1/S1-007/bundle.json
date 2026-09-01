@@ -203,6 +203,25 @@
         "file_sha256": "df7a3ee72e8fdc4b58775405ef4600eaca5207a76139f7f2eff2f7d9b3a21cc9",
         "scope_note": "Contract boundary."
       }
+    },
+    {
+      "id": "RAW-OBSERVATIONS",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-007/results/evidence/raw-observations-014664490282c331a7216f5e9265cb3d169e5833a75606493b63d40a74934c24.json",
+      "title": "S1-007 raw observations archive (byte-exact)",
+      "source_type": "content-addressed raw evidence archive",
+      "content": "Lossless byte-exact archive of ALL executed raw evidence: 172 members = 168 run records (2 variants x 14 cases x 3 seeds x 2 executor identities) plus both run manifests and both timing artifacts with raw paired samples. Members are newline-translation-free copies of the on-disk files digested by the run manifests; the archive sha256 is bound here and re-verified by the clean-clone regression probe.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-007-local-hash-review",
+      "verification_method": "content-addressed-archive-sha256-binding",
+      "verifier_provenance": {
+        "method": "content-addressed-archive-sha256-binding",
+        "verified_at": "2026-08-31",
+        "path": "research/tickets/stage-1/S1-007/results/evidence/raw-observations-014664490282c331a7216f5e9265cb3d169e5833a75606493b63d40a74934c24.json",
+        "file_sha256": "014664490282c331a7216f5e9265cb3d169e5833a75606493b63d40a74934c24",
+        "sha256": "014664490282c331a7216f5e9265cb3d169e5833a75606493b63d40a74934c24",
+        "member_count": 172,
+        "scope_note": "Lossless raw evidence binding for the whole series."
+      }
     }
   ],
   "claims": [
@@ -237,7 +256,7 @@
     {
       "id": "c4-timing",
       "claim_class": "fact",
-      "text": "The bounded local existence-oracle timing probe (frozen methodology: paired interleaved foreign/control arms, 200 paired samples x 32 inner repeats x 3 seeds per variant, statistic = pooled median of paired differences, tolerance = max(10% of the control median, 2000ns)) shows no signal above the frozen tolerance for either honest variant (evaluator-recomputed per_scope signal 3ns vs tolerance 2000ns; shared_rls signal 168ns vs tolerance 2000ns). The evaluator recomputes the statistic, tolerance and verdict from raw hash-bound paired samples of both executions and ignores producer summaries. This is a bounded local measurement, not a production SLO and not proof of absence of all side channels.",
+      "text": "The bounded local existence-oracle timing probe (frozen methodology: paired interleaved foreign/control arms, 200 paired samples x 32 inner repeats x 3 seeds per variant, statistic = pooled median of paired differences, tolerance = max(10% of the control median, 2000ns)) shows no signal above the frozen tolerance for either honest variant (evaluator-recomputed per_scope signal 57ns vs tolerance 2000ns; shared_rls signal 153ns vs tolerance 2000ns). The evaluator recomputes the statistic, tolerance and verdict from raw hash-bound paired samples of both executions and ignores producer summaries. This is a bounded local measurement, not a production SLO and not proof of absence of all side channels.",
       "source_ids": [
         "SRC-06"
       ]
@@ -245,7 +264,7 @@
     {
       "id": "c5-decision",
       "claim_class": "inference",
-      "text": "QA3 decision: per_scope wins under the frozen rubric (per_scope 3.8299 vs shared_rls 3.6203); sensitivity executed 222 deterministic weight perturbations (22 one-at-a-time +-50% renormalized + 200 seeded random vectors, seed 42) with 0 winner flips; every scored cell was a measured number, so the unknown-bound swing policy had no cell to activate on.  Deciding evidence beyond identical hard-invariant compliance: shared-index single-fault blast radius (predicate bypass exposes foreign rows to callers of every mismatched scope: 2 of 3 in-corpus, versus a one-scope misfiled projection 1 of 3 for per-scope), directional D10 overhead scoring, profile-C compatibility (server-side shared index is incompatible with the documented E2EE client-index boundary), and migration cost from the current per-goal scoped gateway (0 rebuild steps for per-scope projections vs 2 for a shared predicate layer).",
+      "text": "QA3 decision: per_scope wins under the frozen rubric (per_scope 3.8503 vs shared_rls 3.5999); sensitivity executed 222 deterministic weight perturbations (22 one-at-a-time +-50% renormalized + 200 seeded random vectors, seed 42) with 0 winner flips; every scored cell was a measured number, so the unknown-bound swing policy had no cell to activate on.  Deciding evidence beyond identical hard-invariant compliance: shared-index single-fault blast radius (predicate bypass exposes foreign rows to callers of every mismatched scope: 2 of 3 in-corpus, versus a one-scope misfiled projection 1 of 3 for per-scope), directional D10 overhead scoring, profile-C compatibility (server-side shared index is incompatible with the documented E2EE client-index boundary), and migration cost from the current per-goal scoped gateway (0 rebuild steps for per-scope projections vs 2 for a shared predicate layer).",
       "source_ids": [
         "SRC-03",
         "SRC-07",
@@ -268,6 +287,14 @@
         "SRC-03",
         "SRC-07",
         "S1-005-EVIDENCE"
+      ]
+    },
+    {
+      "id": "c8-raw-archive",
+      "claim_class": "fact",
+      "text": "Raw evidence binding: the content-addressed archive raw-observations-014664490282c331a7216f5e9265cb3d169e5833a75606493b63d40a74934c24.json (sha256 014664490282c331a7216f5e9265cb3d169e5833a75606493b63d40a74934c24, 172 byte-exact members: 168 run records + 2 run manifests + 2 timing artifacts) is tracked in Git and bound into this bundle as source RAW-OBSERVATIONS; the clean-clone regression probe re-verifies every member digest against the run manifests and asserts the pack carries this binding.",
+      "source_ids": [
+        "RAW-OBSERVATIONS"
       ]
     }
   ],
@@ -338,7 +365,7 @@
         "c4-timing",
         "c5-decision"
       ],
-      "content": "# Result\nPASS_WITH_LIMITS.  Under the frozen rubric per_scope scores 3.8299 versus 3.6203 for the alternative; 0 winner flips across 222 executed weight perturbations.\n\n# Evidence\n- ISO1-ISO8 zero on 84 main + 84 rerun runs for both honest variants (evaluator re-derived, not runner-reported).\n- Deny equivalence: byte-identical canonical bodies for foreign/nonexistent/forged/malformed/unknown classes.\n- Probes A/B/C/D detected fail-closed through real evaluator rules (ISO2 / ISO3+ISO4 / ISO2 / ISO7+ISO5).\n- Timing: no existence-oracle signal above the frozen tolerance for either variant (bounded local measurement).\n- Fault injection: shared predicate bypass affects all scopes with membership mismatch (2/3 in-corpus) versus 1/3 for a misfiled per-scope entry.\n\n# Gaps / residual risks\n- All results are local-model measurements; production latency/storage numbers remain unknown (bounded in sensitivity as declared assumptions).\n- Timing cannot prove absence of all side channels.\n- Profile-C admin-blind indexing contract remains S1-018; revocation latency SLO remains S1-008.\n"
+      "content": "# Result\nPASS_WITH_LIMITS.  Under the frozen rubric per_scope scores 3.8503 versus 3.5999 for the alternative; 0 winner flips across 222 executed weight perturbations.\n\n# Evidence\n- ISO1-ISO8 zero on 84 main + 84 rerun runs for both honest variants (evaluator re-derived, not runner-reported).\n- Deny equivalence: byte-identical canonical bodies for foreign/nonexistent/forged/malformed/unknown classes.\n- Probes A/B/C/D detected fail-closed through real evaluator rules (ISO2 / ISO3+ISO4 / ISO2 / ISO7+ISO5).\n- Timing: no existence-oracle signal above the frozen tolerance for either variant (bounded local measurement).\n- Fault injection: shared predicate bypass affects all scopes with membership mismatch (2/3 in-corpus) versus 1/3 for a misfiled per-scope entry.\n\n# Gaps / residual risks\n- All results are local-model measurements; production latency/storage numbers remain unknown (bounded in sensitivity as declared assumptions).\n- Timing cannot prove absence of all side channels.\n- Profile-C admin-blind indexing contract remains S1-018; revocation latency SLO remains S1-008.\n"
     },
     "independent_audit": {
       "producer": "agentos-s1-007-independent-verifier",
