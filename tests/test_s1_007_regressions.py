@@ -957,7 +957,7 @@ class TestReviewR2Corrections(unittest.TestCase):
                                      "seed_order": [101, 202, 303]}}}}
 
         n = 600
-        foreign = [11_000] * n
+        foreign = [110_000] * n
         control = [10_000] * n
         # (a) real signal derived from both arms -> detected
         out = evaluator.recompute_timing(
