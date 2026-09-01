@@ -188,7 +188,10 @@ def evaluate_run(manifest: dict[str, Any], raw_dir: str | Path) -> EvaluationRes
     else:
         result.ok(f"executor_id present: {exec_id}")
 
-    # --- Load raw traces ---\n    \n    mandatory_traces = []\n    probe_traces = []\n    fault_traces = []
+    # --- Load raw traces ---
+    mandatory_traces = []
+    probe_traces = []
+    fault_traces = []
     try:
         all_traces = load_raw_traces(raw_dir)
     except (FileNotFoundError, ValueError) as e:
@@ -311,7 +314,7 @@ def evaluate_run(manifest: dict[str, Any], raw_dir: str | Path) -> EvaluationRes
     # --- Recompute latency from raw timestamps ---
     # Only DENY decisions count toward latency (matching runner logic)
     latencies_ms: list[float] = []
-    for t in mandatory_traces:
+    for t in mandatory_traces + fault_traces:
         if t.get("decision") != "DENY":
             continue
         t_commit = t.get("t_commit_monotonic_ns")
