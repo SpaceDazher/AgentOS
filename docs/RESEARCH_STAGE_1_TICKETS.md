@@ -615,38 +615,37 @@ python -m agentos.cli research-plan --topic "S1-006 QA2 execution backend in pro
 
 ### S1-007 — QA3 retrieval and index isolation
 
-- **Status:** `PASS_WITH_LIMITS` - corrective round R2 recorded
-  2026-08-31 (research revision 3; closes all REVIEW_R1 P1 findings:
-  exact raw evidence now tracked - 168 byte-addressed run records plus
-  both manifests and timing artifacts under `results/run-*/run_records/`
-  and a content-addressed `raw-observations-4fbaaee6...` archive bound
-  in the evaluation record; per-variant decision-matrix cells with
-  directional D10; timing statistic/tolerance/verdict recomputed by the
-  evaluator from raw hash-bound paired samples of BOTH executions;
-  strict script/blob provenance with documented CRLF policy; probes
-  bound to the frozen A/B/C/D matrix; sensitivity reported as 222
-  executed perturbations): goal `goal_VG8XJR44A5SXS7CT01M1D6YYHV`,
-  evaluation `reval_PGTCEQ18BJET9M4N01M1D6YYK6`, artifact chain
-  `d44a4e10...`, tracked content-addressed evidence-pack/v3
-  `chain_fresh=true` at `results/evidence/`. Dependency gate proved
-  S1-003 (rev 24, pass) and S1-005 (rev 7, pass_with_limits). Decision:
-  **per-scope index projections** bound to the canonical (tenant,
-  workspace, goal) scope win under the frozen 11-dimension rubric
-  (3.8299 vs shared-RLS 3.6203, per-variant cells); sensitivity 222
-  deterministic weight perturbations, zero winner flips. Evidence: 2
-  variants x 14 cases x 3 seeds x 2 executors = 168 runs on one frozen
-  contract/corpus/rubric (commit `e19ef427...`, dirty=false, distinct
-  executor identities); evaluator re-derived ISO1-ISO8 = 0 for both
-  honest variants from raw observations; deny bodies byte-identical
-  across all equivalence classes; probes A/B/C/D detected fail-closed
-  through real evaluator rules; bounded paired-interleaved timing probe
-  within the frozen tolerance. Limits: local model only; timing cannot
-  prove absence of all side channels; D9/D11 remain inference; profile
-  C stays S1-018, the <=5s revocation SLO stays S1-008. Migration
-  trigger away from per-scope projections requires documented
-  cross-scope ranked federation inside one trust boundary PLUS measured
-  maintenance evidence at equal ISO compliance; rollback is a
-  projection rebuild from the canonical object store.
+- **Status:** `PASS_WITH_LIMITS` - corrective round R3 recorded
+  2026-08-31 (research revision 6; closes all REVIEW_R1 and REVIEW_R2
+  P1 findings): goal `goal_MR6J7MCFXB9NVEPC01M1DA27F9`, evaluation
+  `reval_WPFWEVDDR5328VEY01M1DA27K9`, artifact chain `67384590...`
+  (full 64-hex value verified equal across record, canonical DB and
+  pack), tracked content-addressed evidence-pack/v3 `chain_fresh=true`
+  plus a bound raw-observations archive `f4729960...` (172 byte-exact
+  members: 168 run records + 2 manifests + 2 timing artifacts; archive
+  sha256 carried inside the bundle as source RAW-OBSERVATIONS / claim
+  c8-raw-archive and asserted by the clean-clone probe). Dependency
+  gate proved S1-003 (rev 24, pass) and S1-005 (rev 7,
+  pass_with_limits). Decision: **per-scope index projections** bound to
+  the canonical (tenant, workspace, goal) scope win under the frozen
+  11-dimension rubric (3.8503 vs shared-RLS 3.5999, per-variant cells;
+  D10 uses the frozen inverse normalization - lower measured cost
+  scores strictly higher, per-component direction asserted).
+  Sensitivity: 222 executed weight perturbations, zero winner flips.
+  Evidence: 2 variants x 14 cases x 3 seeds x 2 executors = 168 runs on
+  one frozen contract/corpus/rubric; evaluator re-derived ISO1-ISO8 = 0
+  for both honest variants; deny bodies byte-identical across all
+  equivalence classes; timing statistic/tolerance/verdict recomputed by
+  the evaluator from BOTH raw hash-bound arms (foreign-control
+  differences derived in-evaluator; disagreeing or missing derived
+  arrays fail closed); probes bound to the frozen A/B/C/D matrix and
+  detected fail-closed. Limits: local model only; timing cannot prove
+  absence of all side channels; D9/D11 remain inference; profile C
+  stays S1-018, the <=5s revocation SLO stays S1-008. Migration trigger
+  away from per-scope projections requires documented cross-scope
+  ranked federation inside one trust boundary PLUS measured maintenance
+  evidence at equal ISO compliance; rollback is a projection rebuild
+  from the canonical object store.
 - **Priority:** `P0`
 - **Wave:** `W2`
 - **Owner:** `security`
