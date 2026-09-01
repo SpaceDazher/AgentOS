@@ -147,12 +147,33 @@ def evaluate_run(manifest: dict[str, Any], raw_dir: str | Path) -> EvaluationRes
         "rubric_sha256": "rubric.json",
         "fixtures_sha256": "fixtures.json",
         "corpus_manifest_sha256": "corpus-manifest.json",
+        "threat_model_sha256": "threat-model.json",
     }
+
+    # S1-008 frozen artifacts directory
+    _BASE = Path(__file__).resolve().parent
+
     missing = [k for k in required_shas if not manifest.get(k)]
     if missing:
         result.fail(f"missing frozen artifact SHA-256 binding in manifest: {missing}")
     else:
-        result.ok("all frozen artifact SHA-256 bindings present")
+        # Verify SHA matches the actual file on disk
+        hash_mismatches = []
+        for manifest_key, filename in required_shas.items():
+            declared_sha = manifest.get(manifest_key, "")
+            file_path = _BASE / filename
+            if not file_path.exists():
+                result.fail(f"frozen artifact file missing on disk: {filename}")
+                continue
+            actual_sha = hashlib.sha256(file_path.read_bytes()).hexdigest()
+            if actual_sha != declared_sha:
+                hash_mismatches.append(f"{filename}: manifest={declared_sha[:16]}… disk={actual_sha[:16]}…")
+
+        if hash_mismatches:
+            for m in hash_mismatches:
+                result.fail(f"frozen artifact SHA mismatch: {m}")
+        else:
+            result.ok("all frozen artifact SHA-256 verified against disk")
 
     # --- Check dirty flag ---
     if manifest.get("dirty", True) is not False:
@@ -167,9 +188,7 @@ def evaluate_run(manifest: dict[str, Any], raw_dir: str | Path) -> EvaluationRes
     else:
         result.ok(f"executor_id present: {exec_id}")
 
-    # --- Load raw traces ---
-    mandatory_traces = []
-    probe_traces = []
+    # --- Load raw traces ---\n    \n    mandatory_traces = []\n    probe_traces = []\n    fault_traces = []
     try:
         all_traces = load_raw_traces(raw_dir)
     except (FileNotFoundError, ValueError) as e:
@@ -181,11 +200,14 @@ def evaluate_run(manifest: dict[str, Any], raw_dir: str | Path) -> EvaluationRes
         scenario = t.get("scenario", "")
         if "PROBE-" in scenario:
             probe_traces.append(t)
-        else:
-            mandatory_traces.append(t)
+            continue
+        if scenario.startswith("fault-"):
+            fault_traces.append(t)
+            continue
+        mandatory_traces.append(t)
 
     result.ok(f"loaded {len(all_traces)} raw traces "
-              f"({len(mandatory_traces)} mandatory, {len(probe_traces)} probe)")
+              f"({len(mandatory_traces)} mandatory, {len(fault_traces)} fault, {len(probe_traces)} probe)")
 
     # --- Verify hash binding on every trace ---
     hash_failures = 0
@@ -197,9 +219,9 @@ def evaluate_run(manifest: dict[str, Any], raw_dir: str | Path) -> EvaluationRes
     else:
         result.ok(f"all {len(all_traces)} traces pass hash binding verification")
 
-    # --- Recompute hard counters from MANDATORY traces ---
+    # --- Recompute hard counters from MANDATORY + fault traces ---
     recomputed = {k: 0 for k in HARD_COUNTERS}
-    for t in mandatory_traces:
+    for t in mandatory_traces + fault_traces:
         for k in HARD_COUNTERS:
             recomputed[k] += t.get(k, 0) or 0
 
@@ -227,28 +249,64 @@ def evaluate_run(manifest: dict[str, Any], raw_dir: str | Path) -> EvaluationRes
     else:
         result.ok(f"mandatory trials = {mandatory_count} >= 100")
 
-    # --- Check matrix coverage: all 4 paths present ---
-    paths_seen = set(t.get("path", "") for t in mandatory_traces)
+    # --- Check exact matrix cross-product coverage ---
+    # Required: 4 paths × 2 cache × 3 loads × 3 seeds = 72 unique combinations
     required_paths = {"gateway", "retrieval", "delegation", "projection"}
-    missing_paths = required_paths - paths_seen
-    if missing_paths:
-        result.fail(f"missing enforcement paths in mandatory trials: {missing_paths}")
-    else:
-        result.ok(f"all 4 enforcement paths present: {paths_seen}")
+    required_cache = {"cold", "warm"}
+    required_loads = {"idle", "steady", "burst"}
+    required_seeds = {"seed11", "seed12", "seed13"}
 
-    # --- Check cache states: cold and warm ---
-    cache_states = set(t.get("cache_state", "") for t in mandatory_traces)
-    if "cold" not in cache_states or "warm" not in cache_states:
-        result.fail(f"missing cache states: {cache_states}")
-    else:
-        result.ok(f"cache states present: {cache_states}")
+    # Build set of (path, cache_state, load, seed) tuples from mandatory traces
+    seen_cells: set[tuple[str, str, str, str]] = set()
+    for t in mandatory_traces:
+        cell = (
+            t.get("path", ""),
+            t.get("cache_state", ""),
+            t.get("load", ""),
+            t.get("seed", ""),
+        )
+        seen_cells.add(cell)
 
-    # --- Check loads: idle, steady, burst ---
-    loads = set(t.get("load", "") for t in mandatory_traces)
-    if "idle" not in loads or "steady" not in loads or "burst" not in loads:
-        result.fail(f"missing load states: {loads}")
+    # Generate all expected combinations
+    expected_cells = {
+        (p, c, l, s)
+        for p in required_paths
+        for c in required_cache
+        for l in required_loads
+        for s in required_seeds
+    }
+
+    expected_count = len(expected_cells)  # Should be 72
+    missing_cells = expected_cells - seen_cells
+    extra_cells = seen_cells - expected_cells
+
+    if missing_cells:
+        result.fail(f"missing {len(missing_cells)}/{expected_count} matrix cells: "
+                     f"{sorted(missing_cells)[:5]}...")
+    elif extra_cells:
+        result.fail(f"unexpected {len(extra_cells)} matrix cells (not in frozen contract): "
+                     f"{sorted(extra_cells)[:5]}...")
     else:
-        result.ok(f"load states present: {loads}")
+        result.ok(f"exact matrix cross-product verified: {expected_count} cells present")
+
+    # Check for duplicate/underpopulated cells — each cell must have
+    # exactly trials_per_scenario_seed trials (no more, no less)
+    trials_per = 5
+    cell_counts: dict[tuple, int] = {}
+    for t in mandatory_traces:
+        cell = (
+            t.get("path", ""),
+            t.get("cache_state", ""),
+            t.get("load", ""),
+            t.get("seed", ""),
+        )
+        cell_counts[cell] = cell_counts.get(cell, 0) + 1
+    underpopulated = {k: v for k, v in cell_counts.items() if v < trials_per}
+    duplicates = {k: v for k, v in cell_counts.items() if v > trials_per}
+    if underpopulated:
+        result.fail(f"underpopulated matrix cells (expected {trials_per} each): {underpopulated}")
+    if duplicates:
+        result.fail(f"overpopulated matrix cells (expected {trials_per} each): {duplicates}")
 
     # --- Recompute latency from raw timestamps ---
     # Only DENY decisions count toward latency (matching runner logic)

@@ -587,6 +587,7 @@ def load_fixtures() -> list[Scenario]:
             path=fx["path"],
             cache_state=fx["cache_state"],
             load=fx["load"],
+            seed="base",
             grant_id=grant_id,
             parent_grant_id=parent_id,
             parent_revoked=False,  # honest: revoke child grant, not parent
@@ -624,7 +625,7 @@ def load_fixtures() -> list[Scenario]:
 # Open-loop probe scenarios
 # ---------------------------------------------------------------------------
 
-def _probe_allow_after_commit(scenarios: list[Scenario], seed: int,
+def _probe_allow_after_commit(base_scenarios: list[Scenario], seed: int,
                               tracker: RevocationTracker, cache: Cache,
                               project: ProjectionIndex, component: ComponentState,
                               rng: random.Random) -> list[dict[str, Any]]:
@@ -634,46 +635,47 @@ def _probe_allow_after_commit(scenarios: list[Scenario], seed: int,
     (the vulnerability being tested). The evaluator must detect this as FAIL.
     """
     traces = []
-    for sc in scenarios[:3]:  # use a few scenarios
-        # Don't invalidate cache (simulating the bug)
-        version = tracker.durable_commit(sc.grant_id, parent=sc.parent_revoked)
-        ctx = EnforcementContext(
-            component=sc.path, cache_state="warm",
-            load=sc.load, grant_id=sc.grant_id, parent_grant_id=sc.parent_grant_id
-        )
-        # Pre-populate stale cache
-        cache.set(sc.grant_id, {"allowed": True}, epoch=tracker.revocation_epoch - 1,
-                  version=f"rev-{tracker.commit_counter - 1}")
-        decision, reason = _call_authorize_vulnerable(sc.path, tracker, cache, project, ctx)
-        t_decision = perf_ns()
-        allow_after_commit = 1 if decision == "ALLOW" else 0
-        cache_entry_a = cache.get(sc.grant_id)
-        epoch_regression = 1 if cache_entry_a and cache_entry_a.get("epoch", 0) < tracker.revocation_epoch else 0
-        trace = {
-            "trial_id": f"PROBE-A-{sc.fixture_id}-seed{seed}",
-            "scenario": "PROBE-A-allow-after-commit",
-            "path": sc.path,
-            "cache_state": "warm",
-            "load": sc.load,
-            "seed": f"seed{seed}",
-            "grant_id": sc.grant_id,
-            "revocation_version": version,
-            "t_commit_monotonic_ns": tracker.t_commit_ns,
-            "t_decision_monotonic_ns": t_decision,
-            "latency_ms": round((t_decision - tracker.t_commit_ns) / 1_000_000, 3),
-            "decision": decision,
-            "deny_reason": reason if decision == "DENY" else None,
-            "allow_after_commit": allow_after_commit,
-            "fault_mode": "stale_cache_no_invalidation",
-            "epoch_regression": epoch_regression,
-            "raw_trace_sha256": "",
-        }
-        trace["raw_trace_sha256"] = sha256_text(canonical_json({k: v for k, v in trace.items() if k != "raw_trace_sha256"}))
-        traces.append(trace)
+    sc = base_scenarios[0]  # gateway — canonical path
+    sc_seed = f"seed{seed}"
+    # Don't invalidate cache (simulating the bug)
+    version = tracker.durable_commit(sc.grant_id, parent=sc.parent_revoked)
+    ctx = EnforcementContext(
+        component=sc.path, cache_state="warm",
+        load=sc.load, grant_id=sc.grant_id, parent_grant_id=sc.parent_grant_id
+    )
+    # Pre-populate stale cache
+    cache.set(sc.grant_id, {"allowed": True}, epoch=tracker.revocation_epoch - 1,
+              version=f"rev-{tracker.commit_counter - 1}")
+    decision, reason = _call_authorize_vulnerable(sc.path, tracker, cache, project, ctx)
+    t_decision = perf_ns()
+    allow_after_commit = 1 if decision == "ALLOW" else 0
+    cache_entry_a = cache.get(sc.grant_id)
+    epoch_regression = 1 if cache_entry_a and cache_entry_a.get("epoch", 0) < tracker.revocation_epoch else 0
+    trace = {
+        "trial_id": f"PROBE-A-{sc.fixture_id}-{sc_seed}",
+        "scenario": "PROBE-A-allow-after-commit",
+        "path": sc.path,
+        "cache_state": "warm",
+        "load": sc.load,
+        "seed": sc_seed,
+        "grant_id": sc.grant_id,
+        "revocation_version": version,
+        "t_commit_monotonic_ns": tracker.t_commit_ns,
+        "t_decision_monotonic_ns": t_decision,
+        "latency_ms": round((t_decision - tracker.t_commit_ns) / 1_000_000, 3),
+        "decision": decision,
+        "deny_reason": reason if decision == "DENY" else None,
+        "allow_after_commit": allow_after_commit,
+        "fault_mode": "stale_cache_no_invalidation",
+        "epoch_regression": epoch_regression,
+        "raw_trace_sha256": "",
+    }
+    trace["raw_trace_sha256"] = sha256_text(canonical_json({k: v for k, v in trace.items() if k != "raw_trace_sha256"}))
+    traces.append(trace)
     return traces
 
 
-def _probe_dropped_hop(scenarios: list[Scenario], seed: int,
+def _probe_dropped_hop(base_scenarios: list[Scenario], seed: int,
                        tracker: RevocationTracker, cache: Cache,
                        project: ProjectionIndex, component: ComponentState,
                        rng: random.Random) -> list[dict[str, Any]]:
@@ -683,7 +685,8 @@ def _probe_dropped_hop(scenarios: list[Scenario], seed: int,
     The evaluator must recover from raw traces and fail.
     """
     traces = []
-    sc = scenarios[0]
+    sc = base_scenarios[0]
+    sc_seed = f"seed{seed}"
     version = tracker.durable_commit(sc.grant_id, parent=sc.parent_revoked)
     # Don't invalidate cache (simulating dropped hop)
     ctx = EnforcementContext(
@@ -695,12 +698,12 @@ def _probe_dropped_hop(scenarios: list[Scenario], seed: int,
     t_decision = perf_ns()
     decision, reason = _call_authorize_vulnerable(sc.path, tracker, cache, project, ctx)
     trace = {
-        "trial_id": f"PROBE-B-{sc.fixture_id}-seed{seed}",
+        "trial_id": f"PROBE-B-{sc.fixture_id}-{sc_seed}",
         "scenario": "PROBE-B-dropped-hop",
         "path": sc.path,
         "cache_state": "warm",
         "load": sc.load,
-        "seed": f"seed{seed}",
+        "seed": sc_seed,
         "grant_id": sc.grant_id,
         "revocation_version": version,
         "t_commit_monotonic_ns": tracker.t_commit_ns,
@@ -885,6 +888,12 @@ def run_execution(run_label: str, output_dir: Path, *, seeds: list[int] = [11, 2
     env = environment_manifest()
     env_hash = environment_hash(env)
     scenarios = load_fixtures()
+    # Build base scenarios (one per path) for probe functions
+    base_by_path = {}
+    for sc in scenarios:
+        if sc.path not in base_by_path:
+            base_by_path[sc.path] = sc
+    base_scenarios = [base_by_path[p] for p in ["gateway", "retrieval", "delegation", "projection"]]
     all_traces: list[dict[str, Any]] = []
     output_dir.mkdir(parents=True, exist_ok=True)
     raw_dir = output_dir / "raw-traces"
@@ -944,8 +953,8 @@ def run_execution(run_label: str, output_dir: Path, *, seeds: list[int] = [11, 2
         cache = Cache(f"probe-cache-{seed}")
         project = ProjectionIndex()
         component = ComponentState(name="probe")
-        all_traces.extend(_probe_allow_after_commit(scenarios, seed, tracker, cache, project, component, rng))
-        all_traces.extend(_probe_dropped_hop(scenarios, seed, tracker, cache, project, component, rng))
+        all_traces.extend(_probe_allow_after_commit(base_scenarios, seed, tracker, cache, project, component, rng))
+        all_traces.extend(_probe_dropped_hop(base_scenarios, seed, tracker, cache, project, component, rng))
         all_traces.extend(_probe_forged_timestamps(seed, tracker))
         tracker2 = RevocationTracker()
         all_traces.extend(_probe_cache_resurrection(seed, tracker2, Cache("restart"), project))
@@ -1059,7 +1068,7 @@ def run_execution(run_label: str, output_dir: Path, *, seeds: list[int] = [11, 2
             "F": {"description": "censored-slow-tail", "trials": sum(1 for t in all_traces if "PROBE-F" in t.get("scenario",""))},
         },
         "raw_trace_count": total_trials,
-        "raw_trace_dir": str(raw_dir.relative_to(_REPO_ROOT)),
+        "raw_trace_dir": str(raw_dir.relative_to(_REPO_ROOT)).replace("\\", "/"),
     }
     manifest_path = output_dir / "manifest.json"
     manifest_path.write_text(_canonical_json(manifest) + "\n", encoding="utf-8")
