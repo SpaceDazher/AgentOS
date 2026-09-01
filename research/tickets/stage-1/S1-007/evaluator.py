@@ -1352,7 +1352,7 @@ def evaluate(runs_manifest: Path, rerun_manifest: Path,
                     "missing_evidence": raw_cell.get("missing_evidence")}
                 if "components" in raw_cell:
                     cell_info["components"] = raw_cell["components"]
-            decision_matrix.append({
+            appended = {
                 "dimension": c["id"] + " " + c["name"],
                 "variant": variant,
                 "weight": c["weight"],
@@ -1361,7 +1361,10 @@ def evaluate(runs_manifest: Path, rerun_manifest: Path,
                 "confidence": cell_info["confidence"],
                 "evidence_refs": cell_info["evidence_refs"],
                 "limitation": cell_info.get("limitation"),
-                "missing_evidence": cell_info.get("missing_evidence")})
+                "missing_evidence": cell_info.get("missing_evidence")}
+            if "components" in cell_info:
+                appended["components"] = cell_info["components"]
+            decision_matrix.append(appended)
 
     result = {
         "schema": SCHEMA_EVAL,
