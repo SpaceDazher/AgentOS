@@ -61,6 +61,7 @@ def _load_ticket_module(name: str):
 
 runner = _load_ticket_module("runner")
 evaluator = _load_ticket_module("evaluator")
+finalize_record = _load_ticket_module("finalize_record")
 
 
 def sha(data: bytes) -> str:
@@ -1005,6 +1006,79 @@ class TestReviewR2Corrections(unittest.TestCase):
         self.assertIsInstance(wc["links_checked"], int)
         self.assertGreater(wc["files"], 0)
         self.assertGreater(wc["links_checked"], 0)
+
+
+class TestReviewR3Corrections(unittest.TestCase):
+    """Regressions for the independent R3-final review findings."""
+
+    def test_record_decision_matches_current_evaluator_and_pack(self):
+        """The final record must never retain scores from a superseded
+        evaluator result when canonical bundle/pack evidence has changed."""
+        record = json.loads((S1007 / "evaluation-record.json")
+                            .read_text(encoding="utf-8"))
+        evaluation = json.loads((S1007 / "results" /
+                                 "sensitivity-analysis.json")
+                                .read_text(encoding="utf-8"))
+        pack = json.loads((ROOT / record["evidence_pack"]["path"])
+                          .read_text(encoding="utf-8"))
+        self.assertEqual(record["decision"]["scores_normalized"],
+                         evaluation["scores_normalized"])
+        self.assertEqual(record["decision"]["winner"],
+                         evaluation["winner"])
+        sensitivity = record["decision"]["sensitivity"]
+        self.assertEqual(sensitivity["total_perturbations_executed"],
+                         evaluation["sensitivity"]
+                         ["total_perturbations_executed"])
+        self.assertEqual(sensitivity["flip_count"],
+                         evaluation["sensitivity"]["flip_count"])
+        decision_claims = [
+            c["text"] for c in pack["research"]["claims"]
+            if "QA3 decision:" in c["text"]]
+        self.assertEqual(len(decision_claims), 1)
+        for value in evaluation["scores_normalized"].values():
+            self.assertIn(f"{value:.4f}", decision_claims[0])
+
+    def test_finalizer_rejects_archive_not_bound_by_bundle_and_pack(self):
+        """The finalizer itself, not only an after-the-fact test, must
+        reject a local archive whose structured binding differs from the
+        bundle or canonical pack."""
+        record = json.loads((S1007 / "evaluation-record.json")
+                            .read_text(encoding="utf-8"))
+        pack = json.loads((ROOT / record["evidence_pack"]["path"])
+                          .read_text(encoding="utf-8"))
+        bundle = json.loads((S1007 / "bundle.json")
+                            .read_text(encoding="utf-8"))
+        resolved = finalize_record.resolve_archive_binding(pack, bundle)
+        self.assertEqual(resolved["sha256"],
+                         record["raw_observations_archive"]["sha256"])
+        tampered = json.loads(json.dumps(pack))
+        sources = [s for s in tampered["research"]["sources"]
+                   if s.get("verification_method") ==
+                   "content-addressed-archive-sha256-binding"]
+        self.assertEqual(len(sources), 1)
+        sources[0]["verifier_provenance"]["file_sha256"] = "0" * 64
+        with self.assertRaises(SystemExit):
+            finalize_record.resolve_archive_binding(tampered, bundle)
+
+    def test_record_timestamp_is_canonical_and_monotonic(self):
+        """recorded_at must be generated/validated as UTC and cannot
+        predate the canonical evaluation that the record describes."""
+        from datetime import datetime
+        import sqlite3
+
+        record = json.loads((S1007 / "evaluation-record.json")
+                            .read_text(encoding="utf-8"))
+        c = sqlite3.connect(
+            ROOT / ".agentos-research/platform-stage-1/agentos.db")
+        created_at = c.execute(
+            "SELECT created_at FROM research_evaluation WHERE id=?",
+            (record["evaluation_id"],)).fetchone()[0]
+        c.close()
+        recorded = datetime.fromisoformat(
+            record["recorded_at"].replace("Z", "+00:00"))
+        evaluated = datetime.fromisoformat(
+            created_at.replace("Z", "+00:00"))
+        self.assertGreaterEqual(recorded, evaluated)
 
 
 class TestFrozenContracts(unittest.TestCase):

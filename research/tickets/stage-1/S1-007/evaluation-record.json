@@ -1,10 +1,10 @@
 {
   "schema": "agentos.ticket-evaluation-record/v1",
   "ticket_id": "S1-007",
-  "recorded_at": "2026-08-31T14:40:00Z",
+  "recorded_at": "2026-09-01T02:43:32.994Z",
   "db_root": ".agentos-research/platform-stage-1",
   "research_revision": 6,
-  "recorded_corrective_round": "R3-final (REVIEW_R2 findings 1-5 closed)",
+  "recorded_corrective_round": "R4-tooling-validation",
   "campaign_id": "rcamp_V4JSCTEXDPQZ91K201M1DA27F9",
   "goal_id": "goal_MR6J7MCFXB9NVEPC01M1DA27F9",
   "evaluation_id": "reval_WPFWEVDDR5328VEY01M1DA27K9",
@@ -35,17 +35,78 @@
   },
   "decision": {
     "question": "QA3 retrieval/index isolation: per-scope index versus shared index with row-level retrieval filtering (shared-RLS)",
+    "winner": "per_scope",
     "recommendation": "per-scope index projections bound to the canonical (tenant, workspace, goal) scope with frozen cache/epoch invalidation semantics",
     "scores_normalized": {
-      "per_scope": 3.8299,
-      "shared_rls": 3.6203
+      "per_scope": 3.8503,
+      "shared_rls": 3.5999
     },
-    "sensitivity": "222 deterministic weight perturbations executed (22 one-at-a-time dims x +-50% renormalized + 200 seeded random vectors, seed 42); zero winner flips; weights-only policy (all scored cells measured)",
+    "sensitivity": {
+      "total_perturbations_executed": 222,
+      "oat_perturbations_executed": 22,
+      "random_vectors": 200,
+      "random_seed": 42,
+      "flip_count": 0,
+      "winner_stable": true,
+      "policy": "weights-only perturbation; every scored cell was a measured number, so no unknown-bound swing applies (unknown-bound analysis would activate only if a cell scored NO_DATA)"
+    },
     "probes": {
-      "A_existence_oracle": "FAIL detected - deny detail distinguishes foreign id from nonexistent control (ISO2); probe bound to frozen candidate/cases/seeds/run-ids",
-      "B_stale_cache": "FAIL detected - cache hit without revalidation serves revoked content (ISO3+ISO4)",
-      "C_postfilter": "FAIL detected - pre-policy aggregate count/rank/snippet leak (ISO2)",
-      "D_forged_scope_provenance_loss": "FAIL+INCOMPARABLE detected - caller-supplied scope accepted (ISO7); provenance-dropping projection unverifiable (ISO5)"
+      "A_existence_oracle": {
+        "detected": "FAIL",
+        "expected": "FAIL",
+        "iso": {
+          "ISO1": 0,
+          "ISO2": 2,
+          "ISO3": 0,
+          "ISO4": 0,
+          "ISO5": 0,
+          "ISO6": 0,
+          "ISO7": 0,
+          "ISO8": 0
+        }
+      },
+      "B_stale_cache": {
+        "detected": "FAIL",
+        "expected": "FAIL",
+        "iso": {
+          "ISO1": 0,
+          "ISO2": 0,
+          "ISO3": 1,
+          "ISO4": 1,
+          "ISO5": 0,
+          "ISO6": 0,
+          "ISO7": 0,
+          "ISO8": 0
+        }
+      },
+      "C_postfilter": {
+        "detected": "FAIL",
+        "expected": "FAIL",
+        "iso": {
+          "ISO1": 0,
+          "ISO2": 36,
+          "ISO3": 0,
+          "ISO4": 0,
+          "ISO5": 0,
+          "ISO6": 0,
+          "ISO7": 0,
+          "ISO8": 0
+        }
+      },
+      "D_forged_scope_provenance_loss": {
+        "detected": "FAIL+INCOMPARABLE",
+        "expected": "FAIL+INCOMPARABLE",
+        "iso": {
+          "ISO1": 0,
+          "ISO2": 0,
+          "ISO3": 0,
+          "ISO4": 1,
+          "ISO5": 4,
+          "ISO6": 0,
+          "ISO7": 1,
+          "ISO8": 0
+        }
+      }
     },
     "per_variant_evidence": {
       "D6_blast_radius": "per_scope 4.0 (worst single fault: one misfiled projection entry, 1/3 scopes) vs shared_rls 3.25 (predicate bypass exposes 2/3 scopes + corrupt entry 1/3); cells cite distinct per-variant fault data",
@@ -53,7 +114,12 @@
       "timing": "statistic, tolerance and verdict recomputed by the evaluator from raw hash-bound paired samples of BOTH executions; producer summaries ignored"
     },
     "migration_trigger": "away from per-scope projections only when a documented need for cross-scope ranked federation inside ONE trust boundary coincides with measured evidence that per-scope projection maintenance exceeds a shared predicate layer at equal ISO1-ISO8 compliance; rollback is symmetric (rebuild projections from the canonical object store)",
-    "non_goals": "no production search service/vendor choice, no ranking optimization, no profile-C MLS/TEE rollout (S1-018), no <=5s revocation SLO claim (S1-008), no core AgentOS rewrites"
+    "non_goals": "no production search service/vendor choice, no ranking optimization, no profile-C MLS/TEE rollout (S1-018), no <=5s revocation SLO claim (S1-008), no core AgentOS rewrites",
+    "source": {
+      "path": "research/tickets/stage-1/S1-007/results/sensitivity-analysis.json",
+      "sha256": "450b62a99cc345202d74a20defd663d750aa8f5d4b52a450aa372ff07901adaf",
+      "pack_claim_id": "rclm_1J58WJCR3YHJEETH01M1DA27F2"
+    }
   },
   "limitations": [
     "All results are local-model measurements from a deterministic stdlib-only simulation; no production latency, storage or privacy certification is claimed.",
@@ -63,6 +129,8 @@
     "S1-003 and S1-005 evidence is reused only within its stated limits (see dependency-gate.json).",
     "Producer and verifier labels are process-separated roles in one local environment, not external human auditors."
   ],
-  "note": "research-plan PASS_WITH_LIMITS is a research evaluation; it never sets Goal ACCEPTED (release gate only). Revision 6 (R3-final) supersedes revisions 1-5 after the REVIEW_R2 corrective round; all evaluator corrections included, executed on a clean committed tree (see results/ENVIRONMENT.md).",
-  "executed_at_commit": "b331ab876051d511ebb4da50e9bb64f3032f3f95"
+  "note": "Interim programmatic record used to validate REVIEW_R3 finalizer corrections before the fresh frozen run.",
+  "executed_at_commit": "8efcdda8edabe57c324e08907610bf5afe1b658f",
+  "experiment_commit": "8efcdda8edabe57c324e08907610bf5afe1b658f",
+  "record_finalized_from_commit": "83f798246a6441791fa5a56b37e8c0e75ebff13d"
 }
