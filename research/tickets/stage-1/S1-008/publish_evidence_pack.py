@@ -127,9 +127,12 @@ def build_evidence_pack(bundle: dict) -> dict:
         "comparison": bundle.get("comparison", {}),
     }
 
-    # Compute pack_sha256 over the canonical serialization that will be written
-    pack_json = _canonical_pack_json(pack)
-    pack["pack_sha256"] = sha256_text(pack_json)
+    # Compute pack_sha256: hash the canonical JSON with pack_sha256 as ""
+    # (self-hash — pack_sha256 field carries its own value, not the hash
+    # of the bytes that include it). The file name IS pack_sha256.
+    pack["pack_sha256"] = ""
+    canonical = _canonical_pack_json(pack)
+    pack["pack_sha256"] = sha256_text(canonical)
 
     return pack
 
@@ -150,28 +153,29 @@ def main() -> int:
     out_dir = Path(args.output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    # Serialize pack as canonical JSON (same bytes used for pack_sha256)
-    pack_json_bytes = _canonical_pack_json(pack).encode("utf-8")
-
-    # Content-addressed filename using the exact bytes that will be written
-    pack_hash = sha256_text(pack_json_bytes.decode("utf-8"))
+    # The pack_sha256 was computed over canonical JSON with pack_sha256="".
+    # File name is content-addressed by pack_sha256.
+    pack_hash = pack["pack_sha256"]
     pack_path = out_dir / f"evidence-pack-{pack_hash}.json"
+
+    # Serialize pack WITH pack_sha256 set (same canonical format)
+    pack_json_bytes = _canonical_pack_json(pack).encode("utf-8")
     pack_path.write_bytes(pack_json_bytes)
 
-    # Verify the written file hash matches the filename
-    written_hash = _file_sha256(pack_path)
+    # Self-hash verification: strip pack_sha256, recompute, compare
+    written_pack = json.loads(pack_path.read_text(encoding="utf-8"))
+    written_pack["pack_sha256"] = ""
+    written_canonical = _canonical_pack_json(written_pack)
+    written_hash = sha256_text(written_canonical)
     if written_hash != pack_hash:
-        print(f"ERROR: pack file hash mismatch: file={written_hash} computed={pack_hash}",
-              file=sys.stderr)
-        return 1
-
-    if written_hash != pack["pack_sha256"]:
-        print(f"ERROR: pack_sha256 mismatch: file={written_hash} recorded={pack['pack_sha256']}",
+        print(f"ERROR: pack self-hash mismatch: file={written_hash} recorded={pack_hash}",
               file=sys.stderr)
         return 1
 
     # Also write raw observations archive (content-addressed by its own SHA)
     raw_a_dir = Path(bundle.get("artifacts", {}).get("raw_a", {}).get("path", ""))
+    if not raw_a_dir.is_absolute():
+        raw_a_dir = _REPO_ROOT / raw_a_dir
     all_observations: dict = {}
     if raw_a_dir.exists():
         for f in sorted(raw_a_dir.rglob("*.json")):

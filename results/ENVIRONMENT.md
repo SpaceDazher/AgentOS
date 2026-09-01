@@ -1,30 +1,31 @@
 # S1-008 Environment Manifest
 
-## Runtime
-- Python: 3.11.15
-- OS: Windows 11
-- Platform: x86_64
-- Working directory: D:/Project/AgentOS
+## Platform
+- OS: Windows 10 (x64)
+- OS Build: 10.0.22631.n/A
+- Python: 3.11.15 (win_amd64)
+- Git: 2.x
 
-## Clock Model
-- Monotonic clock: `time.perf_counter()` for elapsed latency measurement
-- Wall clock: `datetime.now(timezone.utc)` for audit/provenance only (NOT used for latency)
-- Clock domain: monotonic (authoritative), UTC wall (audit only)
-- Precision: nanosecond
+## Measurement Environment
+- All measurements conducted on the same Windows host
+- No network partition isolation — revocation enforced via `RevocationTracker` (in-memory component-state map)
+- Cache implemented as in-process `Cache` class (no disk/network boundary)
+- Clock: monotonic for elapsed, UTC wall for audit (both from `time.perf_counter_ns` / `datetime.now(timezone.utc)`)
+- Jitter introduced by `random.Random(seed)` with fixed seeds 11, 22, 33
 
-## Environment Hash
-```
-env_sha256: computed from python version, OS, env vars, and runtime parameters
-```
+## Limitations (transferred from S1-002/PASS_WITH_LIMITS)
+- Same-host model-only: no production network/cache topology
+- Process-separated auditor: not an external audit firm
+- Local model cannot prove absence of all network/cache side channels
 
-## Environment Variables
-- PYTHONPATH: src
-- No network dependencies (stdlib only)
+## Run Parameters
+- Matrix: 4 paths × 2 cache × 3 loads × 3 seeds = 72 observations
+- Trials per observation: 5
+- Mandatory trials: 360 (72 × 5)
+- Fault trials: 24 (8 fault modes × 3 seeds)
+- Probe trials: 18 (6 probe types × 3 seeds)
+- Total trials per run: 402
 
-## Executor Identities
-- Run A: executor-run-a
-- Run B: executor-run-b
-
-## Output Roots
-- Run A: results/run-a/
-- Run B: results/run-b/
+## Commit
+- git_commit: d5743e5 (evaluator.py percentile fix)
+- dirty: False (runner committed before measurement)

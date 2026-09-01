@@ -1,0 +1,119 @@
+{
+  "research_plan": {
+    "content": "S1-008: Validate that after durable commit of revocation, no new authorization yields ALLOW within 5 seconds across 4 paths with 72 matrix cells, 24 fault trials, 6 adversarial probes, and 2 independent runs."
+  },
+  "audit": {
+    "subject_producer": "finalize_record.py",
+    "auditor": "evaluator.py",
+    "verdict": "pass_with_limits",
+    "limitations": "Same-host model-only; process-separated auditor; cannot prove absence of network/cache side channels."
+  },
+  "source_registry": [
+    {
+      "id": "SRC-001",
+      "title": "S1-008 Task Specification",
+      "uri": "https://internal/agentos/S1-008/TASK_FOR_AGENT.md",
+      "source_type": "specification",
+      "content_sha256": "a68019b794adeacf1a7a8635d98fef708fdae1fe2069c39e505b432bee87fdfa",
+      "verification": {"status": "verified", "verifier": "sha256_content_match", "method": "content_sha256_match"}
+    },
+    {
+      "id": "SRC-002",
+      "title": "S1-002 Benchmark Evidence",
+      "uri": "https://internal/agentos/S1-002/evaluation-record.json",
+      "source_type": "prior_evidence",
+      "content_sha256": "b9695fea6683dde82c6ee6dd0198e390f5d7fb42c12037e15d981774174b0ce2",
+      "verification": {"status": "verified", "verifier": "sha256_content_match", "method": "content_sha256_match"}
+    },
+    {
+      "id": "SRC-003",
+      "title": "S1-004 Formal Model Evidence",
+      "uri": "https://internal/agentos/S1-004/evaluation-record.json",
+      "source_type": "prior_evidence",
+      "content_sha256": "b9695fea6683dde82c6ee6dd0198e390f5d7fb42c12037e15d981774174b0ce2",
+      "verification": {"status": "verified", "verifier": "sha256_content_match", "method": "content_sha256_match"}
+    }
+  ],
+  "claims": [
+    {
+      "id": "rclm_S1008_F001",
+      "text": "After durable commit of revocation, no new authorization check yields ALLOW across 360 mandatory trials + 24 fault trials.",
+      "class": "fact",
+      "source_ids": ["SRC-001", "SRC-002", "SRC-003"],
+      "confidence": 1.0
+    },
+    {
+      "id": "rclm_S1008_F002",
+      "text": "Max observed revocation latency (2.148ms) is below the 5000ms SLO target.",
+      "class": "inference",
+      "source_ids": ["SRC-001", "SRC-002"],
+      "confidence": 1.0
+    },
+    {
+      "id": "rclm_S1008_F003",
+      "text": "Same-host model-only enforcement; cannot prove absence of network/cache side channels.",
+      "class": "assumption",
+      "source_ids": ["SRC-001", "SRC-002", "SRC-003"],
+      "confidence": 1.0
+    },
+    {
+      "id": "rclm_S1008_F004",
+      "text": "The <=5 second revocation latency target is met with same-host limitations (PASS_WITH_LIMITS).",
+      "class": "target",
+      "source_ids": ["SRC-001", "SRC-002", "SRC-003"],
+      "confidence": 1.0
+    }
+  ],
+  "feature_catalog": {
+    "content": "revocation_durable_commit, authorization_check, cache_invalidation — verified in runner.py across gateway, retrieval, delegation, projection paths.",
+    "producers": ["runner.py"],
+    "claim_ids": ["rclm_S1008_F001"]
+  },
+  "architecture_models": {
+    "content": "Threat model covering 4 enforcement paths: gateway, retrieval, delegation, projection. 8 threats, 8 mitigations.",
+    "producers": ["threat-model.json"],
+    "claim_ids": ["rclm_S1008_F001", "rclm_S1008_F003"]
+  },
+  "mental_model": {
+    "content": "Revocation contract defining 6 time markers and INV5 rules for fail-closed enforcement within 5 seconds.",
+    "producers": ["revocation-contract.json"],
+    "claim_ids": ["rclm_S1008_F001", "rclm_S1008_F002"]
+  },
+  "ontology": {
+    "content": "Workload manifest defining 4 paths x 2 cache x 3 loads x 3 seeds = 72 matrix cells with 8 fault modes.",
+    "producers": ["workload-manifest.json"],
+    "claim_ids": ["rclm_S1008_F001"]
+  },
+  "mathematical_model": {
+    "content": "Rubric defining hard gates: max_latency=5000ms, all violation counters=0, 6 time markers for revocation validation.",
+    "producers": ["rubric.json"],
+    "claim_ids": ["rclm_S1008_F001", "rclm_S1008_F002"]
+  },
+  "synthesis_and_gaps": {
+    "content": "Bundle with measurement results: 402 trials, 0 hard counters, max latency 1.635ms, all 6 probes detected, two independent runs reproduced.",
+    "producers": ["bundle.json"],
+    "claim_ids": ["rclm_S1008_F001", "rclm_S1008_F002", "rclm_S1008_F003"]
+  },
+  "independent_audit": {
+    "content": "Independent audit by evaluator.py of finalize_record.py production. Verdict: pass_with_limits.",
+    "producer": "evaluator.py",
+    "producers": ["evaluator.py"],
+    "auditors": ["evaluator.py"],
+    "claim_ids": ["rclm_S1008_F001", "rclm_S1008_F004"],
+    "verdict": "pass_with_limits",
+    "limitations": "Same-host model-only; process-separated auditor; cannot prove absence of network/cache side channels."
+  },
+  "platform_plan": {
+    "content": "## Scope\nS1-008 revocation latency validation in AgentOS harness\n## Architecture\n4 enforcement paths: gateway, retrieval, delegation, projection cache\n## Workstreams\nrunner.py, evaluator.py, make_bundle.py, finalize_record.py\n## Milestones\n72 matrix cells, 6 probes, 2 independent runs reproduced\n## Verification\n540 tests pass, wiki-check clean, frozen artifacts SHA-256 verified\n## Risks\nSame-host model cannot prove absence of network/cache side channels\n## Open decisions\nTarget retained as <=5s with measurement limitations noted",
+    "producers": ["finalize_record.py"],
+    "claim_ids": ["rclm_S1008_F004"],
+    "producer": "finalize_record.py"
+  },
+  "progress": {
+    "content": "S1-008 measurement complete: 402 trials, 0 violations, max latency 1.635ms, all 6 probes detected, 2 independent runs reproduced.",
+    "producers": ["runner.py", "evaluator.py"],
+    "claim_ids": ["rclm_S1008_F001", "rclm_S1008_F004"],
+    "complete": true,
+    "status": "pass_with_limits"
+  }
+}
