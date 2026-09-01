@@ -110,9 +110,9 @@ def _stats(vals: list[float]) -> dict[str, Any]:
     n = len(s)
 
     def pct(p: float) -> float:
-        # nearest-rank percentile (matches runner.py stats())
-        idx = min(int(n * p) - 1, n - 1)
-        return s[idx] if idx >= 0 else s[0]
+        # nearest-rank percentile (matches runner.py stats() exactly)
+        idx = min(int(n * p), n - 1)
+        return s[idx]
 
     return {
         "count": n,
