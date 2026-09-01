@@ -516,7 +516,7 @@ class TestISODerivation(unittest.TestCase):
         self.assertIn("NO_DATA", analysis)
         # a raw-sampled signal above tolerance is a finding, never a pass;
         # the statistic is recomputed from raw paired samples
-        raw_big = {"paired_diffs_ns": [50_000] * 600,
+        raw_big = {"foreign_samples_ns": [53_000] * 600,
                    "control_samples_ns": [3_000] * 600,
                    "seed_order": [101, 202, 303]}
         synthetic = {"methodology": {"sample_count": 200, "warmup": 20,
