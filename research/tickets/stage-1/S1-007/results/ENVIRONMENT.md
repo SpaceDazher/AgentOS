@@ -4,11 +4,11 @@
 - Rerun executor: `agentos-s1-007-independent-verifier` (separate subprocess and output directory)
 - Python: 3.12.6
 - Platform: Windows-11-10.0.22631-SP0
-- Commit: 52b7c998c0060dd6a9274f3c890753d938b565b7
-- Tree SHA: a307526afd0962e697fc7eee617ffbe504b1b29f
+- Commit: 8efcdda8edabe57c324e08907610bf5afe1b658f
+- Tree SHA: e3bcf5b293b93e309229f543bde98902c43b141a
 - Dirty tree: False
-- Environment hash (main): 782fa5e12389af0fb76baeae7045af88edfdc87dddf4ca2631c67c2a4162c8d9
-- Environment hash (rerun): 8aa0d36c8a742fb29e0ed80b2d2c7e9c64725baa424a3884f8589ea86ea4c7ea
+- Environment hash (main): d1239b02988306f91cf821a0e3d822ed3057b18b70e2abcf88ef80cd3f1e6602
+- Environment hash (rerun): 05285cfaebf91d769c08e2e8808936d618c4755c62a19fceca1b4cf6a2bb4d47
 
 ## Frozen input hashes (SHA-256)
 
@@ -22,7 +22,7 @@
 
 - bundle_content.py: a1b96fcb8e6a54655b54f565c30dac4b741e5daac6a3cf05f61e77b60501d636
 - dependency_gate.py: fd4e7cfa40ab60b9b6a9e680fdc44340b5a1ee06e7a4e19b4ffd13a7db013a34
-- evaluator.py: 527384ce7ad996af82b914a284fcb679458211688362bb92379d9a5142ef47e8
+- evaluator.py: a05d30a6521e71bbbab0345a2996795637da2eb01f8f9e82d82e4691d016d6fc
 - finalize_record.py: 4298cdb1a874041c48fb071bd35fd16ab3471a131e94a8734b0c8fa43b4a6f05
 - make_bundle.py: 6b4c4482e2bd0cf0bf5751d6c853cf1f57b75f912085d4a5a661282113478031
 - publish_evidence_pack.py: 7b4d2262ce32e6e66422a22f6a07be20504ef3fa916b25ce67aecfc7ff172ecd
@@ -35,7 +35,7 @@ py research/tickets/stage-1/S1-007/dependency_gate.py
 AGENTOS_EXECUTOR_ID=agentos-s1-007-producer py research/tickets/stage-1/S1-007/runner.py --mode main --out results/run-a   # exit 0
 AGENTOS_EXECUTOR_ID=agentos-s1-007-independent-verifier py research/tickets/stage-1/S1-007/runner.py --mode rerun --out results/run-b   # exit 0
 py research/tickets/stage-1/S1-007/runner.py --mode probes --out results   # exit 0
-AGENTOS_RUN_NONCE=s1-007-52b7c998c006-a4296bee05ee py research/tickets/stage-1/S1-007/evaluator.py ...   # exit 0
+AGENTOS_RUN_NONCE=s1-007-8efcdda8edab-57f087d489ea py research/tickets/stage-1/S1-007/evaluator.py ...   # exit 0
 py research/tickets/stage-1/S1-007/make_bundle.py   # orchestrates the above with exact-argument invocations
 ```
 
