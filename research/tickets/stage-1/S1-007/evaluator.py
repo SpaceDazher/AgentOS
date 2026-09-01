@@ -1032,10 +1032,12 @@ def evaluate_probes(probes: dict, oracle: Oracle,
     return rejections
 
 
-def recompute_timing(timing: dict, contract: dict) -> dict:
+def recompute_timing(timing: dict, contract: dict | None = None) -> dict:
     """Independently recompute the pooled paired statistic, tolerance and
     verdict from RAW paired samples per the frozen contract.  Producer
     summaries in the timing file are ignored."""
+    if not contract:
+        contract = load(TICKET / "isolation-contract.json")
     frozen = contract["timing_probe_contract"]
     tol_rule = frozen["tolerance"]
     out = {"frozen_methodology": {

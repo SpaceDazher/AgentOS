@@ -666,10 +666,12 @@ class TestReviewR1Corrections(unittest.TestCase):
                 member_bytes = archive["members"][member_name].encode("utf-8")
                 self.assertEqual(sha(member_bytes), entry["sha256"],
                                  member_name)
-        # (d) the tracked manifests equal the archived manifests
+        # (d) the tracked manifests are byte-identical to the archived
+        # members (both read raw, no newline translation)
         for which in ("run-a", "run-b"):
-            disk = (S1007 / "results" / which / "run-manifest.json").read_text(
-                encoding="utf-8")
+            with open(S1007 / "results" / which / "run-manifest.json",
+                      "r", encoding="utf-8", newline="") as fh:
+                disk = fh.read()
             self.assertEqual(disk,
                              archive["members"][f"{which}/run-manifest.json"])
 
