@@ -2,30 +2,33 @@
 
 ## Platform
 - OS: Windows 10 (x64)
-- OS Build: 10.0.22631.n/A
+- OS Build: 10.0.22631
 - Python: 3.11.15 (win_amd64)
 - Git: 2.x
 
 ## Measurement Environment
-- All measurements conducted on the same Windows host
-- No network partition isolation — revocation enforced via `RevocationTracker` (in-memory component-state map)
-- Cache implemented as in-process `Cache` class (no disk/network boundary)
-- Clock: monotonic for elapsed, UTC wall for audit (both from `time.perf_counter_ns` / `datetime.now(timezone.utc)`)
-- Jitter introduced by `random.Random(seed)` with fixed seeds 11, 22, 33
+- All measurements conducted on the same host (same-host model).
+- Same-host model-only: no production network/cache topology tested.
+- Process-separated auditor (evaluator.py), not an external/independent audit firm.
+- Local model cannot prove absence of all network/cache side channels.
 
-## Limitations (transferred from S1-002/PASS_WITH_LIMITS)
-- Same-host model-only: no production network/cache topology
-- Process-separated auditor: not an external audit firm
-- Local model cannot prove absence of all network/cache side channels
+## Run A
+- executor_id: executor-run-a-190bd171
+- git_commit: 9546585
+- total_trials: 402 (360 mandatory + 24 fault + 18 probe)
+- max_latency: 1.6352ms
+- hard_counters: all 0
 
-## Run Parameters
-- Matrix: 4 paths × 2 cache × 3 loads × 3 seeds = 72 observations
-- Trials per observation: 5
-- Mandatory trials: 360 (72 × 5)
-- Fault trials: 24 (8 fault modes × 3 seeds)
-- Probe trials: 18 (6 probe types × 3 seeds)
-- Total trials per run: 402
+## Run B (independent rerun)
+- executor_id: executor-run-b-94619b75
+- git_commit: 9546585
+- total_trials: 402 (360 mandatory + 24 fault + 18 probe)
+- max_latency: 2.053ms
+- hard_counters: all 0
 
-## Commit
-- git_commit: d5743e5 (evaluator.py percentile fix)
-- dirty: False (runner committed before measurement)
+## Comparison
+- verdict: PASS (both runs match)
+- executor IDs differ: true
+- output roots differ: true
+- hard counters match: true
+- verdicts match: true
