@@ -4,11 +4,11 @@
 - Rerun executor: `agentos-s1-007-independent-verifier` (separate subprocess and output directory)
 - Python: 3.12.6
 - Platform: Windows-11-10.0.22631-SP0
-- Commit: f995473f5db7628f03e30ebbf4fe418c1d595373
-- Tree SHA: 56cd38a94ca437dd2a18c3a0ae56d4fda6d7fa96
+- Commit: 98ff9654ebe34de3bcacc687a481a04502cb85e9
+- Tree SHA: 8cac3f1ed57ee60435838dfbaeee078158663f82
 - Dirty tree: False
-- Environment hash (main): 7d32ebabec90b44cae27bd66cc8487cd63069334f24644d6cdf5e9b9fc2188dd
-- Environment hash (rerun): d09957fec6ee07935c5de46083985500b876cc9f6dcdf1217b736b46b2746aa6
+- Environment hash (main): 5bfebdc77b61048250f9d7a7c1ec48b943a1accd876ab791cf4d6361d2ff4cc6
+- Environment hash (rerun): 12c7c5d95b20c1191af2084e7974abbebe06e0432f3ae55281a82febfead0fe4
 
 ## Frozen input hashes (SHA-256)
 
@@ -20,7 +20,7 @@
 
 ## Executed script hashes (SHA-256)
 
-- bundle_content.py: acc24d244d778712dbf3cf43c0282c18bee1f7279a726a83d915271031b436a2
+- bundle_content.py: a1b96fcb8e6a54655b54f565c30dac4b741e5daac6a3cf05f61e77b60501d636
 - dependency_gate.py: fd4e7cfa40ab60b9b6a9e680fdc44340b5a1ee06e7a4e19b4ffd13a7db013a34
 - evaluator.py: 527384ce7ad996af82b914a284fcb679458211688362bb92379d9a5142ef47e8
 - finalize_record.py: 1b9a9a9f066d739628e1662550fae8a9cbd12f5b5112e429959a59c896a630b1
@@ -35,7 +35,7 @@ py research/tickets/stage-1/S1-007/dependency_gate.py
 AGENTOS_EXECUTOR_ID=agentos-s1-007-producer py research/tickets/stage-1/S1-007/runner.py --mode main --out results/run-a   # exit 0
 AGENTOS_EXECUTOR_ID=agentos-s1-007-independent-verifier py research/tickets/stage-1/S1-007/runner.py --mode rerun --out results/run-b   # exit 0
 py research/tickets/stage-1/S1-007/runner.py --mode probes --out results   # exit 0
-AGENTOS_RUN_NONCE=s1-007-f995473f5db7-e9fd373f90f8 py research/tickets/stage-1/S1-007/evaluator.py ...   # exit 0
+AGENTOS_RUN_NONCE=s1-007-98ff9654ebe3-6d507a5b546f py research/tickets/stage-1/S1-007/evaluator.py ...   # exit 0
 py research/tickets/stage-1/S1-007/make_bundle.py   # orchestrates the above with exact-argument invocations
 ```
 

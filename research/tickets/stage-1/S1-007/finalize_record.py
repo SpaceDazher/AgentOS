@@ -96,7 +96,7 @@ def live_wiki_check() -> dict:
         capture_output=True, text=True, timeout=600, cwd=str(ROOT), env=env)
     if out.returncode != 0:
         raise SystemExit(f"wiki-check failed (exit {out.returncode})")
-    doc = json.loads(out.stdout.strip().splitlines()[-1])
+    doc = json.loads(out.stdout)
     if not doc.get("ok"):
         raise SystemExit("live wiki-check reported issues")
     return doc
