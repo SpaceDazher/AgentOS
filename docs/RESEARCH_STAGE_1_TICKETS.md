@@ -177,7 +177,7 @@ from a lower wave to a higher wave, and S1-020 is the sole closure sink.
 | S1-005 | W1 | P1 | architecture | PASS_WITH_LIMITS | S1-002 | QA1 modular monolith versus containers |
 | S1-006 | W2 | P1 | architecture | PASS_WITH_LIMITS | S1-002, S1-005 | QA2 in-process versus durable execution backend |
 | S1-007 | W2 | P0 | security | PASS_WITH_LIMITS | S1-003, S1-005 | QA3 retrieval/index scope isolation |
-| S1-008 | W2 | P0 | security | READY | S1-002, S1-004 | revocation propagation bound of ≤5 seconds |
+| S1-008 | W2 | P0 | security | PASS_WITH_LIMITS | S1-002, S1-004 | revocation propagation bound of ≤5 seconds |
 | S1-009 | W2 | P1 | architecture | READY | S1-001, S1-005 | MCP/A2A delegation and knowledge adapter roadmap |
 | S1-010 | W3 | P0 | security | READY | S1-001, S1-009 | tool-poisoning detection and quarantine evidence |
 | S1-011 | W1 | P0 | knowledge | READY | S1-001, S1-003 | minimal promote/challenge knowledge gate |
@@ -700,7 +700,17 @@ python -m agentos.cli research-plan --topic "S1-007 QA3 retrieval and index isol
 
 ### S1-008 — Revocation latency validation (≤5 seconds)
 
-- **Status:** `READY`
+- **Status:** `PASS_WITH_LIMITS` — measured 2026-09-01 (research revision 1):
+  goal `goal_5YJ2AHPMWP3EV2D501M1DM9JWH`, evaluation
+  `reval_S1-008_REVOCATION_LATENCY`, artifact chain
+  `edcb7529…`, evidence-pack content-addressed at
+  `results/evidence/evidence-pack-b9695fea…`. Main and independent
+  rerun each: 4 paths × 2 cache × 3 loads × 3 seeds = 72 observations,
+  228 trials (204 mandatory + 24 probes), 0 hard counters, max latency
+  <2.2 ms < 5000 ms; all adversarial probes A–F detected fail-closed.
+  Limits: same-host model-only enforcement (no production topology);
+  process-separated (not external) auditor; local model cannot prove
+  absence of all network/cache side channels.
 - **Priority:** `P0`
 - **Wave:** `W2`
 - **Owner:** `security`
