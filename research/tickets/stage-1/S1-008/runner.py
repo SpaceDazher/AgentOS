@@ -429,6 +429,7 @@ class Scenario:
     path: str
     cache_state: str
     load: str
+    seed: str
     grant_id: str
     parent_grant_id: str | None
     parent_revoked: bool = False  # True when this grant_id IS a parent being revoked
@@ -527,13 +528,13 @@ def _run_one_revocation_trial(tracker: RevocationTracker, cache: Cache,
     # Build raw trace
     raw_trace = {
         "run_id": str(uuid.uuid4())[:12],
-        "trial_id": f"{scenario.fixture_id}-seed{seed}-t{trial_idx:03d}",
+        'trial_id': f'{scenario.fixture_id}-{scenario.seed}-t{trial_idx:03d}',
         "scenario": scenario.fixture_id,
         "path": scenario.path,
         "cache_state": scenario.cache_state,
         "load": scenario.load,
-        "seed": seed,
-        "grant_id": grant_id,
+        'seed': scenario.seed,
+        'grant_id': grant_id,
         "parent_grant_id": parent_id,
         "revocation_version": version,
         "revocation_epoch": tracker.revocation_epoch,
@@ -566,21 +567,56 @@ def _run_one_revocation_trial(tracker: RevocationTracker, cache: Cache,
 
 
 def load_fixtures() -> list[Scenario]:
-    """Load frozen fixtures and create per-seed scenarios."""
+    """Load frozen fixtures and generate full matrix cross-product.
+
+    Creates all 4 paths × 2 cache states × 3 loads × 3 seeds = 72
+    scenario-seed combinations. Base fixtures define the per-path
+    revocation semantics; cache_state and load are varied across
+    the full cross-product.
+    """
     fixtures_path = Path(__file__).resolve().parent / "fixtures.json"
     data = json.loads(fixtures_path.read_text(encoding="utf-8"))
-    scenarios: list[Scenario] = []
+
+    # Build base scenarios by path (one per path with minimal cache/load)
+    base_by_path: dict[str, Scenario] = {}
     for fx in data["fixtures"]:
         grant_id = f"grant-{fx['fixture_id'].lower()}"
         parent_id = f"parent-{fx['fixture_id'].lower()}" if fx["path"] == "delegation" else None
-        scenarios.append(Scenario(
+        sc = Scenario(
             fixture_id=fx["fixture_id"],
             path=fx["path"],
             cache_state=fx["cache_state"],
             load=fx["load"],
             grant_id=grant_id,
             parent_grant_id=parent_id,
-        ))
+            parent_revoked=False,  # honest: revoke child grant, not parent
+        )
+        base_by_path[fx["path"]] = sc
+
+    # Generate full cross-product: 4 paths × 2 cache × 3 loads × 3 seeds = 72
+    PATHS = ["gateway", "retrieval", "delegation", "projection"]
+    CACHE_STATES = ["cold", "warm"]
+    LOADS = ["idle", "steady", "burst"]
+    SEEDS = ["seed11", "seed12", "seed13"]
+
+    scenarios: list[Scenario] = []
+    for path in PATHS:
+        base = base_by_path[path]
+        for cache_state in CACHE_STATES:
+            for load in LOADS:
+                for seed in SEEDS:
+                    sc = Scenario(
+                        fixture_id=f"{base.fixture_id}-{cache_state}-{load}-{seed}",
+                        path=path,
+                        cache_state=cache_state,
+                        load=load,
+                        grant_id=base.grant_id,
+                        parent_grant_id=base.parent_grant_id,
+                        parent_revoked=False,
+                        seed=seed,
+                    )
+                    scenarios.append(sc)
+
     return scenarios
 
 
@@ -619,7 +655,7 @@ def _probe_allow_after_commit(scenarios: list[Scenario], seed: int,
             "path": sc.path,
             "cache_state": "warm",
             "load": sc.load,
-            "seed": seed,
+            "seed": f"seed{seed}",
             "grant_id": sc.grant_id,
             "revocation_version": version,
             "t_commit_monotonic_ns": tracker.t_commit_ns,
@@ -664,7 +700,7 @@ def _probe_dropped_hop(scenarios: list[Scenario], seed: int,
         "path": sc.path,
         "cache_state": "warm",
         "load": sc.load,
-        "seed": seed,
+        "seed": f"seed{seed}",
         "grant_id": sc.grant_id,
         "revocation_version": version,
         "t_commit_monotonic_ns": tracker.t_commit_ns,
@@ -695,7 +731,7 @@ def _probe_forged_timestamps(seed: int, tracker: RevocationTracker) -> list[dict
         "path": sc.path,
         "cache_state": "cold",
         "load": "idle",
-        "seed": seed,
+        "seed": f"seed{seed}",
         "grant_id": sc.grant_id,
         "revocation_version": version,
         "t_commit_monotonic_ns": tracker.t_commit_ns,
@@ -735,7 +771,7 @@ def _probe_cache_resurrection(seed: int, tracker: RevocationTracker,
         "path": sc.path,
         "cache_state": "warm-after-restart",
         "load": "idle",
-        "seed": seed,
+        "seed": f"seed{seed}",
         "grant_id": sc.grant_id,
         "revocation_version": version,
         "t_commit_monotonic_ns": tracker.t_commit_ns,
@@ -777,7 +813,7 @@ def _probe_parent_revoke(seed: int, tracker: RevocationTracker, cache: Cache,
         "path": "delegation",
         "cache_state": "warm",
         "load": "idle",
-        "seed": seed,
+        "seed": f"seed{seed}",
         "grant_id": child_id,
         "parent_grant_id": parent_id,
         "revocation_version": version,
@@ -814,7 +850,7 @@ def _probe_censored_tail(seed: int, tracker: RevocationTracker,
         "path": sc.path,
         "cache_state": "warm",
         "load": "burst",
-        "seed": seed,
+        "seed": f"seed{seed}",
         "grant_id": sc.grant_id,
         "revocation_version": version,
         "t_commit_monotonic_ns": t_commit,
@@ -859,21 +895,23 @@ def run_execution(run_label: str, output_dir: Path, *, seeds: list[int] = [11, 2
 
     # --- Mandatory matrix: 4 × 2 × 3 × 3 = 72 scenario-seed observations,
     #     5 trials each = 360 trials ---
-    for seed in seeds:
-        for sc in scenarios:
-            tracker = RevocationTracker()
-            cache = Cache(f"cache-{run_label}-{sc.fixture_id}")
-            project = ProjectionIndex()
-            component = ComponentState(name=sc.path)
-            rng = random.Random(seed * 1_000_000 + hash(sc.fixture_id))
-            for trial_idx in range(5):
-                trace = _run_one_revocation_trial(
-                    tracker, cache, project, sc, seed, trial_idx, component, rng=rng
-                )
-                all_traces.append(trace)
+    for sc in scenarios:
+        tracker = RevocationTracker()
+        cache = Cache(f"cache-{run_label}-{sc.fixture_id}")
+        project = ProjectionIndex()
+        component = ComponentState(name=sc.path)
+        # Convert seed string ("seed11") to int (11) for RNG
+        seed_int = int(sc.seed.replace("seed", ""))
+        rng = random.Random(seed_int * 1_000_000 + hash(sc.fixture_id))
+        for trial_idx in range(5):
+            trace = _run_one_revocation_trial(
+                tracker, cache, project, sc, seed_int, trial_idx, component, rng=rng
+            )
+            all_traces.append(trace)
 
     # --- Fault scenarios: 8 fault types × 3 seeds = 24 fault trials ---
     for seed in seeds:
+        sc_seed = f"seed{seed}"
         tracker = RevocationTracker()
         cache = Cache(f"cache-fault-{seed}")
         project = ProjectionIndex()
@@ -893,7 +931,7 @@ def run_execution(run_label: str, output_dir: Path, *, seeds: list[int] = [11, 2
             )
             trace["fault_mode"] = fault_mode
             trace["scenario"] = f"fault-{fault_mode}"
-            trace["trial_id"] = f"FAULT-{fault_mode}-seed{seed}"
+            trace['trial_id'] = f"FAULT-{fault_mode}-{sc_seed}"
             # Recompute hash after modifying trial_id/scenario
             trace["raw_trace_sha256"] = sha256_text(canonical_json(
                 {k: v for k, v in trace.items() if k != "raw_trace_sha256"}
@@ -995,10 +1033,10 @@ def run_execution(run_label: str, output_dir: Path, *, seeds: list[int] = [11, 2
         "matrix": {
             "paths": 4, "cache_states": 2, "loads": 3, "seeds": len(seeds),
             "trials_per_scenario_seed": 5,
-            "base_observations": 72,
-            "total_mandatory_trials": 72 * 5,
-            "fault_trials": 24,
-            "probe_trials": 18,
+            'base_observations': 72,
+            'total_mandatory_trials': 360 + 24,  # 72 cells × 5 trials + 24 faults
+            'fault_trials': 24,
+            'probe_trials': 18,
             "total_trials": total_trials,
         },
         "hard_counters": hard_counters,
@@ -1034,24 +1072,42 @@ def _canonical_json(obj: Any) -> str:
 
 
 def _check_dirty() -> bool:
-    """Check if working tree is dirty (simplified)."""
+    """Check if working tree is dirty.
+
+    A run is only authoritative if the S1-008 harness (runner, frozen
+    artifacts, evaluator, make_bundle, publish_evidence_pack,
+    finalize_record) is committed to git. Untracked files in the
+    S1-008 ticket scope or results/ invalidate the run.
+    """
     import subprocess
     try:
         result = subprocess.run(
             ["git", "status", "--porcelain"],
             capture_output=True, text=True, cwd=str(_REPO_ROOT), timeout=10
         )
-        # dirty = True only for MODIFIED existing files (not untracked new
-        # research artifacts or results/). Uncommitted modifications to
-        # tracked files invalidate the authoritative run.
-        lines = []
-        for l in result.stdout.strip().splitlines():
-            # '??' = untracked, 'M '/' M' = modified, 'A ' = added, etc.
-            # Only flag modifications to EXISTING tracked files as dirty.
-            if l.startswith("??"):
-                continue  # new files (research artifacts, results) are not dirty
-            lines.append(l)
-        return bool(lines)
+        s1008_prefix = "research/tickets/stage-1/S1-008/"
+        results_prefix = "results/"
+
+        # Check for any untracked/modified files in the S1-008 or results scope
+        scope_dirty = False
+        for line in result.stdout.strip().splitlines():
+            if not line:
+                continue
+            status = line[:2]
+            path = line[3:]  # skip "XY " prefix
+
+            # Any untracked files in S1-008 scope → dirty
+            if status == "??" and (path.startswith(s1008_prefix) or path.startswith(results_prefix)):
+                scope_dirty = True
+                continue
+
+            # Any modifications to tracked files → dirty
+            # (covers staged, unstaged, and staged+unstaged modifications)
+            if status in (" M", "M ", "MM", "AM", "RM"):
+                scope_dirty = True
+                continue
+
+        return scope_dirty
     except Exception:
         return True  # fail-closed if we can't determine
 

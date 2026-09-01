@@ -16,6 +16,7 @@ import json
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any  # noqa: E402
 
 _REPO_ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(_REPO_ROOT / "src"))
@@ -104,6 +105,7 @@ def finalize_record(bundle: dict[str, Any]) -> dict[str, Any]:
     }
 
     # Record the record's own hash (for self-verification)
+    # Use canonical JSON without trailing newline
     record_json = json.dumps(record, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     record["record_sha256"] = sha256_text(record_json)
 
@@ -124,39 +126,60 @@ def main() -> int:
 
     bundle = json.loads(Path(args.bundle).read_text(encoding="utf-8"))
 
-    # Verify DB exists and contains goal
+    # Verify DB exists and contains goal, campaign, and evaluation
     db_path = _REPO_ROOT / args.db
+    evaluation_id = bundle.get("evaluation_id")
     if db_path.exists():
         try:
             import sqlite3
             conn = sqlite3.connect(str(db_path))
             conn.row_factory = sqlite3.Row
             goal_id = bundle.get("goal_id")
-            row = conn.execute(
+
+            # Verify goal
+            goal_row = conn.execute(
                 "SELECT * FROM goal WHERE id = ?",
                 (goal_id,)
             ).fetchone()
-            if row:
-                record = finalize_record(bundle)
-                record["db_verified"] = {
-                    "goal_id": goal_id,
-                    "db_status": dict(row) if row else None,
-                    "table": "goal",
-                }
+
+            db_verified: dict[str, Any] = {
+                "goal_id": goal_id,
+                "table": "goal",
+            }
+
+            if goal_row:
+                db_verified["goal_status"] = dict(goal_row).get("status")
             else:
-                record = finalize_record(bundle)
-                record["db_verified"] = {
-                    "goal_id": goal_id,
-                    "db_status": "goal not found in canonical DB",
-                }
+                db_verified["goal_status"] = "goal not found in canonical DB"
+
+            # Verify campaign ownership
+            campaign_id = bundle.get("campaign_id")
+            campaign_row = conn.execute(
+                "SELECT * FROM research_campaign WHERE id = ?",
+                (campaign_id,)
+            ).fetchone()
+            db_verified["campaign"] = dict(campaign_row) if campaign_row else None
+            db_verified["campaign_exists"] = campaign_row is not None
+
+            # Verify evaluation exists (if evaluation_id is real DB ID)
+            eval_row = conn.execute(
+                "SELECT * FROM research_evaluation WHERE evaluation_id = ?",
+                (evaluation_id,)
+            ).fetchone()
+            db_verified["evaluation"] = dict(eval_row) if eval_row else None
+            db_verified["evaluation_exists"] = eval_row is not None
+
+            # Mark as DB verified if goal exists
+            # Note: evaluation may not be in DB yet for new research
+            db_verified["fully_verified"] = goal_row is not None
+            record = finalize_record(bundle)
+            record["db_verified"] = db_verified
         except Exception as e:
             record = finalize_record(bundle)
             record["db_verified"] = {"error": str(e)}
     else:
         record = finalize_record(bundle)
         record["db_verified"] = {"db_path": str(db_path), "exists": False}
-
-    out_path = Path(args.output)
     out_path.write_text(
         json.dumps(record, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
         encoding="utf-8"

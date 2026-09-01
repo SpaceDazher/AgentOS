@@ -16,6 +16,7 @@ import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any  # noqa: E402
 
 _REPO_ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(_REPO_ROOT / "src"))
@@ -181,17 +182,22 @@ def main() -> int:
 
     bundle = build_bundle()
     bundle_path = Path(args.output)
-    bundle_path.write_text(
-        json.dumps(bundle, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
-        encoding="utf-8"
-    )
 
-    # Verify bundle file hash
-    bundle["bundle_sha256"] = sha256_text(bundle_path.read_text(encoding="utf-8"))
-    bundle_path.write_text(
-        json.dumps(bundle, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
-        encoding="utf-8"
-    )
+    # Compute bundle_sha256 from canonical JSON (same bytes as written file)
+    bundle_json = json.dumps(bundle, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    bundle["bundle_sha256"] = sha256_text(bundle_json)
+
+    # Write bundle as canonical JSON (file SHA must match bundle_sha256)
+    final_json = json.dumps(bundle, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    bundle_path.write_text(final_json + "\n", encoding="utf-8")
+
+    # Verify file hash matches bundle_sha256
+    written_bytes = bundle_path.read_bytes()
+    written_hash = hashlib.sha256(written_bytes.rstrip(b"\n")).hexdigest()
+    if written_hash != bundle["bundle_sha256"]:
+        print(f"ERROR: bundle file hash mismatch: file={written_hash} recorded={bundle['bundle_sha256']}",
+              file=sys.stderr)
+        return 1
 
     print(json.dumps(bundle, indent=2, sort_keys=True, ensure_ascii=False))
     return 0
