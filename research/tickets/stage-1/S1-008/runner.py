@@ -1103,8 +1103,13 @@ def _check_dirty() -> bool:
         for line in result.stdout.strip().splitlines():
             if not line:
                 continue
-            status = line[:2]
-            path = line[3:]  # skip "XY " prefix
+            # Parse git status line: "XY <space>path" (X=staged, Y=unstaged)
+            # Split on first whitespace to separate status from path
+            parts = line.split(None, 1)  # split on first whitespace
+            if len(parts) < 2:
+                continue
+            status = parts[0]  # e.g. "M ", " M", "??", " D", "A "
+            path = parts[1]
 
             # Untracked files in results/ output dirs are expected (runner writes them)
             # Only flag untracked/modified files in the S1-008 source scope — NOT
