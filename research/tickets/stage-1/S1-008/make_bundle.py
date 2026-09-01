@@ -21,7 +21,7 @@ from typing import Any  # noqa: E402
 _BASE = Path(__file__).resolve().parent
 _REPO_ROOT = Path.cwd()
 if (_REPO_ROOT / "src").exists() is False:
-    _REPO_ROOT = _BASE.parents[3].parent.parent
+    _REPO_ROOT = _BASE.parents[4]
 _RESULTS = _REPO_ROOT / "results"
 sys.path.insert(0, str(_REPO_ROOT / "src"))
 

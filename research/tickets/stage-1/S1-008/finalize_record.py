@@ -18,7 +18,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any  # noqa: E402
 
-_REPO_ROOT = Path(__file__).resolve().parents[3].parent.parent
+_REPO_ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(_REPO_ROOT / "src"))
 
 from agentos.ids import canonical_json, sha256_text  # noqa: E402
