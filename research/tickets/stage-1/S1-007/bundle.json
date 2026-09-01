@@ -206,7 +206,7 @@
     },
     {
       "id": "RAW-OBSERVATIONS",
-      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-007/results/evidence/raw-observations-014664490282c331a7216f5e9265cb3d169e5833a75606493b63d40a74934c24.json",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-007/results/evidence/raw-observations-a901ce1d8933feeefb0401d84a7f7e153a9f7494b14946a33363a99be2866d69.json",
       "title": "S1-007 raw observations archive (byte-exact)",
       "source_type": "content-addressed raw evidence archive",
       "content": "Lossless byte-exact archive of ALL executed raw evidence: 172 members = 168 run records (2 variants x 14 cases x 3 seeds x 2 executor identities) plus both run manifests and both timing artifacts with raw paired samples. Members are newline-translation-free copies of the on-disk files digested by the run manifests; the archive sha256 is bound here and re-verified by the clean-clone regression probe.",
@@ -216,9 +216,9 @@
       "verifier_provenance": {
         "method": "content-addressed-archive-sha256-binding",
         "verified_at": "2026-08-31",
-        "path": "research/tickets/stage-1/S1-007/results/evidence/raw-observations-014664490282c331a7216f5e9265cb3d169e5833a75606493b63d40a74934c24.json",
-        "file_sha256": "014664490282c331a7216f5e9265cb3d169e5833a75606493b63d40a74934c24",
-        "sha256": "014664490282c331a7216f5e9265cb3d169e5833a75606493b63d40a74934c24",
+        "path": "research/tickets/stage-1/S1-007/results/evidence/raw-observations-a901ce1d8933feeefb0401d84a7f7e153a9f7494b14946a33363a99be2866d69.json",
+        "file_sha256": "a901ce1d8933feeefb0401d84a7f7e153a9f7494b14946a33363a99be2866d69",
+        "sha256": "a901ce1d8933feeefb0401d84a7f7e153a9f7494b14946a33363a99be2866d69",
         "member_count": 172,
         "scope_note": "Lossless raw evidence binding for the whole series."
       }
@@ -256,7 +256,7 @@
     {
       "id": "c4-timing",
       "claim_class": "fact",
-      "text": "The bounded local existence-oracle timing probe (frozen methodology: paired interleaved foreign/control arms, 200 paired samples x 32 inner repeats x 3 seeds per variant, statistic = pooled median of paired differences, tolerance = max(10% of the control median, 2000ns)) shows no signal above the frozen tolerance for either honest variant (evaluator-recomputed per_scope signal 57ns vs tolerance 2000ns; shared_rls signal 153ns vs tolerance 2000ns). The evaluator recomputes the statistic, tolerance and verdict from raw hash-bound paired samples of both executions and ignores producer summaries. This is a bounded local measurement, not a production SLO and not proof of absence of all side channels.",
+      "text": "The bounded local existence-oracle timing probe (frozen methodology: paired interleaved foreign/control arms, 200 paired samples x 32 inner repeats x 3 seeds per variant, statistic = pooled median of paired differences, tolerance = max(10% of the control median, 2000ns)) shows no signal above the frozen tolerance for either honest variant (evaluator-recomputed per_scope signal 22ns vs tolerance 2000ns; shared_rls signal 178ns vs tolerance 2000ns). The evaluator recomputes the statistic, tolerance and verdict from raw hash-bound paired samples of both executions and ignores producer summaries. This is a bounded local measurement, not a production SLO and not proof of absence of all side channels.",
       "source_ids": [
         "SRC-06"
       ]
@@ -292,7 +292,7 @@
     {
       "id": "c8-raw-archive",
       "claim_class": "fact",
-      "text": "Raw evidence binding: the content-addressed archive raw-observations-014664490282c331a7216f5e9265cb3d169e5833a75606493b63d40a74934c24.json (sha256 014664490282c331a7216f5e9265cb3d169e5833a75606493b63d40a74934c24, 172 byte-exact members: 168 run records + 2 run manifests + 2 timing artifacts) is tracked in Git and bound into this bundle as source RAW-OBSERVATIONS; the clean-clone regression probe re-verifies every member digest against the run manifests and asserts the pack carries this binding.",
+      "text": "Raw evidence binding: the content-addressed archive raw-observations-a901ce1d8933feeefb0401d84a7f7e153a9f7494b14946a33363a99be2866d69.json (sha256 a901ce1d8933feeefb0401d84a7f7e153a9f7494b14946a33363a99be2866d69, 172 byte-exact members: 168 run records + 2 run manifests + 2 timing artifacts) is tracked in Git and bound into this bundle as source RAW-OBSERVATIONS; the clean-clone regression probe re-verifies every member digest against the run manifests and asserts the pack carries this binding.",
       "source_ids": [
         "RAW-OBSERVATIONS"
       ]
