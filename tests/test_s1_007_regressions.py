@@ -709,7 +709,13 @@ class TestReviewR1Corrections(unittest.TestCase):
         timing_path = base / "run-a" / "timing.json"
         timing = json.loads(timing_path.read_text(encoding="utf-8"))
         raw = timing["variants"]["per_scope"]["raw"]
-        raw["paired_diffs_ns"] = [999_999 for _ in raw["paired_diffs_ns"]]
+        # adversarial: shift ONLY the foreign arm (real signal appears in
+        # the arms) while a stale derived array still claims the old
+        # differences -> the evaluator must reject the derived array
+        raw["foreign_samples_ns"] = [x + 999_999
+                                     for x in raw["foreign_samples_ns"]]
+        raw["paired_diffs_ns"] = [x - 999_999
+                                  for x in raw["foreign_samples_ns"]]
         timing_path.write_text(json.dumps(timing, indent=2, sort_keys=True),
                                encoding="utf-8")
         manifest = base / "run-a" / "run-manifest.json"
@@ -718,6 +724,19 @@ class TestReviewR1Corrections(unittest.TestCase):
         manifest.write_text(json.dumps(doc, indent=2, sort_keys=True))
         seal_manifest(manifest)
         doc_a = json.loads(manifest.read_text(encoding="utf-8"))
+        with self.assertRaises(evaluator.EvalError):
+            evaluator.evaluate(
+                manifest, base / "run-b" / "run-manifest.json",
+                doc_a["provenance"]["commit"], base / "probes.json",
+                sha((base / "probes.json").read_bytes()),
+                base / "evaluation.json", "nonce-timing")
+        # consistent arms WITHOUT a stale derived array -> recomputed
+        del raw["paired_diffs_ns"]
+        timing_path.write_text(json.dumps(timing, indent=2, sort_keys=True),
+                               encoding="utf-8")
+        doc["timing_sha256"] = sha(timing_path.read_bytes())
+        manifest.write_text(json.dumps(doc, indent=2, sort_keys=True))
+        seal_manifest(manifest)
         ev = evaluator.evaluate(
             manifest, base / "run-b" / "run-manifest.json",
             doc_a["provenance"]["commit"], base / "probes.json",
@@ -960,6 +979,12 @@ class TestReviewR2Corrections(unittest.TestCase):
         self.assertEqual(
             out["variants"]["per_scope"]["verdict"],
             "SIGNAL_ABOVE_TOLERANCE")
+        # (c2) supplied diffs consistent with a within-tolerance signal
+        out = evaluator.recompute_timing(
+            build_timing([11_000] * n, control, supplied_diffs=[1_000] * n),
+            contract)
+        self.assertEqual(
+            out["variants"]["per_scope"]["verdict"], "WITHIN_TOLERANCE")
         # (d) missing foreign arm -> NO_DATA, never WITHIN_TOLERANCE
         partial = build_timing(None, control)
         out = evaluator.recompute_timing(partial, contract)

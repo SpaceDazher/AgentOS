@@ -1350,6 +1350,8 @@ def evaluate(runs_manifest: Path, rerun_manifest: Path,
                     "evidence_refs": raw_cell.get("evidence_refs", []),
                     "limitation": raw_cell.get("limitation"),
                     "missing_evidence": raw_cell.get("missing_evidence")}
+                if "components" in raw_cell:
+                    cell_info["components"] = raw_cell["components"]
             decision_matrix.append({
                 "dimension": c["id"] + " " + c["name"],
                 "variant": variant,
