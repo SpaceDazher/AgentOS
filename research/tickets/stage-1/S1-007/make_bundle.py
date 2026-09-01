@@ -70,6 +70,14 @@ def run_matrix(mode: str, out_dir: Path, executor_id: str) -> dict:
     return load(out_dir / "run-manifest.json")
 
 
+def _read_raw(path: Path) -> str:
+    """Read file content WITHOUT newline translation so archive members
+    stay byte-identical to the on-disk artifacts that the run manifests
+    digest."""
+    with open(path, "r", encoding="utf-8", newline="") as fh:
+        return fh.read()
+
+
 def build_raw_archive(manifest_a: dict, manifest_b: dict) -> dict:
     """Finding 1 correction: preserve the EXACT raw observations in a
     tracked, content-addressed archive so a clean-clone auditor can
@@ -79,13 +87,12 @@ def build_raw_archive(manifest_a: dict, manifest_b: dict) -> dict:
     members = {}
     for which in ("run-a", "run-b"):
         base = RESULTS / which
-        members[f"{which}/run-manifest.json"] = \
-            (base / "run-manifest.json").read_text(encoding="utf-8")
-        members[f"{which}/timing.json"] = \
-            (base / "timing.json").read_text(encoding="utf-8")
+        members[f"{which}/run-manifest.json"] = _read_raw(
+            base / "run-manifest.json")
+        members[f"{which}/timing.json"] = _read_raw(base / "timing.json")
         for run_file in sorted((base / "run_records").glob("*.json")):
             members[f"{which}/run_records/{run_file.name}"] = \
-                run_file.read_text(encoding="utf-8")
+                _read_raw(run_file)
     archive = {
         "schema": "agentos.s1-007.raw-observations/v1",
         "note": "byte-exact copies of the executed run records and timing "

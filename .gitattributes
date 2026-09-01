@@ -11,3 +11,13 @@ research/tickets/stage-1/SLOQUAL-001/traces/sloqual-final-a13-20260828/** -text 
 research/tickets/stage-1/SLOQUAL-001/traces/sloqual-final-b12-20260828-execB/** -text -diff
 research/tickets/stage-1/S1-005/results/evidence/snapshots/** -whitespace
 research/tickets/stage-1/S1-005/results/evidence/*.json -whitespace
+
+# Frozen S1-007 evidence is content-addressed byte-for-byte; keep checkout
+# representation stable across Windows and POSIX hosts.
+research/tickets/stage-1/S1-007/results/evidence/*.json -text -diff
+research/tickets/stage-1/S1-007/results/run-a/run_records/** -text -diff
+research/tickets/stage-1/S1-007/results/run-b/run_records/** -text -diff
+research/tickets/stage-1/S1-007/results/run-a/run-manifest.json -text -diff
+research/tickets/stage-1/S1-007/results/run-b/run-manifest.json -text -diff
+research/tickets/stage-1/S1-007/results/run-a/timing.json -text -diff
+research/tickets/stage-1/S1-007/results/run-b/timing.json -text -diff
