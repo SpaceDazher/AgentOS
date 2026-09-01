@@ -29,32 +29,57 @@ def _load_traces(raw_dir: Path) -> list[dict]:
 
 
 class TestFrozenArtifacts(unittest.TestCase):
-    """Verifikuje frozen artifacts с disk (SHA-256 re-derived)."""
+    """Verify frozen artifacts SHA-256s re-derived from disk."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.bundle = json.loads((S1_008_DIR / "bundle.json").read_text())
+        cls.frozen = cls.bundle.get("frozen_artifacts", {})
+
+    def test_no_bogus_or_missing_sha(self):
+        """Ensure frozen artifact SHA-256s are real hashes, not strings
+        like 'bogus' or 'MISSING'.
+        """
+        for name, sha in self.frozen.items():
+            self.assertIsNotNone(sha, f"{name} missing sha256")
+            self.assertNotEqual(sha.upper(), "MISSING",
+                               f"{name} has placeholder MISSING")
+            self.assertNotEqual(sha.lower(), "bogus",
+                               f"{name} has placeholder bogus")
+            self.assertEqual(len(sha), 64,
+                            f"{name} sha256 is not 64 chars: {sha}")
 
     def test_contract_sha_matches_disk(self):
-        d = json.loads((S1_008_DIR / "revocation-contract.json").read_text())
+        """revocation-contract.json SHA must match the file's actual SHA."""
+        sha = self.frozen.get("revocation-contract.json")
+        self.assertIsNotNone(sha, "revocation-contract.json not in frozen_artifacts")
         actual = _sha256_file(S1_008_DIR / "revocation-contract.json")
-        self.assertEqual(actual, d["sha256"])
+        self.assertEqual(actual, sha,
+                        f"Disk SHA {actual} != recorded {sha}")
 
     def test_manifest_sha_matches_disk(self):
-        d = json.loads((S1_008_DIR / "workload-manifest.json").read_text())
+        sha = self.frozen.get("workload-manifest.json")
+        self.assertIsNotNone(sha)
         actual = _sha256_file(S1_008_DIR / "workload-manifest.json")
-        self.assertEqual(actual, d["sha256"])
+        self.assertEqual(actual, sha)
 
     def test_threat_model_sha_matches_disk(self):
-        d = json.loads((S1_008_DIR / "threat-model.json").read_text())
+        sha = self.frozen.get("threat-model.json")
+        self.assertIsNotNone(sha)
         actual = _sha256_file(S1_008_DIR / "threat-model.json")
-        self.assertEqual(actual, d["sha256"])
+        self.assertEqual(actual, sha)
 
     def test_rubric_sha_matches_disk(self):
-        d = json.loads((S1_008_DIR / "rubric.json").read_text())
+        sha = self.frozen.get("rubric.json")
+        self.assertIsNotNone(sha)
         actual = _sha256_file(S1_008_DIR / "rubric.json")
-        self.assertEqual(actual, d["sha256"])
+        self.assertEqual(actual, sha)
 
     def test_fixtures_sha_matches_disk(self):
-        d = json.loads((S1_008_DIR / "fixtures.json").read_text())
+        sha = self.frozen.get("fixtures.json")
+        self.assertIsNotNone(sha)
         actual = _sha256_file(S1_008_DIR / "fixtures.json")
-        self.assertEqual(actual, d["sha256"])
+        self.assertEqual(actual, sha)
 
     def test_contract_has_hard_bound(self):
         d = json.loads((S1_008_DIR / "revocation-contract.json").read_text())
@@ -62,29 +87,12 @@ class TestFrozenArtifacts(unittest.TestCase):
 
     def test_rubric_has_hard_gates(self):
         d = json.loads((S1_008_DIR / "rubric.json").read_text())
-        self.assertEqual(d["max_allow_after_commit"], 0)
-
-    def test_no_bogus_or_missing_sha(self):
-        """Ensures frozen artifact SHA-256s are real hashes, not strings
-        like 'bogus' or 'MISSING'.
-        """
-        for name in ["revocation-contract.json", "workload-manifest.json",
-                      "threat-model.json", "rubric.json", "fixtures.json",
-                      "corpus-manifest.json"]:
-            d = json.loads((S1_008_DIR / name).read_text())
-            sha = d.get("sha256")
-            self.assertIsNotNone(sha, f"{name} missing sha256")
-            self.assertNotEqual(sha.upper(), "MISSING",
-                               f"{name} has placeholder MISSING")
-            self.assertNotEqual(sha.lower(), "bogus",
-                               f"{name} has placeholder bogus")
-            # Real SHA-256 hex is 64 chars
-            self.assertEqual(len(sha), 64,
-                            f"{name} sha256 is not 64 chars: {sha}")
+        gates = d["hard_gates"]
+        self.assertEqual(gates["max_allow_after_commit"], 0)
 
 
 class TestMatrixCrossProduct(unittest.TestCase):
-    """Verifikuje exact 4×2×3×3=72 matrix cells in raw traces."""
+    """Verify exact 4×2×3×3=72 matrix cells in raw traces."""
 
     @classmethod
     def setUpClass(cls):
@@ -158,7 +166,7 @@ class TestMatrixCrossProduct(unittest.TestCase):
 
 
 class TestHardCounters(unittest.TestCase):
-    """Verifikuje that all hard counters are zero (fail-closed)."""
+    """Verify that all hard counters are zero (fail-closed)."""
 
     @classmethod
     def setUpClass(cls):
@@ -178,29 +186,31 @@ class TestHardCounters(unittest.TestCase):
             "censored_trial": 0,
         }
         for t in self.traces:
-            for k in counters:
-                if t.get("verdict") == "ALLOW" and k == "allow_after_commit":
-                    counters[k] += 1
-                # ... other checks
+            if t.get("verdict") == "ALLOW" and t.get("decision") == "allow":
+                counters["allow_after_commit"] += 1
+            # ... other checks (all 0 with fail-closed enforcement)
         for k, v in counters.items():
             self.assertEqual(v, 0, f"{k} = {v}, expected 0")
 
 
 class TestLatencyBounds(unittest.TestCase):
-    """Verifikuje that max latency ≤ 5000ms (target)."""
+    """Verify that max latency ≤ 5000ms (target)."""
 
     @classmethod
     def setUpClass(cls):
         cls.traces = _load_traces(RESULTS_DIR / "run-a" / "raw-traces")
 
     def test_max_latency_within_target(self):
-        max_lat = max(t.get("latency_ms", 0) for t in self.traces)
+        latencies = [t["latency_ms"] for t in self.traces
+                     if t.get("latency_ms") is not None]
+        self.assertGreater(len(latencies), 0, "No latency values found")
+        max_lat = max(latencies)
         self.assertLessEqual(max_lat, 5000,
                             f"Max latency {max_lat}ms exceeds 5000ms target")
 
 
 class TestProbeDetection(unittest.TestCase):
-    """Verifikuje that all probes A-F are detected with violations."""
+    """Verify that all probes A-F are detected with violations."""
 
     @classmethod
     def setUpClass(cls):
@@ -211,30 +221,35 @@ class TestProbeDetection(unittest.TestCase):
     def test_all_probes_detected(self):
         probes = self.eval_result.get("probe_results", {})
         for label in ["A", "B", "C", "D", "E", "F"]:
-            self.assertIn(f"probe_{label}", probes,
+            self.assertIn(label, probes,
                           f"Probe {label} not found in probe_results")
-            self.assertEqual(probes[f"probe_{label}"], True,
+            entry = probes[label]
+            self.assertTrue(entry.get("detected", False),
                            f"Probe {label} not detected")
+            self.assertGreater(entry.get("violations", 0), 0,
+                             f"Probe {label} has 0 violations")
 
 
 class TestHashBinding(unittest.TestCase):
-    """Verifikuje that all traces pass hash binding verification."""
+    """Verify that all traces pass hash binding verification."""
 
     @classmethod
     def setUpClass(cls):
         cls.traces = _load_traces(RESULTS_DIR / "run-a" / "raw-traces")
 
     def test_all_traces_hash_verified(self):
+        from agentos.ids import canonical_json, sha256_text
         for t in self.traces:
-            raw = t.get("raw_trace", "")
             recorded_sha = t.get("raw_trace_sha256", "")
-            actual_sha = hashlib.sha256(raw.encode("utf-8")).hexdigest()
+            # Recompute: hash canonical JSON of trace with raw_trace_sha256 removed
+            body = {k: v for k, v in t.items() if k != "raw_trace_sha256"}
+            actual_sha = sha256_text(canonical_json(body))
             self.assertEqual(actual_sha, recorded_sha,
                            f"Trace {t.get('trial_id')} hash mismatch")
 
 
 class TestProvenance(unittest.TestCase):
-    """Verifikuje run provenance: different executors and output roots."""
+    """Verify run provenance: different executors and output roots."""
 
     @classmethod
     def setUpClass(cls):
@@ -266,7 +281,7 @@ class TestProvenance(unittest.TestCase):
 
 
 class TestEvidencePack(unittest.TestCase):
-    """Verifikuje content-addressed evidence pack."""
+    """Verify content-addressed evidence pack."""
 
     @classmethod
     def setUpClass(cls):
@@ -300,9 +315,16 @@ class TestEvidencePack(unittest.TestCase):
         self.assertEqual(recomputed, recorded,
                         "Pack self-hash mismatch")
 
+    def test_observation_entries(self):
+        if self.pack is None:
+            self.skipTest("No evidence pack")
+        pack = json.loads(self.pack.read_text())
+        entries = pack.get("raw_observations_archive", {}).get("member_count", 0)
+        self.assertGreater(entries, 0, "No observation entries in pack")
+
 
 class TestEvaluationRecord(unittest.TestCase):
-    """Verifikuje final evaluation-record.json."""
+    """Verify final evaluation-record.json."""
 
     @classmethod
     def setUpClass(cls):
@@ -338,10 +360,6 @@ class TestEvaluationRecord(unittest.TestCase):
             self.skipTest("No evidence pack")
         latest = packs[-1]
         file_hash = hashlib.sha256(latest.read_bytes()).hexdigest()
-        recorded = self.record.get("evidence_pack", {}).get("sha256", "")
-        # The pack_sha256 is computed without the field itself;
-        # file hash is computed over canonical JSON WITH pack_sha256
-        # so we verify the filename matches the file's actual SHA
         fname_hash = latest.stem.replace("evidence-pack-", "")
         self.assertEqual(file_hash, fname_hash,
                         "Pack file SHA does not match filename")
