@@ -988,7 +988,9 @@ def evaluate_probes(probes: dict, oracle: Oracle,
             raise EvalError(
                 f"probe {pid}: run ids diverge from the frozen matrix")
         recorded_hashes = probes.get("probe_hashes", {}).get(pid)
-        if recorded_hashes != sorted(r.get("run_id") for r in runs):
+        if recorded_hashes is None or \
+                sorted(recorded_hashes) != sorted(r.get("run_id")
+                                                  for r in runs):
             raise EvalError(
                 f"probe {pid}: probe_hashes section mismatch")
     rejections = {}
