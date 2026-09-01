@@ -1,0 +1,38 @@
+{
+  "schema": "agentos.s1-008.threat-model/v1",
+  "frozen_at": "2026-08-31T22:43:00Z",
+  "contract_sha256": "901e59002974d622244e9005363262b4492a04ccedf536fd0087618abd8bbd45",
+  "assets": [
+    {"id": "A1", "name": "canonical grant/revocation state", "description": "Authoritative durable state in SQLite journal; the single source of truth for authorization decisions."},
+    {"id": "A2", "name": "authorization decision", "description": "ALLOW/DENY/UNKNOWN outcome of an authorize call after revocation."},
+    {"id": "A3", "name": "audit trail", "description": "Hash-chained audit events recording every state transition and decision."},
+    {"id": "A4", "name": "cache version/epoch", "description": "Version tag on cached authorization results and materialized projections."},
+    {"id": "A5", "name": "delegation tree", "description": "Parent/child grant relationships where child revocation inherits from parent."}
+  ],
+  "trust_boundaries": [
+    {"id": "TB1", "name": "authoritative DB/journal", "trust": "trusted", "description": "Canonical SQLite store with transactional journal; all components must consult it before returning ALLOW after a potential revocation."},
+    {"id": "TB2", "name": "gateway enforcement", "trust": "trusted", "description": "ToolGateway capability check; deny by default when capability missing."},
+    {"id": "TB3", "name": "retrieval index/cache", "trust": "untrusted-after-revoke", "description": "Materialized view or cache of retrievable content; must be invalidated or re-validated against canonical state on eviction."},
+    {"id": "TB4", "name": "delegation component", "trust": "untrusted-after-revoke", "description": "Child grant resolution; must check parent revocation status."},
+    {"id": "TB5", "name": "producer/summary", "trust": "untrusted", "description": "Aggregated metrics and summaries are untrusted inputs; evaluator must re-derive from raw traces."}
+  ],
+  "failure_modes": [
+    {"id": "FM1", "name": "allow-after-commit", "description": "A decision returns ALLOW with t_decision > t_commit for a revoked grant.", "severity": "critical", "probe": "A"},
+    {"id": "FM2", "name": "dropped propagation hop", "description": "One enforcement component never observes the revocation while a producer summary claims all observed.", "severity": "critical", "probe": "B"},
+    {"id": "FM3", "name": "forged/non-monotonic timestamp", "description": "Wall clock manipulated to produce negative latency or mixed clock domains used for elapsed time.", "severity": "high", "probe": "C"},
+    {"id": "FM4", "name": "cache resurrection after restart", "description": "After restart, a stale cache snapshot serves an ALLOW with a reduced epoch or lost revocation version.", "severity": "critical", "probe": "D"},
+    {"id": "FM5", "name": "delegation survives parent revoke", "description": "Child grant authorization returns ALLOW after parent grant is revoked.", "severity": "critical", "probe": "E"},
+    {"id": "FM6", "name": "censored slow tail", "description": "A slow >5000ms trial is hidden via timeout, missing completion, or sampling only completed requests; coordinated omission hides it.", "severity": "high", "probe": "F"},
+    {"id": "FM7", "name": "stale allow from cache", "description": "A cached authorization decision is served without re-validation against canonical revoked state.", "severity": "critical"},
+    {"id": "FM8", "name": "unknown outcome not reconciled", "description": "An UNKNOWN propagation result is silently retried or treated as ALLOW instead of entering reconciliation.", "severity": "high"}
+  ],
+  "threats": [
+    {"id": "T1", "asset": "A2", "boundary": "TB3", "failure_mode": "FM7", "mitigation": "Cache TTL for revoke-class decisions is 0; cache entries must carry a revocation version/epoch and re-validate against canonical state on eviction."},
+    {"id": "T2", "asset": "A2", "boundary": "TB4", "failure_mode": "FM5", "mitigation": "Child grant authorization must traverse and check the full parent chain against canonical revocation state."},
+    {"id": "T3", "asset": "A3", "boundary": "TB5", "failure_mode": "FM2", "mitigation": "Evaluator re-derives state from raw traces, never trusts producer summaries."},
+    {"id": "T4", "asset": "A1", "boundary": "TB1", "failure_mode": "FM1", "mitigation": "t_commit sourced from authoritative durable transition+journal; decisions after t_commit must see revoked state."},
+    {"id": "T5", "asset": "A4", "boundary": "TB3", "failure_mode": "FM4", "mitigation": "Cache epoch/revision must be persisted and compared; restart must not serve stale epoch."}
+  ],
+  "scope_boundary": "Local host same-process SQLite WAL topology. Does NOT model production multi-region clock sync or distributed cache fan-out; this is a research limit, not a production claim.",
+  "non_scope": ["production SLA", "multi-region global clock proof", "production vendor cache/queue service", "profile-C MLS/TEE rollout from S1-018"]
+}

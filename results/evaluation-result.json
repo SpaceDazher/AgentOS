@@ -1,0 +1,91 @@
+{
+  "evaluated_at_utc": "2026-09-01T04:32:27.202897+00:00",
+  "failures": [],
+  "hard_counters": {
+    "allow_after_commit": 0,
+    "blind_retry": 0,
+    "cache_resurrection": 0,
+    "censored_trial": 0,
+    "child_allow_after_parent_revoke": 0,
+    "effect_after_revoke": 0,
+    "epoch_regression": 0,
+    "missing_timestamp": 0,
+    "unreconciled_unknown": 0
+  },
+  "passed_checks": [
+    "all frozen artifact SHA-256 bindings present",
+    "dirty=false in manifest",
+    "executor_id present: executor-run-a-ae9a34b1",
+    "loaded 228 raw traces (204 mandatory, 24 probe)",
+    "all 228 traces pass hash binding verification",
+    "hard counter allow_after_commit = 0",
+    "hard counter effect_after_revoke = 0",
+    "hard counter child_allow_after_parent_revoke = 0",
+    "hard counter cache_resurrection = 0",
+    "hard counter epoch_regression = 0",
+    "hard counter blind_retry = 0",
+    "hard counter unreconciled_unknown = 0",
+    "hard counter missing_timestamp = 0",
+    "hard counter censored_trial = 0",
+    "mandatory trials = 204 >= 100",
+    "all 4 enforcement paths present: {'projection', 'gateway', 'retrieval', 'delegation'}",
+    "cache states present: {'warm', 'cold'}",
+    "load states present: {'steady', 'idle', 'burst'}",
+    "max latency 1.2568ms <= target 5000ms",
+    "latency stats verified: {'count': 204, 'min': 0.011, 'p50': 0.741, 'p95': 0.995, 'p99': 1.186, 'max': 1.257}",
+    "component gateway max latency 1.2568ms <= 5000ms",
+    "component retrieval max latency 1.1865ms <= 5000ms",
+    "component delegation max latency 1.1719ms <= 5000ms",
+    "component projection max latency 1.2048ms <= 5000ms",
+    "probe A detected: PROBE-A-allow-after-commit",
+    "probe B detected: PROBE-B-dropped-hop",
+    "probe C detected: PROBE-C-forged-timestamps",
+    "probe D detected: PROBE-D-cache-resurrection",
+    "probe E detected: PROBE-E-parent-revoke-child-allow",
+    "probe F detected: PROBE-F-censored-slow-tail",
+    "main run (A) PASS"
+  ],
+  "probe_results": {
+    "A": {
+      "detected": true,
+      "scenario": "PROBE-A-allow-after-commit",
+      "trials": 9,
+      "violations": 9
+    },
+    "B": {
+      "detected": true,
+      "scenario": "PROBE-B-dropped-hop",
+      "trials": 3,
+      "violations": 3
+    },
+    "C": {
+      "detected": true,
+      "scenario": "PROBE-C-forged-timestamps",
+      "trials": 3,
+      "violations": 3
+    },
+    "D": {
+      "detected": true,
+      "scenario": "PROBE-D-cache-resurrection",
+      "trials": 3,
+      "violations": 3
+    },
+    "E": {
+      "detected": true,
+      "scenario": "PROBE-E-parent-revoke-child-allow",
+      "trials": 3,
+      "violations": 3
+    },
+    "F": {
+      "detected": true,
+      "scenario": "PROBE-F-censored-slow-tail",
+      "trials": 3,
+      "violations": 3
+    }
+  },
+  "schema": "agentos.s1-008.evaluation-result/v1",
+  "verdict": "PASS_WITH_LIMITS",
+  "warnings": [
+    "no rerun (B) provided \u2014 rerun comparison skipped"
+  ]
+}

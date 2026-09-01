@@ -1,0 +1,47 @@
+{
+  "schema": "agentos.s1-008.corpus-manifest/v1",
+  "ticket_id": "S1-008",
+  "runner_sha256": "computed-from-runner.py",
+  "evaluator_sha256": "computed-from-evaluator.py",
+  "frozen_artifacts": {
+    "revocation_contract": {
+      "file": "revocation-contract.json",
+      "sha256": "placeholder"
+    },
+    "workload_manifest": {
+      "file": "workload-manifest.json",
+      "sha256": "placeholder"
+    },
+    "threat_model": {
+      "file": "threat-model.json",
+      "sha256": "placeholder"
+    },
+    "rubric": {
+      "file": "rubric.json",
+      "sha256": "placeholder"
+    },
+    "fixtures": {
+      "file": "fixtures.json",
+      "sha256": "placeholder"
+    }
+  },
+  "measurement_matrix": {
+    "paths": ["gateway", "retrieval", "delegation", "projection"],
+    "cache_states": ["cold", "warm"],
+    "loads": ["idle", "steady", "burst"],
+    "seeds": ["seed11", "seed12", "seed13"],
+    "total_observations": 72
+  },
+  "fault_scenarios": [
+    "concurrent_authz_during_revoke",
+    "delayed_propagation",
+    "unknown_notification",
+    "component_restart_after_commit",
+    "stale_cache_snapshot",
+    "parent_revoke_child_active",
+    "burst_queue_competing",
+    "clock_anomaly"
+  ],
+  "adversarial_probes": ["A", "B", "C", "D", "E", "F"],
+  "total_trials": 228
+}

@@ -1,0 +1,47 @@
+{
+  "schema": "agentos.s1-008.workload-manifest/v1",
+  "frozen_at": "2026-08-31T22:43:00Z",
+  "contract_sha256": "901e59002974d622244e9005363262b4492a04ccedf536fd0087618abd8bbd45",
+  "rubric_sha256": "aa54e5626d1b257b317b48ab5a69b183ec602a896317507afb19572509a62f19",
+  "seeds": [11, 22, 33],
+  "matrix": {
+    "paths": ["gateway", "retrieval", "delegation", "projection"],
+    "cache_states": ["cold", "warm"],
+    "loads": ["idle", "steady", "burst"],
+    "scenarios_per_execution": 72,
+    "minimum_trials_per_execution": 100
+  },
+  "loads_definition": {
+    "idle": {"arrival_rate_events_per_second": 5, "description": "Sparse arrivals, open-loop, independently paced."},
+    "steady": {"arrival_rate_events_per_second": 34, "description": "Sustained planning rate, fixed-rate open-loop arrivals."},
+    "burst": {"arrival_rate_events_per_second": 100, "description": "Burst arrivals, queueing allowed."}
+  },
+  "arrival_model": "open-loop: scheduled arrivals independent of worker readiness to exclude coordinated omission.",
+  "timeouts": {
+    "revocation_commit_timeout_ms": 5000,
+    "observation_grace_ms": 5000,
+    "decision_timeout_ms": 5000,
+    "trial_timeout_ms": 30000
+  },
+  "safety": {
+    "cache_ttl_for_revoke_class_ms": 0,
+    "stale_allow_forbidden": true,
+    "fail_closed_on_unknown": true
+  },
+  "seed_policy": "Seed selects RNG streams for arrival timing and allow/deny mix; it does NOT change the contract or expected verdict. Multiple seeds required.",
+  "environment_manifest_fields": [
+    "python_version", "python_implementation", "sqlite_version", "platform",
+    "processor", "machine", "cpu_count", "perf_counter_info",
+    "sqlite_journal_mode", "clock_type", "clock_precision_ns"
+  ],
+  "trial_record_fields": [
+    "run_id", "trial_id", "scenario", "seed", "component", "cache_state", "load",
+    "t_request_utc", "t_request_monotonic_ns", "t_commit_utc", "t_commit_monotonic_ns",
+    "t_observe_monotonic_ns", "t_decision_monotonic_ns", "t_deny_monotonic_ns",
+    "canonical_grant_id", "revocation_version", "revocation_epoch",
+    "cache_version_before", "cache_version_after",
+    "allow_after_commit", "effect_after_revoke",
+    "decision", "deny_reason", "latency_ms", "raw_trace"
+  ],
+  "note": "Open-loop arrival model excludes coordinated omission. All timings use perf_counter_ns; UTC wall clock is audit-only."
+}

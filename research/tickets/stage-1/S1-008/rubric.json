@@ -1,0 +1,58 @@
+{
+  "schema": "agentos.s1-008.rubric/v1",
+  "frozen_at": "2026-08-31T22:43:00Z",
+  "contract_sha256": "{{contract_sha256}}",
+  "target_ms": 5000,
+  "hard_gates": {
+    "max_latency_ms": 5000,
+    "max_allow_after_commit": 0,
+    "max_effect_after_revoke": 0,
+    "max_child_allow_after_parent_revoke": 0,
+    "max_cache_resurrection": 0,
+    "max_epoch_regression": 0,
+    "max_blind_retry": 0,
+    "max_unreconciled_unknown": 0,
+    "max_missing_timestamp": 0,
+    "max_censored_trial": 0
+  },
+  "matrix_requirements": {
+    "base_observations": 72,
+    "minimum_trials_per_execution": 100,
+    "paths": ["gateway", "retrieval", "delegation", "projection"],
+    "cache_states": ["cold", "warm"],
+    "loads": ["idle", "steady", "burst"],
+    "seeds": [11, 22, 33]
+  },
+  "probe_verdicts": {
+    "A": "fail_if_any_allow_after_commit",
+    "B": "fail_if_producer_summary_hides_stale_component",
+    "C": "fail_if_negative_latency_or_mixed_clock",
+    "D": "fail_if_cache_resurrection",
+    "E": "fail_if_child_allow_after_parent_revoke",
+    "F": "fail_if_censored_slow_tail"
+  },
+  "statistical_policy": {
+    "p50_p95_p99_are_descriptive": true,
+    "hard_verdict_by_maximum": true,
+    "confidence_intervals_do_not_compensate": true,
+    "weighted_rubric_does_not_compensate": true,
+    "outliers_not_deleted": true
+  },
+  "clock_policy": {
+    "elapsed_clock": "monotonic perf_counter_ns",
+    "audit_clock": "UTC wall clock",
+    "clock_rollback_fails_closed": true,
+    "mixed_clock_domains_fails_closed": true
+  },
+  "result": {
+    "pass": "All hard gates zero, max latency <= target, all probes detected, main/rerun reproduce",
+    "pass_with_limits": "All safety invariants hold but bounded same-host topology without production network/cache fan-out",
+    "fail": "Any hard gate >0, allow-after-commit, censored trial, or probe counterexample",
+    "blocked": "Dependency evidence not proven"
+  },
+  "compensation_forbidden": [
+    "A non-zero allow-after-commit may NOT be compensated by p95, confidence, or rubric score.",
+    "A censored slow tail may NOT be compensated by observed p95/p99 of completed requests.",
+    "A producer summary may NOT hide a raw trace violation."
+  ]
+}

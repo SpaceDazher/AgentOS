@@ -1,0 +1,115 @@
+{
+  "schema": "agentos.s1-008.fixtures/v1",
+  "frozen_at": "2026-08-31T22:43:00Z",
+  "description": "Frozen revocation trial fixtures: fixture cases define the enforcement scenarios and expected deny-after-revoke behavior. Each fixture is hash-addressed.",
+  "fixtures": [
+    {
+      "fixture_id": "GW-001",
+      "path": "gateway",
+      "cache_state": "cold",
+      "load": "idle",
+      "description": "Gateway capability check on cold cache. A revoked capability must yield DENY.",
+      "expected_decision_after_commit": "DENY",
+      "expected_failure_mode": "stale_allow_forbidden"
+    },
+    {
+      "fixture_id": "GW-002",
+      "path": "gateway",
+      "cache_state": "warm",
+      "load": "steady",
+      "description": "Gateway capability check on warm capability cache. Revocation version must invalidate cached allow.",
+      "expected_decision_after_commit": "DENY",
+      "expected_failure_mode": "stale_allow_forbidden"
+    },
+    {
+      "fixture_id": "GW-003",
+      "path": "gateway",
+      "cache_state": "warm",
+      "load": "burst",
+      "description": "Gateway under burst load: revoke commit concurrent with cached allow. Max latency bound enforced.",
+      "expected_decision_after_commit": "DENY",
+      "expected_failure_mode": "stale_allow_forbidden"
+    },
+    {
+      "fixture_id": "RT-001",
+      "path": "retrieval",
+      "cache_state": "cold",
+      "load": "idle",
+      "description": "Retrieval authorization on cold cache: must consult canonical authority and deny.",
+      "expected_decision_after_commit": "DENY",
+      "expected_failure_mode": "stale_allow_forbidden"
+    },
+    {
+      "fixture_id": "RT-002",
+      "path": "retrieval",
+      "cache_state": "warm",
+      "load": "steady",
+      "description": "Retrieval with warm cache: cached authorization must be invalidated by revocation version/epoch.",
+      "expected_decision_after_commit": "DENY",
+      "expected_failure_mode": "stale_allow_forbidden"
+    },
+    {
+      "fixture_id": "RT-003",
+      "path": "retrieval",
+      "cache_state": "warm",
+      "load": "burst",
+      "description": "Retrieval under burst: concurrent revoke + authorization; DENY required after t_commit.",
+      "expected_decision_after_commit": "DENY",
+      "expected_failure_mode": "stale_allow_forbidden"
+    },
+    {
+      "fixture_id": "DL-001",
+      "path": "delegation",
+      "cache_state": "cold",
+      "load": "idle",
+      "description": "Parent grant revoked; child delegation authorization must DENY (child must check parent chain).",
+      "expected_decision_after_commit": "DENY",
+      "expected_failure_mode": "stale_allow_from_child"
+    },
+    {
+      "fixture_id": "DL-002",
+      "path": "delegation",
+      "cache_state": "warm",
+      "load": "steady",
+      "description": "Parent revoke with warm child-grant cache: child must consult canonical parent state.",
+      "expected_decision_after_commit": "DENY",
+      "expected_failure_mode": "stale_allow_from_child"
+    },
+    {
+      "fixture_id": "DL-003",
+      "path": "delegation",
+      "cache_state": "warm",
+      "load": "burst",
+      "description": "Parent revoke under burst load with active child grant; child DENY mandatory after commit.",
+      "expected_decision_after_commit": "DENY",
+      "expected_failure_mode": "stale_allow_from_child"
+    },
+    {
+      "fixture_id": "PR-001",
+      "path": "projection",
+      "cache_state": "cold",
+      "load": "idle",
+      "description": "Projection/cache enforcement on cold cache: materialized view must not serve post-revoke allows.",
+      "expected_decision_after_commit": "DENY",
+      "expected_failure_mode": "cache_resurrection"
+    },
+    {
+      "fixture_id": "PR-002",
+      "path": "projection",
+      "cache_state": "warm",
+      "load": "steady",
+      "description": "Projection with warm cache: epoch/version must be invalidated on revoke commit.",
+      "expected_decision_after_commit": "DENY",
+      "expected_failure_mode": "cache_resurrection"
+    },
+    {
+      "fixture_id": "PR-003",
+      "path": "projection",
+      "cache_state": "warm",
+      "load": "burst",
+      "description": "Projection under burst: restart after revoke with stale snapshot must not resurrect allows.",
+      "expected_decision_after_commit": "DENY",
+      "expected_failure_mode": "cache_resurrection"
+    }
+  ]
+}

@@ -1,0 +1,104 @@
+{
+  "schema": "agentos.s1-008.revocation-contract/v1",
+  "contract_version": 1,
+  "frozen_at": "2026-08-31T22:43:00Z",
+  "goal": "Measure whether the platform enforces revocation within <=5 seconds across gateway, retrieval, delegation, and cached projections.",
+  "hard_target_ms": 5000,
+  "hard_target_note": "Any uncensored value >5000 ms, allow-after-commit, missing timestamp, or censored trial yields FAIL.",
+  "time_semantics": {
+    "t_request": "Instant when the revoke request is accepted by the authoritative component.",
+    "t_commit": "Instant of durable commit of canonical revoked state + matching audit event. The sole zero point of the security bound. MUST originate from an authoritative DB/journal transition, never from send time or producer summary.",
+    "t_observe": "Instant a given component reads/applies the revocation version (per component).",
+    "t_decision": "Linearization point of the new authorization decision after t_commit.",
+    "t_deny": "Instant the observable decision result is DENY.",
+    "t_effect": "Instant any downstream side effect begins, if one is initiated.",
+    "L_component_ms": "t_observe(component) - t_commit  (per-component propagation latency)",
+    "L_deny_ms": "t_deny - t_commit  (end-to-end enforcement latency)"
+  },
+  "invariants": {
+    "INV5": "REVOCATION MONOTONICITY: a revoked grant must never appear in any allow trace after t_commit. Formally: FORALL t' >= t_commit: NOT EXISTS decision(t') = allow where the grant was already revoked at t'.",
+    "INV5_not_weakened": "INV5 is NOT weakened to 'ALLOW permitted for the first 5 seconds'. fail-closed.",
+    "no_stale_allow": "A component that has not yet applied the revocation MUST consult canonical authority; it cannot return a stale ALLOW. Allowed outcomes are DENY or explicit UNKNOWN/reconciliation.",
+    "atomic_transition_audit": "Transition + audit event commit atomically (transactional journal).",
+    "transition_only_via_journal": "Every status change goes through the transactional Journal.transition, which appends the hash-chained audit event in the SAME transaction.",
+    "approvals_consumed_once": "Approvals bind to actor + exact operation + exact canonical args + expiry and are consumed atomically exactly once.",
+    "memory_scope": "Cross-goal/cross-tenant memory reads are denied.",
+    "transition_no_bypass": "TERMINAL goal transitions (ACCEPTED/REJECTED) go only through accept_by_gate_record, never via raw journal calls."
+  },
+  "latency_rules": {
+    "monotonic_clock": "Elapsed latency MUST use a monotonic high-resolution clock (time.perf_counter_ns). UTC wall clock is audit/provenance only. Never subtract unsynchronized wall-clock timestamps.",
+    "hard_bound_max": "Hard bound checked on MAX of each mandatory trial, not only p95/p99.",
+    "violation_anywhere_fails": "ANY uncensored value >5000 ms, allow-after-commit, missing timestamp, or timeout/censored trial => FAIL.",
+    "negative_or_nonnumeric_fails": "Negative/non-numeric latency, clock rollback, unknown timezone, mixed clock domains, or producer-calculated-only summary => fail-closed verdict.",
+    "pre_commit_requests": "Requests started before t_commit are classified separately by their linearization point and are never deleted from raw evidence."
+  },
+  "mandatory_components": {
+    "gateway": "Gateway authorization path (ToolGateway.invoke capability decision).",
+    "retrieval": "Retrieval authorization including warm cache (read handler over indexed/projected data).",
+    "delegation": "Delegation/child-grant authorization (derived grant from parent).",
+    "projection": "Cached/indexed/background projection enforcement (wiki projection cache, materialized view)."
+  },
+  "mandatory_cache_states": ["cold", "warm"],
+  "mandatory_loads": ["idle", "steady", "burst"],
+  "mandatory_seeds": [11, 22, 33],
+  "mandatory_matrix": {
+    "paths": 4,
+    "cache_states": 2,
+    "loads": 3,
+    "seeds": 3,
+    "base_observations": 72,
+    "minimum_trials_per_execution": 100
+  },
+  "fault_scenarios": [
+    "revoke commit simultaneously with cached authorization",
+    "delayed or dropped propagation hop",
+    "UNKNOWN outcome during invalidation/revoke notification delivery",
+    "restart gateway/retrieval/delegation/cache after commit",
+    "stale cache snapshot or projection epoch",
+    "revoke parent grant with active child/delegated grant",
+    "burst queue where revoke and authorization compete",
+    "clock anomaly probe: wall clock shifted/backward, monotonic remains authoritative"
+  ],
+  "adversarial_probes": {
+    "A": "allow after durable commit - any ALLOW with t_decision > t_commit => FAIL regardless of latency.",
+    "B": "dropped hop hidden by summary - producer summary claims all_components_observed but raw trace shows a stale component => FAIL.",
+    "C": "forged or non-monotonic timestamps - negative latency or mixed clock domains => FAIL.",
+    "D": "cache resurrection after restart - restart with stale snapshot; any ALLOW with reduced epoch or lost revocation version => FAIL.",
+    "E": "delegation survives parent revoke - authorize through child after parent revoke => DENY required, ALLOW or unresolved UNKNOWN => FAIL.",
+    "F": "censored slow tail/coordinated omission - hiding a >5000 ms trial via timeout, missing completion, or sampling only completed => FAIL."
+  },
+  "hard_counters_must_be_zero": [
+    "allow_after_commit",
+    "effect_after_revoke",
+    "child_allow_after_parent_revoke",
+    "cache_resurrection",
+    "epoch_regression",
+    "blind_retry",
+    "unreconciled_unknown",
+    "missing_timestamp",
+    "censored_trial"
+  ],
+  "verdict_semantics": {
+    "pass": "All mandatory trials present, uncensored, max <=5000 ms, all hard counters zero, all probes A-F detected fail-closed, main/rerun reproduce safety verdict.",
+    "pass_with_limits": "All safety invariants hold but the measurement is bounded to a same-host/same-process local topology without production network/cache fan-out, so the bound is a research limit.",
+    "fail": "Any hard counter >0, any allow-after-commit, any censored/missing mandatory trial, or any probe counterexample.",
+    "blocked": "Dependency S1-002/S1-004 evidence not proven, or invariant violation on an honest path."
+  },
+  "trial_record_schema": {
+    "required_fields": [
+      "run_id", "trial_id", "scenario", "seed", "component", "cache_state", "load",
+      "contract_sha256", "workload_sha256", "rubric_sha256", "commit_git_sha",
+      "tree_sha", "dirty", "executor_id", "environment_hash",
+      "t_request_utc", "t_request_monotonic_ns", "t_commit_utc", "t_commit_monotonic_ns",
+      "t_observe_monotonic_ns", "t_decision_monotonic_ns", "t_deny_monotonic_ns",
+      "canonical_grant_id", "parent_chain", "revocation_version", "revocation_epoch",
+      "cache_version_before", "cache_version_after",
+      "request_arrival_monotonic_ns", "queue_admission_monotonic_ns",
+      "request_completion_monotonic_ns",
+      "decision", "deny_reason",
+      "allow_after_commit", "effect_after_revoke",
+      "censor_timeout", "reconciliation_flag",
+      "raw_trace_sha256"
+    ]
+  }
+}

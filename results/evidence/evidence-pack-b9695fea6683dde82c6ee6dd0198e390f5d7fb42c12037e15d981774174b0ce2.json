@@ -1,0 +1,133 @@
+{
+  "artifact_chain_hash": "edcb75298632c3cdcacdabcb084612f3ac5500ba5b891e61c80443b16b2de1fd",
+  "campaign_id": "rcamp_KM87PC6WTM8FS4DX01M1DM9JWH",
+  "comparison": {
+    "failures": [],
+    "verdict": "PASS",
+    "warnings": []
+  },
+  "evaluation_id": "reval_S1-008_REVOCATION_LATENCY",
+  "frozen_artifact_hashes": {
+    "corpus-manifest.json": "MISSING",
+    "evaluator.py": "4ea6ad5073ecf095e59dd09299eefe1f797b80dcc1c311b88331fcd4cb70656b",
+    "fixtures.json": "dc018d885d055682d212181e63640b1d88772f8bb3952e08549cd9d206424cf3",
+    "make_bundle.py": "8d57e86ca8ad3e77ad707501c15001b6d996a6cc47c4b7bd4b6f7a1621654fd9",
+    "revocation-contract.json": "80007c14301b4accaf8259f5eb106ec7e7fdbd10fb70ff861ccd8991af4d0c25",
+    "rubric.json": "c100acc2775012923d595ed0ec1537cfaad4509cea34dea4c113aa494993eff4",
+    "runner.py": "99d168cc7267eb0ae1e45cda2f4b481dcfd6991cdc6fc3d9df69f525a02044a0",
+    "threat-model.json": "171b8ff43411dc6a081656c935de10c84489c21618cb0e9c2a2127a5c803895f",
+    "workload-manifest.json": "6248bc2605345f84ecbc105df34ece6ccc616defc956a4873ae0f299d508fb39"
+  },
+  "goal_id": "goal_5YJ2AHPMWP3EV2D501M1DM9JWH",
+  "hard_counters": {
+    "allow_after_commit": 0,
+    "blind_retry": 0,
+    "cache_resurrection": 0,
+    "censored_trial": 0,
+    "child_allow_after_parent_revoke": 0,
+    "effect_after_revoke": 0,
+    "epoch_regression": 0,
+    "missing_timestamp": 0,
+    "unreconciled_unknown": 0
+  },
+  "pack_sha256": "b9695fea6683dde82c6ee6dd0198e390f5d7fb42c12037e15d981774174b0ce2",
+  "payload_sha256": "2e72dfb254ede01a55140b2a3ecfbb3fc0b7f270426bccc14286c7ea596f1941",
+  "probe_results": {
+    "A": {
+      "detected": true,
+      "scenario": "PROBE-A-allow-after-commit",
+      "trials": 9,
+      "violations": 9
+    },
+    "B": {
+      "detected": true,
+      "scenario": "PROBE-B-dropped-hop",
+      "trials": 3,
+      "violations": 3
+    },
+    "C": {
+      "detected": true,
+      "scenario": "PROBE-C-forged-timestamps",
+      "trials": 3,
+      "violations": 3
+    },
+    "D": {
+      "detected": true,
+      "scenario": "PROBE-D-cache-resurrection",
+      "trials": 3,
+      "violations": 3
+    },
+    "E": {
+      "detected": true,
+      "scenario": "PROBE-E-parent-revoke-child-allow",
+      "trials": 3,
+      "violations": 3
+    },
+    "F": {
+      "detected": true,
+      "scenario": "PROBE-F-censored-slow-tail",
+      "trials": 3,
+      "violations": 3
+    }
+  },
+  "raw_archive_a": {
+    "member_count": 0,
+    "path": "results3\\raw-traces",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "raw_archive_b": {
+    "member_count": 228,
+    "path": "results\\run-b\\raw-traces",
+    "sha256": "0c07332ba5e254dfedd347050fcb0001b108db3da982b4fea3ecc47a56a2f37d"
+  },
+  "run_a": {
+    "executor_id": "executor-run-a-ae9a34b1",
+    "git_commit": "cbdcbe1da7ed520ad11291caa75ba460d20f3464",
+    "hard_counters": {
+      "allow_after_commit": 0,
+      "blind_retry": 0,
+      "cache_resurrection": 0,
+      "censored_trial": 0,
+      "child_allow_after_parent_revoke": 0,
+      "effect_after_revoke": 0,
+      "epoch_regression": 0,
+      "missing_timestamp": 0,
+      "unreconciled_unknown": 0
+    },
+    "latency_ms": {
+      "count": 204,
+      "max": 1.257,
+      "min": 0.011,
+      "p50": 0.74,
+      "p95": 0.997,
+      "p99": 1.187
+    }
+  },
+  "run_b": {
+    "executor_id": "executor-run-b-5b400e1e",
+    "git_commit": "cbdcbe1da7ed520ad11291caa75ba460d20f3464",
+    "hard_counters": {
+      "allow_after_commit": 0,
+      "blind_retry": 0,
+      "cache_resurrection": 0,
+      "censored_trial": 0,
+      "child_allow_after_parent_revoke": 0,
+      "effect_after_revoke": 0,
+      "epoch_regression": 0,
+      "missing_timestamp": 0,
+      "unreconciled_unknown": 0
+    },
+    "latency_ms": {
+      "count": 204,
+      "max": 2.148,
+      "min": 0.015,
+      "p50": 0.726,
+      "p95": 1.207,
+      "p99": 1.457
+    }
+  },
+  "schema": "agentos.s1-008.evidence-pack/v1",
+  "target_ms": 5000,
+  "ticket_id": "S1-008",
+  "verdict": "PASS_WITH_LIMITS"
+}
