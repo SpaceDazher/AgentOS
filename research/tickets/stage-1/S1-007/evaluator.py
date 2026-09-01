@@ -44,6 +44,10 @@ DENY_BODY = {"objects": [], "result": "empty"}
 PROVENANCE_FIELDS = ("canonical_source_id", "publisher_id",
                      "independence_group", "resolver_version",
                      "created_by_activity")
+EVIDENCE_SCRIPTS = (
+    "runner.py", "evaluator.py", "make_bundle.py", "dependency_gate.py",
+    "bundle_content.py", "publish_evidence_pack.py",
+)
 
 
 class EvalError(RuntimeError):
