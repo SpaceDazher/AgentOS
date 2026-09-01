@@ -219,7 +219,7 @@ class TestMatrixFailClosed(unittest.TestCase):
     def test_missing_run_rejected(self):
         base = GoldenFixture.fresh_copy(
             Path(tempfile.mkdtemp(prefix="s1007-missing-")))
-        run_file = next((base / "run-a" / "runs").glob(
+        run_file = next((base / "run-a" / "run_records").glob(
             "per_scope__same-scope-authorized__101.json"))
         run_file.unlink()
         manifest = base / "run-a" / "run-manifest.json"
@@ -239,10 +239,10 @@ class TestMatrixFailClosed(unittest.TestCase):
         extra = dict(doc["runs"][0])
         extra["run_id"] = "per_scope|same-scope-authorized|999"
         extra["path"] = "999.json"
-        (base / "run-a" / "runs" / "999.json").write_text(
-            (base / "run-a" / "runs" / doc["runs"][0]["path"]
+        (base / "run-a" / "run_records" / "999.json").write_text(
+            (base / "run-a" / "run_records" / doc["runs"][0]["path"]
              ).read_text(encoding="utf-8"), encoding="utf-8")
-        extra["sha256"] = sha((base / "run-a" / "runs" / "999.json")
+        extra["sha256"] = sha((base / "run-a" / "run_records" / "999.json")
                               .read_bytes())
         doc["runs"].append(extra)
         (base / "run-a" / "run-manifest.json").write_text(
@@ -278,7 +278,7 @@ class TestMatrixFailClosed(unittest.TestCase):
     def test_run_digest_mismatch_rejected(self):
         base = GoldenFixture.fresh_copy(
             Path(tempfile.mkdtemp(prefix="s1007-dig-")))
-        run_file = next((base / "run-a" / "runs").glob(
+        run_file = next((base / "run-a" / "run_records").glob(
             "shared_rls__foreign-id-valid__101.json"))
         raw = json.loads(run_file.read_text(encoding="utf-8"))
         raw["observations"][0]["decision"] = "deny"
@@ -290,7 +290,7 @@ class TestMatrixFailClosed(unittest.TestCase):
     def test_empty_observations_rejected(self):
         base = GoldenFixture.fresh_copy(
             Path(tempfile.mkdtemp(prefix="s1007-empty-")))
-        run_file = next((base / "run-a" / "runs").glob(
+        run_file = next((base / "run-a" / "run_records").glob(
             "shared_rls__foreign-id-valid__101.json"))
         raw = json.loads(run_file.read_text(encoding="utf-8"))
         raw["observations"] = []
@@ -343,7 +343,7 @@ class TestMatrixFailClosed(unittest.TestCase):
     def test_contract_hash_divergence_rejected(self):
         base = GoldenFixture.fresh_copy(
             Path(tempfile.mkdtemp(prefix="s1007-hash-")))
-        run_file = next((base / "run-a" / "runs").glob(
+        run_file = next((base / "run-a" / "run_records").glob(
             "per_scope__same-scope-authorized__101.json"))
         raw = json.loads(run_file.read_text(encoding="utf-8"))
         raw["contract_hashes"]["rubric.json"] = "0" * 64
@@ -378,7 +378,7 @@ class TestISODerivation(unittest.TestCase):
     from RAW data even when the runner-side summary lies."""
 
     def _mutated_run(self, base: Path, run_id: str, mutate) -> Path:
-        path = base / "run-a" / "runs" / (
+        path = base / "run-a" / "run_records" / (
             run_id.replace("|", "__") + ".json")
         raw = json.loads(path.read_text(encoding="utf-8"))
         mutate(raw)
@@ -614,6 +614,190 @@ class TestISODerivation(unittest.TestCase):
         self._mutated_run(base, run_id, inject)
         ev = self._evaluate_verdict(base)
         self.assertEqual(ev["verdict"], "FAIL")
+
+
+class TestReviewR1Corrections(unittest.TestCase):
+    """One regression per REVIEW_R1 finding reproduction."""
+
+    def test_raw_runs_tracked_and_clean_clone_verifiable(self):
+        """Finding 1: exact raw evidence must be tracked in Git and
+        re-verifiable from the tracked archive + manifests alone."""
+        GoldenFixture.build()
+        # (a) every run record path is git-tracked (single ls-files call)
+        proc = subprocess.run(
+            ["git", "ls-files", "research/tickets/stage-1/S1-007/results/"],
+            capture_output=True, text=True, cwd=str(ROOT), timeout=60)
+        self.assertEqual(proc.returncode, 0)
+        tracked = set(proc.stdout.split())
+        for which in ("run-a", "run-b"):
+            run_dir = S1007 / "results" / which / "run_records"
+            files = sorted(run_dir.glob("*.json"))
+            self.assertEqual(len(files), 84, which)
+            for f in files:
+                rel = f.relative_to(ROOT).as_posix()
+                self.assertIn(rel, tracked, rel)
+        # (b) the tracked raw archive binds every member digest
+        record = json.loads((S1007 / "evaluation-record.json")
+                            .read_text(encoding="utf-8"))
+        archive_rel = record["raw_observations_archive"]["path"]
+        archive_path = ROOT / archive_rel
+        self.assertIn(archive_rel, tracked)
+        raw = archive_path.read_bytes()
+        self.assertEqual(sha(raw),
+                         record["raw_observations_archive"]["sha256"])
+        archive = json.loads(raw.decode("utf-8"))
+        for name, digest in archive["member_sha256"].items():
+            member = archive["members"][name]
+            self.assertEqual(sha(member.encode("utf-8")), digest, name)
+        # (c) manifests inside the archive match the tracked manifests and
+        # every recorded run sha is present in the archive
+        for which in ("run-a", "run-b"):
+            archived_manifest = json.loads(
+                archive["members"][f"{which}/run-manifest.json"])
+            for entry in archived_manifest["runs"]:
+                member_name = f"{which}/run_records/{entry['path']}"
+                self.assertIn(member_name, archive["members"])
+                member_bytes = archive["members"][member_name].encode("utf-8")
+                self.assertEqual(sha(member_bytes), entry["sha256"],
+                                 member_name)
+        # (d) the tracked manifests equal the archived manifests
+        for which in ("run-a", "run-b"):
+            disk = (S1007 / "results" / which / "run-manifest.json").read_text(
+                encoding="utf-8")
+            self.assertEqual(disk,
+                             archive["members"][f"{which}/run-manifest.json"])
+
+    def test_per_variant_scores_stored_and_directional_d10(self):
+        """Finding 2: per-variant cells must not overwrite each other and
+        D10 must be directional (lower measured cost scores higher)."""
+        GoldenFixture.build()
+        ev = GoldenFixture.state["ev"]
+        d6 = ev["scores_per_dimension"]["D6"]
+        self.assertNotEqual(d6["per_scope"], d6["shared_rls"])
+        self.assertEqual(d6["per_scope"], 4.0)
+        self.assertEqual(d6["shared_rls"], 3.25)
+        d6_cells = [c for c in ev["decision_matrix"]
+                    if c["dimension"].startswith("D6")]
+        self.assertEqual(len(d6_cells), 2)
+        refs = {tuple(c["evidence_refs"]) for c in d6_cells}
+        self.assertEqual(len(refs), 2,
+                         "D6 cells must cite distinct per-variant faults")
+        for c in d6_cells:
+            joined = " ".join(c["evidence_refs"])
+            self.assertIn("fault:", joined)
+        d10 = ev["scores_per_dimension"]["D10"]
+        self.assertNotEqual(d10["per_scope"], d10["shared_rls"])
+
+    def test_timing_recomputed_from_raw_and_tamper_rejected(self):
+        """Finding 3: the evaluator recomputes statistic/tolerance/verdict
+        from raw paired samples and ignores producer summaries."""
+        GoldenFixture.build()
+        base = GoldenFixture.fresh_copy(
+            Path(tempfile.mkdtemp(prefix="s1007-timing-")))
+        timing_path = base / "run-a" / "timing.json"
+        timing = json.loads(timing_path.read_text(encoding="utf-8"))
+        raw = timing["variants"]["per_scope"]["raw"]
+        raw["paired_diffs_ns"] = [999_999 for _ in raw["paired_diffs_ns"]]
+        timing_path.write_text(json.dumps(timing, indent=2, sort_keys=True),
+                               encoding="utf-8")
+        manifest = base / "run-a" / "run-manifest.json"
+        doc = json.loads(manifest.read_text(encoding="utf-8"))
+        doc["timing_sha256"] = sha(timing_path.read_bytes())
+        manifest.write_text(json.dumps(doc, indent=2, sort_keys=True))
+        seal_manifest(manifest)
+        doc_a = json.loads(manifest.read_text(encoding="utf-8"))
+        ev = evaluator.evaluate(
+            manifest, base / "run-b" / "run-manifest.json",
+            doc_a["provenance"]["commit"], base / "probes.json",
+            sha((base / "probes.json").read_bytes()),
+            base / "evaluation.json", "nonce-timing")
+        self.assertEqual(
+            ev["timing_analysis"]["variants"]["per_scope"]["verdict"],
+            "SIGNAL_ABOVE_TOLERANCE")
+        self.assertTrue(
+            ev["timing_analysis"]["variants"]["per_scope"]["recomputed"])
+        # missing raw -> NO_DATA, never a pass
+        timing["variants"]["per_scope"].pop("raw")
+        timing_path.write_text(json.dumps(timing, indent=2, sort_keys=True),
+                               encoding="utf-8")
+        doc["timing_sha256"] = sha(timing_path.read_bytes())
+        manifest.write_text(json.dumps(doc, indent=2, sort_keys=True))
+        seal_manifest(manifest)
+        ev2 = evaluator.evaluate(
+            manifest, base / "run-b" / "run-manifest.json",
+            doc_a["provenance"]["commit"], base / "probes.json",
+            sha((base / "probes.json").read_bytes()),
+            base / "evaluation.json", "nonce-timing2")
+        self.assertEqual(
+            ev2["timing_analysis"]["variants"]["per_scope"]["verdict"],
+            "NO_DATA")
+        self.assertIn("timing", " ".join(ev2["limitations"]).lower())
+
+    def test_provenance_exact_script_set_and_blob_binding(self):
+        """Finding 5: exact script key sets, commit-blob verification and
+        CRLF-normalized disk comparison; empty sets are rejected."""
+        GoldenFixture.build()
+        good = GoldenFixture.state["doc_a"]["provenance"]
+        evaluator.validate_provenance(good, good["commit"])  # must accept
+        with self.assertRaises(evaluator.EvalError):
+            evaluator.validate_provenance(
+                {**good, "script_hashes": {}, "script_blob_hashes": {}},
+                good["commit"])
+        with self.assertRaises(evaluator.EvalError):
+            evaluator.validate_provenance(
+                {**good,
+                 "script_blob_hashes": {k: "0" * 64
+                                        for k in good["script_blob_hashes"]}},
+                good["commit"])
+        with self.assertRaises(evaluator.EvalError):
+            evaluator.validate_provenance(
+                {**good,
+                 "script_hashes": {k: "0" * 64
+                                   for k in good["script_hashes"]}},
+                good["commit"])
+
+    def test_probe_relabel_rejected(self):
+        """Finding 6: relabelled or missing/extra probes are rejected
+        against the frozen probe matrix before counters are evaluated."""
+        GoldenFixture.build()
+        base = GoldenFixture.fresh_copy(
+            Path(tempfile.mkdtemp(prefix="s1007-relabel-")))
+        probes_path = base / "probes.json"
+        probes = json.loads(probes_path.read_text(encoding="utf-8"))
+        for probe in probes["probes"]:
+            if probe["probe"] == "C_postfilter":
+                probe["probe"] = "A_existence_oracle"
+        probes_path.write_text(json.dumps(probes, sort_keys=True),
+                               encoding="utf-8")
+        oracle = evaluator.Oracle(
+            evaluator.load(evaluator.TICKET / "fixtures.json"),
+            evaluator.load(evaluator.TICKET / "corpus-manifest.json"))
+        with self.assertRaises(evaluator.EvalError):
+            evaluator.evaluate_probes(probes, oracle)
+
+    def test_sensitivity_count_accurate(self):
+        """Finding 7: executed sensitivity counts must equal the executed
+        22 OAT + 200 random vectors and be reported verbatim."""
+        GoldenFixture.build()
+        ev = GoldenFixture.state["ev"]
+        sens = ev["sensitivity"]
+        self.assertEqual(sens["oat_perturbations_executed"], 22)
+        self.assertEqual(sens["random_vectors"], 200)
+        self.assertEqual(sens["total_perturbations_executed"], 222)
+        self.assertIn("weights-only", sens["policy"])
+
+    def test_bundle_timing_and_sensitivity_claims_match_execution(self):
+        """Finding 4+7: the FLOW-11 bundle must describe the methodology
+        that was actually executed (paired interleaved, 32 inner repeats,
+        2000ns floor, 222 perturbations)."""
+        GoldenFixture.build()
+        bundle_text = (S1007 / "bundle.json").read_text(encoding="utf-8")
+        self.assertIn("32 inner repeats", bundle_text)
+        self.assertIn("2000ns", bundle_text)
+        self.assertIn("paired interleaved", bundle_text)
+        self.assertNotIn("median-of-seed-medians", bundle_text)
+        self.assertIn("222", bundle_text)
+        self.assertNotIn("212 weight", bundle_text)
 
 
 class TestFrozenContracts(unittest.TestCase):

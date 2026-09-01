@@ -221,34 +221,49 @@ def build(gate: dict, evaluation: dict, probe_evidence: dict,
          "source_ids": ["SRC-03", "IMPL-INVARIANTS"]},
         {"id": "c4-timing", "claim_class": "fact",
          "text": "The bounded local existence-oracle timing probe (frozen "
-                 "methodology: 200 samples x 8 inner repeats x 3 seeds per "
-                 "arm, median-of-seed-medians, tolerance max(10%, 1us)) "
-                 "shows no signal above the frozen tolerance for either "
-                 f"honest variant (per_scope signal {timing['variants']['per_scope']['signal_ns']}ns "
-                 f"vs tolerance {timing['variants']['per_scope']['tolerance_ns']}ns; "
-                 f"shared_rls signal {timing['variants']['shared_rls']['signal_ns']}ns "
-                 f"vs tolerance {timing['variants']['shared_rls']['tolerance_ns']}ns). "
-                 "This is a bounded local measurement, not a production SLO "
-                 "and not proof of absence of all side channels.",
+                 "methodology: paired interleaved foreign/control arms, 200 "
+                 "paired samples x 32 inner repeats x 3 seeds per variant, "
+                 "statistic = pooled median of paired differences, tolerance "
+                 "= max(10% of the control median, 2000ns)) shows no signal "
+                 "above the frozen tolerance for either honest variant "
+                 f"(evaluator-recomputed per_scope signal "
+                 f"{timing['variants']['per_scope'].get('signal_ns')}ns vs "
+                 f"tolerance "
+                 f"{timing['variants']['per_scope'].get('tolerance_ns')}ns; "
+                 f"shared_rls signal "
+                 f"{timing['variants']['shared_rls'].get('signal_ns')}ns vs "
+                 f"tolerance "
+                 f"{timing['variants']['shared_rls'].get('tolerance_ns')}ns). "
+                 "The evaluator recomputes the statistic, tolerance and "
+                 "verdict from raw hash-bound paired samples of both "
+                 "executions and ignores producer summaries. This is a "
+                 "bounded local measurement, not a production SLO and not "
+                 "proof of absence of all side channels.",
          "source_ids": ["SRC-06"]},
         {"id": "c5-decision", "claim_class": "inference",
          "text": f"QA3 decision: {winner} wins under the frozen rubric "
                  f"(per_scope {scores['per_scope']} vs shared_rls "
-                 f"{scores['shared_rls']}); sensitivity across 212 weight "
-                 f"perturbations (11 one-at-a-time +-50% renormalized + 200 "
-                 f"seeded random vectors) shows {sens['flip_count']} winner "
-                 f"flips.  Deciding evidence beyond identical hard-invariant "
-                 f"compliance: shared-index single-fault blast radius "
-                 f"(predicate bypass affects "
+                 f"{scores['shared_rls']}); sensitivity executed "
+                 f"{sens['total_perturbations_executed']} deterministic "
+                 f"weight perturbations ({sens['oat_perturbations_executed']} "
+                 f"one-at-a-time +-50% renormalized + "
+                 f"{sens['random_vectors']} seeded random vectors, seed "
+                 f"{sens['random_seed']}) with {sens['flip_count']} winner "
+                 f"flips; every scored cell was a measured number, so the "
+                 "unknown-bound swing policy had no cell to activate on.  "
+                 "Deciding evidence beyond identical hard-invariant "
+                 "compliance: shared-index single-fault blast radius "
+                 "(predicate bypass exposes foreign rows to callers of "
+                 "every mismatched scope: "
                  f"{evaluation['fault_injection']['shared_rls']['predicate_bypass_affected_scopes']} "
-                 f"scopes vs "
+                 "of 3 in-corpus, versus a one-scope misfiled projection "
                  f"{evaluation['fault_injection']['per_scope']['predicate_bypass_affected_scopes']} "
-                 f"for a misfiled per-scope projection), profile-C "
-                 f"compatibility (server-side shared index is incompatible "
-                 f"with the documented E2EE client-index boundary), and "
-                 f"migration cost from the current per-goal scoped gateway "
-                 f"(0 rebuild steps for per-scope projections vs 2 for a "
-                 f"shared predicate layer).",
+                 "of 3 for per-scope), directional D10 overhead scoring, "
+                 "profile-C compatibility (server-side shared index is "
+                 "incompatible with the documented E2EE client-index "
+                 "boundary), and migration cost from the current per-goal "
+                 "scoped gateway (0 rebuild steps for per-scope projections "
+                 "vs 2 for a shared predicate layer).",
          "source_ids": ["SRC-03", "SRC-07", "IMPL-GATEWAY"]},
         {"id": "c6-overhead", "claim_class": "fact",
          "text": "Overhead accounting in the local model: per-scope "
@@ -286,7 +301,7 @@ def build(gate: dict, evaluation: dict, probe_evidence: dict,
         "research_plan": {
             "producer": PRODUCER,
             "claim_refs": ["c1-gate", "c2-iso", "c5-decision"],
-            "content": "# Question\nQA3: which retrieval/index contract better preserves scope isolation and stays useful for the MVP - per-scope index projections or a shared index with row-level retrieval filtering (shared-RLS)?\n\n# Method\nFrozen isolation contract (ISO1-ISO8), threat model and rubric frozen before experiments; deterministic stdlib-only corpus (3 scopes incl. near-collision IDs, 14 cases in 8 required groups, 3 seeds per variant x case); main run and independent rerun by different executor identities in separate subprocesses/output directories; evaluator re-derives every ISO counter from raw observations with its own oracle; adversarial probe candidates A/B/C/D plus blast-radius fault injection run through the same code paths; bounded local timing probe with frozen methodology; sensitivity over 212 weight perturbations.\n\n# Decision enabled\nSelect per-scope, shared-RLS or an explicit profile split with policy, residual risk, rollback and a measurable migration trigger.\n\n# Non-scope\nProduction search service/vendor choice, ranking optimization, profile-C MLS/TEE (S1-018), revocation SLO (S1-008), core runtime rewrites.\n",
+            "content": "# Question\nQA3: which retrieval/index contract better preserves scope isolation and stays useful for the MVP - per-scope index projections or a shared index with row-level retrieval filtering (shared-RLS)?\n\n# Method\nFrozen isolation contract (ISO1-ISO8), threat model and rubric frozen before experiments; deterministic stdlib-only corpus (3 scopes incl. near-collision IDs, 14 cases in 8 required groups, 3 seeds per variant x case); main run and independent rerun by different executor identities in separate subprocesses/output directories; evaluator re-derives every ISO counter from raw observations with its own oracle; adversarial probe candidates A/B/C/D plus blast-radius fault injection run through the same code paths; bounded local timing probe with frozen methodology; sensitivity over {sens['total_perturbations_executed']} deterministic weight perturbations.\n\n# Decision enabled\nSelect per-scope, shared-RLS or an explicit profile split with policy, residual risk, rollback and a measurable migration trigger.\n\n# Non-scope\nProduction search service/vendor choice, ranking optimization, profile-C MLS/TEE (S1-018), revocation SLO (S1-008), core runtime rewrites.\n",
         },
         "source_registry": {
             "producer": PRODUCER,
@@ -321,7 +336,7 @@ def build(gate: dict, evaluation: dict, probe_evidence: dict,
         "synthesis_and_gaps": {
             "producer": PRODUCER,
             "claim_refs": ["c2-iso", "c3-probes", "c4-timing", "c5-decision"],
-            "content": f"# Result\n{verdict}.  Under the frozen rubric {winner} scores {scores[winner]} versus {scores['shared_rls' if winner == 'per_scope' else 'per_scope']} for the alternative; {sens['flip_count']} winner flips across 212 weight perturbations.\n\n# Evidence\n- ISO1-ISO8 zero on 84 main + 84 rerun runs for both honest variants (evaluator re-derived, not runner-reported).\n- Deny equivalence: byte-identical canonical bodies for foreign/nonexistent/forged/malformed/unknown classes.\n- Probes A/B/C/D detected fail-closed through real evaluator rules (ISO2 / ISO3+ISO4 / ISO2 / ISO7+ISO5).\n- Timing: no existence-oracle signal above the frozen tolerance for either variant (bounded local measurement).\n- Fault injection: shared predicate bypass affects all scopes with membership mismatch (2/3 in-corpus) versus 1/3 for a misfiled per-scope entry.\n\n# Gaps / residual risks\n- All results are local-model measurements; production latency/storage numbers remain unknown (bounded in sensitivity as declared assumptions).\n- Timing cannot prove absence of all side channels.\n- Profile-C admin-blind indexing contract remains S1-018; revocation latency SLO remains S1-008.\n",
+            "content": f"# Result\n{verdict}.  Under the frozen rubric {winner} scores {scores[winner]} versus {scores['shared_rls' if winner == 'per_scope' else 'per_scope']} for the alternative; {sens['flip_count']} winner flips across {sens['total_perturbations_executed']} executed weight perturbations.\n\n# Evidence\n- ISO1-ISO8 zero on 84 main + 84 rerun runs for both honest variants (evaluator re-derived, not runner-reported).\n- Deny equivalence: byte-identical canonical bodies for foreign/nonexistent/forged/malformed/unknown classes.\n- Probes A/B/C/D detected fail-closed through real evaluator rules (ISO2 / ISO3+ISO4 / ISO2 / ISO7+ISO5).\n- Timing: no existence-oracle signal above the frozen tolerance for either variant (bounded local measurement).\n- Fault injection: shared predicate bypass affects all scopes with membership mismatch (2/3 in-corpus) versus 1/3 for a misfiled per-scope entry.\n\n# Gaps / residual risks\n- All results are local-model measurements; production latency/storage numbers remain unknown (bounded in sensitivity as declared assumptions).\n- Timing cannot prove absence of all side channels.\n- Profile-C admin-blind indexing contract remains S1-018; revocation latency SLO remains S1-008.\n",
         },
         "independent_audit": {
             "producer": AUDITOR,

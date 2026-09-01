@@ -171,5 +171,35 @@
   "determinism": {
     "seed_use": "random.Random(seed) selects the bulk request order and the cache pre-state permutation; identical seeds must produce byte-identical run payloads",
     "serialization": "json.dumps(sort_keys=True, separators=(',',':')) for every run record digest"
+  },
+  "probe_spec": {
+    "frozen_matrix_note": "the exact adversarial probe matrix; evaluator rejects missing/extra/duplicated/relabelled probes before evaluating their counters",
+    "probes": {
+      "A_existence_oracle": {
+        "candidate": "probeA_existence_oracle",
+        "cases": ["foreign-id-valid", "nonexistent-id-control"],
+        "seeds": [101],
+        "expected_detection": "FAIL via ISO2"
+      },
+      "B_stale_cache": {
+        "candidate": "probeB_stale_cache",
+        "cases": ["revoke-stale-cache"],
+        "seeds": [101],
+        "expected_detection": "FAIL via ISO3+ISO4"
+      },
+      "C_postfilter": {
+        "candidate": "probeC_postfilter",
+        "cases": ["pagination-leak", "count-rank-snippet-aggregation"],
+        "seeds": [101],
+        "expected_detection": "FAIL via ISO2"
+      },
+      "D_forged_scope_provenance_loss": {
+        "candidate": "probeD_forged_scope_provenance_loss",
+        "cases": ["forged-scope-param", "background-reindex-provenance", "same-scope-authorized"],
+        "seeds": [101],
+        "expected_detection": "FAIL+INCOMPARABLE via ISO7+ISO5"
+      }
+    },
+    "fault_injection_variants": ["per_scope", "shared_rls"]
   }
 }

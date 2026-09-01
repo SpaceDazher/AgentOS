@@ -46,6 +46,10 @@ def sha_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _sha_text(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
 def load(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
@@ -64,6 +68,44 @@ def run_matrix(mode: str, out_dir: Path, executor_id: str) -> dict:
     sh([sys.executable, str((TICKET / "runner.py").resolve()), "--mode", mode,
         "--out", str(out_dir)], env=env)
     return load(out_dir / "run-manifest.json")
+
+
+def build_raw_archive(manifest_a: dict, manifest_b: dict) -> dict:
+    """Finding 1 correction: preserve the EXACT raw observations in a
+    tracked, content-addressed archive so a clean-clone auditor can
+    re-verify every run digest and recompute every derived statistic.
+    Members are byte-copies of the on-disk run records plus both timing
+    artifacts; the archive name carries its own sha256."""
+    members = {}
+    for which in ("run-a", "run-b"):
+        base = RESULTS / which
+        members[f"{which}/run-manifest.json"] = \
+            (base / "run-manifest.json").read_text(encoding="utf-8")
+        members[f"{which}/timing.json"] = \
+            (base / "timing.json").read_text(encoding="utf-8")
+        for run_file in sorted((base / "run_records").glob("*.json")):
+            members[f"{which}/run_records/{run_file.name}"] = \
+                run_file.read_text(encoding="utf-8")
+    archive = {
+        "schema": "agentos.s1-007.raw-observations/v1",
+        "note": "byte-exact copies of the executed run records and timing "
+                "artifacts for both executors; sha256 of this archive file "
+                "is recorded in evaluation-record.json and re-verified by "
+                "the clean-clone probe",
+        "member_count": len(members),
+        "member_sha256": {name: _sha_text(v)
+                          for name, v in sorted(members.items())},
+        "members": members,
+    }
+    raw = json.dumps(archive, indent=2, sort_keys=True,
+                     ensure_ascii=False).encode("utf-8") + b"\n"
+    digest = hashlib.sha256(raw).hexdigest()
+    evidence_dir = RESULTS / "evidence"
+    evidence_dir.mkdir(parents=True, exist_ok=True)
+    (evidence_dir / f"raw-observations-{digest}.json").write_bytes(raw)
+    return {"sha256": digest, "member_count": len(members),
+            "path": f"research/tickets/stage-1/S1-007/results/evidence/"
+                    f"raw-observations-{digest}.json"}
 
 
 def run_probes() -> dict:
@@ -284,6 +326,9 @@ def main() -> None:
     probe_evidence = verify_probes(evaluation, probes)
     derive_result_files(evaluation)
     write_environment(manifest_a, manifest_b, evaluation)
+    raw_archive = build_raw_archive(manifest_a, manifest_b)
+    print(f"[archive] raw observations: {raw_archive['member_count']} "
+          f"members, sha256 {raw_archive['sha256'][:16]}...")
 
     from bundle_content import build
     bundle = build(gate, evaluation, probe_evidence,

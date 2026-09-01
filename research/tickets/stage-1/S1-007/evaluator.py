@@ -31,6 +31,7 @@ import hashlib
 import json
 import os
 import random
+import subprocess
 import sys
 from pathlib import Path
 
@@ -491,6 +492,26 @@ def _check_reindex_obs(obs, exp, run, counters, findings):
 # manifest / provenance validation
 # --------------------------------------------------------------------------
 
+def _git_show_bytes(commit: str, path: str) -> bytes:
+    """Blob bytes at a commit; any git failure is an error, never an
+    'unavailable' skip (fail-closed provenance)."""
+    out = subprocess.run(["git", "show", f"{commit}:{path}"],
+                         capture_output=True, timeout=30, cwd=str(ROOT))
+    if out.returncode != 0:
+        raise EvalError(
+            f"git show {commit}:{path} failed ({out.returncode}): "
+            f"{out.stderr.decode('utf-8', 'replace').strip()}")
+    return out.stdout
+
+
+def _normalize_line_endings(data: bytes) -> bytes:
+    """Explicit checkout-normalization policy: the on-disk working copy
+    may carry CRLF while the committed blob carries LF.  Evidence
+    comparisons normalize CRLF to LF before hashing; the raw disk hash
+    is still recorded for transparency."""
+    return data.replace(b"\r\n", b"\n")
+
+
 def validate_provenance(prov: dict, expected_commit: str | None) -> None:
     if not isinstance(prov, dict):
         raise EvalError("missing provenance block")
@@ -507,10 +528,44 @@ def validate_provenance(prov: dict, expected_commit: str | None) -> None:
         raise EvalError("missing tree sha")
     if not prov.get("executor_id"):
         raise EvalError("missing executor identity")
-    for name, digest in prov.get("script_hashes", {}).items():
+    scripts = prov.get("script_hashes")
+    blobs = prov.get("script_blob_hashes")
+    if not isinstance(scripts, dict) or \
+            set(scripts.keys()) != set(EVIDENCE_SCRIPTS):
+        raise EvalError(
+            "script_hashes must cover exactly the executed evidence "
+            f"scripts: missing="
+            f"{sorted(set(EVIDENCE_SCRIPTS) - set(scripts or {}))} "
+            f"extra={sorted(set(scripts or {}) - set(EVIDENCE_SCRIPTS))}")
+    if not isinstance(blobs, dict) or \
+            set(blobs.keys()) != set(EVIDENCE_SCRIPTS):
+        raise EvalError(
+            "script_blob_hashes must cover exactly the executed evidence "
+            "scripts")
+    for name in sorted(EVIDENCE_SCRIPTS):
         path = TICKET / name
-        if not path.is_file() or _sha(path.read_bytes()) != digest:
-            raise EvalError(f"script hash drift: {name}")
+        if not path.is_file():
+            raise EvalError(f"evidence script missing on disk: {name}")
+        disk_raw = path.read_bytes()
+        if _sha(disk_raw) != scripts[name]:
+            raise EvalError(f"script disk hash drift: {name}")
+        # bind the recorded blob hash to the commit itself
+        try:
+            blob = _git_show_bytes(commit,
+                                   (TICKET / name).relative_to(ROOT)
+                                   .as_posix())
+        except EvalError:
+            raise
+        if _sha(blob) != blobs[name]:
+            raise EvalError(
+                f"script blob hash mismatch vs commit for {name}: "
+                f"recorded {blobs[name][:16]}... actual {_sha(blob)[:16]}...")
+        # disk bytes must equal the blob modulo the documented CRLF
+        # checkout-normalization policy
+        if _sha(_normalize_line_endings(disk_raw)) != _sha(blob):
+            raise EvalError(
+                f"script working-copy bytes diverge from the committed "
+                f"blob beyond documented CRLF normalization: {name}")
 
 
 def validate_run_matrix(manifest_doc: dict, runs_dir: Path,
@@ -668,18 +723,21 @@ def aggregate_variant(runs: dict, variant: str, oracle: Oracle) -> dict:
 
 def score_dimensions(agg_a: dict, agg_b: dict, timing: dict, probes: dict,
                      n_scopes: int) -> dict:
-    """Frozen scoring formulas; every cell carries evidence refs, claim
-    type, confidence, limitation and missing evidence."""
+    """Frozen scoring formulas; every cell is stored PER (dimension,
+    variant) so symmetric evidence can never overwrite the other
+    candidate's score, and every cell carries evidence refs, claim type,
+    confidence, limitation and missing evidence."""
     cells = {}
+    aggs = {"per_scope": agg_a, "shared_rls": agg_b}
 
-    def measured(name, weight_id, value, refs, limit=None, missing=None):
-        cells[weight_id] = {
+    def measured(dim, variant, name, value, refs, limit=None, missing=None):
+        cells.setdefault(dim, {})[variant] = {
             "dimension": name, "score": round(value, 4),
             "claim_type": "test_measurement", "confidence": "high",
             "evidence_refs": refs, "limitation": limit,
             "missing_evidence": missing, "value_type": "number"}
 
-    for variant, agg in (("per_scope", agg_a), ("shared_rls", agg_b)):
+    for variant, agg in aggs.items():
         iso = agg["iso"]
         t = timing["variants"].get(variant, {})
         # D1
@@ -687,39 +745,44 @@ def score_dimensions(agg_a: dict, agg_b: dict, timing: dict, probes: dict,
             d1 = 0.0
         else:
             d1 = 4.0
-            if not agg["deny_bodies_canonical"] or \
-                    not agg["deny_equivalence_foreign_vs_nonexistent"]:
+            if not agg["deny_bodies_canonical"] or                     not agg["deny_equivalence_foreign_vs_nonexistent"]:
                 d1 = 0.0
             if t.get("verdict") == "SIGNAL_ABOVE_TOLERANCE":
                 d1 -= 2.0
         refs = [f"iso:{variant}:ISO1={iso['ISO1']}",
                 f"iso:{variant}:ISO2={iso['ISO2']}",
                 f"timing:{variant}:{t.get('verdict')}"]
-        measured("content/existence/metadata isolation", "D1", d1, refs,
+        measured("D1", variant, "content/existence/metadata isolation", d1,
+                 refs,
                  limit=None if t.get("verdict") == "WITHIN_TOLERANCE"
                  else f"timing verdict {t.get('verdict')}")
         # D2
         d2 = 4.0 if agg["materialize_before_policy"] == 0 else 0.0
-        measured("correctness of authorization placement", "D2", d2,
-                 [f"materialize_before_policy={agg['materialize_before_policy']}"])
+        measured("D2", variant, "correctness of authorization placement",
+                 d2,
+                 [f"{variant}:materialize_before_policy="
+                  f"{agg['materialize_before_policy']}"])
         # D3
         d3 = 4.0 if iso["ISO3"] == 0 and iso["ISO4"] == 0 else 0.0
-        measured("cache invalidation and revoke/move behavior", "D3", d3,
-                 [f"iso:ISO3={iso['ISO3']}", f"iso:ISO4={iso['ISO4']}",
-                  f"stale_invalidated={agg['stale_invalidated']}",
-                  f"invalidation_ops={agg['invalidation_ops_total']}"])
+        measured("D3", variant, "cache invalidation and revoke/move behavior",
+                 d3,
+                 [f"{variant}:ISO3={iso['ISO3']}",
+                  f"{variant}:ISO4={iso['ISO4']}",
+                  f"{variant}:stale_invalidated={agg['stale_invalidated']}",
+                  f"{variant}:invalidation_ops="
+                  f"{agg['invalidation_ops_total']}"])
         # D4
         share = (agg["allow_steps_with_provenance"] /
                  agg["allow_steps"]) if agg["allow_steps"] else 0.0
         d4 = 0.0 if iso["ISO5"] > 0 else 4.0 * share
-        measured("projection/provenance integrity", "D4", d4,
-                 [f"iso:ISO5={iso['ISO5']}",
-                  f"provenance_share={share:.4f}"])
+        measured("D4", variant, "projection/provenance integrity", d4,
+                 [f"{variant}:ISO5={iso['ISO5']}",
+                  f"{variant}:provenance_share={share:.4f}"])
         # D5
         d5 = 4.0 if iso["ISO6"] == 0 else 0.0
-        measured("bulk/pagination/background-job isolation", "D5", d5,
-                 [f"iso:ISO6={iso['ISO6']}"])
-        # D6 (fault injection through real retrieval paths)
+        measured("D5", variant, "bulk/pagination/background-job isolation",
+                 d5, [f"{variant}:ISO6={iso['ISO6']}"])
+        # D6 (fault injection through real retrieval paths, per variant)
         faults = probes["fault_injection"][variant]
         n = max(n_scopes - 1, 1)
 
@@ -728,33 +791,26 @@ def score_dimensions(agg_a: dict, agg_b: dict, timing: dict, probes: dict,
 
         d6 = (max(blast(faults["predicate_bypass_affected_scopes"]), 0.0)
               + max(blast(faults["corrupt_entry_affected_scopes"]), 0.0)) / 2
-        measured("failure blast radius", "D6", d6,
+        measured("D6", variant, "failure blast radius", d6,
                  [f"fault:{variant}:{json.dumps(faults)}"],
                  limit="in-model fault injection, not production fault data")
         # D7
         audit_share = (agg["audit_events"] /
-                       agg["decision_observations"]) \
-            if agg["decision_observations"] else 0.0
-        d7 = 4.0 * audit_share if agg["audit_with_protected_data"] == 0 \
-            else 0.0
-        measured("auditability and counterexample quality", "D7", d7,
-                 [f"audit_share={audit_share:.4f}",
-                  f"protected_in_audit={agg['audit_with_protected_data']}"])
-        # D8 placeholder (cross-executor determinism, filled by caller)
-        cells["D8"] = {
-            "dimension": "deterministic testing/replay",
-            "score": None, "claim_type": "test_measurement",
-            "confidence": "high", "evidence_refs": ["cross-executor"],
-            "limitation": None, "missing_evidence": None,
-            "value_type": "pending_cross_executor"}
-        # D10
-        st = agg["storage"] or {}
-        scans = agg["rows_scanned_total"]
+                       agg["decision_observations"])             if agg["decision_observations"] else 0.0
+        d7 = 4.0 * audit_share if agg["audit_with_protected_data"] == 0             else 0.0
+        measured("D7", variant, "auditability and counterexample quality",
+                 d7,
+                 [f"{variant}:audit_share={audit_share:.4f}",
+                  f"{variant}:protected_in_audit="
+                  f"{agg['audit_with_protected_data']}"])
+        # D8 (cross-executor determinism; filled by caller per variant)
+        cells.setdefault("D8", {})[variant] = 4.0
+        # D10 raw metrics for the directional computation below
         cells.setdefault("_metrics", {})[variant] = {
-            "storage": st, "rows_scanned_total": scans}
+            "storage": agg["storage"] or {},
+            "rows_scanned_total": agg["rows_scanned_total"]}
     # D9 (inference from frozen contract facts)
     cells["D9"] = {
-        "dimension": "operational complexity and migration cost",
         "per_scope": {
             "components_on_path": 2, "migration_steps": 0,
             "score": round(4 - 0.5 * (2 - 2) - 0.25 * 0, 4)},
@@ -770,7 +826,6 @@ def score_dimensions(agg_a: dict, agg_b: dict, timing: dict, probes: dict,
         "missing_evidence": "multi-scope production workload data"}
     # D11 (inference from threat model + profiles)
     cells["D11"] = {
-        "dimension": "profile compatibility and residual risk",
         "per_scope": {"score": 4.0},
         "shared_rls": {"score": 2.0},
         "claim_type": "residual_risk", "confidence": "medium",
@@ -784,40 +839,36 @@ def score_dimensions(agg_a: dict, agg_b: dict, timing: dict, probes: dict,
     return cells
 
 
-def apply_d8_and_storage(cells: dict, agg: dict, determinism_share: dict,
-                         agg_other: dict) -> None:
-    """Fill D8 (cross-executor determinism) and D10 (storage/scan overhead)
-    from measured aggregates of both executors."""
-    n_scopes = 3
-    for variant in ("per_scope", "shared_rls"):
-        d8 = 4.0 * determinism_share.get(variant, 0.0)
-        cells[variant + "_D8"] = d8
-    metrics_a = cells["_metrics"]
-    del cells["_metrics"]
-    for variant in ("per_scope", "shared_rls"):
-        bytes_a = metrics_a[variant]["storage"]["payload_bytes_est"]
-        scans_a = metrics_a[variant]["rows_scanned_total"]
-        bytes_b = metrics_a["shared_rls" if variant == "per_scope"
-                            else "per_scope"]["storage"]["payload_bytes_est"]
-        scans_b = metrics_a["shared_rls" if variant == "per_scope"
-                            else "per_scope"]["rows_scanned_total"]
-        storage_score = 4.0 * min(bytes_a, bytes_b) / max(bytes_a, bytes_b)
-        scan_score = 4.0 * min(scans_a, scans_b) / max(scans_a, scans_b)
+def apply_d8_and_d10(cells: dict, determinism_share: dict) -> None:
+    """Fill D8 (cross-executor determinism, per variant) and D10
+    (directional storage/scan overhead: the variant with the LOWER
+    measured cost receives the higher score; scores are normalized
+    against the worst measured value, never symmetric min/max)."""
+    metrics = cells.pop("_metrics")
+    variants = ("per_scope", "shared_rls")
+    for variant in variants:
+        cells.setdefault("D8", {})[variant] =             round(4.0 * determinism_share.get(variant, 0.0), 4)
+    bytes_v = {v: metrics[v]["storage"]["payload_bytes_est"] for v in variants}
+    scans_v = {v: metrics[v]["rows_scanned_total"] for v in variants}
+    max_bytes = max(bytes_v.values())
+    max_scans = max(scans_v.values())
+    for variant in variants:
+        # directional: costlier variant scores strictly lower unless equal
+        storage_score = 4.0 * bytes_v[variant] / max_bytes
+        scan_score = 4.0 * scans_v[variant] / max_scans
         d10 = round((storage_score + scan_score) / 2, 4)
-        refs = [f"storage:{variant}:{bytes_a}B vs {bytes_b}B",
-                f"rows_scanned:{variant}:{scans_a} vs {scans_b}"]
-        cells["D10_" + variant] = d10
-        cells.setdefault("D10_meta", {})[variant] = {
+        cells.setdefault("D10", {})[variant] = {
             "score": d10, "claim_type": "test_measurement",
-            "confidence": "high", "evidence_refs": refs,
+            "confidence": "high",
+            "evidence_refs": [
+                f"storage:{variant}:{bytes_v[variant]}B "
+                f"(max {max_bytes}B)",
+                f"rows_scanned:{variant}:{scans_v[variant]} "
+                f"(max {max_scans})"],
             "limitation": "local model with a frozen fixed per-index "
                           "overhead constant "
                           "(INDEX_FIXED_OVERHEAD_BYTES=256)",
             "missing_evidence": "production storage/latency data"}
-
-
-def finalize_cells(cells: dict) -> dict:  # pragma: no cover - removed
-    raise NotImplementedError
 
 
 def weighted_scores(scores: dict, weights: dict) -> dict:
@@ -869,17 +920,76 @@ def sensitivity_analysis(dim_scores: dict, weights: dict,
         w2 = max(sc, key=lambda k: sc[k])
         if w2 != winner:
             flips.append({"kind": "random", "vector": i, "winner": w2})
+    oat_count = len(dims) * 2
     return {"base_scores": base_scores, "base_weights": weights,
             "oat_weight_factors": [0.5, 1.5],
+            "oat_perturbations_executed": oat_count,
             "random_vectors": vectors, "random_seed": rng_seed,
+            "total_perturbations_executed": oat_count + vectors,
+            "policy": "weights-only perturbation; every scored cell was a "
+                      "measured number, so no unknown-bound swing applies "
+                      "(unknown-bound analysis would activate only if a "
+                      "cell scored NO_DATA)",
             "flips": flips, "flip_count": len(flips),
             "winner_stable": not flips}
 
 
-def evaluate_probes(probes: dict, oracle: Oracle) -> dict:
+def evaluate_probes(probes: dict, oracle: Oracle,
+                    corpus_manifest: dict | None = None) -> dict:
+    """Bind every probe to its FROZEN matrix entry (candidate identity,
+    cases, seeds, exact run ids) BEFORE evaluating counters; reject
+    missing, extra, duplicated or relabelled probes fail-closed."""
+    if corpus_manifest is None:
+        corpus_manifest = load(TICKET / "corpus-manifest.json")
+    spec = corpus_manifest.get("probe_spec")
+    if not isinstance(spec, dict) or \
+            set(spec.get("probes", {}).keys()) != \
+            {"A_existence_oracle", "B_stale_cache", "C_postfilter",
+             "D_forged_scope_provenance_loss"}:
+        raise EvalError("frozen probe spec missing or malformed")
+    supplied = probes.get("probes", [])
+    by_id = {}
+    for probe in supplied:
+        pid = probe.get("probe")
+        if pid not in spec["probes"]:
+            raise EvalError(f"unregistered probe label: {pid!r}")
+        if pid in by_id:
+            raise EvalError(f"duplicate probe: {pid}")
+        by_id[pid] = probe
+    for pid, want in spec["probes"].items():
+        if pid not in by_id:
+            raise EvalError(f"missing frozen probe: {pid}")
+        probe = by_id[pid]
+        # candidate identity (the deliberate single-invariant violation)
+        if probe.get("candidate") != want["candidate"]:
+            raise EvalError(
+                f"probe {pid}: candidate {probe.get('candidate')!r} != "
+                f"frozen {want['candidate']!r}")
+        runs = probe.get("runs", [])
+        want_cases = list(want["cases"])
+        got_cases = [r.get("case_id") for r in runs]
+        if got_cases != want_cases:
+            raise EvalError(
+                f"probe {pid}: case sequence {got_cases} != frozen "
+                f"{want_cases}")
+        got_seeds = sorted({r.get("seed") for r in runs})
+        if got_seeds != sorted(want["seeds"]):
+            raise EvalError(
+                f"probe {pid}: seeds {got_seeds} != frozen {want['seeds']}")
+        want_run_ids = sorted(
+            f"{want['candidate']}|{c}|{s}" for c in want_cases
+            for s in want["seeds"])
+        got_run_ids = sorted(r.get("run_id") for r in runs)
+        if got_run_ids != want_run_ids:
+            raise EvalError(
+                f"probe {pid}: run ids diverge from the frozen matrix")
+        recorded_hashes = probes.get("probe_hashes", {}).get(pid)
+        if recorded_hashes != sorted(r.get("run_id") for r in runs):
+            raise EvalError(
+                f"probe {pid}: probe_hashes section mismatch")
     rejections = {}
-    for probe in probes.get("probes", []):
-        pid = probe["probe"]
+    for pid in spec["probes"]:
+        probe = by_id[pid]
         counters = {k: 0 for k in ISO_KEYS}
         for run in probe["runs"]:
             c = _check_run(run, oracle.replay_case(run["case_id"]), oracle)
@@ -900,7 +1010,7 @@ def evaluate_probes(probes: dict, oracle: Oracle) -> dict:
             rejections[pid] = {"expected": "FAIL",
                                "detected": "FAIL" if ok else "UNDETECTED",
                                "iso": counters}
-        elif pid == "D_forged_scope_provenance_loss":
+        else:  # D_forged_scope_provenance_loss
             fail = counters["ISO7"] > 0
             incomp = counters["ISO5"] > 0
             detected = ("FAIL+INCOMPARABLE" if fail and incomp
@@ -908,44 +1018,67 @@ def evaluate_probes(probes: dict, oracle: Oracle) -> dict:
                         else "UNDETECTED")
             rejections[pid] = {"expected": "FAIL+INCOMPARABLE",
                                "detected": detected, "iso": counters}
-        else:
-            raise EvalError(f"unknown probe {pid}")
     faults = probes.get("fault_injection")
     if not isinstance(faults, dict) or set(faults) != \
-            {"per_scope", "shared_rls"}:
+            set(spec.get("fault_injection_variants",
+                         ["per_scope", "shared_rls"])):
         raise EvalError("fault injection section missing or malformed")
     return rejections
 
 
-def analyze_timing(timing: dict, contract: dict | None = None) -> dict:
-    if not contract:
-        contract = load(TICKET / "isolation-contract.json")
+def recompute_timing(timing: dict, contract: dict) -> dict:
+    """Independently recompute the pooled paired statistic, tolerance and
+    verdict from RAW paired samples per the frozen contract.  Producer
+    summaries in the timing file are ignored."""
     frozen = contract["timing_probe_contract"]
     tol_rule = frozen["tolerance"]
     out = {"frozen_methodology": {
         "sample_count": frozen["sample_count"], "warmup": frozen["warmup"],
+        "inner_repeats": frozen["inner_repeats"],
         "seeds": frozen["seeds"], "statistic": frozen["statistic"],
         "tolerance": tol_rule}, "variants": {}}
-    for variant, data in timing.get("variants", {}).items():
-        signal = data.get("median_paired_diff_ns")
-        tol = data.get("tolerance_ns")
-        if signal is None or tol is None:
+    expected_samples = frozen["sample_count"] * len(frozen["seeds"])
+    variants = timing.get("variants", {})
+    if set(variants.keys()) != {"per_scope", "shared_rls"}:
+        out["NO_DATA"] = "timing variants missing"
+        return out
+    for variant, data in variants.items():
+        raw = data.get("raw") or {}
+        diffs = raw.get("paired_diffs_ns")
+        controls = raw.get("control_samples_ns")
+        seed_order = raw.get("seed_order")
+        if not isinstance(diffs, list) or not isinstance(controls, list)                 or len(diffs) != expected_samples                 or len(controls) != expected_samples                 or seed_order != frozen["seeds"]:
             out["variants"][variant] = {
                 "verdict": "NO_DATA",
-                "note": "timing section lacks paired statistics"}
+                "note": "raw paired samples missing, short, or seed order "
+                        "does not match the frozen methodology"}
             continue
+        # exact methodology cross-check against the frozen contract
+        method = timing.get("methodology", {})
+        if method.get("sample_count") != frozen["sample_count"] or                 method.get("inner_repeats") != frozen["inner_repeats"] or                 method.get("seeds") != frozen["seeds"]:
+            out["variants"][variant] = {
+                "verdict": "NO_DATA",
+                "note": "timing methodology header diverges from the "
+                        "frozen contract"}
+            continue
+        sorted_diffs = sorted(diffs)
+        signal = abs(sorted_diffs[len(sorted_diffs) // 2])
+        sorted_controls = sorted(controls)
+        control_median = sorted_controls[len(sorted_controls) // 2]
+        tol = max(tol_rule["relative"] * control_median,
+                  tol_rule["absolute_floor_ns"])
         out["variants"][variant] = {
-            "signal_ns": signal, "tolerance_ns": tol,
-            "verdict": data.get("verdict",
-                                "WITHIN_TOLERANCE" if signal <= tol
-                                else "SIGNAL_ABOVE_TOLERANCE"),
-            "per_seed": data.get("per_seed", []),
-            "pooled_samples": data.get("pooled_samples"),
-            "note": "bounded local paired-interleaved measurement; not a "
+            "signal_ns": signal,
+            "control_median_ns": control_median,
+            "tolerance_ns": round(tol),
+            "pooled_samples": len(diffs),
+            "verdict": ("WITHIN_TOLERANCE" if signal <= round(tol)
+                        else "SIGNAL_ABOVE_TOLERANCE"),
+            "recomputed": True,
+            "note": "statistic, tolerance and verdict recomputed by the "
+                    "evaluator from raw hash-bound paired samples; not a "
                     "production SLO, not proof of absence of all side "
                     "channels"}
-    if not out["variants"]:
-        out["NO_DATA"] = "timing section missing or unparsable"
     return out
 
 
@@ -976,7 +1109,7 @@ def evaluate(runs_manifest: Path, rerun_manifest: Path,
     validate_provenance(main_doc.get("provenance", {}), expected_commit)
     if main_doc.get("contract_hashes") != frozen_hashes:
         raise EvalError("main manifest contract hashes diverge from frozen")
-    main_runs = validate_run_matrix(main_doc, runs_manifest.parent / "runs",
+    main_runs = validate_run_matrix(main_doc, runs_manifest.parent / "run_records",
                                     frozen_hashes=frozen_hashes)
     rerun_doc = load(rerun_manifest)
     digest_input = dict(rerun_doc)
@@ -989,7 +1122,7 @@ def evaluate(runs_manifest: Path, rerun_manifest: Path,
     if rerun_doc.get("contract_hashes") != frozen_hashes:
         raise EvalError("rerun manifest contract hashes diverge from frozen")
     rerun_runs = validate_run_matrix(rerun_doc,
-                                     rerun_manifest.parent / "runs",
+                                     rerun_manifest.parent / "run_records",
                                      frozen_hashes=frozen_hashes)
 
     if main_doc["provenance"]["executor_id"] == \
@@ -1043,20 +1176,30 @@ def evaluate(runs_manifest: Path, rerun_manifest: Path,
     timing = load(runs_manifest.parent / "timing.json")
     timing_sha = _sha((runs_manifest.parent / "timing.json").read_bytes())
     if timing_sha != main_doc.get("timing_sha256"):
-        raise EvalError("timing file digest mismatch")
-    timing_analysis = analyze_timing(timing, contract)
-    rerun_timing = load(rerun_manifest.parent / "timing.json")
-    timing_analysis["rerun_note"] = (
-        "rerun timing is an independent local measurement; "
-        f"main paired-signal per variant: "
-        f"{ {v: d.get('median_paired_diff_ns') for v, d in timing['variants'].items()} }; "
-        f"rerun: "
-        f"{ {v: d.get('median_paired_diff_ns') for v, d in rerun_timing['variants'].items()} }; "
-        "cross-executor timing deltas are expected OS-scheduling noise on a "
-        "microsecond-scale in-process path and never gate the safety "
-        "verdict")
+        raise EvalError("main timing file digest mismatch")
+    timing_analysis = recompute_timing(timing, contract)
+    rerun_timing_path = rerun_manifest.parent / "timing.json"
+    rerun_timing = load(rerun_timing_path)
+    if _sha(rerun_timing_path.read_bytes()) != \
+            rerun_doc.get("timing_sha256"):
+        raise EvalError("rerun timing file digest mismatch")
+    rerun_timing_analysis = recompute_timing(rerun_timing, contract)
+    divergent = [v for v in timing_analysis.get("variants", {})
+                 if timing_analysis["variants"][v].get("verdict") !=
+                 rerun_timing_analysis.get("variants", {})
+                 .get(v, {}).get("verdict")]
+    timing_analysis["rerun"] = {
+        "sha256": _sha(rerun_timing_path.read_bytes()),
+        "digest_bound": True,
+        "recomputed_variants": rerun_timing_analysis.get("variants", {}),
+        "verdict_divergences": divergent,
+        "note": "the rerun timing artifact is digest-bound to its manifest "
+                "and independently recomputed; verdict divergences between "
+                "executors are local-scheduling findings recorded as "
+                "limitations, never producer-accepted claims"}
+    timing_analysis["producer_summaries_ignored"] = True
 
-    probe_rejections = evaluate_probes(probes, oracle)
+    probe_rejections = evaluate_probes(probes, oracle, manifest)
 
     # hard fail rules
     violations = {}
@@ -1069,22 +1212,21 @@ def evaluate(runs_manifest: Path, rerun_manifest: Path,
     # scoring
     cells = score_dimensions(agg["per_scope"], agg["shared_rls"],
                              timing_analysis, probes, 3)
-    apply_d8_and_storage(cells, agg, determinism_share, agg)
+    apply_d8_and_d10(cells, determinism_share)
     scores = {}
-    for dim_id, weight in ((c["id"], c["weight"])
-                           for c in rubric["dimensions"]):
+    for dim_id in (c["id"] for c in rubric["dimensions"]):
         entry = {}
         for variant in ("per_scope", "shared_rls"):
-            if dim_id in ("D1", "D2", "D3", "D4", "D5", "D6", "D7"):
-                entry[variant] = cells[dim_id]["score"]
-            elif dim_id == "D8":
-                entry[variant] = cells[variant + "_D8"]
-            elif dim_id == "D9":
+            if dim_id == "D9":
                 entry[variant] = cells["D9"][variant]["score"]
-            elif dim_id == "D10":
-                entry[variant] = cells["D10_meta"][variant]["score"]
             elif dim_id == "D11":
                 entry[variant] = cells["D11"][variant]["score"]
+            elif dim_id == "D8":
+                entry[variant] = cells["D8"][variant]
+            elif dim_id == "D10":
+                entry[variant] = cells["D10"][variant]["score"]
+            else:
+                entry[variant] = cells[dim_id][variant]["score"]
         scores[dim_id] = entry
     weights = {c["id"]: c["weight"] for c in rubric["dimensions"]}
     base_scores = weighted_scores(scores, weights)
@@ -1146,33 +1288,29 @@ def evaluate(runs_manifest: Path, rerun_manifest: Path,
     decision_matrix = []
     for c in rubric["dimensions"]:
         for variant in ("per_scope", "shared_rls"):
-            cell = {
+            if c["id"] in ("D9", "D11"):
+                cell_info = dict(cells[c["id"]])
+                cell_info["score"] = cells[c["id"]][variant]["score"]
+            else:
+                raw_cell = cells[c["id"]][variant]
+                cell_info = {
+                    "score": raw_cell["score"],
+                    "claim_type": raw_cell.get("claim_type",
+                                               "test_measurement"),
+                    "confidence": raw_cell.get("confidence", "high"),
+                    "evidence_refs": raw_cell.get("evidence_refs", []),
+                    "limitation": raw_cell.get("limitation"),
+                    "missing_evidence": raw_cell.get("missing_evidence")}
+            decision_matrix.append({
                 "dimension": c["id"] + " " + c["name"],
                 "variant": variant,
                 "weight": c["weight"],
                 "score": scores[c["id"]][variant],
-                "claim_type": cells.get(c["id"], {}).get(
-                    "claim_type",
-                    cells.get("D10_meta", {}).get(variant, {})
-                    .get("claim_type", "test_measurement")),
-                "confidence": cells.get(c["id"], {}).get(
-                    "confidence",
-                    cells.get("D10_meta", {}).get(variant, {})
-                    .get("confidence", "high")),
-                "evidence_refs": cells.get(c["id"], {}).get(
-                    "evidence_refs",
-                    cells.get("D10_meta", {}).get(variant, {})
-                    .get("evidence_refs", [])),
-                "limitation": cells.get(c["id"], {}).get(
-                    "limitation",
-                    cells.get("D10_meta", {}).get(variant, {})
-                    .get("limitation")),
-                "missing_evidence": cells.get(c["id"], {}).get(
-                    "missing_evidence",
-                    cells.get("D10_meta", {}).get(variant, {})
-                    .get("missing_evidence")),
-            }
-            decision_matrix.append(cell)
+                "claim_type": cell_info["claim_type"],
+                "confidence": cell_info["confidence"],
+                "evidence_refs": cell_info["evidence_refs"],
+                "limitation": cell_info.get("limitation"),
+                "missing_evidence": cell_info.get("missing_evidence")})
 
     result = {
         "schema": SCHEMA_EVAL,

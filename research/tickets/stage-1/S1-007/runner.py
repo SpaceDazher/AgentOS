@@ -109,6 +109,15 @@ def _git_lines(args: list) -> list:
     return out.stdout.splitlines()
 
 
+def _git_bytes(args: list) -> bytes:
+    out = subprocess.run(["git", *args], capture_output=True,
+                         timeout=30, cwd=str(ROOT))
+    if out.returncode != 0:
+        raise RuntimeError(f"git {' '.join(args)} failed ({out.returncode}): "
+                           f"{out.stderr.decode('utf-8', 'replace').strip()}")
+    return out.stdout
+
+
 def research_surface_dirty_lines(porcelain_lines: list) -> list:
     """Dirty input lines, ignoring only generated S1-007 outputs."""
     dirty = []
@@ -140,9 +149,7 @@ def provenance() -> dict:
             scripts[name] = _sha(path.read_bytes())
             rel = path.relative_to(ROOT).as_posix()
             script_blobs[name] = _sha(
-                subprocess.run(["git", "show", f"{commit}:{rel}"],
-                               capture_output=True, timeout=30,
-                               cwd=str(ROOT)).stdout)
+                _git_bytes(["show", f"{commit}:{rel}"]))
     dirty_lines = research_surface_dirty_lines(
         _git_lines(["status", "--porcelain"]))
     result = {
@@ -1014,9 +1021,11 @@ def run_matrix(mode: str) -> list:
 def run_timing_probe() -> dict:
     """Bounded real-clock existence-oracle probe per the frozen methodology
     in isolation-contract.timing_probe_contract: paired interleaved
-    measurement (foreign and control alternate per sample) with the
-    median-of-paired-differences statistic.  This section is explicitly
-    NOT part of any run digest."""
+    measurement (foreign and control alternate per sample).  RAW paired
+    samples are preserved verbatim; the evaluator recomputes the pooled
+    statistic, tolerance and verdict from them independently (producer
+    summaries are informational and never trusted).  This section is
+    explicitly NOT part of any run digest."""
     world = load_world()
     out = {"schema": "agentos.s1-007.timing/v1", "methodology": {
         "sample_count": TIMING["sample_count"], "warmup": TIMING["warmup"],
@@ -1026,15 +1035,13 @@ def run_timing_probe() -> dict:
         "clock": "time.perf_counter_ns", "note":
             "bounded local wall-clock measurement of the simulated retrieval "
             "path; never a production SLO or exploitability claim"}}
-    contract = json.loads((TICKET / "isolation-contract.json")
-                          .read_text(encoding="utf-8"))
-    tolerance_rule = contract["timing_probe_contract"]["tolerance"]
-    out["frozen_tolerance"] = tolerance_rule
     results = {}
     for variant_name, cls in (("per_scope", PerScopeVariant),
                               ("shared_rls", SharedRLSVariant)):
+        paired_diffs = []   # raw, measurement order (seed-major)
+        control_samples = []
+        foreign_samples = []
         per_seed = []
-        pooled_diffs = []
         for seed in TIMING["seeds"]:
             instance = cls(world)
             actor = "bruno"  # member of SCP-B only: target is foreign
@@ -1043,7 +1050,7 @@ def run_timing_probe() -> dict:
             for _ in range(TIMING["warmup"]):
                 instance.retrieve(actor, "q-runbook", foreign_target)
                 instance.retrieve(actor, "q-runbook", control_target)
-            diffs = []
+            seed_diffs = []
             for _ in range(TIMING["sample_count"]):
                 t0 = time.perf_counter_ns()
                 for _ in range(TIMING["inner_repeats"]):
@@ -1055,26 +1062,23 @@ def run_timing_probe() -> dict:
                     instance.retrieve(actor, "q-runbook", control_target)
                 t_control = (time.perf_counter_ns() - t0) \
                     // TIMING["inner_repeats"]
-                diffs.append(t_foreign - t_control)
-            diffs.sort()
-            median_diff = diffs[len(diffs) // 2]
-            pooled_diffs.extend(diffs)
-            per_seed.append({
-                "seed": seed, "median_diff_ns": median_diff,
-                "sample_count": len(diffs)})
-        pooled_diffs.sort()
-        median_signal = abs(pooled_diffs[len(pooled_diffs) // 2])
-        control_median = None  # control arm is part of the pairing
-        tol = max(tolerance_rule["relative"] *
-                  (control_median or 0),
-                  tolerance_rule["absolute_floor_ns"])
+                seed_diffs.append(t_foreign - t_control)
+                foreign_samples.append(t_foreign)
+                control_samples.append(t_control)
+            paired_diffs.extend(seed_diffs)
+            s = sorted(seed_diffs)
+            per_seed.append({"seed": seed,
+                             "median_diff_ns": s[len(s) // 2],
+                             "sample_count": len(s)})
         results[variant_name] = {
+            "raw": {
+                "paired_diffs_ns": paired_diffs,
+                "foreign_samples_ns": foreign_samples,
+                "control_samples_ns": control_samples,
+                "seed_order": TIMING["seeds"],
+            },
             "per_seed": per_seed,
-            "pooled_samples": len(pooled_diffs),
-            "median_paired_diff_ns": median_signal,
-            "tolerance_ns": round(tol),
-            "verdict": ("WITHIN_TOLERANCE" if median_signal <= tol
-                        else "SIGNAL_ABOVE_TOLERANCE"),
+            "pooled_samples": len(paired_diffs),
             "power_note": f"{TIMING['sample_count']} paired samples x "
                           f"{TIMING['inner_repeats']} inner repeats x "
                           f"{len(TIMING['seeds'])} seeds",
@@ -1123,7 +1127,7 @@ def run_probes() -> dict:
 def execute_matrix(out_dir: Path, mode: str) -> dict:
     out_dir.mkdir(parents=True, exist_ok=True)
     runs = run_matrix(mode)
-    runs_dir = out_dir / "runs"
+    runs_dir = out_dir / "run_records"
     runs_dir.mkdir(exist_ok=True)
     prov = provenance()
     contracts = contract_hashes()
