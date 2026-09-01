@@ -96,7 +96,7 @@ class TestMatrixCrossProduct(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.traces = _load_traces(RESULTS_DIR / "run-a" / "raw-traces")
+        cls.traces = _load_traces(RESULTS_DIR / "run-a-clean" / "raw-traces")
 
     def test_mandatory_trace_count(self):
         mandatory = [t for t in self.traces
@@ -170,7 +170,7 @@ class TestHardCounters(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.traces = _load_traces(RESULTS_DIR / "run-a" / "raw-traces")
+        cls.traces = _load_traces(RESULTS_DIR / "run-a-clean" / "raw-traces")
 
     def test_all_hard_counters_zero(self):
         """Recompute hard counters from trace data and verify all are 0."""
@@ -198,7 +198,7 @@ class TestLatencyBounds(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.traces = _load_traces(RESULTS_DIR / "run-a" / "raw-traces")
+        cls.traces = _load_traces(RESULTS_DIR / "run-a-clean" / "raw-traces")
 
     def test_max_latency_within_target(self):
         latencies = [t["latency_ms"] for t in self.traces
@@ -235,7 +235,7 @@ class TestHashBinding(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.traces = _load_traces(RESULTS_DIR / "run-a" / "raw-traces")
+        cls.traces = _load_traces(RESULTS_DIR / "run-a-clean" / "raw-traces")
 
     def test_all_traces_hash_verified(self):
         from agentos.ids import canonical_json, sha256_text
@@ -254,10 +254,10 @@ class TestProvenance(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.manifest_a = json.loads(
-            (RESULTS_DIR / "run-a" / "manifest.json").read_text()
+            (RESULTS_DIR / "run-a-clean" / "manifest.json").read_text()
         )
         cls.manifest_b = json.loads(
-            (RESULTS_DIR / "run-b" / "manifest.json").read_text()
+            (RESULTS_DIR / "run-b-clean" / "manifest.json").read_text()
         )
 
     def test_different_executor_ids(self):
