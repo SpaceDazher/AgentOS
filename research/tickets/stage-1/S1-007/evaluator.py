@@ -46,7 +46,7 @@ PROVENANCE_FIELDS = ("canonical_source_id", "publisher_id",
                      "created_by_activity")
 EVIDENCE_SCRIPTS = (
     "runner.py", "evaluator.py", "make_bundle.py", "dependency_gate.py",
-    "bundle_content.py", "publish_evidence_pack.py",
+    "bundle_content.py", "publish_evidence_pack.py", "finalize_record.py",
 )
 
 
@@ -845,30 +845,37 @@ def score_dimensions(agg_a: dict, agg_b: dict, timing: dict, probes: dict,
 
 def apply_d8_and_d10(cells: dict, determinism_share: dict) -> None:
     """Fill D8 (cross-executor determinism, per variant) and D10
-    (directional storage/scan overhead: the variant with the LOWER
-    measured cost receives the higher score; scores are normalized
-    against the worst measured value, never symmetric min/max)."""
+    (FROZEN inverse normalization per rubric D10: for each cost
+    component score = 4 * min(value across candidates) / value(candidate),
+    so the variant with the LOWER measured cost always receives the
+    strictly higher component score; the costliest value can never
+    receive the maximum unless all measured values are equal)."""
     metrics = cells.pop("_metrics")
     variants = ("per_scope", "shared_rls")
     for variant in variants:
-        cells.setdefault("D8", {})[variant] =             round(4.0 * determinism_share.get(variant, 0.0), 4)
+        share = round(4.0 * determinism_share.get(variant, 0.0), 4)
+        cells.setdefault("D8", {})[variant] = share
     bytes_v = {v: metrics[v]["storage"]["payload_bytes_est"] for v in variants}
     scans_v = {v: metrics[v]["rows_scanned_total"] for v in variants}
-    max_bytes = max(bytes_v.values())
-    max_scans = max(scans_v.values())
+    min_bytes = min(bytes_v.values())
+    min_scans = min(scans_v.values())
     for variant in variants:
-        # directional: costlier variant scores strictly lower unless equal
-        storage_score = 4.0 * bytes_v[variant] / max_bytes
-        scan_score = 4.0 * scans_v[variant] / max_scans
-        d10 = round((storage_score + scan_score) / 2, 4)
+        storage_component = 4.0 * min_bytes / bytes_v[variant]
+        scan_component = 4.0 * min_scans / scans_v[variant]
+        d10 = round((storage_component + scan_component) / 2, 4)
         cells.setdefault("D10", {})[variant] = {
             "score": d10, "claim_type": "test_measurement",
             "confidence": "high",
+            "components": {
+                "storage": round(storage_component, 4),
+                "scan": round(scan_component, 4)},
             "evidence_refs": [
                 f"storage:{variant}:{bytes_v[variant]}B "
-                f"(max {max_bytes}B)",
+                f"(min {min_bytes}B -> component "
+                f"{round(storage_component, 4)})",
                 f"rows_scanned:{variant}:{scans_v[variant]} "
-                f"(max {max_scans})"],
+                f"(min {min_scans} -> component "
+                f"{round(scan_component, 4)})"],
             "limitation": "local model with a frozen fixed per-index "
                           "overhead constant "
                           "(INDEX_FIXED_OVERHEAD_BYTES=256)",
@@ -1034,8 +1041,13 @@ def evaluate_probes(probes: dict, oracle: Oracle,
 
 def recompute_timing(timing: dict, contract: dict | None = None) -> dict:
     """Independently recompute the pooled paired statistic, tolerance and
-    verdict from RAW paired samples per the frozen contract.  Producer
-    summaries in the timing file are ignored."""
+    verdict from RAW timing arms per the frozen contract.  BOTH raw arms
+    (foreign and control) are required at the exact frozen sample count;
+    all differences are derived inside the evaluator as
+    foreign - control.  A supplied derived array is only accepted when it
+    matches the recomputed differences element-by-element; any
+    disagreement (or a missing arm) fails closed.  Producer summaries in
+    the timing file are ignored."""
     if not contract:
         contract = load(TICKET / "isolation-contract.json")
     frozen = contract["timing_probe_contract"]
@@ -1052,24 +1064,42 @@ def recompute_timing(timing: dict, contract: dict | None = None) -> dict:
         return out
     for variant, data in variants.items():
         raw = data.get("raw") or {}
-        diffs = raw.get("paired_diffs_ns")
+        foreign = raw.get("foreign_samples_ns")
         controls = raw.get("control_samples_ns")
         seed_order = raw.get("seed_order")
-        if not isinstance(diffs, list) or not isinstance(controls, list)                 or len(diffs) != expected_samples                 or len(controls) != expected_samples                 or seed_order != frozen["seeds"]:
+        if not isinstance(foreign, list) or not isinstance(controls, list) \
+                or len(foreign) != expected_samples \
+                or len(controls) != expected_samples \
+                or seed_order != frozen["seeds"]:
             out["variants"][variant] = {
                 "verdict": "NO_DATA",
-                "note": "raw paired samples missing, short, or seed order "
-                        "does not match the frozen methodology"}
+                "note": "both raw timing arms are required at the exact "
+                        "frozen sample count with the frozen seed order; "
+                        "missing or short arms fail closed to NO_DATA"}
             continue
         # exact methodology cross-check against the frozen contract
         method = timing.get("methodology", {})
-        if method.get("sample_count") != frozen["sample_count"] or                 method.get("inner_repeats") != frozen["inner_repeats"] or                 method.get("seeds") != frozen["seeds"]:
+        if method.get("sample_count") != frozen["sample_count"] or \
+                method.get("inner_repeats") != frozen["inner_repeats"] or \
+                method.get("seeds") != frozen["seeds"]:
             out["variants"][variant] = {
                 "verdict": "NO_DATA",
                 "note": "timing methodology header diverges from the "
                         "frozen contract"}
             continue
-        sorted_diffs = sorted(diffs)
+        # all differences are derived HERE from both arms
+        derived_diffs = [f - c for f, c in zip(foreign, controls)]
+        supplied_diffs = raw.get("paired_diffs_ns")
+        if supplied_diffs is not None:
+            if not isinstance(supplied_diffs, list) or \
+                    len(supplied_diffs) != expected_samples or \
+                    any(supplied_diffs[i] != derived_diffs[i]
+                        for i in range(expected_samples)):
+                raise EvalError(
+                    f"timing variant {variant}: supplied derived array "
+                    f"paired_diffs_ns disagrees with foreign-control "
+                    f"recomputation; rejecting producer-derived input")
+        sorted_diffs = sorted(derived_diffs)
         signal = abs(sorted_diffs[len(sorted_diffs) // 2])
         sorted_controls = sorted(controls)
         control_median = sorted_controls[len(sorted_controls) // 2]
@@ -1079,14 +1109,16 @@ def recompute_timing(timing: dict, contract: dict | None = None) -> dict:
             "signal_ns": signal,
             "control_median_ns": control_median,
             "tolerance_ns": round(tol),
-            "pooled_samples": len(diffs),
+            "pooled_samples": len(derived_diffs),
             "verdict": ("WITHIN_TOLERANCE" if signal <= round(tol)
                         else "SIGNAL_ABOVE_TOLERANCE"),
             "recomputed": True,
+            "diffs_derived_from": ["foreign_samples_ns",
+                                   "control_samples_ns"],
             "note": "statistic, tolerance and verdict recomputed by the "
-                    "evaluator from raw hash-bound paired samples; not a "
-                    "production SLO, not proof of absence of all side "
-                    "channels"}
+                    "evaluator from raw hash-bound timing arms (differences "
+                    "derived as foreign - control); not a production SLO, "
+                    "not proof of absence of all side channels"}
     return out
 
 

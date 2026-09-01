@@ -339,7 +339,7 @@ def main() -> None:
 
     from bundle_content import build
     bundle = build(gate, evaluation, probe_evidence,
-                   manifest_a["provenance"])
+                   manifest_a["provenance"], raw_archive)
     out = TICKET / "bundle.json"
     out.write_text(json.dumps(bundle, indent=2, ensure_ascii=False) + "\n",
                    encoding="utf-8")

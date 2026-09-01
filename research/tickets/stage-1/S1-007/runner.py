@@ -57,7 +57,7 @@ CONTRACT_FILES = (
 )
 EVIDENCE_SCRIPTS = (
     "runner.py", "evaluator.py", "make_bundle.py", "dependency_gate.py",
-    "bundle_content.py", "publish_evidence_pack.py",
+    "bundle_content.py", "publish_evidence_pack.py", "finalize_record.py",
 )
 
 ISO_KEYS = ("ISO1", "ISO2", "ISO3", "ISO4", "ISO5", "ISO6", "ISO7", "ISO8")

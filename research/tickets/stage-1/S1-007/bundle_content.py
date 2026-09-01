@@ -45,6 +45,29 @@ def local_source(sid, title, source_type, content, rel_path, kind_note):
     }
 
 
+def archive_source(sid, title, source_type, content, abs_path, sha256_hex,
+                   member_count, kind_note):
+    """A content-addressed evidence archive bound by its exact SHA-256."""
+    return {
+        "id": sid,
+        "canonical_uri": "sha256:" + sha256_hex,
+        "title": title,
+        "source_type": source_type,
+        "content": content,
+        "verification_status": "verified",
+        "verifier": "agentos-s1-007-local-hash-review",
+        "verification_method": "content-addressed-archive-sha256-binding",
+        "verifier_provenance": {
+            "method": "content-addressed-archive-sha256-binding",
+            "verified_at": "2026-08-31",
+            "path": abs_path.replace("\\", "/"),
+            "sha256": sha256_hex,
+            "member_count": member_count,
+            "scope_note": kind_note,
+        },
+    }
+
+
 def ext_source(sid, title, source_type, content, ext_path, note):
     return {
         "id": sid,
@@ -73,7 +96,13 @@ def _fmt(x):
 
 
 def build(gate: dict, evaluation: dict, probe_evidence: dict,
-          experiments_provenance: dict) -> dict:
+          experiments_provenance: dict,
+          raw_archive: dict | None = None) -> dict:
+    if raw_archive is None:
+        raise SystemExit(
+            "build() requires the content-addressed raw-observations "
+            "archive (path + sha256 + member_count); refusing to produce "
+            "a bundle whose raw evidence is unbound")
     winner = evaluation["winner"]
     verdict = evaluation["verdict"]
     scores = evaluation["scores_normalized"]
@@ -183,6 +212,23 @@ def build(gate: dict, evaluation: dict, probe_evidence: dict,
                      "carry provenance and scope with cross-goal reads "
                      "denied (7); worker/model can never accept a Goal.",
                      "AGENTS.md", "Contract boundary."),
+        archive_source(
+            "RAW-OBSERVATIONS",
+            "S1-007 raw observations archive (byte-exact)",
+            "content-addressed raw evidence archive",
+            f"Lossless byte-exact archive of ALL executed raw evidence: "
+            f"{raw_archive['member_count']} members = 168 run records "
+            f"(2 variants x 14 cases x 3 seeds x 2 executor identities) "
+            f"plus both run manifests and both timing artifacts with raw "
+            f"paired samples. Members are newline-translation-free copies "
+            f"of the on-disk files digested by the run manifests; the "
+            f"archive sha256 is bound here and re-verified by the "
+            f"clean-clone regression probe.",
+            f"research/tickets/stage-1/S1-007/results/evidence/"
+            f"raw-observations-{raw_archive['sha256']}.json",
+            raw_archive["sha256"],
+            raw_archive["member_count"],
+            "Lossless raw evidence binding for the whole series."),
     ]
 
     claims = [
@@ -295,6 +341,17 @@ def build(gate: dict, evaluation: dict, probe_evidence: dict,
                  "<=5s revocation SLO stays S1-008; profile-C MLS/TEE "
                  "stays S1-018.",
          "source_ids": ["SRC-03", "SRC-07", "S1-005-EVIDENCE"]},
+        {"id": "c8-raw-archive", "claim_class": "fact",
+         "text": f"Raw evidence binding: the content-addressed archive "
+                 f"raw-observations-{raw_archive['sha256']}.json "
+                 f"(sha256 {raw_archive['sha256']}, "
+                 f"{raw_archive['member_count']} byte-exact members: 168 "
+                 f"run records + 2 run manifests + 2 timing artifacts) is "
+                 f"tracked in Git and bound into this bundle as source "
+                 f"RAW-OBSERVATIONS; the clean-clone regression probe "
+                 f"re-verifies every member digest against the run "
+                 f"manifests and asserts the pack carries this binding.",
+         "source_ids": ["RAW-OBSERVATIONS"]},
     ]
 
     artifacts = {

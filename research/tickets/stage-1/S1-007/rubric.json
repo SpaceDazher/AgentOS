@@ -81,7 +81,7 @@
       "id": "D10",
       "name": "storage/latency/resource overhead in the local model",
       "weight": 0.07,
-      "evidence_rule": "measured: index entry counts and payload bytes, rows scanned and policy predicate evaluations per retrieval, cache behavior under the frozen workload",
+      "evidence_rule": "measured: index entry counts and payload bytes, rows scanned and policy predicate evaluations per retrieval, cache behavior under the frozen workload. Directional scoring is FROZEN as inverse normalization: for each cost component score = 4 * min(component value across candidates) / value(candidate), so the candidate with the LOWER measured cost always receives the strictly higher component score (the costliest value can never receive the maximum unless all values are equal); the per-component scores are averaged",
       "claim_type": "test_measurement",
       "unknown_bounds": [0, 4]
     },

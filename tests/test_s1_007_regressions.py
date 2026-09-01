@@ -812,6 +812,176 @@ class TestReviewR1Corrections(unittest.TestCase):
         self.assertNotIn("212 weight", bundle_text)
 
 
+class TestReviewR2Corrections(unittest.TestCase):
+    """One regression per REVIEW_R2 finding reproduction."""
+
+    def test_record_chain_hash_matches_canonical_db_and_pack_exactly(self):
+        """Finding 1: every shared field (including the FULL 64-hex chain
+        hash) must be identical across evaluation-record.json, the
+        canonical DB row and the pack-embedded evaluation."""
+        import sqlite3
+        record = json.loads((S1007 / "evaluation-record.json")
+                            .read_text(encoding="utf-8"))
+        db = ROOT / ".agentos-research/platform-stage-1/agentos.db"
+        c = sqlite3.connect(db)
+        c.row_factory = sqlite3.Row
+        ev = c.execute(
+            "SELECT id, result, artifact_chain_hash, campaign_id, goal_id"
+            " FROM research_evaluation WHERE id=?",
+            (record["evaluation_id"],)).fetchone()
+        c.close()
+        self.assertIsNotNone(ev, "record evaluation id not in canonical DB")
+        for key in ("result", "artifact_chain_hash", "campaign_id",
+                    "goal_id"):
+            self.assertEqual(record[key], ev[key], key)
+        self.assertEqual(len(record["artifact_chain_hash"]), 64)
+        self.assertTrue(record["artifact_chain_hash"].islower())
+        # pack-embedded evaluation equals the record too
+        pack = json.loads((ROOT / record["evidence_pack"]["path"])
+                          .read_text(encoding="utf-8"))
+        matches = [e for e in pack["research"]["evaluations"]
+                   if e["id"] == record["evaluation_id"]]
+        self.assertEqual(len(matches), 1)
+        for key in ("result", "artifact_chain_hash", "campaign_id",
+                    "goal_id"):
+            self.assertEqual(matches[0][key], record[key], key)
+        # pack chain hashes equal the full chain hash
+        self.assertEqual(pack["research"]["current_chain_hash"],
+                         record["artifact_chain_hash"])
+        self.assertEqual(pack["research"]["latest_chain_hash"],
+                         record["artifact_chain_hash"])
+        # series revision agrees
+        c = sqlite3.connect(db)
+        c.row_factory = sqlite3.Row
+        series = c.execute(
+            "SELECT revision FROM research_series WHERE research_key=?"
+            " AND goal_id=?", ("S1-007", record["goal_id"])).fetchone()
+        c.close()
+        self.assertEqual(series["revision"], record["research_revision"])
+
+    def test_pack_carries_raw_archive_binding(self):
+        """Finding 2: the FLOW-11 bundle (and therefore the evidence pack,
+        which projects it) must carry the raw-observations archive path,
+        SHA-256 and member count - not only evaluation-record.json."""
+        GoldenFixture.build()
+        record = json.loads((S1007 / "evaluation-record.json")
+                            .read_text(encoding="utf-8"))
+        archive_sha = record["raw_observations_archive"]["sha256"]
+        bundle = json.loads((S1007 / "bundle.json")
+                            .read_text(encoding="utf-8"))
+        src_ids = {s["id"] for s in bundle["sources"]}
+        self.assertIn("RAW-OBSERVATIONS", src_ids)
+        src = {s["id"]: s for s in bundle["sources"]}
+        prov = src["RAW-OBSERVATIONS"]["verifier_provenance"]
+        self.assertEqual(prov["sha256"], archive_sha)
+        self.assertEqual(prov["member_count"],
+                         record["raw_observations_archive"]["member_count"])
+        claim_ids = {c["id"] for c in bundle["claims"]}
+        self.assertIn("c8-raw-archive", claim_ids)
+        c8 = {c["id"]: c for c in bundle["claims"]}["c8-raw-archive"]
+        self.assertIn("RAW-OBSERVATIONS", c8["source_ids"])
+        self.assertIn(archive_sha, c8["text"])
+        # the pack itself projects the bundle and carries the digest
+        pack = json.loads((ROOT / record["evidence_pack"]["path"])
+                          .read_text(encoding="utf-8"))
+        pack_text = json.dumps(pack)
+        self.assertIn("RAW-OBSERVATIONS", pack_text)
+        self.assertIn(archive_sha, pack_text)
+
+    def test_d10_inverse_normalization_direction(self):
+        """Finding 3: D10 must reward the LOWER measured cost - verified
+        independently per component (storage and scan), not just
+        inequality of totals."""
+        GoldenFixture.build()
+        ev = GoldenFixture.state["evaluation"]
+        matrix = {(c["dimension"], c["variant"]): c
+                  for c in ev["decision_matrix"]}
+        cells = {v: matrix.get(("D10 storage/latency/resource overhead "
+                                "in the local model", v))
+                 for v in ("per_scope", "shared_rls")}
+        self.assertIsNotNone(cells["per_scope"])
+        self.assertIsNotNone(cells["shared_rls"])
+        comps = {v: cells[v]["components"] for v in cells}
+        # storage: per_scope carries 3 index projections (more bytes) ->
+        # its storage component must be strictly lower than shared_rls
+        self.assertLess(comps["per_scope"]["storage"],
+                        comps["shared_rls"]["storage"])
+        # scan: per_scope aggregates scan only its own scope rows (fewer)
+        # -> its scan component must be strictly higher than shared_rls
+        self.assertGreater(comps["per_scope"]["scan"],
+                           comps["shared_rls"]["scan"])
+        # totals differ and the winner keeps the D10 edge it earns
+        self.assertNotEqual(ev["scores_per_dimension"]["D10"]["per_scope"],
+                            ev["scores_per_dimension"]["D10"]["shared_rls"])
+
+    def test_timing_requires_both_arms_and_rejects_inconsistency(self):
+        """Finding 4: differences must be derived from BOTH raw arms; a
+        producer-controlled derived array that disagrees fails closed;
+        a missing arm yields NO_DATA, never WITHIN_TOLERANCE."""
+        GoldenFixture.build()
+        contract = json.loads((S1007 / "isolation-contract.json")
+                              .read_text(encoding="utf-8"))
+
+        def build_timing(foreign, control, supplied_diffs=None):
+            raw = {"foreign_samples_ns": foreign,
+                   "control_samples_ns": control,
+                   "seed_order": [101, 202, 303]}
+            if supplied_diffs is not None:
+                raw["paired_diffs_ns"] = supplied_diffs
+            return {"methodology": {"sample_count": 200, "warmup": 20,
+                                    "inner_repeats": 32,
+                                    "seeds": [101, 202, 303]},
+                    "variants": {"per_scope": {"raw": raw},
+                                 "shared_rls": {"raw": {
+                                     "foreign_samples_ns": [100] * 600,
+                                     "control_samples_ns": [100] * 600,
+                                     "seed_order": [101, 202, 303]}}}}
+
+        n = 600
+        foreign = [11_000] * n
+        control = [10_000] * n
+        # (a) real signal derived from both arms -> detected
+        out = evaluator.recompute_timing(
+            build_timing(foreign, control), contract)
+        self.assertEqual(
+            out["variants"]["per_scope"]["verdict"],
+            "SIGNAL_ABOVE_TOLERANCE")
+        self.assertGreater(out["variants"]["per_scope"]["signal_ns"], 0)
+        # (b) adversarial: real signal present but supplied derived diffs
+        # claim zero -> evaluator must FAIL CLOSED, not report WITHIN
+        with self.assertRaises(evaluator.EvalError):
+            evaluator.recompute_timing(
+                build_timing(foreign, control, supplied_diffs=[0] * n),
+                contract)
+        # (c) consistent supplied diffs are accepted
+        out = evaluator.recompute_timing(
+            build_timing(foreign, control, supplied_diffs=[1_000] * n),
+            contract)
+        self.assertEqual(
+            out["variants"]["per_scope"]["verdict"],
+            "SIGNAL_ABOVE_TOLERANCE")
+        # (d) missing foreign arm -> NO_DATA, never WITHIN_TOLERANCE
+        partial = build_timing(None, control)
+        out = evaluator.recompute_timing(partial, contract)
+        self.assertEqual(out["variants"]["per_scope"]["verdict"], "NO_DATA")
+        # (e) short arm -> NO_DATA
+        out = evaluator.recompute_timing(
+            build_timing(foreign[:-1], control[:-1]), contract)
+        self.assertEqual(out["variants"]["per_scope"]["verdict"], "NO_DATA")
+
+    def test_record_carries_live_wiki_counts(self):
+        """Finding 5: wiki_check counts in the record must be actual
+        integers from the live check, never null."""
+        record = json.loads((S1007 / "evaluation-record.json")
+                            .read_text(encoding="utf-8"))
+        wc = record["wiki_check"]
+        self.assertTrue(wc["ok"])
+        self.assertIsInstance(wc["files"], int)
+        self.assertIsInstance(wc["links_checked"], int)
+        self.assertGreater(wc["files"], 0)
+        self.assertGreater(wc["links_checked"], 0)
+
+
 class TestFrozenContracts(unittest.TestCase):
     def test_frozen_files_parse_and_are_consistent(self):
         contract = json.loads((S1007 / "isolation-contract.json")
