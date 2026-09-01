@@ -974,7 +974,7 @@ class TestReviewR2Corrections(unittest.TestCase):
                 contract)
         # (c) consistent supplied diffs are accepted
         out = evaluator.recompute_timing(
-            build_timing(foreign, control, supplied_diffs=[1_000] * n),
+            build_timing(foreign, control, supplied_diffs=[100_000] * n),
             contract)
         self.assertEqual(
             out["variants"]["per_scope"]["verdict"],
