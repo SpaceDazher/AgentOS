@@ -652,7 +652,7 @@ def _probe_allow_after_commit(base_scenarios: list[Scenario], seed: int,
     cache_entry_a = cache.get(sc.grant_id)
     epoch_regression = 1 if cache_entry_a and cache_entry_a.get("epoch", 0) < tracker.revocation_epoch else 0
     trace = {
-        "trial_id": f"PROBE-A-{sc.fixture_id}-seed{seed}",
+        "trial_id": f"PROBE-A-{sc.path}-{sc.cache_state}-{sc.load}-seed{seed}",
         "scenario": "PROBE-A-allow-after-commit",
         "path": sc.path,
         "cache_state": "warm",
@@ -698,7 +698,7 @@ def _probe_dropped_hop(base_scenarios: list[Scenario], seed: int,
     t_decision = perf_ns()
     decision, reason = _call_authorize_vulnerable(sc.path, tracker, cache, project, ctx)
     trace = {
-        "trial_id": f"PROBE-B-{sc.fixture_id}-seed{seed}",
+        "trial_id": f"PROBE-B-{sc.path}-{sc.cache_state}-{sc.load}-seed{seed}",
         "scenario": "PROBE-B-dropped-hop",
         "path": sc.path,
         "cache_state": "warm",
