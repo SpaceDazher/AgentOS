@@ -1,10 +1,10 @@
 {
-  "commit": "b83c832824c1879a0db4b80281aeac1515f711d2",
+  "commit": "a692ad88a57c3f265e6cc74f8741b4ca563a35fc",
   "contract_hashes": {
     "corpus-manifest.json": "a03c537bf530b7cdc69d6756e3277e5b4c4ee04dbe1de4a33ed5d394e912cfa9",
     "fixtures.json": "de6d459158764c1221935200d15a23ec8e8097f4d78d8f34bb836437753edbe1",
     "isolation-contract.json": "30dfa3469e372f5ed05f173df521d3c0b1cd6f00bab2f3bba3bf0e0d3beb9d5b",
-    "rubric.json": "fd3ff0ff8e3534d61e4de113aeca9067d933221a796e3695f92998b75d8564eb",
+    "rubric.json": "3dee1570bf5a8e35a666b985ab0a92893c627cc7b7ac8de97e4b067d34301b0d",
     "threat-model.json": "cd45c5998c4e0cb2c0e80f17585d1ac1cbe1fea7b71de1f5f4a48904b5cd36e8"
   },
   "decision_matrix": [
@@ -265,12 +265,12 @@
       "confidence": "high",
       "dimension": "D10 storage/latency/resource overhead in the local model",
       "evidence_refs": [
-        "storage:per_scope:1388B (max 1388B)",
-        "rows_scanned:per_scope:51 (max 105)"
+        "storage:per_scope:1388B (min 876B -> component 2.5245)",
+        "rows_scanned:per_scope:51 (min 51 -> component 4.0)"
       ],
       "limitation": "local model with a frozen fixed per-index overhead constant (INDEX_FIXED_OVERHEAD_BYTES=256)",
       "missing_evidence": "production storage/latency data",
-      "score": 2.9714,
+      "score": 3.2622,
       "variant": "per_scope",
       "weight": 0.07
     },
@@ -279,12 +279,12 @@
       "confidence": "high",
       "dimension": "D10 storage/latency/resource overhead in the local model",
       "evidence_refs": [
-        "storage:shared_rls:876B (max 1388B)",
-        "rows_scanned:shared_rls:105 (max 105)"
+        "storage:shared_rls:876B (min 876B -> component 4.0)",
+        "rows_scanned:shared_rls:105 (min 51 -> component 1.9429)"
       ],
       "limitation": "local model with a frozen fixed per-index overhead constant (INDEX_FIXED_OVERHEAD_BYTES=256)",
       "missing_evidence": "production storage/latency data",
-      "score": 3.2622,
+      "score": 2.9714,
       "variant": "shared_rls",
       "weight": 0.07
     },
@@ -926,12 +926,12 @@
   "reasons": [
     "inference-type dimensions present (D9, D11); bounded local timing; model-based overhead constant"
   ],
-  "run_nonce": "s1-007-b83c832824c1-9e0c43194575",
+  "run_nonce": "s1-007-a692ad88a57c-12f0da61c900",
   "schema": "agentos.s1-007.evaluation/v1",
-  "score_margin": 0.2096,
+  "score_margin": 0.2504,
   "scores_normalized": {
-    "per_scope": 3.8299,
-    "shared_rls": 3.6203
+    "per_scope": 3.8503,
+    "shared_rls": 3.5999
   },
   "scores_per_dimension": {
     "D1": {
@@ -939,8 +939,8 @@
       "shared_rls": 4.0
     },
     "D10": {
-      "per_scope": 2.9714,
-      "shared_rls": 3.2622
+      "per_scope": 3.2622,
+      "shared_rls": 2.9714
     },
     "D11": {
       "per_scope": 4.0,
@@ -981,8 +981,8 @@
   },
   "sensitivity": {
     "base_scores": {
-      "per_scope": 3.8299,
-      "shared_rls": 3.6203
+      "per_scope": 3.8503,
+      "shared_rls": 3.5999
     },
     "base_weights": {
       "D1": 0.16,
@@ -1033,49 +1033,65 @@
       "note": "the rerun timing artifact is digest-bound to its manifest and independently recomputed; verdict divergences between executors are local-scheduling findings recorded as limitations, never producer-accepted claims",
       "recomputed_variants": {
         "per_scope": {
-          "control_median_ns": 8337,
-          "note": "statistic, tolerance and verdict recomputed by the evaluator from raw hash-bound paired samples; not a production SLO, not proof of absence of all side channels",
+          "control_median_ns": 11718,
+          "diffs_derived_from": [
+            "foreign_samples_ns",
+            "control_samples_ns"
+          ],
+          "note": "statistic, tolerance and verdict recomputed by the evaluator from raw hash-bound timing arms (differences derived as foreign - control); not a production SLO, not proof of absence of all side channels",
           "pooled_samples": 600,
           "recomputed": true,
-          "signal_ns": 7,
+          "signal_ns": 59,
           "tolerance_ns": 2000,
           "verdict": "WITHIN_TOLERANCE"
         },
         "shared_rls": {
-          "control_median_ns": 8390,
-          "note": "statistic, tolerance and verdict recomputed by the evaluator from raw hash-bound paired samples; not a production SLO, not proof of absence of all side channels",
+          "control_median_ns": 11118,
+          "diffs_derived_from": [
+            "foreign_samples_ns",
+            "control_samples_ns"
+          ],
+          "note": "statistic, tolerance and verdict recomputed by the evaluator from raw hash-bound timing arms (differences derived as foreign - control); not a production SLO, not proof of absence of all side channels",
           "pooled_samples": 600,
           "recomputed": true,
-          "signal_ns": 209,
+          "signal_ns": 231,
           "tolerance_ns": 2000,
           "verdict": "WITHIN_TOLERANCE"
         }
       },
-      "sha256": "5850f33464a486978a81f9fd2d13b6be4b1b61381878e0f9823b0ef6a5fa39e5",
+      "sha256": "6fc56e02503504f1d167f236854f1572b23e5f2e1bf856e448e87130a4526c9a",
       "verdict_divergences": []
     },
     "variants": {
       "per_scope": {
-        "control_median_ns": 8909,
-        "note": "statistic, tolerance and verdict recomputed by the evaluator from raw hash-bound paired samples; not a production SLO, not proof of absence of all side channels",
+        "control_median_ns": 14568,
+        "diffs_derived_from": [
+          "foreign_samples_ns",
+          "control_samples_ns"
+        ],
+        "note": "statistic, tolerance and verdict recomputed by the evaluator from raw hash-bound timing arms (differences derived as foreign - control); not a production SLO, not proof of absence of all side channels",
         "pooled_samples": 600,
         "recomputed": true,
-        "signal_ns": 3,
+        "signal_ns": 109,
         "tolerance_ns": 2000,
         "verdict": "WITHIN_TOLERANCE"
       },
       "shared_rls": {
-        "control_median_ns": 8568,
-        "note": "statistic, tolerance and verdict recomputed by the evaluator from raw hash-bound paired samples; not a production SLO, not proof of absence of all side channels",
+        "control_median_ns": 9803,
+        "diffs_derived_from": [
+          "foreign_samples_ns",
+          "control_samples_ns"
+        ],
+        "note": "statistic, tolerance and verdict recomputed by the evaluator from raw hash-bound timing arms (differences derived as foreign - control); not a production SLO, not proof of absence of all side channels",
         "pooled_samples": 600,
         "recomputed": true,
-        "signal_ns": 168,
+        "signal_ns": 169,
         "tolerance_ns": 2000,
         "verdict": "WITHIN_TOLERANCE"
       }
     }
   },
-  "tree_sha": "6483eaf9e0c8cc87c87b1af2d0df5dc0010c1a02",
+  "tree_sha": "f742e7aef44783ef6eea69e3ef204322eb05f1ef",
   "verdict": "PASS_WITH_LIMITS",
   "winner": "per_scope"
 }

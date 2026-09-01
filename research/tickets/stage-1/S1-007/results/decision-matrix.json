@@ -257,12 +257,12 @@
       "confidence": "high",
       "dimension": "D10 storage/latency/resource overhead in the local model",
       "evidence_refs": [
-        "storage:per_scope:1388B (max 1388B)",
-        "rows_scanned:per_scope:51 (max 105)"
+        "storage:per_scope:1388B (min 876B -> component 2.5245)",
+        "rows_scanned:per_scope:51 (min 51 -> component 4.0)"
       ],
       "limitation": "local model with a frozen fixed per-index overhead constant (INDEX_FIXED_OVERHEAD_BYTES=256)",
       "missing_evidence": "production storage/latency data",
-      "score": 2.9714,
+      "score": 3.2622,
       "variant": "per_scope",
       "weight": 0.07
     },
@@ -271,12 +271,12 @@
       "confidence": "high",
       "dimension": "D10 storage/latency/resource overhead in the local model",
       "evidence_refs": [
-        "storage:shared_rls:876B (max 1388B)",
-        "rows_scanned:shared_rls:105 (max 105)"
+        "storage:shared_rls:876B (min 876B -> component 4.0)",
+        "rows_scanned:shared_rls:105 (min 51 -> component 1.9429)"
       ],
       "limitation": "local model with a frozen fixed per-index overhead constant (INDEX_FIXED_OVERHEAD_BYTES=256)",
       "missing_evidence": "production storage/latency data",
-      "score": 3.2622,
+      "score": 2.9714,
       "variant": "shared_rls",
       "weight": 0.07
     },
@@ -323,10 +323,10 @@
   },
   "near_tie": false,
   "schema": "agentos.s1-007.decision-matrix/v1",
-  "score_margin": 0.2096,
+  "score_margin": 0.2504,
   "scores_normalized": {
-    "per_scope": 3.8299,
-    "shared_rls": 3.6203
+    "per_scope": 3.8503,
+    "shared_rls": 3.5999
   },
   "scores_per_dimension": {
     "D1": {
@@ -334,8 +334,8 @@
       "shared_rls": 4.0
     },
     "D10": {
-      "per_scope": 2.9714,
-      "shared_rls": 3.2622
+      "per_scope": 3.2622,
+      "shared_rls": 2.9714
     },
     "D11": {
       "per_scope": 4.0,
@@ -376,8 +376,8 @@
   },
   "sensitivity": {
     "base_scores": {
-      "per_scope": 3.8299,
-      "shared_rls": 3.6203
+      "per_scope": 3.8503,
+      "shared_rls": 3.5999
     },
     "flip_count": 0,
     "flips": [],

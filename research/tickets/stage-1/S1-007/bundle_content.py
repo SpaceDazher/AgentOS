@@ -50,7 +50,8 @@ def archive_source(sid, title, source_type, content, abs_path, sha256_hex,
     """A content-addressed evidence archive bound by its exact SHA-256."""
     return {
         "id": sid,
-        "canonical_uri": "sha256:" + sha256_hex,
+        "canonical_uri": ("https://local.agentos.invalid/AgentOS/"
+                          + abs_path.replace("\\", "/")),
         "title": title,
         "source_type": source_type,
         "content": content,
