@@ -512,18 +512,24 @@ class TestISODerivation(unittest.TestCase):
                 self.assertEqual(len(entry["provenance"]), 5)
 
     def test_timing_no_data_is_limitation_not_pass(self):
-        analysis = evaluator.analyze_timing({}, {})
+        analysis = evaluator.recompute_timing({}, {})
         self.assertIn("NO_DATA", analysis)
-        # a signal above tolerance is a finding, never silently a pass
-        synthetic = {"variants": {"per_scope": {
-            "median_paired_diff_ns": 3000, "tolerance_ns": 2000,
-            "per_seed": [], "pooled_samples": 600}}}
+        # a raw-sampled signal above tolerance is a finding, never a pass;
+        # the statistic is recomputed from raw paired samples
+        synthetic = {"methodology": {"sample_count": 200, "warmup": 20,
+                                     "inner_repeats": 32,
+                                     "seeds": [101, 202, 303]},
+                     "variants": {"per_scope": {"raw": {
+                         "paired_diffs_ns": [50_000] * 600,
+                         "control_samples_ns": [3_000] * 600,
+                         "seed_order": [101, 202, 303]}}}}
         contract = json.loads((S1007 / "isolation-contract.json")
                               .read_text(encoding="utf-8"))
-        out = evaluator.analyze_timing(synthetic, contract)
+        out = evaluator.recompute_timing(synthetic, contract)
         self.assertEqual(
             out["variants"]["per_scope"]["verdict"],
             "SIGNAL_ABOVE_TOLERANCE")
+        self.assertTrue(out["variants"]["per_scope"]["recomputed"])
 
     def test_supersede_and_move_invalidation_semantics(self):
         GoldenFixture.build()
@@ -671,7 +677,7 @@ class TestReviewR1Corrections(unittest.TestCase):
         """Finding 2: per-variant cells must not overwrite each other and
         D10 must be directional (lower measured cost scores higher)."""
         GoldenFixture.build()
-        ev = GoldenFixture.state["ev"]
+        ev = GoldenFixture.state["evaluation"]
         d6 = ev["scores_per_dimension"]["D6"]
         self.assertNotEqual(d6["per_scope"], d6["shared_rls"])
         self.assertEqual(d6["per_scope"], 4.0)
@@ -779,7 +785,7 @@ class TestReviewR1Corrections(unittest.TestCase):
         """Finding 7: executed sensitivity counts must equal the executed
         22 OAT + 200 random vectors and be reported verbatim."""
         GoldenFixture.build()
-        ev = GoldenFixture.state["ev"]
+        ev = GoldenFixture.state["evaluation"]
         sens = ev["sensitivity"]
         self.assertEqual(sens["oat_perturbations_executed"], 22)
         self.assertEqual(sens["random_vectors"], 200)
