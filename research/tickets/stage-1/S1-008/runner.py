@@ -1106,21 +1106,20 @@ def _check_dirty() -> bool:
             status = line[:2]
             path = line[3:]  # skip "XY " prefix
 
-        # Untracked files in results/ output dirs are expected (runner writes them)
-        # Only flag untracked/modified files in the S1-008 source scope — NOT
-        # output/results (which include raw-traces, manifests, evaluation results)
-        results_prefix = "results/"
-        is_in_results = path.startswith(results_prefix)
-        if is_in_results:
-            continue  # skip ALL results/ files (untracked + modified)
+            # Untracked files in results/ output dirs are expected (runner writes them)
+            # Only flag untracked/modified files in the S1-008 source scope — NOT
+            # output/results (which include raw-traces, manifests, evaluation results)
+            results_prefix = "results/"
+            if path.startswith(results_prefix):
+                continue  # skip ALL results/ files (untracked + modified)
 
-        if status == "??" and path.startswith(s1008_prefix):
-            scope_dirty = True
-            continue
+            if status == "??" and path.startswith(s1008_prefix):
+                scope_dirty = True
+                continue
 
-        # Any modifications to tracked files → dirty
-        # (covers staged, unstaged, and staged+unstaged modifications)
-        if status in (" M", "M ", "MM", "AM", "RM"):
+            # Any modifications to tracked files → dirty
+            # (covers staged, unstaged, and staged+unstaged modifications)
+            if status in (" M", "M ", "MM", "AM", "RM"):
                 scope_dirty = True
                 continue
 
