@@ -1095,9 +1095,10 @@ def _check_dirty() -> bool:
             capture_output=True, text=True, cwd=str(_REPO_ROOT), timeout=10
         )
         s1008_prefix = "research/tickets/stage-1/S1-008/"
-        results_prefix = "results/"
 
-        # Check for any untracked/modified files in the S1-008 or results scope
+        # Check for any untracked/modified files in the S1-008 source scope.
+        # Untracked files in results/ are expected output directories, not
+        # committed source artifacts.
         scope_dirty = False
         for line in result.stdout.strip().splitlines():
             if not line:
