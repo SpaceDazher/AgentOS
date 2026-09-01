@@ -1105,8 +1105,10 @@ def _check_dirty() -> bool:
             status = line[:2]
             path = line[3:]  # skip "XY " prefix
 
-            # Any untracked files in S1-008 scope → dirty
-            if status == "??" and (path.startswith(s1008_prefix) or path.startswith(results_prefix)):
+            # Untracked files in results/ output dirs are expected (runner writes them)
+            # Only flag untracked files in the S1-008 source scope (runner, frozen
+            # artifacts, evaluator, etc.) — NOT output/results
+            if status == "??" and path.startswith(s1008_prefix):
                 scope_dirty = True
                 continue
 
