@@ -176,7 +176,7 @@ from a lower wave to a higher wave, and S1-020 is the sole closure sink.
 | S1-004 | W1 | P0 | formal | PASS_WITH_LIMITS | S1-002, S1-003 | bounded formal/simulation checks for INV1–INV6 and delivery safety |
 | S1-005 | W1 | P1 | architecture | PASS_WITH_LIMITS | S1-002 | QA1 modular monolith versus containers |
 | S1-006 | W2 | P1 | architecture | PASS_WITH_LIMITS | S1-002, S1-005 | QA2 in-process versus durable execution backend |
-| S1-007 | W2 | P0 | security | READY | S1-003, S1-005 | QA3 retrieval/index scope isolation |
+| S1-007 | W2 | P0 | security | PASS_WITH_LIMITS | S1-003, S1-005 | QA3 retrieval/index scope isolation |
 | S1-008 | W2 | P0 | security | READY | S1-002, S1-004 | revocation propagation bound of ≤5 seconds |
 | S1-009 | W2 | P1 | architecture | READY | S1-001, S1-005 | MCP/A2A delegation and knowledge adapter roadmap |
 | S1-010 | W3 | P0 | security | READY | S1-001, S1-009 | tool-poisoning detection and quarantine evidence |
@@ -615,13 +615,14 @@ python -m agentos.cli research-plan --topic "S1-006 QA2 execution backend in pro
 
 ### S1-007 — QA3 retrieval and index isolation
 
-- **Status:** `PASS_WITH_LIMITS` - corrective round R3 recorded
-  2026-08-31 (research revision 6; closes all REVIEW_R1 and REVIEW_R2
-  P1 findings): goal `goal_MR6J7MCFXB9NVEPC01M1DA27F9`, evaluation
-  `reval_WPFWEVDDR5328VEY01M1DA27K9`, artifact chain `67384590...`
+- **Status:** `PASS_WITH_LIMITS` - corrective round R4 recorded
+  2026-09-01 UTC (research revision 7; closes all REVIEW_R1, REVIEW_R2,
+  and REVIEW_R3 P1/P2 findings): goal
+  `goal_5FX22ZHCEAW0G2B501M1DDTYSA`, evaluation
+  `reval_6BH3G062B38G3WHH01M1DDTYW2`, artifact chain `4c344ab2...`
   (full 64-hex value verified equal across record, canonical DB and
   pack), tracked content-addressed evidence-pack/v3 `chain_fresh=true`
-  plus a bound raw-observations archive `f4729960...` (172 byte-exact
+  plus a bound raw-observations archive `243ce6a6...` (172 byte-exact
   members: 168 run records + 2 manifests + 2 timing artifacts; archive
   sha256 carried inside the bundle as source RAW-OBSERVATIONS / claim
   c8-raw-archive and asserted by the clean-clone probe). Dependency
@@ -639,7 +640,10 @@ python -m agentos.cli research-plan --topic "S1-006 QA2 execution backend in pro
   the evaluator from BOTH raw hash-bound arms (foreign-control
   differences derived in-evaluator; disagreeing or missing derived
   arrays fail closed); probes bound to the frozen A/B/C/D matrix and
-  detected fail-closed. Limits: local model only; timing cannot prove
+  detected fail-closed. The tracked evaluation record is now derived
+  from the current evaluator and pack, validates the structured archive
+  binding in both bundle and pack, and uses a canonical timestamp that
+  cannot predate the evaluation. Limits: local model only; timing cannot prove
   absence of all side channels; D9/D11 remain inference; profile C
   stays S1-018, the <=5s revocation SLO stays S1-008. Migration trigger
   away from per-scope projections requires documented cross-scope
