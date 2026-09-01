@@ -59,8 +59,20 @@ def _count_files(path: Path) -> int:
 def build_bundle(goal_id: str, evaluation_id: str, campaign_id: str,
                  chain_hash: str = "",
                  run_dir_a: str = "results/run-a",
-                 run_dir_b: str = "results/run-b") -> dict[str, Any]:
-    """Build the bundle from frozen artifacts + run outputs."""
+                 run_dir_b: str = "results/run-b",
+                 existing_bundle: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Build the bundle from frozen artifacts + run outputs.
+
+    Preserves FLOW-11 fields (config, sources, claims, artifacts, audit)
+    from existing_bundle if provided.
+    """
+    # --- Preserve FLOW-11 structure from existing bundle ---
+    bundle: dict[str, Any] = {}
+    if existing_bundle:
+        for k in ("config", "sources", "claims", "artifacts", "audit"):
+            if k in existing_bundle:
+                bundle[k] = existing_bundle[k]
+
     # --- Frozen artifacts ---
     frozen_artifacts: dict[str, str] = {}
     frozen_names = [
@@ -99,7 +111,9 @@ def build_bundle(goal_id: str, evaluation_id: str, campaign_id: str,
     comparison = json.loads((_RESULTS / "comparison.json").read_text())
 
     # --- Build bundle ---
-    bundle = {
+    # If FLOW-11 artifacts exist in existing_bundle, merge evidence artifacts into them
+    flow_artifacts = bundle.pop("artifacts", {}) if existing_bundle and "artifacts" in bundle else {}
+    bundle.update({
         "schema": "agentos.s1-008.bundle/v1",
         "created_at": datetime.now(timezone.utc).isoformat(),
         "goal_id": goal_id,
@@ -108,6 +122,7 @@ def build_bundle(goal_id: str, evaluation_id: str, campaign_id: str,
         "artifact_chain_hash": chain_hash,
         "frozen_artifacts": frozen_artifacts,
         "artifacts": {
+            **flow_artifacts,
             "raw_a": {
                 "path": _posix(raw_a_dir.relative_to(_REPO_ROOT)),
                 "member_count": raw_a_count,
@@ -196,9 +211,7 @@ def build_bundle(goal_id: str, evaluation_id: str, campaign_id: str,
             "Local model cannot prove absence of all network/cache side channels.",
             "Clock assumptions: monotonic clock authoritative for elapsed; UTC wall for audit only.",
         ],
-    }
-
-    # --- Compute bundle self-hash ---
+    })
     # bundle_sha256 computed over canonical JSON with bundle_sha256="" (placeholder)
     bundle["bundle_sha256"] = ""
     bundle_json = json.dumps(bundle, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
@@ -225,8 +238,15 @@ def main() -> None:
                         help="Output path for bundle.json")
     args = parser.parse_args()
 
+    # Read existing bundle to preserve FLOW-11 fields (config, sources, claims, artifacts, audit)
+    existing_bundle = None
+    bundle_path = Path(args.output)
+    if bundle_path.exists():
+        existing_bundle = json.loads(bundle_path.read_text(encoding="utf-8"))
+
     bundle = build_bundle(args.goal_id, args.eval_id, args.campaign_id,
-                          args.chain_hash, args.run_dir_a, args.run_dir_b)
+                          args.chain_hash, args.run_dir_a, args.run_dir_b,
+                          existing_bundle=existing_bundle)
     bundle_path = Path(args.output)
 
     # Write canonical JSON (minified) — this is what bundle_sha256 was computed over
