@@ -22,7 +22,6 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import math
 import os
 import sys
 from datetime import datetime, timezone
@@ -111,16 +110,9 @@ def _stats(vals: list[float]) -> dict[str, Any]:
     n = len(s)
 
     def pct(p: float) -> float:
-        if n == 1:
-            return s[0]
-        k = (n - 1) * p
-        f = math.floor(k)
-        c = math.ceil(k)
-        if f == c:
-            return s[int(k)]
-        d0 = s[f] * (c - k)
-        d1 = s[c] * (k - f)
-        return d0 + d1
+        # nearest-rank percentile (matches runner.py stats())
+        idx = min(int(n * p) - 1, n - 1)
+        return s[idx] if idx >= 0 else s[0]
 
     return {
         "count": n,
