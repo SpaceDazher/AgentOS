@@ -700,18 +700,21 @@ python -m agentos.cli research-plan --topic "S1-007 QA3 retrieval and index isol
 
 ### S1-008 — Revocation latency validation (≤5 seconds)
 
-- **Status:** `PASS_WITH_LIMITS` — measured 2026-09-01 (research revision 1):
-  goal `goal_1E6TYGJ9DY2DFCJ901M1FK71V4`, evaluation
-  `reval_2C3YT4FV9YMPF50201M1FK71WD`, artifact chain
-  `e7e1da05…`, evidence-pack content-addressed at
-  `results/evidence/evidence-pack-56c80986…`. Main and independent
-  rerun each: 4 paths × 2 cache × 3 loads × 3 seeds × 5 trials =
-  360 mandatory (72 cells × 5 trials), 24 fault scenarios, 18 probes
-  A–F = 402 total per run, 0 hard counters, max latency
-  <2.2 ms < 5000 ms; all adversarial probes A–F detected fail-closed.
-  Limits: same-host model-only enforcement (no production topology);
-  process-separated (not external) auditor; local model cannot prove
-  absence of all network/cache side channels.
+- **Status:** `PASS_WITH_LIMITS` — measured 2026-09-02 (research revision 13):
+  goal `goal_R1HBV59V3M5K2NQA01M1FR8JFG`, campaign
+  `rcamp_HDQSGD00K22QGT7601M1FR8JFG`, evaluation
+  `reval_5KWTDGVVXHB1M2VG01M1FR8JJC`, artifact chain
+  `e5ce35fe9c0acc46771f5b925918b65ad9f9c113bff513024fc60b942c5ab4a9`,
+  evidence-pack content-addressed at
+  `results/evidence/evidence-pack-ba5e689d8d61ca304e99f4caac028ffd89a05e6b31b41d218b95041b2d72637c.json`.
+  Main and independent rerun each: 4 paths × 2 cache × 3 loads × 3 seeds ×
+  5 trials = 360 matrix trials, plus 24 fault scenarios = **384 mandatory**;
+  18 probes A–F = **402 total** per run. Both raw A/B archives contain 402
+  content-digested members, with 0 hard-counter violations; measured max
+  latency was 1.125 ms (A) / 1.169 ms (B), below the 5000 ms research bound.
+  All adversarial probes A–F detected fail-closed. Limits: same-host model-only
+  enforcement (no production topology); process-separated (not external)
+  auditor; local model cannot prove absence of all network/cache side channels.
 - **Priority:** `P0`
 - **Wave:** `W2`
 - **Owner:** `security`
