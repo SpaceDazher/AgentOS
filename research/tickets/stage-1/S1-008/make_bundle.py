@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -56,6 +57,159 @@ def _count_files(path: Path) -> int:
     return len(list(path.rglob("*.json")))
 
 
+def _valid_sha(value: Any) -> bool:
+    return isinstance(value, str) and len(value) == 64 and all(
+        c in "0123456789abcdef" for c in value.lower())
+
+
+def _valid_git_oid(value: Any) -> bool:
+    return isinstance(value, str) and len(value) in {40, 64} and all(
+        c in "0123456789abcdef" for c in value.lower())
+
+
+def _git_rev_parse(*args: str) -> str:
+    try:
+        proc = subprocess.run(
+            ["git", "rev-parse", *args], capture_output=True, text=True,
+            cwd=str(_REPO_ROOT), timeout=10,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return "MISSING"
+    value = proc.stdout.strip()
+    return value if proc.returncode == 0 and value else "MISSING"
+
+
+def _validate_process_evidence(process: Any, label: str) -> None:
+    if not isinstance(process, dict):
+        raise ValueError(f"{label} missing process evidence")
+    if (isinstance(process.get("pid"), bool) or
+            not isinstance(process.get("pid"), int) or process["pid"] <= 0 or
+            isinstance(process.get("parent_pid"), bool) or
+            not isinstance(process.get("parent_pid"), int) or process["parent_pid"] <= 0):
+        raise ValueError(f"{label} process PID evidence is malformed")
+    argv = process.get("argv")
+    if not isinstance(argv, list) or not argv or not all(
+            isinstance(item, str) and item for item in argv):
+        raise ValueError(f"{label} process argv evidence is malformed")
+    for key in ("cwd", "output_dir", "executable", "python_version",
+                "python_implementation", "git_commit", "started_at_utc"):
+        if not isinstance(process.get(key), str) or not process[key]:
+            raise ValueError(f"{label} process evidence missing {key}")
+    digest = process.get("invocation_digest")
+    if not _valid_sha(digest):
+        raise ValueError(f"{label} process invocation digest is malformed")
+    body = {key: value for key, value in process.items()
+            if key != "invocation_digest"}
+    if sha256_text(json.dumps(body, sort_keys=True, separators=(",", ":"),
+                           ensure_ascii=False)) != digest:
+        raise ValueError(f"{label} process invocation digest mismatch")
+    descriptor = process.get("launch_descriptor")
+    if (not isinstance(descriptor, dict) or descriptor.get("argv") != argv or
+            descriptor.get("cwd") != process.get("cwd") or
+            descriptor.get("executable") != process.get("executable") or
+            descriptor.get("output_dir") != process.get("output_dir")):
+        raise ValueError(f"{label} launch descriptor mismatch")
+
+
+def raw_trace_digest(raw_dir: str | Path) -> dict[str, Any]:
+    """Digest every raw trace by stable relative path and content.
+
+    ``manifest.json`` is metadata only and is never used as the raw evidence
+    hash. Both byte and parsed-canonical hashes are recorded for every member
+    so changes to either representation are observable.
+    """
+    root = Path(raw_dir)
+    if not root.is_dir():
+        raise FileNotFoundError(f"raw traces dir not found: {root}")
+    members: list[dict[str, Any]] = []
+    for path in sorted(root.rglob("*.json")):
+        if not path.is_file():
+            continue
+        raw = path.read_bytes()
+        try:
+            parsed = json.loads(raw.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise ValueError(f"invalid raw trace {path}") from exc
+        canonical = json.dumps(
+            parsed, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+        ).encode("utf-8")
+        members.append({
+            "path": path.relative_to(root).as_posix(),
+            "size": len(raw),
+            "sha256": hashlib.sha256(raw).hexdigest(),
+            "canonical_sha256": hashlib.sha256(canonical).hexdigest(),
+        })
+    payload = {
+        "algorithm": "sha256(path,size,bytes,canonical-json)",
+        "members": members,
+    }
+    return {
+        "algorithm": payload["algorithm"],
+        "member_count": len(members),
+        "members": members,
+        "sha256": sha256_text(json.dumps(
+            payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+        )),
+    }
+
+
+def _validate_manifest(manifest: dict[str, Any], run_dir: Path,
+                       raw_binding: dict[str, Any], label: str,
+                       frozen_artifacts: dict[str, str]) -> None:
+    """Reject stale, mixed, dirty, or incomplete run evidence."""
+    if not isinstance(manifest, dict):
+        raise ValueError(f"{label} manifest must be an object")
+    if manifest.get("dirty") is not False:
+        raise ValueError(f"{label} manifest is dirty")
+    raw_dir = run_dir / "raw-traces"
+    try:
+        expected_raw_path = raw_dir.relative_to(_REPO_ROOT).as_posix()
+    except ValueError:
+        expected_raw_path = raw_dir.resolve().as_posix()
+    declared_raw_path = str(manifest.get("raw_trace_dir", "")).replace("\\", "/")
+    if declared_raw_path not in {expected_raw_path, raw_dir.resolve().as_posix()}:
+        raise ValueError(
+            f"{label} raw_trace_dir mismatch: {manifest.get('raw_trace_dir')} != {expected_raw_path}")
+    if manifest.get("raw_trace_count") != raw_binding["member_count"]:
+        raise ValueError(f"{label} raw trace count does not match disk")
+    if raw_binding["member_count"] != 402:
+        raise ValueError(f"{label} raw trace count must be 402, got {raw_binding['member_count']}")
+    declared_binding = manifest.get("raw_trace_binding")
+    if not isinstance(declared_binding, dict) or declared_binding != raw_binding:
+        raise ValueError(f"{label} raw trace content digest mismatch")
+    git_commit = manifest.get("git_commit")
+    if not _valid_git_oid(git_commit) or not _valid_git_oid(manifest.get("git_tree_sha256")):
+        raise ValueError(f"{label} missing git commit/tree binding")
+    if _git_rev_parse(f"{git_commit}^{{tree}}") != manifest["git_tree_sha256"]:
+        raise ValueError(f"{label} git tree binding is stale")
+    process = manifest.get("process_evidence")
+    _validate_process_evidence(process, label)
+    bindings = manifest.get("source_bindings")
+    if not isinstance(bindings, dict) or not bindings:
+        raise ValueError(f"{label} missing source bindings")
+    for relative_path, digest in bindings.items():
+        if (not isinstance(relative_path, str) or not _valid_git_oid(digest) or
+                _git_rev_parse(f"{git_commit}:{relative_path}") != digest):
+            raise ValueError(f"{label} source binding is stale: {relative_path}")
+    for name, digest in frozen_artifacts.items():
+        key = {
+            "revocation-contract.json": "contract_sha256",
+            "workload-manifest.json": "workload_sha256",
+            "threat-model.json": "threat_model_sha256",
+            "rubric.json": "rubric_sha256",
+            "fixtures.json": "fixtures_sha256",
+            "corpus-manifest.json": "corpus_manifest_sha256",
+        }.get(name)
+        if key is not None and manifest.get(key) != digest:
+            raise ValueError(f"{label} frozen artifact mismatch: {name}")
+    declared_frozen = manifest.get("frozen_artifacts")
+    if not isinstance(declared_frozen, dict):
+        raise ValueError(f"{label} missing frozen_artifacts map")
+    for name, digest in frozen_artifacts.items():
+        if declared_frozen.get(name) != digest:
+            raise ValueError(f"{label} frozen artifact map mismatch: {name}")
+
+
 def build_bundle(goal_id: str, evaluation_id: str, campaign_id: str,
                  chain_hash: str = "",
                  run_dir_a: str = "results/run-a",
@@ -66,6 +220,10 @@ def build_bundle(goal_id: str, evaluation_id: str, campaign_id: str,
     Preserves FLOW-11 fields (config, sources, claims, artifacts, audit)
     from existing_bundle if provided.
     """
+    for label, value in (("goal_id", goal_id), ("evaluation_id", evaluation_id),
+                         ("campaign_id", campaign_id), ("artifact_chain_hash", chain_hash)):
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError(f"missing {label}; refusing an unbound bundle")
     # --- Preserve FLOW-11 structure from existing bundle ---
     bundle: dict[str, Any] = {}
     if existing_bundle:
@@ -101,14 +259,48 @@ def build_bundle(goal_id: str, evaluation_id: str, campaign_id: str,
     # --- Raw trace counts ---
     raw_a_dir = run_a_path / "raw-traces"
     raw_b_dir = run_b_path / "raw-traces"
-    raw_a_count = _count_files(raw_a_dir)
-    raw_b_count = _count_files(raw_b_dir)
+    raw_a_binding = raw_trace_digest(raw_a_dir)
+    raw_b_binding = raw_trace_digest(raw_b_dir)
+    _validate_manifest(manifest_a, run_a_path, raw_a_binding, "run A",
+                       frozen_artifacts)
+    _validate_manifest(manifest_b, run_b_path, raw_b_binding, "run B",
+                       frozen_artifacts)
+    if manifest_a.get("git_commit") != manifest_b.get("git_commit"):
+        raise ValueError("run A/B evidence uses mixed git commits")
+    if manifest_a.get("git_tree_sha256") != manifest_b.get("git_tree_sha256"):
+        raise ValueError("run A/B evidence uses mixed git trees")
+    if manifest_a.get("source_bindings") != manifest_b.get("source_bindings"):
+        raise ValueError("run A/B evidence uses mixed source blobs")
+    if manifest_a.get("process_evidence", {}).get("pid") == manifest_b.get("process_evidence", {}).get("pid"):
+        raise ValueError("run A/B evidence must come from different processes")
+    raw_a_count = raw_a_binding["member_count"]
+    raw_b_count = raw_b_binding["member_count"]
 
     # --- Load evaluation result ---
     eval_result = json.loads((_RESULTS / "evaluation-result.json").read_text())
 
     # --- Load comparison ---
     comparison = json.loads((_RESULTS / "comparison.json").read_text())
+
+    # Only a fresh positive evaluator/comparison can be bundled. Any failure,
+    # blocked result, missing list, or stale raw digest is rejected here.
+    if not isinstance(eval_result, dict) or eval_result.get("verdict") not in {"PASS", "PASS_WITH_LIMITS"}:
+        raise ValueError("evaluation result is not positive")
+    if eval_result.get("failures"):
+        raise ValueError("evaluation result contains failures")
+    if not isinstance(comparison, dict) or comparison.get("verdict") not in {"PASS", "PASS_WITH_LIMITS"}:
+        raise ValueError("comparison result is not positive")
+    if comparison.get("failures"):
+        raise ValueError("comparison result contains failures")
+    for source_name, source in (("evaluation", eval_result),
+                                ("comparison", comparison)):
+        for key, binding in (("raw_archive_a", raw_a_binding),
+                             ("raw_archive_b", raw_b_binding)):
+            declared = source.get(key)
+            if (not isinstance(declared, dict) or
+                    declared.get("sha256") != binding["sha256"] or
+                    declared.get("member_count") != binding["member_count"]):
+                raise ValueError(f"{source_name} {key} is stale or not content-bound")
 
     # --- Build bundle ---
     # If FLOW-11 artifacts exist in existing_bundle, merge evidence artifacts into them
@@ -126,18 +318,16 @@ def build_bundle(goal_id: str, evaluation_id: str, campaign_id: str,
             "raw_a": {
                 "path": _posix(raw_a_dir.relative_to(_REPO_ROOT)),
                 "member_count": raw_a_count,
-                "sha256": sha256_text(
-                    json.dumps({k: v for k, v in manifest_a.items()},
-                               skipkeys=False, sort_keys=True)
-                ),
+                "sha256": raw_a_binding["sha256"],
+                "members": raw_a_binding["members"],
+                "algorithm": raw_a_binding["algorithm"],
             },
             "raw_b": {
                 "path": _posix(raw_b_dir.relative_to(_REPO_ROOT)),
                 "member_count": raw_b_count,
-                "sha256": sha256_text(
-                    json.dumps({k: v for k, v in manifest_b.items()},
-                               skipkeys=False, sort_keys=True)
-                ),
+                "sha256": raw_b_binding["sha256"],
+                "members": raw_b_binding["members"],
+                "algorithm": raw_b_binding["algorithm"],
             },
             "bundle": {
                 "verdict": eval_result["verdict"],
@@ -159,25 +349,33 @@ def build_bundle(goal_id: str, evaluation_id: str, campaign_id: str,
         "run_a": {
             "executor_id": manifest_a["executor_id"],
             "git_commit": manifest_a["git_commit"],
+            "git_tree_sha256": manifest_a["git_tree_sha256"],
             "dirty": manifest_a["dirty"],
+            "process_evidence": manifest_a["process_evidence"],
+            "source_bindings": manifest_a["source_bindings"],
             "environment_hash": manifest_a["environment_hash"],
             "hard_counters": manifest_a["hard_counters"],
             "probe_counters": manifest_a.get("probe_counters", {}),
             "latency_ms": manifest_a["latency_ms"],
             "per_component_latency_ms": manifest_a["per_component_latency_ms"],
             "raw_traces": raw_a_count,
+            "raw_trace_binding": raw_a_binding,
             "matrix": manifest_a.get("matrix", {}),
         },
         "run_b": {
             "executor_id": manifest_b["executor_id"],
             "git_commit": manifest_b["git_commit"],
+            "git_tree_sha256": manifest_b["git_tree_sha256"],
             "dirty": manifest_b["dirty"],
+            "process_evidence": manifest_b["process_evidence"],
+            "source_bindings": manifest_b["source_bindings"],
             "environment_hash": manifest_b["environment_hash"],
             "hard_counters": manifest_b["hard_counters"],
             "probe_counters": manifest_b.get("probe_counters", {}),
             "latency_ms": manifest_b["latency_ms"],
             "per_component_latency_ms": manifest_b["per_component_latency_ms"],
             "raw_traces": raw_b_count,
+            "raw_trace_binding": raw_b_binding,
             "matrix": manifest_b.get("matrix", {}),
         },
         "evaluation": {
@@ -186,12 +384,16 @@ def build_bundle(goal_id: str, evaluation_id: str, campaign_id: str,
             "probe_results": eval_result["probe_results"],
             "failures": eval_result.get("failures", []),
             "warnings": eval_result.get("warnings", []),
+            "raw_archive_a": eval_result.get("raw_archive_a", {}),
+            "raw_archive_b": eval_result.get("raw_archive_b", {}),
         },
         "comparison": {
             "verdict": comparison["verdict"],
             "failures": comparison.get("failures", []),
             "warnings": comparison.get("warnings", []),
             "hard_counters": comparison.get("hard_counters", {}),
+            "raw_archive_a": comparison.get("raw_archive_a", {}),
+            "raw_archive_b": comparison.get("raw_archive_b", {}),
         },
         "dependencies": [
             {

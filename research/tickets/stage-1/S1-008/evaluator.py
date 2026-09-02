@@ -23,6 +23,7 @@ import argparse
 import hashlib
 import json
 import os
+import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -58,14 +59,148 @@ def load_raw_traces(raw_dir: str | Path) -> list[dict[str, Any]]:
         raise FileNotFoundError(f"raw traces dir not found: {raw_path}")
     for f in sorted(raw_path.glob("*.json")):
         try:
-            traces.append(load_json(f))
+            trace = load_json(f)
         except json.JSONDecodeError as e:
             raise ValueError(f"corrupt raw trace {f.name}: {e}") from e
+        if not isinstance(trace, dict):
+            raise ValueError(f"raw trace {f.name} must be an object")
+        traces.append(trace)
     return traces
+
+
+def raw_trace_digest(raw_dir: str | Path) -> dict[str, Any]:
+    """Recompute the content digest for every raw trace on disk.
+
+    The digest is over stable relative paths, byte lengths, raw bytes, and
+    parsed canonical JSON hashes. A producer manifest is never accepted as a
+    substitute for this evidence digest.
+    """
+    root = Path(raw_dir)
+    if not root.is_dir():
+        raise FileNotFoundError(f"raw traces dir not found: {root}")
+    members: list[dict[str, Any]] = []
+    for path in sorted(root.rglob("*.json")):
+        if not path.is_file():
+            continue
+        raw = path.read_bytes()
+        try:
+            parsed = json.loads(raw.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise ValueError(f"invalid raw trace {path}") from exc
+        canonical = canonical_json(parsed).encode("utf-8")
+        members.append({
+            "path": path.relative_to(root).as_posix(),
+            "size": len(raw),
+            "sha256": hashlib.sha256(raw).hexdigest(),
+            "canonical_sha256": hashlib.sha256(canonical).hexdigest(),
+        })
+    payload = {
+        "algorithm": "sha256(path,size,bytes,canonical-json)",
+        "members": members,
+    }
+    return {
+        "algorithm": payload["algorithm"],
+        "member_count": len(members),
+        "members": members,
+        "sha256": sha256_text(canonical_json(payload)),
+    }
+
+
+def derive_hard_counters(traces: list[dict[str, Any]]) -> dict[str, int]:
+    """Derive all hard counters from trace fields, rejecting malformed data."""
+    counters = {key: 0 for key in HARD_COUNTERS}
+    for trace in traces:
+        if not isinstance(trace, dict):
+            raise ValueError("raw trace must be an object")
+        for key in HARD_COUNTERS:
+            value = trace.get(key)
+            if value is None:
+                # missing_timestamp is derived from authoritative timestamps;
+                # every other hard counter is an explicit trace field.
+                if key == "missing_timestamp":
+                    value = int(trace.get("t_deny_monotonic_ns") is None)
+                else:
+                    raise ValueError(
+                        f"trace {trace.get('trial_id')}: missing hard counter {key}")
+            if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+                raise ValueError(
+                    f"trace {trace.get('trial_id')}: invalid {key}={value!r}")
+            counters[key] += value
+    return counters
+
+
+def _valid_digest(value: Any) -> bool:
+    return isinstance(value, str) and len(value) == 64 and all(
+        c in "0123456789abcdef" for c in value.lower())
+
+
+def _valid_git_oid(value: Any) -> bool:
+    return isinstance(value, str) and len(value) in {40, 64} and all(
+        c in "0123456789abcdef" for c in value.lower())
+
+
+def _git_blob_sha(git_commit: str, relative_path: str) -> str:
+    try:
+        proc = subprocess.run(
+            ["git", "rev-parse", f"{git_commit}:{relative_path}"],
+            capture_output=True, text=True, cwd=str(_REPO_ROOT), timeout=10,
+        )
+        value = proc.stdout.strip()
+        return value if proc.returncode == 0 and value else "MISSING"
+    except Exception:
+        return "MISSING"
+
+
+def _git_tree_sha(git_commit: str) -> str:
+    try:
+        proc = subprocess.run(
+            ["git", "rev-parse", f"{git_commit}^{{tree}}"],
+            capture_output=True, text=True, cwd=str(_REPO_ROOT), timeout=10,
+        )
+        value = proc.stdout.strip()
+        return value if proc.returncode == 0 and value else "MISSING"
+    except Exception:
+        return "MISSING"
+
+
+def _validate_process_evidence(manifest: dict[str, Any]) -> list[str]:
+    """Return process-provenance failures for one manifest."""
+    failures: list[str] = []
+    evidence = manifest.get("process_evidence")
+    if not isinstance(evidence, dict):
+        return ["missing process_evidence"]
+    for key in ("pid", "parent_pid"):
+        value = evidence.get(key)
+        if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+            failures.append(f"invalid process evidence {key}")
+    argv = evidence.get("argv")
+    if not isinstance(argv, list) or not argv or not all(
+            isinstance(item, str) and item for item in argv):
+        failures.append("missing/invalid process argv")
+    for key in ("cwd", "output_dir", "executable", "python_version",
+                "python_implementation", "git_commit", "started_at_utc"):
+        if not isinstance(evidence.get(key), str) or not evidence[key]:
+            failures.append(f"missing process evidence {key}")
+    invocation_digest = evidence.get("invocation_digest")
+    if not _valid_digest(invocation_digest):
+        failures.append("missing/invalid invocation_digest")
+    else:
+        body = {k: v for k, v in evidence.items() if k != "invocation_digest"}
+        if sha256_text(canonical_json(body)) != invocation_digest:
+            failures.append("invocation_digest mismatch")
+    descriptor = evidence.get("launch_descriptor")
+    if (not isinstance(descriptor, dict) or descriptor.get("argv") != argv or
+            descriptor.get("cwd") != evidence.get("cwd") or
+            descriptor.get("executable") != evidence.get("executable") or
+            descriptor.get("output_dir") != evidence.get("output_dir")):
+        failures.append("missing/invalid launch_descriptor")
+    return failures
 
 
 def verify_hash_binding(trace: dict[str, Any]) -> bool:
     """Verify raw_trace_sha256 matches the trace content."""
+    if not isinstance(trace, dict):
+        return False
     stored = trace.get("raw_trace_sha256", "")
     if not stored:
         return False
@@ -84,6 +219,8 @@ class EvaluationResult:
         self.passed: list[str] = []
         self.counters: dict[str, int] = {k: 0 for k in HARD_COUNTERS}
         self.probe_results: dict[str, dict[str, Any]] = {}
+        self.run_summaries: dict[str, dict[str, Any]] = {}
+        self.raw_archive_bindings: dict[str, dict[str, Any]] = {}
 
     def fail(self, reason: str):
         self.failures.append(reason)
@@ -131,6 +268,10 @@ def evaluate_run(manifest: dict[str, Any], raw_dir: str | Path) -> EvaluationRes
     Does NOT trust the manifest's aggregate counters — recomputes them.
     """
     result = EvaluationResult()
+    if not isinstance(manifest, dict):
+        result.fail("manifest must be an object")
+        result.finalize()
+        return result
 
     # --- Check frozen artifact bindings ---
     required_shas = {
@@ -167,6 +308,38 @@ def evaluate_run(manifest: dict[str, Any], raw_dir: str | Path) -> EvaluationRes
         else:
             result.ok("all frozen artifact SHA-256 verified against disk")
 
+    # A run is bound to the exact committed source blobs used to execute it.
+    git_commit = manifest.get("git_commit")
+    if not isinstance(git_commit, str) or not git_commit:
+        result.fail("missing git_commit binding")
+    else:
+        declared_tree = manifest.get("git_tree_sha256")
+        actual_tree = _git_tree_sha(git_commit)
+        if not _valid_git_oid(declared_tree) or declared_tree != actual_tree:
+            result.fail("git tree binding mismatch")
+        else:
+            result.ok("git tree binding verified")
+        bindings = manifest.get("source_bindings")
+        if not isinstance(bindings, dict) or not bindings:
+            result.fail("missing source_bindings")
+        else:
+            for relative_path, declared_sha in sorted(bindings.items()):
+                if not isinstance(relative_path, str) or not _valid_git_oid(declared_sha):
+                    result.fail(f"invalid source binding: {relative_path}")
+                    continue
+                actual_sha = _git_blob_sha(git_commit, relative_path)
+                if actual_sha != declared_sha:
+                    result.fail(f"source binding mismatch: {relative_path}")
+            if not result.failures or not any(
+                    "source binding mismatch" in failure for failure in result.failures):
+                result.ok(f"verified {len(bindings)} committed source bindings")
+
+    process_failures = _validate_process_evidence(manifest)
+    for failure in process_failures:
+        result.fail(failure)
+    if not process_failures:
+        result.ok("process/launch provenance verified")
+
     # --- Check dirty flag ---
     if manifest.get("dirty", True) is not False:
         result.fail(f"dirty working tree: {manifest.get('dirty')}")
@@ -175,7 +348,7 @@ def evaluate_run(manifest: dict[str, Any], raw_dir: str | Path) -> EvaluationRes
 
     # --- Check executor identity ---
     exec_id = manifest.get("executor_id", "")
-    if not exec_id or "executor-" not in exec_id:
+    if not isinstance(exec_id, str) or not exec_id or not exec_id.startswith("executor-"):
         result.fail("missing or invalid executor_id")
     else:
         result.ok(f"executor_id present: {exec_id}")
@@ -193,6 +366,9 @@ def evaluate_run(manifest: dict[str, Any], raw_dir: str | Path) -> EvaluationRes
 
     for t in all_traces:
         scenario = t.get("scenario", "")
+        if not isinstance(scenario, str):
+            result.fail(f"trace {t.get('trial_id')}: scenario must be a string")
+            scenario = ""
         if "PROBE-" in scenario:
             probe_traces.append(t)
             continue
@@ -203,6 +379,30 @@ def evaluate_run(manifest: dict[str, Any], raw_dir: str | Path) -> EvaluationRes
 
     result.ok(f"loaded {len(all_traces)} raw traces "
               f"({len(mandatory_traces)} mandatory, {len(fault_traces)} fault, {len(probe_traces)} probe)")
+
+    declared_count = manifest.get("raw_trace_count")
+    if declared_count != len(all_traces):
+        result.fail(f"raw trace count mismatch: manifest={declared_count} disk={len(all_traces)}")
+    try:
+        binding = raw_trace_digest(raw_dir)
+    except (FileNotFoundError, ValueError) as exc:
+        result.fail(f"cannot compute raw trace digest: {exc}")
+        binding = None
+    declared_binding = manifest.get("raw_trace_binding")
+    if binding is not None:
+        if not isinstance(declared_binding, dict) or declared_binding.get("sha256") != binding["sha256"]:
+            result.fail("raw trace content digest mismatch")
+        elif declared_binding.get("member_count") != binding["member_count"]:
+            result.fail("raw trace member count binding mismatch")
+        else:
+            result.ok("raw trace content digest verified")
+
+    # Trial identifiers are part of the immutable archive namespace.
+    trial_ids = [t.get("trial_id") for t in all_traces]
+    if any(not isinstance(tid, str) or not tid for tid in trial_ids):
+        result.fail("raw trace has missing trial_id")
+    if len(set(trial_ids)) != len(trial_ids):
+        result.fail("duplicate trial_id in raw traces")
 
     # --- Verify hash binding on every trace ---
     hash_failures = 0
@@ -215,13 +415,17 @@ def evaluate_run(manifest: dict[str, Any], raw_dir: str | Path) -> EvaluationRes
         result.ok(f"all {len(all_traces)} traces pass hash binding verification")
 
     # --- Recompute hard counters from MANDATORY + fault traces ---
-    recomputed = {k: 0 for k in HARD_COUNTERS}
-    for t in mandatory_traces + fault_traces:
-        for k in HARD_COUNTERS:
-            recomputed[k] += t.get(k, 0) or 0
+    try:
+        recomputed = derive_hard_counters(mandatory_traces + fault_traces)
+    except ValueError as exc:
+        result.fail(str(exc))
+        recomputed = {k: 0 for k in HARD_COUNTERS}
 
     # Verify counters match manifest
     manifest_counters = manifest.get("hard_counters", {})
+    if not isinstance(manifest_counters, dict):
+        result.fail("manifest hard_counters must be an object")
+        manifest_counters = {}
     for k in HARD_COUNTERS:
         result.counters[k] = recomputed[k]
         if manifest_counters.get(k, -1) != recomputed[k]:
@@ -237,12 +441,12 @@ def evaluate_run(manifest: dict[str, Any], raw_dir: str | Path) -> EvaluationRes
         else:
             result.ok(f"hard counter {k} = 0")
 
-    # --- Check mandatory trial count >= 100 ---
+    # --- Check mandatory trial count (360 matrix + 24 fault trials) ---
     mandatory_count = len(mandatory_traces)
-    if mandatory_count < 100:
-        result.fail(f"insufficient mandatory trials: {mandatory_count} < 100")
+    if mandatory_count != 384:
+        result.fail(f"mandatory trial count: {mandatory_count} != 384")
     else:
-        result.ok(f"mandatory trials = {mandatory_count} >= 100")
+        result.ok(f"mandatory trials = {mandatory_count} (360 matrix + 24 faults)")
 
     # --- Check exact matrix cross-product coverage ---
     # Required: 4 paths × 2 cache × 3 loads × 3 seeds = 72 unique combinations
@@ -336,6 +540,9 @@ def evaluate_run(manifest: dict[str, Any], raw_dir: str | Path) -> EvaluationRes
         stats = _stats(latencies_ms)
         # Verify stats match manifest
         manifest_stats = manifest.get("latency_ms", {})
+        if not isinstance(manifest_stats, dict):
+            result.fail("manifest latency_ms must be an object")
+            manifest_stats = {}
         # Verify count and max exactly (hard security relevance)
         for key in ("count", "max"):
             if manifest_stats.get(key) != stats[key]:
@@ -413,6 +620,11 @@ def evaluate_run(manifest: dict[str, Any], raw_dir: str | Path) -> EvaluationRes
                 }
 
     result.probe_results = probe_results
+    result.raw_archive_bindings = {
+        "path": str(Path(raw_dir).resolve()),
+        "sha256": binding["sha256"] if binding is not None else "",
+        "member_count": binding["member_count"] if binding is not None else 0,
+    }
     result.finalize()
     return result
 
@@ -427,6 +639,13 @@ def evaluate_comparison(manifest_a: dict[str, Any], manifest_b: dict[str, Any] |
     result.probe_results = eval_a.probe_results
     result.counters = eval_a.counters
     result.passed = eval_a.passed
+    result.run_summaries["a"] = {
+        "verdict": eval_a.verdict,
+        "failures": eval_a.failures,
+        "warnings": eval_a.warnings,
+        "hard_counters": eval_a.counters,
+    }
+    result.raw_archive_bindings["a"] = eval_a.raw_archive_bindings
     if eval_a.verdict != "PASS":
         result.fail(f"main run (A) verdict: {eval_a.verdict}")
         result.failures.extend([f"A: {f}" for f in eval_a.failures])
@@ -436,19 +655,41 @@ def evaluate_comparison(manifest_a: dict[str, Any], manifest_b: dict[str, Any] |
     if manifest_b is not None and raw_dir_b is not None:
         # Evaluate B
         eval_b = evaluate_run(manifest_b, raw_dir_b)
+        result.run_summaries["b"] = {
+            "verdict": eval_b.verdict,
+            "failures": eval_b.failures,
+            "warnings": eval_b.warnings,
+            "hard_counters": eval_b.counters,
+        }
+        result.raw_archive_bindings["b"] = eval_b.raw_archive_bindings
         if eval_b.verdict != "PASS":
             result.fail(f"rerun (B) verdict: {eval_b.verdict}")
             result.failures.extend([f"B: {f}" for f in eval_b.failures])
         else:
             result.ok("rerun (B) PASS")
 
-        # Check executor identity independence
+        # Check executor identity and process independence. Distinct random
+        # strings alone are not provenance: both manifests must carry valid,
+        # independently observed process evidence.
         exec_a = manifest_a.get("executor_id", "")
         exec_b = manifest_b.get("executor_id", "")
         if exec_a and exec_b and exec_a != exec_b:
             result.ok(f"executor IDs differ: A={exec_a}, B={exec_b}")
         else:
             result.fail("executor IDs must differ between main and rerun")
+
+        proc_a = manifest_a.get("process_evidence", {})
+        proc_b = manifest_b.get("process_evidence", {})
+        if (isinstance(proc_a, dict) and isinstance(proc_b, dict) and
+                proc_a.get("pid") != proc_b.get("pid")):
+            result.ok(f"process IDs differ: A={proc_a.get('pid')}, B={proc_b.get('pid')}")
+        else:
+            result.fail("process evidence must identify different PIDs")
+        if (isinstance(proc_a, dict) and isinstance(proc_b, dict) and
+                proc_a.get("invocation_digest") != proc_b.get("invocation_digest")):
+            result.ok("invocation digests differ between A and B")
+        else:
+            result.fail("invocation digests must differ between A and B")
 
         # Check output root independence
         raw_a = manifest_a.get("raw_trace_dir", "")
@@ -458,13 +699,39 @@ def evaluate_comparison(manifest_a: dict[str, Any], manifest_b: dict[str, Any] |
         else:
             result.fail("output roots must differ between main and rerun")
 
-        # Compare maximum latencies (within frozen tolerance)
+        commit_a = manifest_a.get("git_commit")
+        commit_b = manifest_b.get("git_commit")
+        if commit_a and commit_a == commit_b:
+            result.ok(f"git commits match: {commit_a}")
+        else:
+            result.fail("main and rerun must use the same git commit")
+        tree_a = manifest_a.get("git_tree_sha256")
+        tree_b = manifest_b.get("git_tree_sha256")
+        if tree_a and tree_a == tree_b:
+            result.ok("git tree bindings match")
+        else:
+            result.fail("main and rerun must use the same git tree")
+        sources_a = manifest_a.get("source_bindings")
+        sources_b = manifest_b.get("source_bindings")
+        if isinstance(sources_a, dict) and sources_a == sources_b:
+            result.ok("source blob bindings match")
+        else:
+            result.fail("main and rerun source blob bindings differ or are missing")
+
+        # Compare hard counters and evidence population. The raw digests may
+        # differ because each process has fresh UUID/timestamps, but both must
+        # independently cover the same contract population.
         max_a = eval_a.counters
         max_b = eval_b.counters
         if max_a == max_b:
             result.ok("hard counters match between A and B")
         else:
             result.fail(f"hard counters mismatch: A={max_a}, B={max_b}")
+        if (eval_a.raw_archive_bindings.get("member_count") ==
+                eval_b.raw_archive_bindings.get("member_count") == 402):
+            result.ok("raw trace populations match: 402 members each")
+        else:
+            result.fail("raw trace populations must contain 402 members each")
 
         # Compare verdicts
         if eval_a.verdict == eval_b.verdict:
@@ -472,7 +739,7 @@ def evaluate_comparison(manifest_a: dict[str, Any], manifest_b: dict[str, Any] |
         else:
             result.fail(f"verdict mismatch: A={eval_a.verdict}, B={eval_b.verdict}")
     else:
-        result.warn("no rerun (B) provided — rerun comparison skipped")
+        result.fail("rerun (B) manifest and raw directory are required")
 
     result.finalize()
     return result
@@ -507,14 +774,47 @@ def main():
         "passed_checks": result.passed,
         "hard_counters": result.counters,
         "probe_results": result.probe_results,
+        "raw_archive_a": result.raw_archive_bindings.get("a", {}),
+        "raw_archive_b": result.raw_archive_bindings.get("b", {}),
+        "run_a": result.run_summaries.get("a", {}),
+        "run_b": result.run_summaries.get("b", {}),
         "evaluated_at_utc": datetime.now(timezone.utc).isoformat(),
     }
 
     out_path = Path(args.output)
     out_path.write_text(json.dumps(output, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
+    # Persist the comparison as a separate, hash-addressable input consumed by
+    # make_bundle. It is derived from this invocation, never copied from an
+    # earlier summary.
+    if args.manifest_b and args.raw_dir_b:
+        comparison_output = {
+            "schema": "agentos.s1-008.comparison/v1",
+            "verdict": result.verdict,
+            "failures": result.failures,
+            "warnings": result.warnings,
+            "run_a_verdict": result.run_summaries.get("a", {}).get("verdict"),
+            "run_b_verdict": result.run_summaries.get("b", {}).get("verdict"),
+            "run_a_label": manifest.get("run_label", "run-a"),
+            "run_b_label": load_json(args.manifest_b).get("run_label", "run-b"),
+            "comparison": {
+                "executor_ids_differ": manifest.get("executor_id") != load_json(args.manifest_b).get("executor_id"),
+                "output_roots_differ": manifest.get("raw_trace_dir") != load_json(args.manifest_b).get("raw_trace_dir"),
+                "process_ids_differ": manifest.get("process_evidence", {}).get("pid") != load_json(args.manifest_b).get("process_evidence", {}).get("pid"),
+                "hard_counters_match": result.counters == result.run_summaries.get("b", {}).get("hard_counters"),
+                "verdicts_match": result.run_summaries.get("a", {}).get("verdict") == result.run_summaries.get("b", {}).get("verdict"),
+            },
+            "raw_archive_a": result.raw_archive_bindings.get("a", {}),
+            "raw_archive_b": result.raw_archive_bindings.get("b", {}),
+            "hard_counters": result.counters,
+        }
+        (out_path.parent / "comparison.json").write_text(
+            json.dumps(comparison_output, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+
     print(json.dumps(output, indent=2, sort_keys=True))
-    if result.verdict == "FAIL":
+    if result.verdict in {"FAIL", "BLOCKED"}:
         print(f"\nVERDICT: {result.verdict} ({len(result.failures)} failures)", file=sys.stderr)
         sys.exit(1)
     elif result.verdict == "PASS_WITH_LIMITS":

@@ -9,6 +9,7 @@ Run: PYTHONPATH=src python -m unittest tests.test_s1_008_regressions -v
 """
 import hashlib
 import json
+import copy
 import unittest
 from pathlib import Path
 
@@ -174,23 +175,39 @@ class TestHardCounters(unittest.TestCase):
 
     def test_all_hard_counters_zero(self):
         """Recompute hard counters from trace data and verify all are 0."""
-        counters = {
-            "allow_after_commit": 0,
-            "effect_after_revoke": 0,
-            "child_allow_after_parent_revoke": 0,
-            "cache_resurrection": 0,
-            "epoch_regression": 0,
-            "blind_retry": 0,
-            "unreconciled_unknown": 0,
-            "missing_timestamp": 0,
-            "censored_trial": 0,
-        }
-        for t in self.traces:
-            if t.get("verdict") == "ALLOW" and t.get("decision") == "allow":
-                counters["allow_after_commit"] += 1
-            # ... other checks (all 0 with fail-closed enforcement)
+        from importlib.util import module_from_spec, spec_from_file_location
+        import sys
+        evaluator_path = S1_008_DIR / "evaluator.py"
+        spec = spec_from_file_location("s1_008_evaluator_for_regression", evaluator_path)
+        evaluator = module_from_spec(spec)
+        sys.modules[spec.name] = evaluator
+        spec.loader.exec_module(evaluator)
+        counters = evaluator.derive_hard_counters(
+            [t for t in self.traces if "PROBE-" not in t.get("scenario", "")]
+        )
         for k, v in counters.items():
             self.assertEqual(v, 0, f"{k} = {v}, expected 0")
+
+    def test_each_hard_counter_mutation_is_detected(self):
+        from importlib.util import module_from_spec, spec_from_file_location
+        import sys
+        spec = spec_from_file_location(
+            "s1_008_evaluator_counter_mutation", S1_008_DIR / "evaluator.py"
+        )
+        evaluator = module_from_spec(spec)
+        sys.modules[spec.name] = evaluator
+        spec.loader.exec_module(evaluator)
+        honest = [t for t in self.traces if "PROBE-" not in t.get("scenario", "")]
+        for counter in evaluator.HARD_COUNTERS:
+            mutated = copy.deepcopy(honest[0])
+            if counter == "missing_timestamp":
+                mutated["t_deny_monotonic_ns"] = None
+                mutated.pop("missing_timestamp", None)
+            else:
+                mutated[counter] = 1
+            with self.subTest(counter=counter):
+                derived = evaluator.derive_hard_counters([mutated])
+                self.assertGreater(derived[counter], 0)
 
 
 class TestLatencyBounds(unittest.TestCase):
@@ -278,6 +295,10 @@ class TestProvenance(unittest.TestCase):
                          "Run A was dirty — harness changes not committed")
         self.assertFalse(self.manifest_b["dirty"],
                          "Run B was dirty — harness changes not committed")
+        self.assertNotEqual(self.manifest_a["process_evidence"]["pid"],
+                            self.manifest_b["process_evidence"]["pid"])
+        self.assertNotEqual(self.manifest_a["process_evidence"]["invocation_digest"],
+                            self.manifest_b["process_evidence"]["invocation_digest"])
 
 
 class TestEvidencePack(unittest.TestCase):
@@ -354,15 +375,30 @@ class TestEvaluationRecord(unittest.TestCase):
     def test_record_evidence_pack_hash_valid(self):
         if self.record is None:
             self.skipTest("No record")
-        evidence_dir = RESULTS_DIR / "evidence"
-        packs = list(evidence_dir.glob("evidence-pack-*.json"))
-        if not packs:
+        evidence = self.record.get("evidence_pack", {})
+        pack_path = Path(evidence.get("path", ""))
+        if not pack_path.is_file():
             self.skipTest("No evidence pack")
-        latest = packs[-1]
-        file_hash = hashlib.sha256(latest.read_bytes()).hexdigest()
-        fname_hash = latest.stem.replace("evidence-pack-", "")
+        file_hash = hashlib.sha256(pack_path.read_bytes()).hexdigest()
+        fname_hash = pack_path.stem.replace("evidence-pack-", "")
+        self.assertEqual(file_hash, evidence.get("sha256"))
         self.assertEqual(file_hash, fname_hash,
                         "Pack file SHA does not match filename")
+
+    def test_record_self_hash_and_exact_pack_binding(self):
+        if self.record is None:
+            self.skipTest("No record")
+        recorded = self.record.get("record_sha256")
+        body = dict(self.record)
+        body["record_sha256"] = ""
+        from agentos.ids import canonical_json, sha256_text
+        self.assertEqual(sha256_text(canonical_json(body)), recorded)
+        pack = json.loads(Path(self.record["evidence_pack"]["path"]).read_text())
+        self.assertEqual(pack["goal_id"], self.record["goal_id"])
+        self.assertEqual(pack["campaign_id"], self.record["campaign_id"])
+        self.assertEqual(pack["evaluation_id"], self.record["evaluation_id"])
+        self.assertEqual(pack["artifact_chain_hash"], self.record["artifact_chain_hash"])
+        self.assertEqual(set(pack["raw_archives"]), {"a", "b"})
 
 
 if __name__ == "__main__":

@@ -39,6 +39,7 @@ import os
 import platform
 import random
 import sqlite3
+import subprocess
 import sys
 import time
 import uuid
@@ -470,7 +471,7 @@ def _run_one_revocation_trial(tracker: RevocationTracker, cache: Cache,
 
     # Step 1: establish initial ALLOW state
     if scenario.cache_state == "warm":
-        cache.set(grant_id, {"allowed": True, "resource": "obj-1"}, 
+        cache.set(grant_id, {"allowed": True, "resource": "obj-1"},
                   epoch=tracker.revocation_epoch, version=tracker.revocation_version)
         project.insert(grant_id, {"allowed": True, "resource": "obj-1"},
                        epoch=tracker.revocation_epoch, version=tracker.revocation_version)
@@ -554,6 +555,12 @@ def _run_one_revocation_trial(tracker: RevocationTracker, cache: Cache,
         "latency_ms": latency_ms,
         "allow_after_commit": allow_after_commit,
         "effect_after_revoke": 0,  # no downstream side effect in this path
+        "child_allow_after_parent_revoke": 0,
+        "cache_resurrection": 0,
+        "epoch_regression": 0,
+        "blind_retry": 0,
+        "unreconciled_unknown": 0,
+        "censored_trial": 0,
         "cache_version_before": scenario.cache_state == "warm" and version or "0",
         "cache_version_after": version,
         "fault_mode": fault_mode or "none",
@@ -882,9 +889,10 @@ def run_execution(run_label: str, output_dir: Path, *, seeds: list[int] = [11, 2
 
     Matrix: 4 paths × 2 cache states × 3 loads × 3 seeds × 5 trials = 360
     mandatory observations, plus 6 probe trials × 3 seeds = 18 probe trials,
-    plus 20 fault trials = ~400 total. Well above the 100 minimum.
+    plus 24 fault trials = 402 total (360 matrix + 24 faults + 18 probes).
     """
     runner_start = perf_ns()
+    started_at_utc = utc_now_iso()
     env = environment_manifest()
     env_hash = environment_hash(env)
     scenarios = load_fixtures()
@@ -972,6 +980,8 @@ def run_execution(run_label: str, output_dir: Path, *, seeds: list[int] = [11, 2
         raw_path = raw_dir / f"{tid}.json"
         raw_path.write_text(_canonical_json(trace) + "\n", encoding="utf-8")
 
+    raw_trace_binding = raw_trace_digest(raw_dir)
+
     # Compute aggregate stats from MANDATORY traces only (honest enforcement)
     latencies = [t["latency_ms"] for t in mandatory_traces
                  if t.get("latency_ms") is not None and t["decision"] == "DENY"]
@@ -1023,20 +1033,33 @@ def run_execution(run_label: str, output_dir: Path, *, seeds: list[int] = [11, 2
             return "MISSING"
         return hashlib.sha256(p.read_bytes()).hexdigest()
 
+    frozen_names = (
+        "revocation-contract.json", "workload-manifest.json",
+        "threat-model.json", "rubric.json", "fixtures.json",
+        "corpus-manifest.json", "runner.py", "evaluator.py",
+        "make_bundle.py", "publish_evidence_pack.py", "finalize_record.py",
+    )
+    frozen_artifacts = {name: _file_sha(name) for name in frozen_names}
+
     manifest = {
         "schema": "agentos.s1-008.runner-manifest/v1",
         "run_label": run_label,
         "executor_id": executor_id,
-        "started_at_utc": utc_now(),
+        "started_at_utc": started_at_utc,
         "ended_at_utc": utc_now(),
         "git_commit": git_commit,
+        "git_tree_sha256": _git_tree_sha(git_commit),
         "dirty": dirty,
+        "source_bindings": _source_bindings(git_commit),
+        "process_evidence": _process_evidence(
+            run_label, output_dir, git_commit, started_at_utc),
         "contract_sha256": _file_sha("revocation-contract.json"),
         "workload_sha256": _file_sha("workload-manifest.json"),
         "threat_model_sha256": _file_sha("threat-model.json"),
         "rubric_sha256": _file_sha("rubric.json"),
         "fixtures_sha256": _file_sha("fixtures.json"),
         "corpus_manifest_sha256": _file_sha("corpus-manifest.json"),
+        "frozen_artifacts": frozen_artifacts,
         "environment_hash": env_hash,
         "environment": env,
         "matrix": {
@@ -1069,6 +1092,7 @@ def run_execution(run_label: str, output_dir: Path, *, seeds: list[int] = [11, 2
         },
         "raw_trace_count": total_trials,
         "raw_trace_dir": str(raw_dir.relative_to(_REPO_ROOT)).replace("\\", "/"),
+        "raw_trace_binding": raw_trace_binding,
     }
     manifest_path = output_dir / "manifest.json"
     manifest_path.write_text(_canonical_json(manifest) + "\n", encoding="utf-8")
@@ -1080,6 +1104,44 @@ def _canonical_json(obj: Any) -> str:
     return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
 
 
+def raw_trace_digest(raw_dir: str | Path) -> dict[str, Any]:
+    """Digest every raw trace by stable relative path and canonical content.
+
+    A manifest digest is deliberately not used as a raw-evidence digest.  The
+    member list includes both the byte hash and parsed canonical JSON hash so
+    an auditor can detect formatting changes as well as semantic changes.
+    """
+    root = Path(raw_dir)
+    if not root.is_dir():
+        raise FileNotFoundError(f"raw traces dir not found: {root}")
+    members: list[dict[str, Any]] = []
+    for path in sorted(root.rglob("*.json")):
+        if not path.is_file():
+            continue
+        raw = path.read_bytes()
+        try:
+            parsed = json.loads(raw.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise ValueError(f"invalid raw trace {path}") from exc
+        canonical = _canonical_json(parsed).encode("utf-8")
+        members.append({
+            "path": path.relative_to(root).as_posix(),
+            "size": len(raw),
+            "sha256": hashlib.sha256(raw).hexdigest(),
+            "canonical_sha256": hashlib.sha256(canonical).hexdigest(),
+        })
+    payload = {
+        "algorithm": "sha256(path,size,bytes,canonical-json)",
+        "members": members,
+    }
+    return {
+        "algorithm": payload["algorithm"],
+        "member_count": len(members),
+        "members": members,
+        "sha256": sha256_text(_canonical_json(payload)),
+    }
+
+
 def _check_dirty() -> bool:
     """Check if working tree is dirty.
 
@@ -1088,49 +1150,165 @@ def _check_dirty() -> bool:
     finalize_record) is committed to git. Untracked files in the
     S1-008 ticket scope or results/ invalidate the run.
     """
-    import subprocess
     try:
         result = subprocess.run(
             ["git", "status", "--porcelain"],
             capture_output=True, text=True, cwd=str(_REPO_ROOT), timeout=10
         )
-        s1008_prefix = "research/tickets/stage-1/S1-008/"
-
-        # Check for any untracked/modified files in the S1-008 source scope.
-        # Untracked files in results/ are expected output directories, not
-        # committed source artifacts.
-        scope_dirty = False
-        for line in result.stdout.strip().splitlines():
-            if not line:
-                continue
-            # Parse git status line: "XY <space>path" (X=staged, Y=unstaged)
-            # Split on first whitespace to separate status from path
-            parts = line.split(None, 1)  # split on first whitespace
-            if len(parts) < 2:
-                continue
-            status = parts[0]  # e.g. "M ", " M", "??", " D", "A "
-            path = parts[1]
-
-            # Untracked files in results/ output dirs are expected (runner writes them)
-            # Only flag untracked/modified files in the S1-008 source scope — NOT
-            # output/results (which include raw-traces, manifests, evaluation results)
-            results_prefix = "results/"
-            if path.startswith(results_prefix):
-                continue  # skip ALL results/ files (untracked + modified)
-
-            if status == "??" and path.startswith(s1008_prefix):
-                scope_dirty = True
-                continue
-
-            # Any modifications to tracked files → dirty
-            # (covers staged, unstaged, and staged+unstaged modifications)
-            if status in (" M", "M ", "MM", "AM", "RM"):
-                scope_dirty = True
-                continue
-
-        return scope_dirty
+        return any(_status_line_is_dirty(line)
+                   for line in result.stdout.splitlines())
     except Exception:
         return True  # fail-closed if we can't determine
+
+
+# Only files which are exclusively produced by a completed measurement are
+# ignored by the dirty check.  In particular, bundle/evaluation inputs and
+# arbitrary files under results/ are *not* ignored: a run must not become
+# authoritative merely because a changed input happens to live there.
+_GENERATED_OUTPUT_PREFIXES = (
+    "results/run-a/",
+    "results/run-b/",
+    "results/run-a-clean/",
+    "results/run-b-clean/",
+    "results/run-a-new/",
+    "results/run-b-new/",
+    "results/evidence/",
+)
+_GENERATED_OUTPUT_ROOTS = frozenset({
+    prefix.rstrip("/") for prefix in _GENERATED_OUTPUT_PREFIXES
+})
+_GENERATED_OUTPUT_FILES = frozenset({
+    "results/evaluation-result.json",
+    "results/comparison.json",
+    "results/ENVIRONMENT.md",
+})
+
+
+def _normalise_porcelain_path(path: str) -> str:
+    """Normalize a path from a porcelain-v1 status line."""
+    value = path.strip()
+    # Git quotes unusual paths in porcelain output.  We only need a safe,
+    # deterministic path comparison here; escaped bytes remain conservative.
+    if len(value) >= 2 and value[0] == '"' and value[-1] == '"':
+        value = value[1:-1]
+    return value.replace("\\", "/")
+
+
+def _status_line_paths(line: str) -> tuple[str, ...]:
+    """Return all paths represented by one porcelain-v1 line.
+
+    Porcelain-v1 has two status columns followed by one separating space.
+    Renames/copies contain both the old and new path and both are checked.
+    """
+    if len(line) < 3:
+        return ()
+    raw_path = line[3:]
+    if " -> " in raw_path:
+        old, new = raw_path.split(" -> ", 1)
+        return (_normalise_porcelain_path(old), _normalise_porcelain_path(new))
+    return (_normalise_porcelain_path(raw_path),)
+
+
+def _is_generated_output_path(path: str) -> bool:
+    normalized = _normalise_porcelain_path(path)
+    return (normalized.rstrip("/") in _GENERATED_OUTPUT_ROOTS or
+            normalized in _GENERATED_OUTPUT_FILES or
+            normalized.startswith(_GENERATED_OUTPUT_PREFIXES))
+
+
+def _status_line_is_dirty(line: str) -> bool:
+    """Evaluate one raw ``git status --porcelain`` line fail-closed.
+
+    The previous implementation used ``split(None, 1)``, which discarded the
+    two-column XY status and made both ``" M path"`` and ``"M  path"`` appear
+    as the unrecognized status ``"M"``.  This parser intentionally examines
+    the columns directly and treats every non-ignored non-generated path as
+    dirty, including untracked, deleted, renamed, and mixed changes.
+    """
+    if not line:
+        return False
+    if len(line) < 3:
+        return True
+    status = line[:2]
+    if status == "!!":
+        return False
+    paths = _status_line_paths(line)
+    if not paths:
+        return True
+    # Generated output is allowlisted only by exact root/file prefixes.  A
+    # rename is safe only when both sides are generated outputs.
+    return not all(_is_generated_output_path(path) for path in paths)
+
+
+def _git_tree_sha(git_commit: str) -> str:
+    """Return the tree object for ``git_commit`` or ``MISSING``."""
+    try:
+        proc = subprocess.run(
+            ["git", "rev-parse", f"{git_commit}^{{tree}}"],
+            capture_output=True, text=True, cwd=str(_REPO_ROOT), timeout=10,
+        )
+        value = proc.stdout.strip()
+        return value if proc.returncode == 0 and value else "MISSING"
+    except Exception:
+        return "MISSING"
+
+
+def _git_blob_sha(git_commit: str, relative_path: str) -> str:
+    """Return the committed blob SHA for one source at ``git_commit``."""
+    try:
+        proc = subprocess.run(
+            ["git", "rev-parse", f"{git_commit}:{relative_path}"],
+            capture_output=True, text=True, cwd=str(_REPO_ROOT), timeout=10,
+        )
+        value = proc.stdout.strip()
+        return value if proc.returncode == 0 and value else "MISSING"
+    except Exception:
+        return "MISSING"
+
+
+def _source_bindings(git_commit: str) -> dict[str, str]:
+    """Bind every executable/frozen S1-008 input to committed git blobs."""
+    names = (
+        "runner.py", "evaluator.py", "make_bundle.py",
+        "publish_evidence_pack.py", "finalize_record.py",
+        "revocation-contract.json", "workload-manifest.json",
+        "threat-model.json", "rubric.json", "fixtures.json",
+        "corpus-manifest.json",
+    )
+    prefix = "research/tickets/stage-1/S1-008/"
+    return {prefix + name: _git_blob_sha(git_commit, prefix + name)
+            for name in names}
+
+
+def _process_evidence(run_label: str, output_dir: Path,
+                     git_commit: str, started_at_utc: str) -> dict[str, Any]:
+    """Capture independently verifiable process/launch provenance."""
+    argv = [str(value) for value in sys.argv]
+    descriptor: dict[str, Any] = {
+        "run_label": run_label,
+        "pid": os.getpid(),
+        "parent_pid": os.getppid(),
+        "argv": argv,
+        "cwd": str(Path.cwd().resolve()),
+        "output_dir": str(output_dir.resolve()),
+        "executable": str(Path(sys.executable).resolve()),
+        "python_version": platform.python_version(),
+        "python_implementation": platform.python_implementation(),
+        "git_commit": git_commit,
+        "started_at_utc": started_at_utc,
+    }
+    # Keep launch_descriptor explicit so an auditor can inspect the exact
+    # launch tuple without interpreting an opaque executor id.  It is part of
+    # the signed descriptor: changing either the launch tuple or runtime
+    # identity must invalidate invocation_digest.
+    descriptor["launch_descriptor"] = {
+        "argv": argv,
+        "cwd": descriptor["cwd"],
+        "executable": descriptor["executable"],
+        "output_dir": descriptor["output_dir"],
+    }
+    descriptor["invocation_digest"] = sha256_text(canonical_json(descriptor))
+    return descriptor
 
 
 def main() -> int:
