@@ -442,7 +442,10 @@ def evaluate_run(manifest: dict[str, Any], raw_dir: str | Path) -> EvaluationRes
             result.ok(f"hard counter {k} = 0")
 
     # --- Check mandatory trial count (360 matrix + 24 fault trials) ---
-    mandatory_count = len(mandatory_traces)
+    # Fault injections are mandatory safety evidence too.  The matrix itself
+    # remains 360 cells, but the authoritative mandatory population is
+    # 360 matrix observations + 24 fault observations = 384.
+    mandatory_count = len(mandatory_traces) + len(fault_traces)
     if mandatory_count != 384:
         result.fail(f"mandatory trial count: {mandatory_count} != 384")
     else:
