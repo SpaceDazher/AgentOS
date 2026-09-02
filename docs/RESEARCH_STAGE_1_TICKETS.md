@@ -700,13 +700,13 @@ python -m agentos.cli research-plan --topic "S1-007 QA3 retrieval and index isol
 
 ### S1-008 — Revocation latency validation (≤5 seconds)
 
-- **Status:** `PASS_WITH_LIMITS` — measured 2026-09-02 (research revision 13):
-  goal `goal_R1HBV59V3M5K2NQA01M1FR8JFG`, campaign
-  `rcamp_HDQSGD00K22QGT7601M1FR8JFG`, evaluation
-  `reval_5KWTDGVVXHB1M2VG01M1FR8JJC`, artifact chain
-  `e5ce35fe9c0acc46771f5b925918b65ad9f9c113bff513024fc60b942c5ab4a9`,
+- **Status:** `PASS_WITH_LIMITS` — measured 2026-09-02 (research revision 14):
+  goal `goal_XWH9AX5FDMMHCKM101M1FRNR8H`, campaign
+  `rcamp_ATAX26PND4SA6W7201M1FRNR8H`, evaluation
+  `reval_QNMH3T8C0SEX426801M1FRNRC3`, artifact chain
+  `8439a1429b935abcf1946859c4da8743ec55b373614b275cfc1a10cd3bf40fdd`,
   evidence-pack content-addressed at
-  `results/evidence/evidence-pack-ba5e689d8d61ca304e99f4caac028ffd89a05e6b31b41d218b95041b2d72637c.json`.
+  `results/evidence/evidence-pack-b36358668eabba5501ae87d15238389134ca9a7dac78b2df9cebe307a3110073.json`.
   Main and independent rerun each: 4 paths × 2 cache × 3 loads × 3 seeds ×
   5 trials = 360 matrix trials, plus 24 fault scenarios = **384 mandatory**;
   18 probes A–F = **402 total** per run. Both raw A/B archives contain 402
