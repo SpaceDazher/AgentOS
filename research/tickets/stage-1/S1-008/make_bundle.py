@@ -194,7 +194,15 @@ def _evidence_binding(raw_a: dict[str, Any], raw_b: dict[str, Any],
     }
     prior = (existing_bundle or {}).get("evidence_binding", {})
     if isinstance(prior, dict) and isinstance(prior.get("raw_archives"), dict):
-        binding["raw_archives"] = prior["raw_archives"]
+        prior_archives = prior["raw_archives"]
+        for label, trace in (("a", raw_a), ("b", raw_b)):
+            archive = prior_archives.get(label)
+            if (not isinstance(archive, dict) or
+                    archive.get("trace_set_sha256") != trace.get("sha256") or
+                    archive.get("member_count") != trace.get("member_count")):
+                raise ValueError(
+                    f"existing run-{label} archive binding is stale or mixed evidence")
+        binding["raw_archives"] = prior_archives
     digest = sha256_text(json.dumps(
         binding, sort_keys=True, separators=(",", ":"), ensure_ascii=False))
     return {"sha256": digest, **binding}

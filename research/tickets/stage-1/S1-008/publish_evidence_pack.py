@@ -241,6 +241,17 @@ def build_evidence_pack(bundle: dict[str, Any], out_dir: str | Path) -> tuple[Pa
     archive_b = _write_archive("run-b", _resolve_repo_path(raw_b["path"]), output_dir, raw_b)
     archive_a = verify_raw_archive(archive_a["path"], archive_a)
     archive_b = verify_raw_archive(archive_b["path"], archive_b)
+    declared_archives = evidence_binding.get("raw_archives", {})
+    if declared_archives:
+        if not isinstance(declared_archives, dict):
+            raise ValueError("bundle raw archive binding is malformed")
+        for label, archive in (("a", archive_a), ("b", archive_b)):
+            declared = declared_archives.get(label)
+            if not isinstance(declared, dict):
+                raise ValueError(f"bundle run-{label} archive binding is missing")
+            for key in ("path", "sha256", "trace_set_sha256", "member_count"):
+                if declared.get(key) != archive.get(key):
+                    raise ValueError(f"bundle run-{label} archive binding is stale")
     now = datetime.now(timezone.utc).isoformat()
     pack: dict[str, Any] = {
         "schema": "agentos.s1-008.evidence-pack/v2",
