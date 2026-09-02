@@ -184,6 +184,17 @@ def _load_and_verify_pack(bundle: dict[str, Any], evidence_pack_path: str | Path
         raise FinalizationError("evidence pack bundle payload binding mismatch")
     if pack.get("evidence_binding") != bundle.get("evidence_binding"):
         raise FinalizationError("evidence pack evidence binding mismatch")
+    bundle_binding = bundle.get("bundle_binding")
+    if not isinstance(bundle_binding, dict) or not _valid_sha(bundle_binding.get("sha256")):
+        raise FinalizationError("bundle immutable binding missing")
+    if (pack.get("bundle_binding") != bundle_binding or
+            sha256_text(canonical_json({
+                key: value for key, value in bundle_binding.items()
+                if key != "sha256"
+            })) != bundle_binding["sha256"] or
+            bundle_binding.get("evidence_binding_sha256") != bundle.get(
+                "evidence_binding", {}).get("sha256")):
+        raise FinalizationError("evidence pack immutable bundle binding mismatch")
     for key in ("goal_id", "campaign_id", "evaluation_id", "artifact_chain_hash"):
         if not isinstance(bundle.get(key), str) or not bundle[key]:
             raise FinalizationError(f"bundle missing {key}")
@@ -321,6 +332,8 @@ def finalize_record(bundle: dict[str, Any], *, evidence_pack_path: str | Path | 
         "comparison_verdict": outcome["comparison_verdict"],
         "evaluation_verdict": outcome["evaluation_verdict"],
         "artifact_chain_hash": bundle["artifact_chain_hash"],
+        "evidence_binding": bundle.get("evidence_binding"),
+        "bundle_binding": bundle.get("bundle_binding"),
         "evidence_pack": {
             "path": pack_info["path"],
             "sha256": pack_info["sha256"],

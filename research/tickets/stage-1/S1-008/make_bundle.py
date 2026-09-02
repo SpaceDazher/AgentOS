@@ -200,12 +200,38 @@ def _evidence_binding(raw_a: dict[str, Any], raw_b: dict[str, Any],
     return {"sha256": digest, **binding}
 
 
+def _bundle_binding(evidence_binding: dict[str, Any]) -> dict[str, Any]:
+    """Derive an immutable bundle/pack binding independent of DB identity.
+
+    Research-plan appends a new DB revision and therefore changes the
+    top-level goal/campaign/evaluation/chain fields.  This digest deliberately
+    excludes those mutable identity fields while retaining the exact raw
+    archive, evaluator, comparison, frozen-input, and evidence-binding data.
+    The publisher and finalizer carry and verify the same object.
+    """
+    payload = {
+        "algorithm": "s1-008-immutable-bundle-binding/v1",
+        "evidence_binding_sha256": evidence_binding["sha256"],
+        "raw_archives": evidence_binding.get("raw_archives", {}),
+        "evaluation_result": evidence_binding.get("evaluation_result", {}),
+        "comparison": evidence_binding.get("comparison", {}),
+        "frozen_artifacts": evidence_binding.get("frozen_artifacts", {}),
+    }
+    return {
+        "sha256": sha256_text(json.dumps(
+            payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)),
+        **payload,
+    }
+
+
 def _bind_flow_artifact_content(flow_artifacts: dict[str, Any],
-                                evidence_binding: dict[str, Any]) -> None:
+                                evidence_binding: dict[str, Any],
+                                bundle_binding: dict[str, Any]) -> None:
     """Make canonical measurement hashes part of substantive FLOW content."""
     marker = "\n\n# Canonical measurement evidence\n"
-    text = json.dumps(evidence_binding, sort_keys=True, separators=(",", ":"),
-                      ensure_ascii=False)
+    text = json.dumps({"evidence_binding": evidence_binding,
+                       "bundle_binding": bundle_binding},
+                      sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     section = marker + "The DB research chain is bound to this exact local evidence object:\n" + text
     for kind in ("source_registry", "independent_audit", "progress"):
         artifact = flow_artifacts.get(kind)
@@ -372,7 +398,8 @@ def build_bundle(goal_id: str, evaluation_id: str, campaign_id: str,
     evidence_binding = _evidence_binding(
         raw_a_binding, raw_b_binding, frozen_artifacts, evaluation_path,
         comparison_path, manifest_a, existing_bundle)
-    _bind_flow_artifact_content(flow_artifacts, evidence_binding)
+    bundle_binding = _bundle_binding(evidence_binding)
+    _bind_flow_artifact_content(flow_artifacts, evidence_binding, bundle_binding)
     bundle.update({
         "schema": "agentos.s1-008.bundle/v1",
         "created_at": datetime.now(timezone.utc).isoformat(),
@@ -381,6 +408,7 @@ def build_bundle(goal_id: str, evaluation_id: str, campaign_id: str,
         "evaluation_id": evaluation_id,
         "artifact_chain_hash": chain_hash,
         "evidence_binding": evidence_binding,
+        "bundle_binding": bundle_binding,
         "frozen_artifacts": frozen_artifacts,
         "artifacts": {
             **flow_artifacts,
