@@ -76,6 +76,10 @@ class TestVerifyDbOwnership(unittest.TestCase):
                 id TEXT PRIMARY KEY, campaign_id TEXT NOT NULL, goal_id TEXT NOT NULL,
                 result TEXT NOT NULL, artifact_chain_hash TEXT NOT NULL
             );
+            CREATE TABLE research_series (
+                id TEXT PRIMARY KEY, research_key TEXT NOT NULL, revision INTEGER NOT NULL,
+                campaign_id TEXT NOT NULL, goal_id TEXT NOT NULL
+            );
             """
         )
         conn.execute("INSERT INTO goal VALUES (?)", ("goal-1",))
@@ -83,6 +87,10 @@ class TestVerifyDbOwnership(unittest.TestCase):
         conn.execute(
             "INSERT INTO research_evaluation VALUES (?, ?, ?, ?, ?)",
             ("eval-1", "camp-1", "goal-1", "pass_with_limits", "chain-1"),
+        )
+        conn.execute(
+            "INSERT INTO research_series VALUES (?, ?, ?, ?, ?)",
+            ("series-1", "S1-008", 14, "camp-1", "goal-1"),
         )
         conn.commit()
         conn.close()
@@ -95,6 +103,9 @@ class TestVerifyDbOwnership(unittest.TestCase):
                 "goal-1", "camp-1", "eval-1", "PASS_WITH_LIMITS", "chain-1", db
             )
             self.assertTrue(verified["fully_verified"])
+            self.assertEqual(verified["research_revision"], 14)
+            self.assertTrue(verified["series_campaign_match"])
+            self.assertTrue(verified["series_goal_match"])
             for kwargs in (
                 {"campaign_id": "camp-wrong"},
                 {"bundle_chain": "chain-wrong"},
@@ -111,6 +122,43 @@ class TestVerifyDbOwnership(unittest.TestCase):
                 }
                 args.update(kwargs)
                 self.assertFalse(finalizer.verify_db(**args)["fully_verified"], kwargs)
+
+    def test_missing_or_cross_owned_series_is_not_verified(self):
+        for mutation in ("delete", "cross_goal", "cross_campaign", "stale_revision"):
+            with self.subTest(mutation=mutation), tempfile.TemporaryDirectory() as td:
+                db = self._db(td)
+                conn = sqlite3.connect(db)
+                if mutation == "delete":
+                    conn.execute("DELETE FROM research_series")
+                elif mutation == "cross_goal":
+                    conn.execute("UPDATE research_series SET goal_id='goal-other'")
+                elif mutation == "cross_campaign":
+                    conn.execute("UPDATE research_series SET campaign_id='camp-other'")
+                else:
+                    conn.execute("INSERT INTO research_series VALUES (?, ?, ?, ?, ?)",
+                                 ("series-latest", "S1-008", 14, "camp-latest", "goal-latest"))
+                    conn.execute("INSERT INTO research_series VALUES (?, ?, ?, ?, ?)",
+                                 ("series-old", "S1-008", 13, "camp-old", "goal-old"))
+                    conn.execute("UPDATE research_series SET revision=13 WHERE id='series-1'")
+                conn.commit()
+                conn.close()
+                verified = finalizer.verify_db(
+                    "goal-1", "camp-1", "eval-1", "PASS_WITH_LIMITS", "chain-1", db
+                )
+                self.assertFalse(verified["fully_verified"])
+
+
+class TestPortableFinalizerPaths(unittest.TestCase):
+    def test_repo_relative_paths_resolve_under_trusted_root(self):
+        resolved = finalizer._resolve_repo_path("results/evidence/example.json")
+        self.assertEqual(resolved, finalizer._REPO_ROOT / "results/evidence/example.json")
+
+    def test_traversal_and_outside_absolute_paths_are_rejected(self):
+        for value in ("../outside.json", "results/../outside.json",
+                      Path(tempfile.gettempdir()) / "outside.json"):
+            with self.subTest(value=str(value)):
+                with self.assertRaises(finalizer.FinalizationError):
+                    finalizer._resolve_repo_path(value)
 
 
 class TestFailClosedFinalizer(unittest.TestCase):

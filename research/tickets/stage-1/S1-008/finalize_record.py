@@ -93,8 +93,38 @@ def derive_outcome(bundle: dict[str, Any]) -> dict[str, str]:
 
 
 def _resolve_repo_path(value: str | Path) -> Path:
-    path = Path(value)
-    return path if path.is_absolute() else _REPO_ROOT / path
+    """Resolve an input path only inside the trusted repository root.
+
+    The CLI may receive an absolute path for convenience, but records must
+    never depend on that machine-specific spelling.  Reject traversal even
+    when it happens to resolve back inside the repository so callers cannot
+    smuggle an escaped path through normalization or a symlink.
+    """
+    if isinstance(value, Path):
+        path = value
+    elif isinstance(value, str) and value.strip():
+        path = Path(value)
+    else:
+        raise FinalizationError("path must be a non-empty string or Path")
+    if any(part == ".." for part in path.parts):
+        raise FinalizationError(f"path traversal is not allowed: {value}")
+    candidate = path if path.is_absolute() else _REPO_ROOT / path
+    try:
+        resolved = candidate.resolve()
+        resolved.relative_to(_REPO_ROOT.resolve())
+    except (OSError, ValueError) as exc:
+        raise FinalizationError(
+            f"path must remain under trusted repository root: {value}") from exc
+    return resolved
+
+
+def _repo_relative_path(path: str | Path) -> str:
+    """Return the canonical portable POSIX spelling for a repo path."""
+    resolved = _resolve_repo_path(path)
+    try:
+        return resolved.relative_to(_REPO_ROOT.resolve()).as_posix()
+    except ValueError as exc:  # defensive: _resolve_repo_path already checks
+        raise FinalizationError(f"path is outside trusted repository: {path}") from exc
 
 
 def _trace_set_digest(members: list[dict[str, Any]]) -> str:
@@ -146,7 +176,7 @@ def _verify_archive(path: str | Path, expected: dict[str, Any]) -> dict[str, Any
     if payload.get("trace_set_sha256") != trace_sha:
         raise FinalizationError("raw archive trace-set digest mismatch")
     metadata = {
-        "path": archive_path.resolve().as_posix(),
+        "path": _repo_relative_path(archive_path),
         "sha256": file_sha,
         "trace_set_sha256": trace_sha,
         "member_count": len(members),
@@ -241,7 +271,7 @@ def _load_and_verify_pack(bundle: dict[str, Any], evidence_pack_path: str | Path
             raise FinalizationError(f"raw archive {label.upper()} member list mismatch")
         archive_info[label] = actual
     return pack, {
-        "path": pack_path.resolve().as_posix(),
+        "path": _repo_relative_path(pack_path),
         "sha256": file_sha,
         "pack_sha256": pack["pack_sha256"],
         "raw_archives": archive_info,
@@ -318,11 +348,18 @@ def finalize_record(bundle: dict[str, Any], *, evidence_pack_path: str | Path | 
     _validate_run_provenance(run_a, run_b)
     if not isinstance(db_verified, dict) or db_verified.get("fully_verified") is not True:
         raise FinalizationError("fully verified DB binding is required")
+    research_revision = db_verified.get("research_revision")
+    if (isinstance(research_revision, bool) or
+            not isinstance(research_revision, int) or research_revision <= 0):
+        raise FinalizationError(
+            "canonical research revision is required from DB verification")
     record: dict[str, Any] = {
         "schema": "agentos.s1-008.evaluation-record/v2",
         "ticket_id": "S1-008",
         "ticket_title": "Revocation latency validation (<=5 seconds)",
-        "research_revision": bundle.get("research_revision", 2),
+        # The revision is authoritative only when verify_db has proved the
+        # exact owned research_series row.  Never fall back to bundle data.
+        "research_revision": research_revision,
         "research_phase": "stage-1",
         "campaign_id": bundle["campaign_id"],
         "goal_id": bundle["goal_id"],
@@ -377,6 +414,13 @@ def verify_db(goal_id: str, campaign_id: str, evaluation_id: str,
         "verdict_match": False,
         "result_match": False,
         "chain_hash_match": False,
+        "series_present": False,
+        "series_unique_match": False,
+        "series_research_key_match": False,
+        "series_campaign_match": False,
+        "series_goal_match": False,
+        "series_revision_valid": False,
+        "series_latest_revision_match": False,
         "fully_verified": False,
     }
     if not all(isinstance(value, str) and value.strip() for value in
@@ -399,9 +443,43 @@ def verify_db(goal_id: str, campaign_id: str, evaluation_id: str,
             "SELECT id, campaign_id, goal_id, result, artifact_chain_hash "
             "FROM research_evaluation WHERE id=?", (evaluation_id,)
         ).fetchone()
+        # A revision is canonical only for the one immutable series row that
+        # owns this exact campaign and goal.  Requiring the latest revision
+        # for S1-008 also prevents finalizing an older historical row.
+        series_rows = conn.execute(
+            "SELECT id, research_key, revision, campaign_id, goal_id "
+            "FROM research_series WHERE campaign_id=? AND goal_id=? "
+            "ORDER BY revision DESC",
+            (campaign_id, goal_id),
+        ).fetchall()
         keys["goal_present"] = goal is not None
         keys["campaign_present"] = campaign is not None
         keys["evaluation_present"] = evaluation is not None
+        keys["series_present"] = bool(series_rows)
+        keys["series_unique_match"] = len(series_rows) == 1
+        if len(series_rows) == 1:
+            series = series_rows[0]
+            keys["series_id"] = series["id"]
+            keys["series_research_key"] = series["research_key"]
+            keys["series_revision"] = series["revision"]
+            keys["series_db_campaign_id"] = series["campaign_id"]
+            keys["series_db_goal_id"] = series["goal_id"]
+            keys["series_research_key_match"] = series["research_key"] == "S1-008"
+            keys["series_campaign_match"] = series["campaign_id"] == campaign_id
+            keys["series_goal_match"] = series["goal_id"] == goal_id
+            revision = series["revision"]
+            keys["series_revision_valid"] = (
+                isinstance(revision, int) and not isinstance(revision, bool) and revision > 0
+            )
+            if keys["series_revision_valid"] and keys["series_research_key_match"]:
+                latest_row = conn.execute(
+                    "SELECT MAX(revision) AS revision FROM research_series "
+                    "WHERE research_key=?", ("S1-008",)
+                ).fetchone()
+                latest = latest_row["revision"] if latest_row is not None else None
+                keys["latest_research_revision"] = latest
+                keys["series_latest_revision_match"] = revision == latest
+                keys["research_revision"] = revision
         if campaign is not None:
             keys["campaign_id_match"] = campaign["id"] == campaign_id
             keys["campaign_goal_match"] = campaign["goal_id"] == goal_id
@@ -425,7 +503,9 @@ def verify_db(goal_id: str, campaign_id: str, evaluation_id: str,
             "goal_present", "campaign_present", "evaluation_present",
             "evaluation_id_match", "campaign_id_match", "goal_id_match",
             "campaign_goal_match", "evaluation_campaign_match", "result_match", "verdict_match",
-            "chain_hash_match",
+            "chain_hash_match", "series_present", "series_unique_match",
+            "series_research_key_match", "series_campaign_match", "series_goal_match",
+            "series_revision_valid", "series_latest_revision_match",
         )) and (expected_verdict is None or keys.get("expected_verdict_match", False))
     except (OSError, sqlite3.Error) as exc:
         keys["error"] = str(exc)
@@ -455,9 +535,9 @@ def main() -> int:
         record = finalize_record(bundle, evidence_pack_path=args.evidence_pack,
                                  db_verified=db_verified)
         Path(args.output).parent.mkdir(parents=True, exist_ok=True)
-        Path(args.output).write_text(
-            json.dumps(record, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
-            encoding="utf-8",
+        Path(args.output).write_bytes(
+            (json.dumps(record, indent=2, sort_keys=True, ensure_ascii=False) + "\n")
+            .encode("utf-8")
         )
     except (OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)

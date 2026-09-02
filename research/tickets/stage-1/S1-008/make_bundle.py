@@ -11,6 +11,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import base64
 import hashlib
 import json
 import subprocess
@@ -153,6 +154,85 @@ def raw_trace_digest(raw_dir: str | Path) -> dict[str, Any]:
     }
 
 
+def _archive_binding_from_path(path: Path, run_label: str,
+                               expected: dict[str, Any]) -> dict[str, Any] | None:
+    """Read one content-addressed archive and validate it against raw traces.
+
+    This is deliberately used only to discover an archive produced by the
+    publisher for the current trace set.  Historical archives are ignored
+    when their trace-set digest differs; an archive that claims to be for the
+    current set but has bad bytes is rejected.
+    """
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ValueError(f"invalid {run_label} raw archive: {path}") from exc
+    if payload.get("run_label") != run_label:
+        return None
+    if (payload.get("trace_set_sha256") != expected.get("sha256") or
+            payload.get("member_count") != expected.get("member_count")):
+        return None
+    file_sha = _file_sha256(path)
+    if path.stem != f"raw-observations-{run_label}-{file_sha}":
+        raise ValueError(f"{run_label} raw archive filename is not content-addressed")
+    members = payload.get("members")
+    if not isinstance(members, dict) or payload.get("member_count") != len(members):
+        raise ValueError(f"{run_label} raw archive member count mismatch")
+    normalized: list[dict[str, Any]] = []
+    for member_path, member in sorted(members.items()):
+        if not isinstance(member, dict) or member.get("path") != member_path:
+            raise ValueError(f"{run_label} raw archive path mismatch: {member_path}")
+        try:
+            raw = base64.b64decode(member["content_base64"], validate=True)
+        except Exception as exc:
+            raise ValueError(f"{run_label} raw archive bytes invalid: {member_path}") from exc
+        if (member.get("size") != len(raw) or
+                member.get("sha256") != hashlib.sha256(raw).hexdigest()):
+            raise ValueError(f"{run_label} raw archive byte digest mismatch: {member_path}")
+        try:
+            parsed = json.loads(raw.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise ValueError(f"{run_label} raw archive JSON invalid: {member_path}") from exc
+        canonical = json.dumps(parsed, sort_keys=True, separators=(",", ":"),
+                               ensure_ascii=False).encode("utf-8")
+        if member.get("canonical_sha256") != hashlib.sha256(canonical).hexdigest():
+            raise ValueError(f"{run_label} raw archive canonical digest mismatch: {member_path}")
+        normalized.append({key: member[key] for key in
+                           ("path", "size", "sha256", "canonical_sha256")})
+    trace_payload = {"algorithm": "sha256(path,size,bytes,canonical-json)",
+                     "members": normalized}
+    trace_sha = sha256_text(json.dumps(
+        trace_payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False))
+    if trace_sha != expected.get("sha256"):
+        raise ValueError(f"{run_label} raw archive trace-set digest mismatch")
+    if normalized != expected.get("members"):
+        raise ValueError(f"{run_label} raw archive members do not match raw traces")
+    return {
+        "path": _posix(path.relative_to(_REPO_ROOT)),
+        "sha256": file_sha,
+        "trace_set_sha256": trace_sha,
+        "member_count": len(members),
+        "member_digests": normalized,
+        "run_label": run_label,
+    }
+
+
+def _discover_archive_binding(run_label: str,
+                              expected: dict[str, Any]) -> dict[str, Any] | None:
+    """Find the unique published archive for the current raw trace set."""
+    evidence_dir = _RESULTS / "evidence"
+    if not evidence_dir.is_dir():
+        return None
+    matches: list[dict[str, Any]] = []
+    for path in sorted(evidence_dir.glob(f"raw-observations-{run_label}-*.json")):
+        binding = _archive_binding_from_path(path, run_label, expected)
+        if binding is not None:
+            matches.append(binding)
+    if len(matches) > 1:
+        raise ValueError(f"multiple {run_label} archives match current raw traces")
+    return matches[0] if matches else None
+
+
 def _evidence_binding(raw_a: dict[str, Any], raw_b: dict[str, Any],
                       frozen_artifacts: dict[str, str],
                       eval_path: Path, comparison_path: Path,
@@ -203,6 +283,16 @@ def _evidence_binding(raw_a: dict[str, Any], raw_b: dict[str, Any],
                 raise ValueError(
                     f"existing run-{label} archive binding is stale or mixed evidence")
         binding["raw_archives"] = prior_archives
+    else:
+        # The publisher is intentionally a separate step.  On the first
+        # build there may be no archives yet; on the second build discover the
+        # exact content-addressed A/B files instead of copying hashes by hand.
+        discovered_a = _discover_archive_binding("run-a", raw_a)
+        discovered_b = _discover_archive_binding("run-b", raw_b)
+        if (discovered_a is None) != (discovered_b is None):
+            raise ValueError("only one current raw archive is present")
+        if discovered_a is not None and discovered_b is not None:
+            binding["raw_archives"] = {"a": discovered_a, "b": discovered_b}
     digest = sha256_text(json.dumps(
         binding, sort_keys=True, separators=(",", ":"), ensure_ascii=False))
     return {"sha256": digest, **binding}
@@ -556,6 +646,11 @@ def main() -> None:
                         help="Run B output directory")
     parser.add_argument("--output", default="bundle.json",
                         help="Output path for bundle.json")
+    parser.add_argument(
+        "--reset-archive-bindings", action="store_true",
+        help="Start a new measured A/B set by dropping prior archive bindings; "
+             "the next build discovers the publisher's new content-addressed archives",
+    )
     args = parser.parse_args()
 
     # Read existing bundle to preserve FLOW-11 fields (config, sources, claims, artifacts, audit)
@@ -563,6 +658,10 @@ def main() -> None:
     bundle_path = Path(args.output)
     if bundle_path.exists():
         existing_bundle = json.loads(bundle_path.read_text(encoding="utf-8"))
+    if args.reset_archive_bindings and isinstance(existing_bundle, dict):
+        prior_binding = existing_bundle.get("evidence_binding")
+        if isinstance(prior_binding, dict):
+            prior_binding.pop("raw_archives", None)
 
     bundle = build_bundle(args.goal_id, args.eval_id, args.campaign_id,
                           args.chain_hash, args.run_dir_a, args.run_dir_b,

@@ -10,6 +10,7 @@ Run: PYTHONPATH=src python -m unittest tests.test_s1_008_regressions -v
 import hashlib
 import json
 import copy
+import sqlite3
 import unittest
 from pathlib import Path
 
@@ -411,6 +412,42 @@ class TestEvaluationRecord(unittest.TestCase):
         self.assertEqual(file_hash, evidence.get("sha256"))
         self.assertEqual(file_hash, fname_hash,
                         "Pack file SHA does not match filename")
+
+    def test_record_paths_are_repo_relative_and_exist(self):
+        if self.record is None:
+            self.skipTest("No record")
+        evidence = self.record.get("evidence_pack", {})
+        paths = [evidence.get("path", "")]
+        paths.extend(
+            archive.get("path", "")
+            for archive in evidence.get("raw_archives", {}).values()
+            if isinstance(archive, dict)
+        )
+        for value in paths:
+            self.assertIsInstance(value, str)
+            self.assertFalse(Path(value).is_absolute(), value)
+            self.assertNotIn("\\", value)
+            self.assertNotIn("..", Path(value).parts)
+            self.assertTrue((REPO_ROOT / value).is_file(), value)
+
+    def test_record_revision_matches_exact_latest_series_row(self):
+        if self.record is None:
+            self.skipTest("No record")
+        db_path = REPO_ROOT / ".agentos-research" / "platform-stage-1" / "agentos.db"
+        conn = sqlite3.connect(db_path)
+        try:
+            rows = conn.execute(
+                "SELECT revision FROM research_series WHERE campaign_id=? AND goal_id=?",
+                (self.record["campaign_id"], self.record["goal_id"]),
+            ).fetchall()
+            latest = conn.execute(
+                "SELECT MAX(revision) FROM research_series WHERE research_key='S1-008'"
+            ).fetchone()[0]
+        finally:
+            conn.close()
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(self.record["research_revision"], rows[0][0])
+        self.assertEqual(self.record["research_revision"], latest)
 
     def test_record_self_hash_and_exact_pack_binding(self):
         if self.record is None:

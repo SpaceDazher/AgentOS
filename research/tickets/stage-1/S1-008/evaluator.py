@@ -785,7 +785,9 @@ def main():
     }
 
     out_path = Path(args.output)
-    out_path.write_text(json.dumps(output, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    out_path.write_bytes(
+        (json.dumps(output, indent=2, sort_keys=True) + "\n").encode("utf-8")
+    )
 
     # Persist the comparison as a separate, hash-addressable input consumed by
     # make_bundle. It is derived from this invocation, never copied from an
@@ -811,9 +813,9 @@ def main():
             "raw_archive_b": result.raw_archive_bindings.get("b", {}),
             "hard_counters": result.counters,
         }
-        (out_path.parent / "comparison.json").write_text(
-            json.dumps(comparison_output, indent=2, sort_keys=True) + "\n",
-            encoding="utf-8",
+        (out_path.parent / "comparison.json").write_bytes(
+            (json.dumps(comparison_output, indent=2, sort_keys=True) + "\n")
+            .encode("utf-8")
         )
 
     print(json.dumps(output, indent=2, sort_keys=True))
