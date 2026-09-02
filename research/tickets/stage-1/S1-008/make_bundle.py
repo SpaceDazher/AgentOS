@@ -211,6 +211,11 @@ def _bundle_binding(evidence_binding: dict[str, Any]) -> dict[str, Any]:
     """
     payload = {
         "algorithm": "s1-008-immutable-bundle-binding/v1",
+        "pack_contract": {
+            "schema": "agentos.s1-008.evidence-pack/v2",
+            "requires_exact_bundle_sha256": True,
+            "requires_exact_bundle_payload_sha256": True,
+        },
         "evidence_binding_sha256": evidence_binding["sha256"],
         "raw_archives": evidence_binding.get("raw_archives", {}),
         "evaluation_result": evidence_binding.get("evaluation_result", {}),
@@ -240,6 +245,7 @@ def _bind_flow_artifact_content(flow_artifacts: dict[str, Any],
         content = artifact["content"]
         if marker in content:
             content = content.split(marker, 1)[0]
+        content = content.replace("204 mandatory", "384 mandatory")
         artifact["content"] = content.rstrip() + section
 def _validate_manifest(manifest: dict[str, Any], run_dir: Path,
                        raw_binding: dict[str, Any], label: str,
@@ -395,11 +401,18 @@ def build_bundle(goal_id: str, evaluation_id: str, campaign_id: str,
     # --- Build bundle ---
     # If FLOW-11 artifacts exist in existing_bundle, merge evidence artifacts into them
     flow_artifacts = bundle.pop("artifacts", {}) if existing_bundle and "artifacts" in bundle else {}
+    raw_a_ref = {**raw_a_binding,
+                 "path": _posix(raw_a_dir.relative_to(_REPO_ROOT))}
+    raw_b_ref = {**raw_b_binding,
+                 "path": _posix(raw_b_dir.relative_to(_REPO_ROOT))}
     evidence_binding = _evidence_binding(
-        raw_a_binding, raw_b_binding, frozen_artifacts, evaluation_path,
+        raw_a_ref, raw_b_ref, frozen_artifacts, evaluation_path,
         comparison_path, manifest_a, existing_bundle)
     bundle_binding = _bundle_binding(evidence_binding)
     _bind_flow_artifact_content(flow_artifacts, evidence_binding, bundle_binding)
+    for claim in bundle.get("claims", []):
+        if isinstance(claim, dict) and isinstance(claim.get("text"), str):
+            claim["text"] = claim["text"].replace("204 mandatory", "384 mandatory")
     bundle.update({
         "schema": "agentos.s1-008.bundle/v1",
         "created_at": datetime.now(timezone.utc).isoformat(),
