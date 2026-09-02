@@ -153,6 +153,68 @@ def raw_trace_digest(raw_dir: str | Path) -> dict[str, Any]:
     }
 
 
+def _evidence_binding(raw_a: dict[str, Any], raw_b: dict[str, Any],
+                      frozen_artifacts: dict[str, str],
+                      eval_path: Path, comparison_path: Path,
+                      manifest_a: dict[str, Any],
+                      existing_bundle: dict[str, Any] | None = None
+                      ) -> dict[str, Any]:
+    """Build a stable, DB-portable binding for the measured evidence.
+
+    The FLOW-11 research chain stores this object as artifact content.  It is
+    intentionally independent of the mutable DB ids and contains the raw
+    trace-set digests, evaluator/comparison bytes, committed source identity,
+    and all frozen artifact hashes.  Once a publisher has produced archives,
+    their exact path/file hashes may be carried in ``raw_archives`` and are
+    preserved on subsequent bundle rebuilds.
+    """
+    binding: dict[str, Any] = {
+        "algorithm": "s1-008-evidence-binding/v1",
+        "git_commit": manifest_a.get("git_commit"),
+        "git_tree_sha256": manifest_a.get("git_tree_sha256"),
+        "raw_trace_a": {
+            "path": raw_a.get("path"),
+            "sha256": raw_a.get("sha256"),
+            "member_count": raw_a.get("member_count"),
+        },
+        "raw_trace_b": {
+            "path": raw_b.get("path"),
+            "sha256": raw_b.get("sha256"),
+            "member_count": raw_b.get("member_count"),
+        },
+        "evaluation_result": {
+            "path": _posix(eval_path.relative_to(_REPO_ROOT)),
+            "sha256": _file_sha256(eval_path),
+        },
+        "comparison": {
+            "path": _posix(comparison_path.relative_to(_REPO_ROOT)),
+            "sha256": _file_sha256(comparison_path),
+        },
+        "frozen_artifacts": dict(sorted(frozen_artifacts.items())),
+    }
+    prior = (existing_bundle or {}).get("evidence_binding", {})
+    if isinstance(prior, dict) and isinstance(prior.get("raw_archives"), dict):
+        binding["raw_archives"] = prior["raw_archives"]
+    digest = sha256_text(json.dumps(
+        binding, sort_keys=True, separators=(",", ":"), ensure_ascii=False))
+    return {"sha256": digest, **binding}
+
+
+def _bind_flow_artifact_content(flow_artifacts: dict[str, Any],
+                                evidence_binding: dict[str, Any]) -> None:
+    """Make canonical measurement hashes part of substantive FLOW content."""
+    marker = "\n\n# Canonical measurement evidence\n"
+    text = json.dumps(evidence_binding, sort_keys=True, separators=(",", ":"),
+                      ensure_ascii=False)
+    section = marker + "The DB research chain is bound to this exact local evidence object:\n" + text
+    for kind in ("source_registry", "independent_audit", "progress"):
+        artifact = flow_artifacts.get(kind)
+        if not isinstance(artifact, dict) or not isinstance(artifact.get("content"), str):
+            continue
+        content = artifact["content"]
+        if marker in content:
+            content = content.split(marker, 1)[0]
+        artifact["content"] = content.rstrip() + section
 def _validate_manifest(manifest: dict[str, Any], run_dir: Path,
                        raw_binding: dict[str, Any], label: str,
                        frozen_artifacts: dict[str, str]) -> None:
@@ -277,10 +339,12 @@ def build_bundle(goal_id: str, evaluation_id: str, campaign_id: str,
     raw_b_count = raw_b_binding["member_count"]
 
     # --- Load evaluation result ---
-    eval_result = json.loads((_RESULTS / "evaluation-result.json").read_text())
+    evaluation_path = _RESULTS / "evaluation-result.json"
+    comparison_path = _RESULTS / "comparison.json"
+    eval_result = json.loads(evaluation_path.read_text())
 
     # --- Load comparison ---
-    comparison = json.loads((_RESULTS / "comparison.json").read_text())
+    comparison = json.loads(comparison_path.read_text())
 
     # Only a fresh positive evaluator/comparison can be bundled. Any failure,
     # blocked result, missing list, or stale raw digest is rejected here.
@@ -305,6 +369,10 @@ def build_bundle(goal_id: str, evaluation_id: str, campaign_id: str,
     # --- Build bundle ---
     # If FLOW-11 artifacts exist in existing_bundle, merge evidence artifacts into them
     flow_artifacts = bundle.pop("artifacts", {}) if existing_bundle and "artifacts" in bundle else {}
+    evidence_binding = _evidence_binding(
+        raw_a_binding, raw_b_binding, frozen_artifacts, evaluation_path,
+        comparison_path, manifest_a, existing_bundle)
+    _bind_flow_artifact_content(flow_artifacts, evidence_binding)
     bundle.update({
         "schema": "agentos.s1-008.bundle/v1",
         "created_at": datetime.now(timezone.utc).isoformat(),
@@ -312,6 +380,7 @@ def build_bundle(goal_id: str, evaluation_id: str, campaign_id: str,
         "campaign_id": campaign_id,
         "evaluation_id": evaluation_id,
         "artifact_chain_hash": chain_hash,
+        "evidence_binding": evidence_binding,
         "frozen_artifacts": frozen_artifacts,
         "artifacts": {
             **flow_artifacts,
@@ -335,11 +404,11 @@ def build_bundle(goal_id: str, evaluation_id: str, campaign_id: str,
             },
             "evaluation_result": {
                 "path": "results/evaluation-result.json",
-                "sha256": _file_sha256(_RESULTS / "evaluation-result.json"),
+                "sha256": _file_sha256(evaluation_path),
             },
             "comparison": {
                 "path": "results/comparison.json",
-                "sha256": _file_sha256(_RESULTS / "comparison.json"),
+                "sha256": _file_sha256(comparison_path),
             },
             "environment": {
                 "path": "results/ENVIRONMENT.md",

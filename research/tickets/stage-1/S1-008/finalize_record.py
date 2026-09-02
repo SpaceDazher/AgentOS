@@ -182,6 +182,8 @@ def _load_and_verify_pack(bundle: dict[str, Any], evidence_pack_path: str | Path
     }))
     if pack.get("bundle_payload_sha256") != expected_payload_hash:
         raise FinalizationError("evidence pack bundle payload binding mismatch")
+    if pack.get("evidence_binding") != bundle.get("evidence_binding"):
+        raise FinalizationError("evidence pack evidence binding mismatch")
     for key in ("goal_id", "campaign_id", "evaluation_id", "artifact_chain_hash"):
         if not isinstance(bundle.get(key), str) or not bundle[key]:
             raise FinalizationError(f"bundle missing {key}")

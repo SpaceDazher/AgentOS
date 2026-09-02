@@ -215,6 +215,13 @@ def build_evidence_pack(bundle: dict[str, Any], out_dir: str | Path) -> tuple[Pa
     artifacts = bundle.get("artifacts")
     if not isinstance(artifacts, dict):
         raise ValueError("bundle artifacts missing")
+    evidence_binding = bundle.get("evidence_binding")
+    if not isinstance(evidence_binding, dict) or not _valid_sha(evidence_binding.get("sha256")):
+        raise ValueError("bundle evidence binding missing")
+    binding_body = {key: value for key, value in evidence_binding.items()
+                    if key != "sha256"}
+    if sha256_text(_canonical_pack_json(binding_body)) != evidence_binding["sha256"]:
+        raise ValueError("bundle evidence binding self-hash mismatch")
     raw_a = artifacts.get("raw_a")
     raw_b = artifacts.get("raw_b")
     if not isinstance(raw_a, dict) or not isinstance(raw_b, dict):
@@ -237,6 +244,7 @@ def build_evidence_pack(bundle: dict[str, Any], out_dir: str | Path) -> tuple[Pa
         "bundle_payload_sha256": sha256_text(canonical_json({
             key: value for key, value in bundle.items() if key != "bundle_sha256"
         })),
+        "evidence_binding": evidence_binding,
         "raw_archives": {"a": archive_a, "b": archive_b},
         "raw_archive_a": archive_a,
         "raw_archive_b": archive_b,
