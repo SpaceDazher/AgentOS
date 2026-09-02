@@ -307,8 +307,35 @@ class TestEvidencePack(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         evidence_dir = RESULTS_DIR / "evidence"
-        packs = list(evidence_dir.glob("evidence-pack-*.json"))
-        cls.pack = packs[-1] if packs else None
+        # Resolve the exact pack recorded by the finalizer.  Never rely on
+        # directory/glob order: old immutable packs may remain beside the
+        # current one.
+        record_path = S1_008_DIR / "evaluation-record.json"
+        cls.pack = None
+        if record_path.is_file():
+            try:
+                record = json.loads(record_path.read_text())
+                exact_path = Path(record.get("evidence_pack", {}).get("path", ""))
+                if exact_path.is_file():
+                    cls.pack = exact_path
+            except (OSError, json.JSONDecodeError, TypeError):
+                cls.pack = None
+        if cls.pack is None:
+            try:
+                bundle = json.loads((S1_008_DIR / "bundle.json").read_text())
+            except (OSError, json.JSONDecodeError):
+                bundle = {}
+            candidates = []
+            for candidate in sorted(evidence_dir.glob("evidence-pack-*.json")):
+                try:
+                    pack = json.loads(candidate.read_text())
+                except (OSError, json.JSONDecodeError):
+                    continue
+                if all(pack.get(key) == bundle.get(key) for key in (
+                        "bundle_sha256", "goal_id", "campaign_id",
+                        "evaluation_id", "artifact_chain_hash")):
+                    candidates.append(candidate)
+            cls.pack = candidates[-1] if candidates else None
 
     def test_evidence_pack_exists(self):
         self.assertIsNotNone(self.pack, "No evidence pack found")

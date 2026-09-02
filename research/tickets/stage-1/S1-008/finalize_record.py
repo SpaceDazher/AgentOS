@@ -180,6 +180,8 @@ def _load_and_verify_pack(bundle: dict[str, Any], evidence_pack_path: str | Path
     expected_payload_hash = sha256_text(canonical_json({
         key: value for key, value in bundle.items() if key != "bundle_sha256"
     }))
+    if pack.get("bundle_sha256") != bundle_hash:
+        raise FinalizationError("evidence pack bundle self-hash binding mismatch")
     if pack.get("bundle_payload_sha256") != expected_payload_hash:
         raise FinalizationError("evidence pack bundle payload binding mismatch")
     if pack.get("evidence_binding") != bundle.get("evidence_binding"):
