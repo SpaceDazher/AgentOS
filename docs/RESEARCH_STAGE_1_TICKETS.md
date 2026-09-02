@@ -700,18 +700,24 @@ python -m agentos.cli research-plan --topic "S1-007 QA3 retrieval and index isol
 
 ### S1-008 — Revocation latency validation (≤5 seconds)
 
-- **Status:** `PASS_WITH_LIMITS` — measured 2026-09-02 (research revision 14):
-  goal `goal_XWH9AX5FDMMHCKM101M1FRNR8H`, campaign
-  `rcamp_ATAX26PND4SA6W7201M1FRNR8H`, evaluation
-  `reval_QNMH3T8C0SEX426801M1FRNRC3`, artifact chain
-  `8439a1429b935abcf1946859c4da8743ec55b373614b275cfc1a10cd3bf40fdd`,
+- **Status:** `PASS_WITH_LIMITS` — measured 2026-09-02 (research revision 15):
+  goal `goal_1XSFMXMFDMRFZSBD01M1FSQ41H`, campaign
+  `rcamp_6C0AY6Y0R2NNJ7Q201M1FSQ41H`, evaluation
+  `reval_85CM5QCKNS02W0HZ01M1FSQ44C`, artifact chain
+  `5c43c03d01058ab0ad17e1dc6ed368a54c386de0b1195a750b88731a8ddc8cd7`,
   evidence-pack content-addressed at
-  `results/evidence/evidence-pack-b36358668eabba5501ae87d15238389134ca9a7dac78b2df9cebe307a3110073.json`.
+  `results/evidence/evidence-pack-d6b3733790d7fec92d5c5e4a4fd607495eb0146d7a9271bed16bd846f60aaee0.json`.
+  Raw A is
+  `results/evidence/raw-observations-run-a-34cfc454e18ae02a875c0bf039b7f17a4e32559b4632c44b88a940c56ebdba49.json`
+  (file SHA-256 `34cfc454e18ae02a875c0bf039b7f17a4e32559b4632c44b88a940c56ebdba49`);
+  raw B is
+  `results/evidence/raw-observations-run-b-a44d0d818d1baa0f95f3b1d7096ff8be31ba647f1613ad2415ce2b653d610d45.json`
+  (file SHA-256 `a44d0d818d1baa0f95f3b1d7096ff8be31ba647f1613ad2415ce2b653d610d45`).
   Main and independent rerun each: 4 paths × 2 cache × 3 loads × 3 seeds ×
   5 trials = 360 matrix trials, plus 24 fault scenarios = **384 mandatory**;
   18 probes A–F = **402 total** per run. Both raw A/B archives contain 402
   content-digested members, with 0 hard-counter violations; measured max
-  latency was 1.125 ms (A) / 1.169 ms (B), below the 5000 ms research bound.
+  latency was 1.806 ms (A) / 1.822 ms (B), below the 5000 ms research bound.
   All adversarial probes A–F detected fail-closed. Limits: same-host model-only
   enforcement (no production topology); process-separated (not external)
   auditor; local model cannot prove absence of all network/cache side channels.
