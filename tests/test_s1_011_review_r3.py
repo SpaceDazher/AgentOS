@@ -36,6 +36,13 @@ def rehash(row):
 
 
 class IndependentReviewR3(unittest.TestCase):
+    def test_all_designs_bind_their_own_ledger(self):
+        for design in runner.DESIGNS:
+            for case in load("cases.json")["cases"]:
+                with self.subTest(design=design, case=case["case_id"]):
+                    row = runner.DECIDE[design](runner.Case(case), 11011)
+                    self.assertEqual(evaluator.verify_ledger(row, case), [])
+
     def test_read_without_bound_evidence_hidden(self):
         case = positive()
         case.update(action="read_view", prior_status="PROMOTED", evidence=[])

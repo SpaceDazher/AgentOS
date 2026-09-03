@@ -520,17 +520,15 @@ def decide_argumentation(case: Case, seed: int) -> dict:
     if case.action not in ("promote", "uphold", "derive_claim",
                            "concurrent"):
         row = decide_minimal(case, seed)
-        row["design"] = d
-        row["output_sha256"] = sha(canonical(
-            {k: v for k, v in row.items() if k != "output_sha256"}))
-        return row
+        return out_row(case, d, seed, row["decision"], row["transition"],
+                       row["reason_code"], row["view_visible"],
+                       row["audit_events"], row["actor"])
     if case.action == "concurrent" and "challenge" in (
             case.raw.get("concurrent", []) or []):
         row = decide_minimal(case, seed)
-        row["design"] = d
-        row["output_sha256"] = sha(canonical(
-            {k: v for k, v in row.items() if k != "output_sha256"}))
-        return row
+        return out_row(case, d, seed, row["decision"], row["transition"],
+                       row["reason_code"], row["view_visible"],
+                       row["audit_events"], row["actor"])
     # Shared preconditions first.
     if case.action == "promote" and case.actor not in GOVERNANCE_ACTORS:
         return out_row(case, d, seed, "NO_TRANSITION", None,
@@ -626,17 +624,15 @@ def decide_tms(case: Case, seed: int) -> dict:
     if case.action not in ("promote", "uphold", "derive_claim",
                            "concurrent"):
         row = decide_minimal(case, seed)
-        row["design"] = d
-        row["output_sha256"] = sha(canonical(
-            {k: v for k, v in row.items() if k != "output_sha256"}))
-        return row
+        return out_row(case, d, seed, row["decision"], row["transition"],
+                       row["reason_code"], row["view_visible"],
+                       row["audit_events"], row["actor"])
     if case.action == "concurrent" and "challenge" in (
             case.raw.get("concurrent", []) or []):
         row = decide_minimal(case, seed)
-        row["design"] = d
-        row["output_sha256"] = sha(canonical(
-            {k: v for k, v in row.items() if k != "output_sha256"}))
-        return row
+        return out_row(case, d, seed, row["decision"], row["transition"],
+                       row["reason_code"], row["view_visible"],
+                       row["audit_events"], row["actor"])
     if not case.policy_ok():
         audit = ["REJECT"] if case.action in ("promote",) else []
         return out_row(case, d, seed, "REJECTED", "gate_fail",
