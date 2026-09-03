@@ -21,3 +21,13 @@ research/tickets/stage-1/S1-007/results/run-a/run-manifest.json -text -diff
 research/tickets/stage-1/S1-007/results/run-b/run-manifest.json -text -diff
 research/tickets/stage-1/S1-007/results/run-a/timing.json -text -diff
 research/tickets/stage-1/S1-007/results/run-b/timing.json -text -diff
+
+# Historical measurement manifests bind the original Windows bytes.
+# Preserve those exact bytes instead of silently normalizing old evidence.
+research/tickets/stage-1/S1-004/results/simulation/seed-*/*.json -text -diff
+research/tickets/stage-1/S1-006/results/run-a/*.json -text -diff
+research/tickets/stage-1/S1-006/results/run-b/*.json -text -diff
+
+# S1-011 contracts, code and observations are frozen byte-for-byte.
+research/tickets/stage-1/S1-011/** -text
+research/tickets/stage-1/S1-011/results/**/*.json -diff
