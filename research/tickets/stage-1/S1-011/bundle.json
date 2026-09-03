@@ -1,0 +1,171 @@
+{
+  "artifacts": {
+    "architecture_models": "Three executable semantics over shared governance plumbing. minimal-gate: 5-state machine x threshold checklist. argumentation: grounded-style IN (supporters>=1, attackers OUT iff countered); no independence counting; transitive parent support allowed (naive, probe-G target). tms: justification holding with automatic revision by tms_engine and no governance decision (naive, authority-invariant target). Shared: authority, challenge/retraction/replay/read/concurrency/external procedures.",
+    "feature_catalog": "Claim classes: knowledge_fact, design_inference, hypothesis, operator_risk, decision. Gate features: provisional threshold (2 verified / 2 lineage-collapsed groups), challenge with immediate view exclusion, uphold-as-new-decision, retraction/revocation/supersession with history preserved, derived-view inclusion predicate with stale-epoch fail-closed, idempotent concurrent transitions, atomic transition+audit, external-content quarantine.",
+    "independent_audit": "Audit path (evaluator.py + compare_runs.py) is independent code from the producer path (runner.py) and reads only raw rows plus the frozen oracle. A/B: 18 distinct processes, one commit 2b64743 / one tree, all clean, exact 540-row matrices, 540/540 identical rows, distinct PID/PPID/invocation/nonce/executor/output-root. Hard counters: minimal all-zero; argumentation 12+12+2; tms 15+15+33+2. Verdicts: PASS / FAIL / FAIL. Regression suite 46/46. Limits: tracked-Git evidence only; no live DB, chain, or wiki claims.",
+    "mathematical_model": "Threshold: |eligible|>=2 AND |lineages|>=2 AND |groups|>=2 AND same version/scope AND no open challenge/revocation AND policy current. Acceptability: IN iff supporters>=1 AND all attackers OUT. Justification: IN iff >=1 holding justification AND no live contradiction. Metrics: confusion over eligible transitions, per-class P/R/FPR/FNR with Wilson 95% intervals, operator model (simulation). Scores: measured safety (52% weight) + frozen qualitative cells with UNKNOWN abstention; minimal 0.936 vs 0.489 / 0.489; 220 sensitivity compositions, 0 flips.",
+    "mental_model": "Five operator-visible states. PROMOTED means only 'passed the versioned gate for this scope/policy', never objective truth. Challenge and revocation remove claims from the eligible view at once; audit history is never deleted. Re-promotion is a new decision, not an edit.",
+    "ontology": "Record types: assertion, evidence, provenance, scope, decision, audit_event (knowledge-record.schema.json, append-only with SUPERSEDES). S1-003 mapping: KnowledgeAssertion proposed/under_review->PROPOSED, promoted->PROMOTED, challenged->CHALLENGED, retracted->RETRACTED, superseded->RETRACTED+SUPERSEDES, rejected->REJECTED; DelegationGrant revocation feeds source_revoked handling. No contradiction. No SHACL mapping yet for attack/support/justification relations (explicit gap).",
+    "platform_plan": "Adopt contract v1.0.0 + state machine as the MVP knowledge-layer boundary (allows G-06 decision). Implement threshold checklist, challenge SLA handling, revocation propagation, derived-view projection with epoch fail-closed, idempotency keys, atomic journal. Roll back by re-running preserved history under a prior contract version. Block production on S1-012 calibration and S1-013 operator validation.",
+    "progress": "Phase A complete: dependency gate PROVEN; 5 sources frozen; 7 contracts/schemas frozen and hashed; 60-case oracle frozen (canonicalized, per-case SHA-256); stdlib runner/evaluator/compare sensitivity tooling with 46/46 regressions (RED->GREEN recorded); two process-separated runs (18 cells); comparison, metrics, probes, sensitivity, ENVIRONMENT, decision, roadmap; FLOW-11 bundle; candidate record READY_FOR_CANONICALIZATION. Open: Phase B local canonical round, then closure.",
+    "research_plan": "Compare minimal promote/challenge gate vs argumentation vs TMS for the first AgentOS knowledge layer. Frozen contract v1.0.0, 60-case corpus x 3 designs x 3 seeds, two process-separated runs on one clean commit/tree, fail-closed evaluator with 11 exact-zero hard gates, probes A-H, 220-composition sensitivity. Verdict cap PASS_WITH_LIMITS. Phase B (local canonical harness) required before closure.",
+    "source_registry": "5 frozen snapshots (source-registry.json, schema agentos.s1-011.source-registry/v1): S1-005 synthesis/gaps (G-06 argumentation/TMS gap), S1-003 shapes-v3.ttl (executable ontology), S1-003 fixtures.json (lifecycle fixtures), S1-001 bundle.json (promotion policy evidence), 15-20 hypothesis review (operator/UX input). Dependencies S1-001 (pass_with_limits, rev 1) and S1-003 (pass, rev 24) proven from tracked Git bytes (dependency-gate.json); live DB recheck deferred to Phase B.",
+    "synthesis_and_gaps": "Minimal gate passes everything; naive argumentation fails A/D/G (correlated support promotes; transitive support launders); naive TMS additionally fails authority (33 auto-revisions without governance decisions). Shared plumbing passes B/C/E/F/H for all. Gaps: cyclic attack-graph convergence UNKNOWN; UNDECIDED handling unexercised; real independence calibration is S1-012; operator comprehension unmeasured until S1-013."
+  },
+  "audit": {
+    "dependency_gate": {
+      "canonical_db_recheck_required": true,
+      "verdict": "PROVEN"
+    },
+    "frozen_hashes": {
+      "canonicalize_corpus.py": "2fb16ea8c24b8bd0f7fa298b26d8c717ed77f817cb0c4179f94a3e30bb721477",
+      "cases-a.src.json": "ddc7307c7e4689851c586ea6b6251625d6e163f5994180083bb6d34e01607fe5",
+      "cases-b.src.json": "a55bb04e9175daedb8d28fca44ae4efdb0bc0b5ab462bed43148dc3f6cb97e08",
+      "cases.json": "2a234621f10abce57600a2994df6c5244ba88f60526b52807a5fdaae31ef046a",
+      "compare_runs.py": "1aafa9cac1ecaa00b854b71a75664bee0b3b4c0f74a5aebb4cd79b0ede0ac29a",
+      "dependency_gate.py": "ef7d590191c41a46b7c71b2c7f6961b2f362be6a7b25a4b8dd7ac673d01d8cb2",
+      "design-alternatives.json": "4ebf23262e39ab446089a717e5e05378a674ee5b3bab52774938abd09325dceb",
+      "evaluator.py": "3872fd2793080a6aaf0c57729b856e4b68125a41369183aade4c6de329206c31",
+      "knowledge-gate-contract.json": "3dd77de5299c78fcabd4e514da013596b491a340472c1870526d45103a6559d0",
+      "knowledge-record.schema.json": "f5ab71684f3e7d67cb767a186f3886da94c9c42a58ec02c74c9c96e4325a125d",
+      "rubric.json": "598997d6a8735d05efa29018a7e912aec8cf5c398e0c6486bc1317602338c929",
+      "runner.py": "1705353444d6603c05ed399536d9299fd0dd164f65682ba872fe2cbf54629f3c",
+      "source-registry.json": "f420f0e1c1ad4937fc74dd127eb79f4b039e5ee618be03c28a118c6983ba4164",
+      "state-machine.json": "6ca1a0b42eecf8a11eb70399ad3d3fd801482ac4f97464bea947d2e66410e2e5"
+    },
+    "limitations": [
+      "tracked-Git evidence only; no live DB claims",
+      "provisional threshold uncalibrated (S1-012)",
+      "operator model is simulation, not a human study (S1-013)",
+      "no cyclic attack graphs in corpus",
+      "no SHACL mapping for attack/support/justification"
+    ],
+    "metrics_verdicts": {
+      "argumentation": "FAIL",
+      "minimal-gate": "PASS",
+      "tms": "FAIL"
+    },
+    "runs": {
+      "cells": [
+        "argumentation-11011",
+        "argumentation-22022",
+        "argumentation-33033",
+        "minimal-gate-11011",
+        "minimal-gate-22022",
+        "minimal-gate-33033",
+        "tms-11011",
+        "tms-22022",
+        "tms-33033"
+      ],
+      "commit": [
+        "2b64743c362a01f509fac3a110b9a50d065173de"
+      ],
+      "trees": [
+        "beb512200e4aa286caea07312e47a22d09130b06"
+      ]
+    },
+    "sensitivity_flips": 0,
+    "sensitivity_winner": "minimal-gate"
+  },
+  "claims": [
+    {
+      "id": "CL-01",
+      "refs": [
+        "results/metrics.json:minimal-gate"
+      ],
+      "text": "Minimal gate passes all hard safety gates",
+      "verdict": "supported"
+    },
+    {
+      "id": "CL-02",
+      "refs": [
+        "results/metrics.json:argumentation",
+        "results/probes.json:argumentation"
+      ],
+      "text": "Naive argumentation promotes correlated and transitive support (probes A/D/G fail)",
+      "verdict": "supported"
+    },
+    {
+      "id": "CL-03",
+      "refs": [
+        "results/metrics.json:tms",
+        "results/probes.json:tms"
+      ],
+      "text": "Naive TMS revises beliefs without governance decisions (authority expansions) and shares the acceptability weakness",
+      "verdict": "supported"
+    },
+    {
+      "id": "CL-04",
+      "refs": [
+        "results/sensitivity.json"
+      ],
+      "text": "Winner robust to all 220 sensitivity compositions",
+      "verdict": "supported"
+    },
+    {
+      "id": "CL-05",
+      "refs": [
+        "results/decision.md",
+        "results/roadmap.md"
+      ],
+      "text": "Production blocked pending S1-012 calibration and S1-013 operator study",
+      "verdict": "limitation"
+    }
+  ],
+  "config": {
+    "min_source_count": 4,
+    "required_artifacts": [
+      "research_plan",
+      "source_registry",
+      "feature_catalog",
+      "architecture_models",
+      "mental_model",
+      "ontology",
+      "mathematical_model",
+      "synthesis_and_gaps",
+      "independent_audit",
+      "platform_plan",
+      "progress"
+    ],
+    "verdict_cap": "PASS_WITH_LIMITS"
+  },
+  "schema": "agentos.s1-011.bundle/v1",
+  "sources": [
+    {
+      "bytes": 10808,
+      "id": "SRC-S1-011-01",
+      "origin_path": "research/tickets/stage-1/S1-005/results/evidence/snapshots/70_synthesis_and_gaps-029eb11344b7.md",
+      "sha256": "029eb11344b7f8175e223fb6336d094d39de939790f4700e17afdd4514c0cc40",
+      "snapshot_path": "research/tickets/stage-1/S1-011/snapshots/snap-01-s1-005-synthesis-gaps.md"
+    },
+    {
+      "bytes": 9209,
+      "id": "SRC-S1-011-02",
+      "origin_path": "research/tickets/stage-1/S1-003/shapes-v3.ttl",
+      "sha256": "8f3a4bf466c14ff67bc42276a12dd398ce056cb7d93b430dbca2c47f640a3c1d",
+      "snapshot_path": "research/tickets/stage-1/S1-011/snapshots/snap-02-s1-003-shapes-v3.ttl"
+    },
+    {
+      "bytes": 11993,
+      "id": "SRC-S1-011-03",
+      "origin_path": "research/tickets/stage-1/S1-003/fixtures.json",
+      "sha256": "7c2854632933901bafc25cb4107f0b06b23dc1f7e20d3f0ad85bac17b6c2b211",
+      "snapshot_path": "research/tickets/stage-1/S1-011/snapshots/snap-03-s1-003-fixtures.json"
+    },
+    {
+      "bytes": 31498,
+      "id": "SRC-S1-011-04",
+      "origin_path": "research/tickets/stage-1/S1-001/bundle.json",
+      "sha256": "1e700c58eb80c4c22a0cbcd0045f6de4a841e19c56b41c259a433c87609df172",
+      "snapshot_path": "research/tickets/stage-1/S1-011/snapshots/snap-04-s1-001-bundle.json"
+    },
+    {
+      "bytes": 60514,
+      "id": "SRC-S1-011-05",
+      "origin_path": "research/personal_agent_hub_15_20_hypothesis_review_2026.md",
+      "sha256": "5a8dbbead5a6e49afc2c72fdce5e144cd4be12ef8029e1df03f5ff0f60f752a2",
+      "snapshot_path": "research/tickets/stage-1/S1-011/snapshots/snap-05-hypothesis-review-15-20.md"
+    }
+  ],
+  "ticket": "S1-011"
+}
