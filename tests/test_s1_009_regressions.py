@@ -328,6 +328,10 @@ class TestProcessSeparatedRerun(unittest.TestCase):
                 self.assertRegex(prov.get("commit_sha", ""), r"^[0-9a-f]{40}$")
                 self.assertRegex(prov.get("tree_sha", ""), r"^[0-9a-f]{40}$")
                 self.assertEqual(prov.get("input_manifest_sha256"), manifest_sha)
+                self.assertTrue(prov.get("evaluator_clean"))
+                self.assertEqual(prov.get("evaluator_commit_sha"), prov.get("commit_sha"))
+                self.assertEqual(prov.get("evaluator_tree_sha"), prov.get("tree_sha"))
+                self.assertEqual(prov.get("evaluator_input_manifest_sha256"), manifest_sha)
         a = summaries["run-a"]
         b = summaries["run-b"]
         self.assertNotEqual(a["process_provenance"].get("runner_pid"),
@@ -805,6 +809,44 @@ class TestFailClosedMutations(unittest.TestCase):
             )
             self.assertEqual(comparison["verdict"], "FAIL")
             self.assertIn("same_runner_pid", {m["type"] for m in comparison["mismatches"]})
+
+    def test_comparator_rejects_dirty_evaluator_provenance(self):
+        runner_mod = importlib.util.spec_from_file_location(
+            "runner_s1_009_evaluator_provenance", str(ROOT / "runner.py")
+        )
+        runner = importlib.util.module_from_spec(runner_mod)
+        runner_mod.loader.exec_module(runner)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            rows = [{"case_id": "A1", "decision_actual": "ACCEPT",
+                     "verdict": "PASS", "envel_hash": "h"}]
+            (tmp / "a.json").write_text(json.dumps(rows))
+            (tmp / "b.json").write_text(json.dumps(rows))
+            hashes = {key: "a" * 64 for key in runner.REQUIRED_HASH_KEYS}
+            def run(path, pid, evaluator_clean):
+                return {
+                    "executor_id": str(pid), "nonce": str(pid),
+                    "results_path": str(path), "hashes": hashes,
+                    "invocation_digest": str(pid), "output_root": str(pid),
+                    "input_manifest_sha256": "m",
+                    "process_provenance": {
+                        "runner_pid": pid, "evaluator_pid": pid + 100,
+                        "commit_sha": "b" * 40, "tree_sha": "c" * 40,
+                        "dirty": False, "clean": True,
+                        "input_manifest_sha256": "m",
+                        "evaluator_clean": evaluator_clean,
+                        "evaluator_commit_sha": "b" * 40,
+                        "evaluator_tree_sha": "c" * 40,
+                        "evaluator_input_manifest_sha256": "m",
+                    },
+                }
+            comparison = runner.compare_runs(
+                run(tmp / "a.json", 10, False),
+                run(tmp / "b.json", 20, True),
+            )
+            self.assertEqual(comparison["verdict"], "FAIL")
+            self.assertIn("dirty_evaluator",
+                          {m["type"] for m in comparison["mismatches"]})
 
 
 if __name__ == "__main__":

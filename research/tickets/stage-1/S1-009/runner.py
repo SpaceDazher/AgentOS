@@ -135,6 +135,14 @@ def run_evaluator(corpus: str, out_dir: str, executor: str, nonce: str,
     except json.JSONDecodeError as exc:
         raise RuntimeError(f"evaluator produced invalid JSON: {result.stdout[-500:]}") from exc
     eval_prov = summary.get("process_provenance", {})
+    for field in ("clean", "commit_sha", "tree_sha", "input_manifest_sha256"):
+        if field not in eval_prov:
+            raise RuntimeError(f"evaluator omitted process provenance: {field}")
+    if eval_prov.get("clean") is not True:
+        raise RuntimeError("evaluator process reports a dirty tree")
+    for field in ("commit_sha", "tree_sha", "input_manifest_sha256"):
+        if eval_prov.get(field) != proc_prov.get(field):
+            raise RuntimeError(f"evaluator provenance changed during run: {field}")
     merged = dict(proc_prov)
     merged["evaluator_pid"] = eval_prov.get("evaluator_pid")
     merged["evaluator_ppid"] = eval_prov.get("evaluator_ppid")
@@ -228,7 +236,8 @@ def compare_runs(run_a: dict, run_b: dict) -> dict:
     provenance_complete = True
     if a_prov or b_prov:
         required_prov = ("runner_pid", "evaluator_pid", "commit_sha", "tree_sha",
-                         "input_manifest_sha256")
+                         "input_manifest_sha256", "evaluator_commit_sha",
+                         "evaluator_tree_sha", "evaluator_input_manifest_sha256")
         for label, prov in (("a", a_prov), ("b", b_prov)):
             for field in required_prov:
                 if not prov.get(field):
@@ -238,10 +247,15 @@ def compare_runs(run_a: dict, run_b: dict) -> dict:
         for label, prov in (("a", a_prov), ("b", b_prov)):
             if prov.get("dirty") is True or prov.get("clean") is not True:
                 mismatches.append({"type": "dirty_run", "run": label})
+            if prov.get("evaluator_clean") is not True:
+                mismatches.append({"type": "dirty_evaluator", "run": label})
         for field, mismatch_type in (
             ("commit_sha", "mixed_commit"),
             ("tree_sha", "mixed_tree"),
             ("input_manifest_sha256", "mixed_input_manifest"),
+            ("evaluator_commit_sha", "mixed_evaluator_commit"),
+            ("evaluator_tree_sha", "mixed_evaluator_tree"),
+            ("evaluator_input_manifest_sha256", "mixed_evaluator_input_manifest"),
         ):
             av, bv = _provenance_value(run_a, field), _provenance_value(run_b, field)
             if av and bv and av != bv:
@@ -277,7 +291,14 @@ def compare_runs(run_a: dict, run_b: dict) -> dict:
         _provenance_value(run_a, "commit_sha") == _provenance_value(run_b, "commit_sha") and
         _provenance_value(run_a, "tree_sha") == _provenance_value(run_b, "tree_sha") and
         _provenance_value(run_a, "input_manifest_sha256") ==
-        _provenance_value(run_b, "input_manifest_sha256")
+        _provenance_value(run_b, "input_manifest_sha256") and
+        _provenance_value(run_a, "evaluator_commit_sha") ==
+        _provenance_value(run_b, "evaluator_commit_sha") and
+        _provenance_value(run_a, "evaluator_tree_sha") ==
+        _provenance_value(run_b, "evaluator_tree_sha") and
+        _provenance_value(run_a, "evaluator_input_manifest_sha256") ==
+        _provenance_value(run_b, "evaluator_input_manifest_sha256") and
+        a_prov.get("evaluator_clean") is True and b_prov.get("evaluator_clean") is True
     )
     if not separation and (a_prov or b_prov):
         mismatches.append({"type": "process_separation_unverified"})

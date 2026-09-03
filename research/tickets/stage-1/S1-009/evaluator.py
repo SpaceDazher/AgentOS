@@ -1054,6 +1054,13 @@ def _validate_corpus(corpus: dict, corpus_path: Path) -> dict[str, Any]:
     actual_evaluator_sha = sha256_file(Path(__file__))
     if evaluator_sha != actual_evaluator_sha:
         errors.append(f"evaluator sha256 mismatch: manifest={evaluator_sha} actual={actual_evaluator_sha}")
+    runner_path = root / "runner.py"
+    runner_sha = manifest.get("runner_sha256", "")
+    actual_runner_sha = sha256_file(runner_path) if runner_path.is_file() else ""
+    if not re.fullmatch(r"[0-9a-f]{64}", str(runner_sha)):
+        errors.append("runner sha256 missing real sha256")
+    elif actual_runner_sha != runner_sha:
+        errors.append(f"runner sha256 mismatch: manifest={runner_sha} actual={actual_runner_sha}")
 
     # Validate the source archive manifest and local snapshot bytes.  A source
     # without a real file binding is not evidence even when its metadata looks

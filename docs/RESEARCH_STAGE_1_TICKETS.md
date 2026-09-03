@@ -772,32 +772,32 @@ python -m agentos.cli research-plan --topic "S1-008 revocation latency validatio
 
 ### S1-009 — MCP/A2A delegation and knowledge semantics roadmap
 
-- **Status:** `PASS_WITH_LIMITS` — canonical DB revision 8; series
-  `rseries_QFVRXNRK0HKQ4AE101M1JGACH4`, goal
-  `goal_434ZK1M3X9F4ZKP301M1JGACES`, evaluation
-  `reval_SVYWTVH2TJ6JZDJB01M1JGACKW`, artifact chain
-  `4184ca09e4648fa11cd9ca303baebf50bacdbfd58758e6783a8b0f385b811ff4`,
-  manifest `564f3063228eb34d0637aecdf6f647e242bfcfcd197a520a3fdfef865780af02`;
+- **Status:** `PASS_WITH_LIMITS` — canonical DB revision 9; series
+  `rseries_957V4PYH44F52NB701M1JHAEAB`, goal
+  `goal_KN6Z6CBYJCC9B7Q901M1JHAE9J`, evaluation
+  `reval_76QCM8MNSH7QW91S01M1JHAEBY`, artifact chain
+  `b267202c5e7c4266584a9f882ae45b2d16b104979eb5cfbffd75b963898b3168`,
+  manifest `edf1eedcd47dc5e6ee5387cdfc0f092ed254b9e0621adab16c8a8839a93fdf71`;
   `chain_fresh=true`, `latest_evaluation_valid=true`.
 - **Reproducible measurement:** clean commit
-  `79ababfab74228b10d6d8d503f38968b394e4a70`, tree
-  `34a713bb7affda94a212c10f520b2954c5f054c9`, input manifest
-  `a574defb9314eed7112696ce012a100785499ea19b16db24c6248fd28a8e135c`;
+  `6415d5943b15d12599b9ac53f9353dc06bee2085`, tree
+  `c669b053b53769a9d521e75ac5da08c6190b31ea`, input manifest
+  `c1a152b7cbefe6d5e4879c3d61734f78bb0ec466e452e102c1985d99e60bc86d`;
   top-level A/B invocations are separate processes with distinct PIDs,
   invocation digests, executors, and output roots, and compare `PASS` with
   40/40 cases. Evaluator hash
-  `8b8baf4e15a235f2784a452c8f8937b26b9a2ce7d2f072c9667a5f29277390f6`;
+  `677837698d95ebc1f5c37ec2f99806fa241311ddb0134c709a22395c1aaa901d`;
   capability path executed 13/13 mappings across 12 distinct rows.
 - **Tracked evidence:** ticket pack
-  `research/tickets/stage-1/S1-009/tracked-packs/ticket/421e5e1d0a6a3aba12bb6778dda6e52daa5a36222f8ba8cd65ed504bafe30fc0.json`
-  (file `421e5e1d0a6a3aba12bb6778dda6e52daa5a36222f8ba8cd65ed504bafe30fc0`,
-  payload `376ffc1dc58136bb60ef4b5db768f0f4ad935e7852c50fe341a28a19e1ce8b0f`,
-  pack `0be951415e6e8b89b2fca0fd8e4ee8cbc6d324aeb1137a37553b44fca6bd8795`);
+  `research/tickets/stage-1/S1-009/tracked-packs/ticket/7a01f5c3f13fbc889d1a43b4902d26cf117282b039347c84f9a23918507ddac5.json`
+  (file `7a01f5c3f13fbc889d1a43b4902d26cf117282b039347c84f9a23918507ddac5`,
+  payload `900ea432ada32e4644aec4c8b206500ec8ce851a7900c2e5dd0e6898b2abe755`,
+  pack `f54250276d54a87f986f4ce91b578aa984450be9b6a2b861874fd5234b97de8b`);
   canonical pack
-  `research/tickets/stage-1/S1-009/tracked-packs/canonical/09b6be08594f268f117d7bc85629fdca44089ddad563b736ed23dc29a90952ff.json`
-  (file `09b6be08594f268f117d7bc85629fdca44089ddad563b736ed23dc29a90952ff`,
-  payload `18cd58ad5f859fd4e49b407dac83c5d4705959e6835c1a681cc51bf62b16a794`,
-  pack `6dccf67199917fccd6a5f7fcedf9d3d5a9e0092daca4b982bbde48d9f22c294b`).
+  `research/tickets/stage-1/S1-009/tracked-packs/canonical/a190bb84a9043dde0057b824b75531545324ce590b0c39a2baea93518ba4ed6a.json`
+  (file `a190bb84a9043dde0057b824b75531545324ce590b0c39a2baea93518ba4ed6a`,
+  payload `2c58d98ccc83823659ac8e4a5244b5a401b637281e7ba4e46b8b12fc22fe06cd`,
+  pack `66635c18d5eab299c2a6dd3ca05904dc6318eeff1a2a9c75a1fc7ddf345fcbad`).
 - **Source limits:** byte-bound official MCP `2026-07-28` and A2A `1.0.0`
   snapshots plus independent arXiv `2504.16736v3` are tracked; exact bytes
   and provenance are in `protocol-snapshot-manifest.json`. Same-host rather
