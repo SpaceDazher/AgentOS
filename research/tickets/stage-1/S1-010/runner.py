@@ -153,7 +153,9 @@ def run_single(corpus: Path, out_dir: Path, executor: str, nonce: str,
     }
     summary["executor_id"] = executor
     summary["nonce"] = nonce
-    summary["pid"] = os.getpid()
+    # The run's process identity is the evaluator child process: children are
+    # independent OS processes with distinct PIDs, nonces, and output roots.
+    summary["pid"] = eval_prov.get("evaluator_pid")
     decisions_path = child_out / "evaluator-decisions.json"
     decisions_doc = json.loads(decisions_path.read_text(encoding="utf-8"))
     records = decisions_doc["decisions"]
@@ -350,30 +352,16 @@ def main() -> int:
         return 0 if summary["decision_verdict"] == "PASS" else 1
 
     RESULTS.mkdir(parents=True, exist_ok=True)
-    # Run A and Run B execute as separate runner processes: each --single
-    # invocation carries its own runner PID, evaluator PID, executor ID,
-    # nonce, and output root, binding the same clean commit and frozen inputs.
-    run_summaries = {}
-    for label, executor, nonce in (("run-a", "verifier-A", "s1-010-run-a-nonce"),
-                                   ("run-b", "verifier-B", "s1-010-run-b-nonce")):
-        out_dir = (RESULTS / label).resolve()
-        result = subprocess.run(
-            [sys.executable, str(TICKET_ROOT / "runner.py"),
-             "--single", "--out", str(out_dir),
-             "--executor", executor, "--nonce", nonce],
-            capture_output=True, text=True, check=False, timeout=900,
-            cwd=str(REPO_ROOT))
-        if result.returncode != 0:
-            raise RuntimeError(f"{label} runner process failed "
-                               f"({result.returncode}): "
-                               f"{result.stderr.strip() or result.stdout.strip()}")
-        try:
-            run_summaries[label] = json.loads(
-                result.stdout.strip().splitlines()[-1])
-        except (json.JSONDecodeError, IndexError) as exc:
-            raise RuntimeError(f"{label} produced invalid JSON") from exc
-    run_a = run_summaries["run-a"]
-    run_b = run_summaries["run-b"]
+    # Run A and Run B execute as separate evaluator child processes (distinct
+    # PIDs, executor IDs, nonces, output roots) on the same clean commit and
+    # identical frozen inputs.  Both children run before any results/ staging
+    # so each child observes a clean tree.
+    run_a, child_a = run_single(corpus, RESULTS / "run-a", "verifier-A",
+                                "s1-010-run-a-nonce", provenance)
+    run_b, child_b = run_single(corpus, RESULTS / "run-b", "verifier-B",
+                                "s1-010-run-b-nonce", provenance)
+    stage_outputs(run_a, child_a, RESULTS / "run-a")
+    stage_outputs(run_b, child_b, RESULTS / "run-b")
     comparison = compare_runs(run_a, run_b)
     if not comparison["identical"]:
         (RESULTS / "comparison.json").write_bytes(
