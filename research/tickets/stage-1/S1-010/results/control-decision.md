@@ -28,8 +28,8 @@ both runs.
 
 - Frozen 56-case corpus (14 benign / 14 malicious manifest / 14 malicious
   output / 14 near-miss; 31 critical), hash-bound via `corpus-manifest.json`.
-- Two process-separated runs on commit `COMMIT_SHA` (clean tree):
-  verifier-A PID 2819 and verifier-B PID 2830, distinct nonces and output
+- Two process-separated runs on commit `77e81738b4b3b49d3281885cbe15a15f41e8a02d` (clean tree):
+  verifier-A PID 3237 and verifier-B PID 3248, distinct nonces and output
   roots, byte-identical decision sets (`decisions_sha256` equal).
 - Confusion matrix (truth × treatment): TP=34, FN=0, raw FP=3, TN=19. All
   three raw benign "blocked" cases are oracle-sanctioned routings

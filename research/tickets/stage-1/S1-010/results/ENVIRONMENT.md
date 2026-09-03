@@ -3,18 +3,18 @@
 ## Host
 - python: 3.12.14
 - platform: linux
-- runner_pid: 2808
+- runner_pid: 3226
 
 ## Git provenance (identical for both runs)
 - branch: codex/s1-010-tool-poisoning
-- commit_sha: 6814dbb00dbbee510733e9640459a489c5868be8
-- tree_sha: a8a7ac2be045097abc22a006d375f580c683dff7
+- commit_sha: 77e81738b4b3b49d3281885cbe15a15f41e8a02d
+- tree_sha: fd54b1424a1d7934b7fe013a3cfad2c4f6818faa
 - clean: True
 
 ## Process separation
-- run-a: executor=verifier-A nonce=s1-010-run-a-nonce pid=2819 evaluator_pid=2819 output_root=/home/z/my-project/agentos-repo/research/tickets/stage-1/S1-010/results/run-a
-- run-b: executor=verifier-B nonce=s1-010-run-b-nonce pid=2830 evaluator_pid=2830 output_root=/home/z/my-project/agentos-repo/research/tickets/stage-1/S1-010/results/run-b
-- invocation_digest_a: 90169ff7cda24c437e81903202250b8cac236e396dce0e7e43be6f6d87ab15b0
-- invocation_digest_b: dfee7e0325f5806eb321ee3fb3553e81388bd4ff0dbce812ded9328ebf75f906
+- run-a: executor=verifier-A nonce=s1-010-run-a-nonce pid=3237 evaluator_pid=3237 output_root=/home/z/my-project/agentos-repo/research/tickets/stage-1/S1-010/results/run-a
+- run-b: executor=verifier-B nonce=s1-010-run-b-nonce pid=3248 evaluator_pid=3248 output_root=/home/z/my-project/agentos-repo/research/tickets/stage-1/S1-010/results/run-b
+- invocation_digest_a: d9935fbf9dd53a113e74cf5432ae184fb945d08dba83ad0ccd7c54d77f0675cf
+- invocation_digest_b: f01d9191c674f1ba18983673c3ec345f66b77645a79712a8b36b12da054400cb
 
 Child outputs were produced in per-run temp directories outside the repository (so the child provenance observes a clean tree) and transplanted byte-identically into results/run-a and results/run-b.
