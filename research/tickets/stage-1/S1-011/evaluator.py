@@ -140,20 +140,26 @@ def check_rows(rows: list, oracle: dict) -> tuple:
                     (math.isnan(value) or math.isinf(value)):
                 problems.append(f"row {i} {numkey} is NaN/Infinity")
         cid = row.get("case_id")
-        seen.setdefault(cid, []).append(i)
-    dupes = sorted(k for k, v in seen.items() if len(v) > 1)
-    for cid in dupes:
-        problems.append(f"duplicate case {cid}")
-    want_ids = {c["case_id"] for c in oracle["cases"]}
+        seen.setdefault((cid, row.get("seed")), []).append(i)
+    dupes = sorted(f"{cid}@{seed}" for (cid, seed), v in seen.items()
+                   if len(v) > 1)
+    for dup in dupes:
+        problems.append(f"duplicate case {dup}")
+    seeds = {row.get("seed") for row in rows
+             if isinstance(row, dict) and isinstance(row.get("seed"), int)
+             and not isinstance(row.get("seed"), bool)}
+    want_ids = {(c["case_id"], seed) for c in oracle["cases"]
+                for seed in (seeds or {None})}
     got_ids = set(seen)
-    for cid in sorted(want_ids - got_ids):
-        problems.append(f"missing case {cid}")
-    for cid in sorted(got_ids - want_ids):
-        problems.append(f"extra case {cid}")
+    for cid, seed in sorted(want_ids - got_ids, key=str):
+        problems.append(f"missing case {cid}@{seed}")
+    for cid, seed in sorted(got_ids - want_ids, key=str):
+        problems.append(f"extra case {cid}@{seed}")
     by_id = {}
     for row in rows:
-        if isinstance(row, dict) and row.get("case_id") in want_ids:
-            by_id.setdefault(row["case_id"], row)
+        if isinstance(row, dict) and row.get("case_id") in {
+                c["case_id"] for c in oracle["cases"]}:
+            by_id.setdefault((row["case_id"], row.get("seed")), row)
     return problems, by_id
 
 
@@ -186,8 +192,9 @@ def evaluate(run_dir: Path) -> dict:
     challenge_backlog = 0
     resolution_steps = 0
 
-    for cid, case in oracle.items():
-        row = by_id[cid]
+    for (cid, _seed) in sorted(by_id, key=str):
+        row = by_id[(cid, _seed)]
+        case = oracle[cid]
         exp = case["expected"]
         cls = case["class"]
         cell = per_class.setdefault(cls, {"tp": 0, "tn": 0, "fp": 0,
@@ -314,7 +321,9 @@ def evaluate(run_dir: Path) -> dict:
 def probes(run_dir: Path) -> dict:
     corpus = load_json(HERE / "cases.json")
     raw = load_json(run_dir / "raw-observations.json")
-    rows = {r["case_id"]: r for r in raw.get("rows", [])}
+    grouped: dict = {}
+    for row in raw.get("rows", []):
+        grouped.setdefault(row.get("case_id"), []).append(row)
     oracle = {c["case_id"]: c for c in corpus["cases"]}
     out = {"schema": "agentos.s1-011.probes/v1",
            "design": raw.get("design"), "seed": raw.get("seed"),
@@ -323,18 +332,24 @@ def probes(run_dir: Path) -> dict:
         detail = []
         ok = True
         for cid in cids:
-            row = rows.get(cid)
+            candidates = grouped.get(cid, [])
             exp = oracle[cid]["expected"]
-            match = row is not None and (
-                row["decision"], row["transition"], row["reason_code"],
-                row["view_visible"]) == (
-                exp["decision"], exp["transition"], exp["reason_code"],
-                exp["view_visible"])
-            hist = row is not None and row["history_preserved"] is True
-            passed = bool(match and hist)
+            seed_results = []
+            for row in candidates:
+                match = (
+                    row["decision"], row["transition"],
+                    row["reason_code"],
+                    row["view_visible"]) == (
+                    exp["decision"], exp["transition"],
+                    exp["reason_code"], exp["view_visible"])
+                hist = row["history_preserved"] is True
+                seed_results.append(bool(match and hist))
+            passed = bool(candidates) and all(seed_results)
             ok = ok and passed
             detail.append({"case_id": cid, "passed": passed,
-                           "observed": row["decision"] if row else None,
+                           "seeds": len(candidates),
+                           "observed": candidates[0]["decision"]
+                           if candidates else None,
                            "expected": exp["decision"]})
         out["probes"][probe] = {"passed": ok, "cases": detail}
     out["all_pass"] = all(p["passed"] for p in out["probes"].values())

@@ -217,32 +217,100 @@ def load_run(run_dir: Path) -> dict:
             .get("rows", [])}
 
 
+def load_root(root: Path) -> dict:
+    """Load a run root: one subdir per design-seed cell, each a run dir."""
+    cells = {}
+    for sub in sorted(root.iterdir()):
+        if sub.is_dir() and (sub / "run-manifest.json").is_file():
+            cells[sub.name] = load_run(sub)
+    if not cells:
+        raise Inadmissible(f"no run cells under {root}")
+    return cells
+
+
+def merged_metrics(cells: dict, design: str, tmp: Path):
+    """Re-evaluate seed-merged rows for one design via the real path."""
+    import evaluator as evaluator_mod
+    rows = []
+    for name in sorted(cells):
+        for row in cells[name]["rows"]:
+            if row.get("design") == design:
+                rows.append(row)
+    if not rows:
+        raise Inadmissible(f"no rows for design {design}")
+    work = tmp / f"merged-{design}"
+    work.mkdir(parents=True, exist_ok=True)
+    (work / "raw-observations.json").write_text(json.dumps(
+        {"schema": "agentos.s1-011.raw-observations/v1", "design": design,
+         "seed": "merged", "rows": rows}, indent=2) + "\n",
+        encoding="utf-8")
+    metrics = evaluator_mod.evaluate(work)
+    probe_doc = evaluator_mod.probes(work)
+    return metrics, probe_doc, rows
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="S1-011 run comparison")
     parser.add_argument("--a", required=True)
     parser.add_argument("--b", required=True)
     parser.add_argument("--out", required=True)
     parser.add_argument("--sensitivity", required=True)
+    parser.add_argument("--metrics", required=True)
+    parser.add_argument("--probes", required=True)
     args = parser.parse_args()
-    doc_a = load_run(Path(args.a))
-    doc_b = load_run(Path(args.b))
+    root_a = Path(args.a)
+    root_b = Path(args.b)
+    cells_a = load_root(root_a)
+    cells_b = load_root(root_b)
+    if sorted(cells_a) != sorted(cells_b):
+        print(f"INADMISSIBLE: cell sets differ: {sorted(cells_a)} != "
+              f"{sorted(cells_b)}", file=sys.stderr)
+        return 1
+    pair_results = {}
     try:
-        result = compare(doc_a, doc_b)
+        for name in sorted(cells_a):
+            pair_results[name] = compare(cells_a[name], cells_b[name])
     except Inadmissible as exc:
         print(f"INADMISSIBLE: {exc}", file=sys.stderr)
         return 1
+    import tempfile
     alternatives = load_json(HERE / "design-alternatives.json")
     per_design: dict = {}
-    for doc in (doc_a, doc_b):
-        metrics = doc["metrics"]
-        design = metrics["design"]
-        if design in per_design:
-            continue
-        per_design[design] = dimension_values(metrics, alternatives)
+    merged_metrics_doc: dict = {}
+    merged_probes_doc: dict = {}
+    with tempfile.TemporaryDirectory() as td:
+        tmp = Path(td)
+        designs = sorted({r.get("design") for cell in cells_a.values()
+                          for r in cell["rows"]})
+        for design in designs:
+            rows_a = [r for cell in cells_a.values()
+                      for r in cell["rows"]
+                      if r.get("design") == design]
+            rows_b = [r for cell in cells_b.values()
+                      for r in cell["rows"]
+                      if r.get("design") == design]
+            if len(rows_a) != len(rows_b):
+                print(f"INADMISSIBLE: design {design} row count "
+                      f"{len(rows_a)} != {len(rows_b)}", file=sys.stderr)
+                return 1
+            metrics, probe_doc, _ = merged_metrics(cells_a, design, tmp)
+            if not metrics.get("admissible"):
+                print(f"INADMISSIBLE: merged {design} not admissible: "
+                      f"{metrics.get('problems')}", file=sys.stderr)
+                return 1
+            merged_metrics_doc[design] = metrics
+            merged_probes_doc[design] = probe_doc
+            per_design[design] = dimension_values(metrics, alternatives)
     sens = sensitivity(per_design)
+    commits = {cells_a[n]["manifest"]["commit"] for n in cells_a} | \
+        {cells_b[n]["manifest"]["commit"] for n in cells_b}
+    trees = {cells_a[n]["manifest"]["tree"] for n in cells_a} | \
+        {cells_b[n]["manifest"]["tree"] for n in cells_b}
     comparison = {"schema": "agentos.s1-011.comparison/v1",
-                  "run_a": doc_a["manifest"], "run_b": doc_b["manifest"],
-                  "matrix": result,
+                  "cells": sorted(cells_a),
+                  "pair_results": pair_results,
+                  "commits": sorted(commits),
+                  "trees": sorted(trees),
                   "design_values": per_design,
                   "sensitivity_winner": sens["winner"],
                   "sensitivity_flips": sens["flip_count"]}
@@ -250,8 +318,16 @@ def main() -> int:
                               encoding="utf-8")
     Path(args.sensitivity).write_text(json.dumps(sens, indent=2) + "\n",
                                       encoding="utf-8")
-    print(f"admissible rows={result['rows_compared']} "
-          f"identical={result['identical_rows']} "
+    Path(args.metrics).write_text(
+        json.dumps({"schema": "agentos.s1-011.metrics-merged/v1",
+                    "designs": merged_metrics_doc}, indent=2) + "\n",
+        encoding="utf-8")
+    Path(args.probes).write_text(
+        json.dumps({"schema": "agentos.s1-011.probes-merged/v1",
+                    "designs": merged_probes_doc}, indent=2) + "\n",
+        encoding="utf-8")
+    total_rows = sum(r["rows_compared"] for r in pair_results.values())
+    print(f"admissible cells={len(pair_results)} rows={total_rows} "
           f"winner={sens['winner']} flips={sens['flip_count']}")
     return 0
 

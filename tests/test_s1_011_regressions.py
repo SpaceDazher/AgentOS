@@ -392,7 +392,9 @@ class TestDeterminism(unittest.TestCase):
 
 class TestStdlibOnly(unittest.TestCase):
     def test_ticket_modules_import_stdlib_only(self):
-        allowed = set(sys.stdlib_module_names)
+        allowed = set(sys.stdlib_module_names) | {
+            "runner", "evaluator", "canonicalize_corpus",
+            "dependency_gate", "compare_runs"}
         for name in ("runner.py", "evaluator.py", "canonicalize_corpus.py",
                      "dependency_gate.py", "compare_runs.py"):
             path = S1011 / name
