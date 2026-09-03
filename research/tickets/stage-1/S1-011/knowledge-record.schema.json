@@ -1,0 +1,97 @@
+{
+  "$id": "agentos.s1-011.knowledge-record-schema/v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "S1-011 immutable knowledge records",
+  "description": "Append-only assertion/evidence/provenance/scope/decision/audit records. Correction creates a new record version with a SUPERSEDES link; history is never rewritten.",
+  "type": "object",
+  "required": ["assertion", "evidence", "provenance", "scope", "decision", "audit_event"],
+  "properties": {
+    "assertion": {
+      "type": "object",
+      "description": "A proposed knowledge claim. Immutable once recorded.",
+      "required": ["assertion_id", "claim_version", "text_digest", "status", "created_by", "created_at", "supersedes"],
+      "properties": {
+        "assertion_id": {"type": "string", "minLength": 1},
+        "claim_version": {"type": "integer", "minimum": 1},
+        "text_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$", "description": "SHA-256 of canonical claim text"},
+        "status": {"enum": ["PROPOSED", "PROMOTED", "CHALLENGED", "REJECTED", "RETRACTED"]},
+        "created_by": {"type": "string", "minLength": 1},
+        "created_at": {"type": "string"},
+        "supersedes": {"type": ["string", "null"], "description": "Previous assertion_id, or null for first version"}
+      },
+      "additionalProperties": false
+    },
+    "evidence": {
+      "type": "object",
+      "description": "One evidence record bound to exactly one claim version and scope.",
+      "required": ["evidence_id", "assertion_id", "claim_version", "scope", "provenance_id", "independence_group", "verified", "digest"],
+      "properties": {
+        "evidence_id": {"type": "string", "minLength": 1},
+        "assertion_id": {"type": "string", "minLength": 1},
+        "claim_version": {"type": "integer", "minimum": 1},
+        "scope": {"type": "string", "minLength": 1},
+        "provenance_id": {"type": "string", "minLength": 1},
+        "independence_group": {"type": "string", "minLength": 1, "description": "Declared independence group; correlated sources MUST share one group"},
+        "verified": {"type": "boolean"},
+        "digest": {"type": "string", "pattern": "^[0-9a-f]{64}$", "description": "SHA-256 of canonical evidence bytes"}
+      },
+      "additionalProperties": false
+    },
+    "provenance": {
+      "type": "object",
+      "description": "Source lineage for evidence. Same lineage means same source even under different URLs/labels.",
+      "required": ["provenance_id", "lineage", "source_status", "retrieved_at"],
+      "properties": {
+        "provenance_id": {"type": "string", "minLength": 1},
+        "lineage": {"type": "string", "minLength": 1, "description": "Canonical upstream lineage identifier"},
+        "source_status": {"enum": ["ACTIVE", "REVOKED"]},
+        "retrieved_at": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "scope": {
+      "type": "object",
+      "description": "Tenant/workspace/goal/scope binding carried by every read and write.",
+      "required": ["tenant", "workspace", "goal", "scope"],
+      "properties": {
+        "tenant": {"type": "string", "minLength": 1},
+        "workspace": {"type": "string", "minLength": 1},
+        "goal": {"type": "string", "minLength": 1},
+        "scope": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "decision": {
+      "type": "object",
+      "description": "One governance decision. Re-entry into PROMOTED always creates a NEW decision/version.",
+      "required": ["decision_id", "assertion_id", "claim_version", "transition", "reason_code", "actor_role", "policy_version", "idempotency_key", "supersedes_decision"],
+      "properties": {
+        "decision_id": {"type": "string", "minLength": 1},
+        "assertion_id": {"type": "string", "minLength": 1},
+        "claim_version": {"type": "integer", "minimum": 1},
+        "transition": {"type": "string", "minLength": 1},
+        "reason_code": {"type": "string", "minLength": 1},
+        "actor_role": {"enum": ["worker", "governance_gate", "operator"]},
+        "policy_version": {"type": "string", "minLength": 1},
+        "idempotency_key": {"type": "string", "minLength": 1},
+        "supersedes_decision": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "audit_event": {
+      "type": "object",
+      "description": "Audit event committed atomically with its transition, or not at all.",
+      "required": ["event_id", "decision_id", "event_type", "recorded_at", "actor_role", "reason_code"],
+      "properties": {
+        "event_id": {"type": "string", "minLength": 1},
+        "decision_id": {"type": "string", "minLength": 1},
+        "event_type": {"enum": ["PROPOSE", "PROMOTE", "CHALLENGE", "UPHOLD", "REJECT", "RETRACT", "REVOKE", "SUPERSEDE", "READ", "DERIVE", "REPLAY"]},
+        "recorded_at": {"type": "string"},
+        "actor_role": {"enum": ["worker", "governance_gate", "operator", "reader"]},
+        "reason_code": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

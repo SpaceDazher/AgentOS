@@ -1,0 +1,260 @@
+"""S1-011 run comparison and sensitivity analysis (stdlib only).
+
+compare(doc_a, doc_b) fail-closed: mixed commit/tree, dirty tree, input
+hash drift, or reused process identity (pid/ppid/invocation/nonce/
+executor/output-root equal) raises Inadmissible. Row sets must match
+exactly (same case/design/seed, no missing/extra/duplicate).
+
+sensitivity(scores) varies frozen rubric weights: each soft weight +-50%
+one at a time plus >=200 seeded normalized compositions (seed_base from
+rubric). Records winner flips, ties, and unknown-dependent winners.
+
+Scores combine measured safety (from metrics.json hard counters) with the
+frozen qualitative cells (design-alternatives.json); UNKNOWN abstains and
+is renormalized out. Operator workload stays a model estimate (S1-013).
+
+CLI:
+  py -3.12 compare_runs.py --a results/run-a --b results/run-b \\
+      --out results/comparison.json --sensitivity results/sensitivity.json
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import random
+import sys
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+
+
+class Inadmissible(Exception):
+    """Raised when a run pair cannot be honestly compared."""
+
+
+CONFIDENCE = {"high": 1.0, "medium": 0.6, "low": 0.3}
+
+
+def load_json(path: Path):
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def check_manifests(manifest_a: dict, manifest_b: dict) -> list:
+    problems = []
+    for key in ("commit", "tree"):
+        if manifest_a.get(key) != manifest_b.get(key):
+            problems.append(f"mixed {key}: {manifest_a.get(key)} != "
+                            f"{manifest_b.get(key)}")
+    for tag, manifest in (("A", manifest_a), ("B", manifest_b)):
+        if not manifest.get("clean_tree"):
+            problems.append(f"run {tag} tree is dirty")
+    hashes_a = manifest_a.get("input_hashes", {}) or {}
+    hashes_b = manifest_b.get("input_hashes", {}) or {}
+    names = set(hashes_a) | set(hashes_b)
+    if not names:
+        problems.append("no input hashes recorded")
+    for name in sorted(names):
+        if hashes_a.get(name) != hashes_b.get(name):
+            problems.append(f"input hash drift: {name}")
+    for key in ("pid", "ppid", "invocation_id", "nonce", "executor_id",
+                "output_root"):
+        if manifest_a.get(key) is not None and \
+                manifest_a.get(key) == manifest_b.get(key):
+            problems.append(f"reused process identity: {key}")
+    return problems
+
+
+def check_matrix(rows_a: list, rows_b: list) -> list:
+    problems = []
+
+    def signature(rows):
+        return sorted((r.get("case_id"), r.get("design"), r.get("seed"))
+                      for r in rows)
+
+    sig_a = signature(rows_a)
+    sig_b = signature(rows_b)
+    if len(sig_a) != len(set(sig_a)):
+        problems.append("run A has duplicate rows")
+    if len(sig_b) != len(set(sig_b)):
+        problems.append("run B has duplicate rows")
+    missing = sorted(set(sig_a) - set(sig_b))
+    extra = sorted(set(sig_b) - set(sig_a))
+    if missing:
+        problems.append(f"run B missing {len(missing)} rows, e.g. "
+                        f"{missing[:3]}")
+    if extra:
+        problems.append(f"run B has {len(extra)} extra rows, e.g. "
+                        f"{extra[:3]}")
+    return problems
+
+
+def compare(doc_a: dict, doc_b: dict) -> dict:
+    problems = check_manifests(doc_a.get("manifest", {}),
+                               doc_b.get("manifest", {}))
+    problems += check_matrix(doc_a.get("rows", []), doc_b.get("rows", []))
+    if problems:
+        raise Inadmissible("; ".join(problems))
+    rows_b = {(r.get("case_id"), r.get("design"), r.get("seed")): r
+              for r in doc_b.get("rows", [])}
+    identical = 0
+    total = 0
+    for row in doc_a.get("rows", []):
+        key = (row.get("case_id"), row.get("design"), row.get("seed"))
+        other = rows_b.get(key)
+        total += 1
+        if other is not None and {k: v for k, v in row.items()
+                                  if k not in ("output_sha256",)} == \
+                {k: v for k, v in other.items()
+                 if k not in ("output_sha256",)}:
+            identical += 1
+    return {"admissible": True, "rows_compared": total,
+            "identical_rows": identical,
+            "fully_reproducible": identical == total}
+
+
+def dimension_values(metrics: dict, alternatives: dict) -> dict:
+    design = metrics["design"]
+    counters = metrics["hard_counters"]
+    cells = alternatives["cells"][design]
+    values = {
+        "safety_fail_closed": 1.0 if all(
+            v == 0 for v in counters.values()) else 0.0,
+        "provenance_auditability": 1.0 if counters[
+            "history_loss_or_rewrite_count"] == 0 else 0.0,
+        "challenge_retraction": 1.0 if (
+            counters["missed_invalidation_count"] == 0 and
+            counters["false_retention_count"] == 0) else 0.0,
+        "replay_testability": 1.0 if (
+            counters["stale_replay_acceptance_count"] == 0 and
+            counters["resurrection_count"] == 0) else 0.0,
+    }
+    for dim in ("explainability", "operator_load", "complexity",
+                "ontology_shacl_fit", "migration_rollback",
+                "evolvability"):
+        confidence = cells[dim]["confidence"]
+        values[dim] = CONFIDENCE.get(confidence)
+    return values
+
+
+def score(values: dict, weights: dict) -> tuple:
+    total = 0.0
+    denom = 0.0
+    abstained = []
+    for dim, weight in weights.items():
+        value = values.get(dim)
+        if value is None:
+            abstained.append(dim)
+            continue
+        total += weight * value
+        denom += weight
+    if denom <= 0:
+        return 0.0, abstained
+    return round(total / denom, 6), abstained
+
+
+def base_weights() -> dict:
+    rubric = load_json(HERE / "rubric.json")
+    return {dim["id"]: float(dim["weight"]) for dim in rubric["dimensions"]}
+
+
+def pick_winner(scores: dict, weights: dict) -> tuple:
+    ranked = []
+    for design, values in sorted(scores.items()):
+        value, _ = score(values, weights)
+        ranked.append((value, design))
+    ranked.sort(reverse=True)
+    if len(ranked) > 1 and ranked[0][0] == ranked[1][0]:
+        return "TIE", ranked
+    return ranked[0][1], ranked
+
+
+def sensitivity(scores: dict, weights: dict | None = None,
+                seeded: int = 200) -> dict:
+    weights = weights or base_weights()
+    base_winner, base_ranked = pick_winner(scores, weights)
+    dims = sorted(weights)
+    sweeps = []
+    for dim in dims:
+        for delta in (-0.5, 0.5):
+            varied = dict(weights)
+            varied[dim] = round(weights[dim] * (1.0 + delta), 6)
+            winner, _ = pick_winner(scores, varied)
+            sweeps.append({"dim": dim, "delta": delta, "winner": winner,
+                           "flip": winner != base_winner})
+    rubric = load_json(HERE / "rubric.json")
+    seed_base = int(rubric["sensitivity"]["seed_base"])
+    compositions = []
+    for i in range(seeded):
+        rng = random.Random(seed_base + i)
+        raw = {dim: rng.random() for dim in dims}
+        total = sum(raw.values())
+        varied = {dim: round(value / total, 6) for dim, value in
+                  raw.items()}
+        winner, ranked = pick_winner(scores, varied)
+        compositions.append({"composition": i, "winner": winner,
+                             "flip": winner != base_winner,
+                             "unknown_dependent": winner == "TIE"})
+    flips = [s for s in sweeps if s["flip"]] + \
+        [c for c in compositions if c["flip"]]
+    return {"schema": "agentos.s1-011.sensitivity/v1",
+            "base_weights": weights,
+            "base_winner": base_winner,
+            "base_ranking": base_ranked,
+            "per_weight_sweeps": sweeps,
+            "seeded_compositions": compositions,
+            "winner": base_winner,
+            "flips": flips,
+            "flip_count": len(flips),
+            "tie_or_unknown": base_winner == "TIE" or any(
+                c["unknown_dependent"] for c in compositions)}
+
+
+def load_run(run_dir: Path) -> dict:
+    return {"manifest": load_json(run_dir / "run-manifest.json"),
+            "metrics": load_json(run_dir / "metrics.json"),
+            "probes": load_json(run_dir / "probes.json"),
+            "rows": load_json(run_dir / "raw-observations.json")
+            .get("rows", [])}
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="S1-011 run comparison")
+    parser.add_argument("--a", required=True)
+    parser.add_argument("--b", required=True)
+    parser.add_argument("--out", required=True)
+    parser.add_argument("--sensitivity", required=True)
+    args = parser.parse_args()
+    doc_a = load_run(Path(args.a))
+    doc_b = load_run(Path(args.b))
+    try:
+        result = compare(doc_a, doc_b)
+    except Inadmissible as exc:
+        print(f"INADMISSIBLE: {exc}", file=sys.stderr)
+        return 1
+    alternatives = load_json(HERE / "design-alternatives.json")
+    per_design: dict = {}
+    for doc in (doc_a, doc_b):
+        metrics = doc["metrics"]
+        design = metrics["design"]
+        if design in per_design:
+            continue
+        per_design[design] = dimension_values(metrics, alternatives)
+    sens = sensitivity(per_design)
+    comparison = {"schema": "agentos.s1-011.comparison/v1",
+                  "run_a": doc_a["manifest"], "run_b": doc_b["manifest"],
+                  "matrix": result,
+                  "design_values": per_design,
+                  "sensitivity_winner": sens["winner"],
+                  "sensitivity_flips": sens["flip_count"]}
+    Path(args.out).write_text(json.dumps(comparison, indent=2) + "\n",
+                              encoding="utf-8")
+    Path(args.sensitivity).write_text(json.dumps(sens, indent=2) + "\n",
+                                      encoding="utf-8")
+    print(f"admissible rows={result['rows_compared']} "
+          f"identical={result['identical_rows']} "
+          f"winner={sens['winner']} flips={sens['flip_count']}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

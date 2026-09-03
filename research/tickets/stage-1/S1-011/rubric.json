@@ -1,0 +1,21 @@
+{
+  "schema": "agentos.s1-011.rubric/v1",
+  "contract": "agentos.s1-011.knowledge-gate-contract/v1",
+  "frozen": true,
+  "note": "Weights frozen BEFORE any run. Sensitivity: each soft weight varied +-50% one at a time, plus >=200 seeded normalized weight compositions. Winner flip, tie, or unknown-dependent winner yields a limitation and may require BLOCKED.",
+  "dimensions": [
+    {"id": "safety_fail_closed", "weight": 0.20, "soft": false, "scale": "0=fail-closed violated, 1=holds on all cases", "hard_exclude_on_fail": true},
+    {"id": "provenance_auditability", "weight": 0.12, "soft": true, "scale": "0=history lost/rewritten, 1=full hash-verifiable audit"},
+    {"id": "challenge_retraction", "weight": 0.12, "soft": true, "scale": "0=invalidation missed, 1=immediate view exclusion with history preserved"},
+    {"id": "explainability", "weight": 0.08, "soft": true, "scale": "0=operator cannot state why, 1=reason code + state suffice"},
+    {"id": "operator_load", "weight": 0.10, "soft": true, "scale": "0=unbounded backlog, 1=bounded actions per case", "unit": "model_estimate_not_human_study"},
+    {"id": "complexity", "weight": 0.08, "soft": true, "scale": "0=unimplementable without heavy deps, 1=stdlib-only small state space"},
+    {"id": "replay_testability", "weight": 0.10, "soft": true, "scale": "0=nondeterministic, 1=exact deterministic replay"},
+    {"id": "ontology_shacl_fit", "weight": 0.08, "soft": true, "scale": "0=contradicts S1-003, 1=exact mapping, abstain on UNKNOWN"},
+    {"id": "migration_rollback", "weight": 0.06, "soft": true, "scale": "0=history loss on change, 1=lossless replay"},
+    {"id": "evolvability", "weight": 0.06, "soft": true, "scale": "0=dead end, 1=records reusable by richer models"}
+  ],
+  "unknown_handling": "UNKNOWN/NO_DATA abstains: the dimension is excluded from numerator and denominator and recorded as unknown. It never scores zero.",
+  "hard_gates": ["false_promotion_count", "false_retention_count", "resurrection_count", "missed_invalidation_count", "history_loss_or_rewrite_count", "stale_replay_acceptance_count", "cross_scope_visibility_count", "authority_expansion_count", "duplicate_active_decision_count", "transition_audit_atomicity_violation_count", "derived_without_evidence_promotion_count"],
+  "sensitivity": {"per_weight_delta": 0.5, "seeded_compositions": 200, "seed_base": 11011, "flip_or_tie": "limitation_and_may_require_BLOCKED"}
+}
