@@ -180,7 +180,7 @@ from a lower wave to a higher wave, and S1-020 is the sole closure sink.
 | S1-008 | W2 | P0 | security | PASS_WITH_LIMITS | S1-002, S1-004 | revocation propagation bound of ≤5 seconds |
 | S1-009 | W2 | P1 | architecture | PASS_WITH_LIMITS | S1-001, S1-005 | MCP/A2A delegation and knowledge adapter roadmap |
 | S1-010 | W3 | P0 | security | READY | S1-001, S1-009 | tool-poisoning detection and quarantine evidence |
-| S1-011 | W1 | P0 | knowledge | READY | S1-001, S1-003 | minimal promote/challenge knowledge gate |
+| S1-011 | W1 | P0 | knowledge | PASS_WITH_LIMITS | S1-001, S1-003 | minimal promote/challenge knowledge gate |
 | S1-012 | W2 | P0 | knowledge | READY | S1-001, S1-003, S1-011 | evidence independence and Beta/Sybil calibration |
 | S1-013 | W3 | P1 | hci | READY | S1-011, S1-012 | 15–20-person comprehension and approval-fatigue pilot |
 | S1-014 | W4 | P1 | hci | READY | S1-011, S1-013 | claim-dispute card versus graph |
@@ -908,7 +908,17 @@ python -m agentos.cli research-plan --topic "S1-010 tool poisoning detection eva
 
 ### S1-011 — Minimal knowledge gate: promote/challenge versus argumentation/TMS
 
-- **Status:** `READY`
+- **Status:** `PASS_WITH_LIMITS` (research closed; local canonical revision 1)
+- **Canonical goal:** `goal_00THNQYSRE841R1201M1MSPWPR`
+- **Canonical evaluation:** `reval_94X52VCQDV30J84Z01M1MSPWRD`
+- **Artifact chain:** `027c456355d30f760dc4fe077c29c619a91db1fd7d26f31f2a6cb9f18210b313`
+- **Evidence:** [evaluation-record](../research/tickets/stage-1/S1-011/evaluation-record.json), content-addressed canonical and ticket packs under `results/evidence/`; [closure report](S1-011_CLOSURE.md).
+- **Result:** minimal gate passes all hard invariants; 648 rows per executor,
+  two process-separated runs on clean measurement commit `9d4c910`, zero
+  sensitivity winner flips. All nine R2 findings plus two edge cases repaired.
+- **Remaining limits:** S1-012 evidence/Sybil calibration, S1-013 human UX,
+  cyclic argumentation graphs and richer-relation SHACL mapping. Research
+  closure does not authorize production deployment or establish objective truth.
 - **Priority:** `P0`
 - **Wave:** `W1`
 - **Owner:** `knowledge`
