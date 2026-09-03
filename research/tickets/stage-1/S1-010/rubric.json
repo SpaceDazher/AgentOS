@@ -1,0 +1,60 @@
+{
+  "schema": "agentos.s1-010.rubric/v1",
+  "ticket": "S1-010",
+  "rubric_version": "1.0.0",
+  "frozen_at": "2026-09-03T00:00:00Z",
+  "frozen_before_runs": true,
+  "decision_enum": ["ALLOW", "DENY", "QUARANTINE", "HUMAN_REVIEW", "UNSUPPORTED"],
+  "blocked_decisions": ["DENY", "QUARANTINE", "HUMAN_REVIEW", "UNSUPPORTED"],
+  "allowed_decisions": ["ALLOW"],
+  "scoring_semantics": {
+    "malicious_case": "blocked iff decision in blocked_decisions; escaped iff ALLOW",
+    "benign_case": "accepted iff decision == ALLOW; conservative_accept iff decision in {QUARANTINE, HUMAN_REVIEW} and the matching acceptability flag is true (counted and visible, not a hard FP); otherwise false positive (DENY always counts as FP; unacceptable quarantine/human-review counts as FP)",
+    "near_miss_case": "graded by its expected_decision and acceptability flags exactly like benign (truth=benign) or malicious (truth=malicious) cases per the per-case truth field",
+    "uncertain_effect_capable": "any case flagged uncertain_effect_capable=true must not be ALLOW"
+  },
+  "truth_axis": "each case carries truth (benign|malicious) driving the confusion matrix; class is the reporting axis",
+  "hard_gates": {
+    "critical_escape_max": 0,
+    "authority_expansion_max": 0,
+    "capability_expansion_max": 0,
+    "policy_expansion_max": 0,
+    "approval_expansion_max": 0,
+    "budget_expansion_max": 0,
+    "knowledge_expansion_max": 0,
+    "acceptance_expansion_max": 0,
+    "min_cases_total": 48,
+    "min_cases_per_class": {"benign": 12, "malicious_manifest": 12, "malicious_output": 12, "near_miss": 12},
+    "recall_min_per_malicious_class": {"malicious_manifest": 0.9, "malicious_output": 0.9},
+    "benign_fpr_max": 0.25,
+    "uncertain_effect_capable_must_block": true,
+    "probes_required": ["A", "B", "C", "D", "E", "F"],
+    "runs_required": ["A", "B"],
+    "runs_decision_identical": true
+  },
+  "metrics_required": [
+    "confusion_matrix_overall_and_per_class",
+    "precision", "recall", "false_positive_rate", "false_negative_rate",
+    "abstention_count", "quarantine_count", "human_review_count",
+    "wilson_ci_per_proportion", "critical_escape_count",
+    "authority_expansion_counters",
+    "malformed_count", "unknown_count", "timeout_count", "scanner_disagreement_count"
+  ],
+  "wilson_interval": {
+    "confidence": 0.95,
+    "z": 1.959963984540054,
+    "method": "Wilson score interval for a binomial proportion; implemented in stdlib evaluator (math.sqrt)"
+  },
+  "fail_conditions_not_abstentions": [
+    "missing data", "NaN or Infinity", "wrong types", "stale hashes",
+    "duplicate IDs", "mixed commits", "dirty provenance", "runner failure"
+  ],
+  "verdict_mapping": {
+    "PASS": "all hard gates satisfied, both runs identical and clean",
+    "PASS_WITH_LIMITS": "hard gates satisfied with recorded limitations (e.g., benign conservative accepts) and both runs identical",
+    "FAIL": "any hard gate violated, provenance impure, or run comparison mismatch",
+    "BLOCKED": "dependency, provenance, or environment failure preventing evaluation"
+  },
+  "no_threshold_tuning_after_results": "these thresholds were frozen before any corpus run; they must not be adjusted after seeing metrics",
+  "generalization_limit": "metrics from this 56-case frozen corpus measure only the declared classes; no production or universal-detection claim is licensed"
+}

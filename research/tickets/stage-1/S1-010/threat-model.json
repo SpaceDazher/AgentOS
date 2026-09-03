@@ -1,0 +1,96 @@
+{
+  "schema": "agentos.s1-010.threat-model/v1",
+  "ticket": "S1-010",
+  "frozen_at": "2026-09-03T00:00:00Z",
+  "scope": "tool manifest, supply-chain, capability, and tool-output poisoning against the AgentOS tool gateway; detection/quarantine evidence only",
+  "out_of_scope": [
+    "universal detection claims",
+    "production registry or marketplace rollout",
+    "executing third-party tools or real malware",
+    "real credentials, secrets, or exfiltration"
+  ],
+  "trust_boundaries": [
+    "Tool manifests arrive from publishers/registries: untrusted until provenance-verified.",
+    "Tool outputs are untrusted external content regardless of manifest validity.",
+    "Detector outputs are evidence, never authority.",
+    "Only gateway policy over registered state authorizes effects."
+  ],
+  "adversary_goals": [
+    "register a poisoned or misleading tool manifest",
+    "smuggle capabilities or effect-class escalation past the registry diff",
+    "inject instructions through tool output to expand authority, override policy, exfiltrate, or request secrets",
+    "claim governance facts (knowledge promotion, approvals, budget, reconciliation, acceptance) from external content",
+    "degrade or blind detectors (timeout, crash, malformed, disagreement)"
+  ],
+  "threat_classes": {
+    "TP-MANIFEST-STRUCT": {
+      "name": "manifest structural abuse",
+      "atlas_grounding": "AML.T0051 (LLM prompt injection) delivery via tool surface; CWE-74 injection into agent-interpreted fields",
+      "subtypes": ["missing-required-fields", "wrong-types", "unknown-fields", "identity-obfuscation", "zero-width-confusables"],
+      "severity_default": "high"
+    },
+    "TP-MANIFEST-SUPPLY": {
+      "name": "supply-chain integrity abuse",
+      "atlas_grounding": "AML.T0010.000 (poisoned dependency); SLSA v1.1 provenance gaps; NIST SP 800-218 PO.3/PO.5",
+      "subtypes": ["digest-missing", "digest-malformed", "dependency-digest-missing", "publisher-unknown", "sbom-declared-missing", "version-skew"],
+      "severity_default": "high"
+    },
+    "TP-CAPDRIFT": {
+      "name": "capability drift after approval",
+      "subtypes": ["capability-added", "effect-class-escalation", "publisher-change", "dependency-digest-change", "schema-change", "capability-name-drift"],
+      "severity_default": "critical"
+    },
+    "TP-OUTPUT-DIRECT": {
+      "name": "direct instruction injection in tool output",
+      "atlas_grounding": "AML.T0051; CWE-74",
+      "subtypes": ["capability-expansion-request", "policy-override", "secret-request", "exfiltration-directive", "approval-claim"],
+      "severity_default": "critical"
+    },
+    "TP-OUTPUT-OBFUSCATED": {
+      "name": "obfuscated or indirect injection",
+      "subtypes": ["unicode-confusable-verbs", "percent-encoding", "base64-blob-directive", "split-field-assembly", "nested-embedding", "indirect-reference"],
+      "severity_default": "high"
+    },
+    "TP-OUTPUT-GOVERNANCE": {
+      "name": "governance and terminal-state injection",
+      "subtypes": ["knowledge-verified-claim", "knowledge-promotion-claim", "approval-exists-claim", "budget-increase-claim", "reconciliation-complete-claim", "goal-accepted-claim"],
+      "severity_default": "critical"
+    },
+    "TP-DEGRADE": {
+      "name": "detector degradation",
+      "subtypes": ["detector-timeout", "detector-crash", "detector-malformed", "scanner-disagreement"],
+      "severity_default": "medium"
+    },
+    "NM-BENIGN-UNUSUAL": {
+      "name": "benign unusual but declared (near miss / false positive pressure)",
+      "subtypes": ["high-entropy-payload", "rare-capability-declared", "unusual-tool-name", "uncommon-publisher-format"],
+      "severity_default": "none"
+    },
+    "NM-AMBIGUOUS": {
+      "name": "ambiguous or alternate-correct behavior",
+      "subtypes": ["unclear-effect-capable", "partial-schema-evolution", "alternate-correct-safe", "underspecified-output"],
+      "severity_default": "low"
+    }
+  },
+  "layered_controls": [
+    "L1 structural/schema and canonicalization",
+    "L2 source/digest/provenance/SBOM verification",
+    "L3 registry and capability-diff enforcement",
+    "L4 static indicators and content classifiers (ADVISORY ONLY)",
+    "L5 exact policy/effect gate",
+    "L6 output taint/sanitization and secret/exfiltration guard",
+    "L7 quarantine or human-review routing",
+    "L8 immutable audit/evidence emission"
+  ],
+  "authority_invariants": [
+    "external content can never expand capabilities, policy, approvals, ownership, budgets, knowledge state, or goal acceptance",
+    "no positive heuristic score may compensate for an authorization, provenance, critical-poison, or fail-closed violation",
+    "scanner/detector disagreement, timeout, crash, or malformed output fails closed",
+    "uncertain effect-capable behavior is denied, quarantined, or routed to explicit human review"
+  ],
+  "residual_risks": [
+    "novel poisoning patterns outside frozen indicator families may require routing-level defense (quarantine/human review) rather than detection",
+    "small frozen corpus measures only the declared classes; metrics do not generalize to production",
+    "deterministic evaluator cannot emulate adaptive adversaries or statistical detectors"
+  ]
+}
