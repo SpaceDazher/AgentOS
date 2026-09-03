@@ -72,10 +72,13 @@ def git(*args: str) -> str:
 
 
 def file_hashes() -> dict:
-    names = ["cases.json", "knowledge-gate-contract.json",
-             "state-machine.json", "rubric.json", "design-alternatives.json",
+    names = ["cases.json", "cases-a.src.json", "cases-b.src.json",
+             "knowledge-gate-contract.json", "state-machine.json",
+             "rubric.json", "design-alternatives.json",
              "knowledge-record.schema.json", "source-registry.json",
-             "runner.py", "evaluator.py"]
+             "runner.py", "evaluator.py", "compare_runs.py",
+             "dependency_gate.py", "canonicalize_corpus.py",
+             "make_bundle.py"]
     out = {}
     for name in names:
         path = HERE / name
