@@ -103,40 +103,46 @@ def invocation_digest(corpus: str, executor: str, nonce: str,
 
 
 def run_single(corpus: Path, out_dir: Path, executor: str, nonce: str,
-               provenance: dict) -> dict:
-    """One evaluator child process; verify provenance binding fail-closed."""
+               provenance: dict) -> tuple[dict, Path]:
+    """One evaluator child process into a private temp dir (clean-tree
+    provenance preserved); returns (summary, child_temp_dir).
+
+    The caller must later call stage_outputs() to transplant the child
+    outputs byte-identically into out_dir."""
     if provenance["dirty"] or provenance["clean"] is not True:
         raise RuntimeError("repository tree is dirty; refusing evidence run: "
                            + ", ".join(provenance["dirty_files"][:8]))
     child_out = Path(tempfile.mkdtemp(prefix=f"s1-010-child-{executor}-"))
-    try:
-        result = subprocess.run(
-            [sys.executable, str(TICKET_ROOT / "evaluator.py"),
-             "--corpus", str(corpus.resolve()),
-             "--out", str(child_out),
-             "--executor", executor,
-             "--nonce", nonce,
-             "--repo-root", str(REPO_ROOT)],
-            capture_output=True, text=True, check=False, timeout=900,
-            cwd=str(REPO_ROOT))
-    finally:
-        pass
+    result = subprocess.run(
+        [sys.executable, str(TICKET_ROOT / "evaluator.py"),
+         "--corpus", str(corpus.resolve()),
+         "--out", str(child_out),
+         "--executor", executor,
+         "--nonce", nonce,
+         "--repo-root", str(REPO_ROOT)],
+        capture_output=True, text=True, check=False, timeout=900,
+        cwd=str(REPO_ROOT))
     if result.returncode != 0:
+        shutil.rmtree(child_out, ignore_errors=True)
         raise RuntimeError(
             f"evaluator process failed with {result.returncode}: "
             f"{result.stderr.strip() or result.stdout.strip()}")
     try:
         summary = json.loads(result.stdout.strip().splitlines()[-1])
     except (json.JSONDecodeError, IndexError) as exc:
+        shutil.rmtree(child_out, ignore_errors=True)
         raise RuntimeError("evaluator produced invalid JSON summary") from exc
     eval_prov = summary.get("process_provenance", {})
     for field in ("clean", "commit_sha", "tree_sha"):
         if field not in eval_prov:
+            shutil.rmtree(child_out, ignore_errors=True)
             raise RuntimeError(f"evaluator omitted provenance field: {field}")
     if eval_prov.get("clean") is not True:
+        shutil.rmtree(child_out, ignore_errors=True)
         raise RuntimeError("evaluator child reports a dirty tree")
     for field in ("commit_sha", "tree_sha"):
         if eval_prov.get(field) != provenance.get(field):
+            shutil.rmtree(child_out, ignore_errors=True)
             raise RuntimeError(f"evaluator provenance mismatch on {field}")
     summary["process_provenance"] = {
         **provenance,
@@ -148,19 +154,7 @@ def run_single(corpus: Path, out_dir: Path, executor: str, nonce: str,
     summary["executor_id"] = executor
     summary["nonce"] = nonce
     summary["pid"] = os.getpid()
-    # transplant child outputs byte-identically into the requested out dir
-    out_dir.mkdir(parents=True, exist_ok=True)
-    copied = {}
-    for name in ("evaluator-decisions.json", "evaluator-metrics.json",
-                 "evaluator-summary.json"):
-        src = child_out / name
-        dst = out_dir / name
-        shutil.copyfile(src, dst)
-        if sha256_file(dst) != sha256_file(src):
-            raise RuntimeError(f"output transplant mismatch for {name}")
-        copied[name] = sha256_file(dst)
-    summary["transplanted_outputs"] = copied
-    decisions_path = out_dir / "evaluator-decisions.json"
+    decisions_path = child_out / "evaluator-decisions.json"
     decisions_doc = json.loads(decisions_path.read_text(encoding="utf-8"))
     records = decisions_doc["decisions"]
     summary["decision_count"] = len(records)
@@ -177,11 +171,27 @@ def run_single(corpus: Path, out_dir: Path, executor: str, nonce: str,
     summary["output_root"] = str(out_dir)
     summary["invocation_digest"] = invocation_digest(
         str(corpus), executor, nonce, provenance, str(out_dir))
-    shutil.rmtree(child_out, ignore_errors=True)
+    return summary, child_out
+
+
+def stage_outputs(summary: dict, child_out: Path, out_dir: Path) -> None:
+    """Transplant child outputs byte-identically into out_dir and write the
+    final run summary there."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    copied = {}
+    for name in ("evaluator-decisions.json", "evaluator-metrics.json",
+                 "evaluator-summary.json"):
+        src = child_out / name
+        dst = out_dir / name
+        shutil.copyfile(src, dst)
+        if sha256_file(dst) != sha256_file(src):
+            raise RuntimeError(f"output transplant mismatch for {name}")
+        copied[name] = sha256_file(dst)
+    summary["transplanted_outputs"] = copied
     (out_dir / "run-summary.json").write_bytes(
         json.dumps(summary, indent=1, sort_keys=True,
                    ensure_ascii=False).encode("utf-8") + b"\n")
-    return summary
+    shutil.rmtree(child_out, ignore_errors=True)
 
 
 def compare_runs(run_a: dict, run_b: dict) -> dict:
@@ -333,16 +343,19 @@ def main() -> int:
     if args.single:
         if not all((args.out, args.executor, args.nonce)):
             parser.error("--single requires --out, --executor, and --nonce")
-        summary = run_single(corpus, Path(args.out), args.executor,
-                             args.nonce, provenance)
+        summary, child_out = run_single(corpus, Path(args.out), args.executor,
+                                        args.nonce, provenance)
+        stage_outputs(summary, child_out, Path(args.out))
         print(json.dumps(summary, sort_keys=True))
         return 0 if summary["decision_verdict"] == "PASS" else 1
 
     RESULTS.mkdir(parents=True, exist_ok=True)
-    run_a = run_single(corpus, RESULTS / "run-a", "verifier-A",
-                       "s1-010-run-a-nonce", provenance)
-    run_b = run_single(corpus, RESULTS / "run-b", "verifier-B",
-                       "s1-010-run-b-nonce", provenance)
+    run_a, child_a = run_single(corpus, RESULTS / "run-a", "verifier-A",
+                                "s1-010-run-a-nonce", provenance)
+    run_b, child_b = run_single(corpus, RESULTS / "run-b", "verifier-B",
+                                "s1-010-run-b-nonce", provenance)
+    stage_outputs(run_a, child_a, RESULTS / "run-a")
+    stage_outputs(run_b, child_b, RESULTS / "run-b")
     comparison = compare_runs(run_a, run_b)
     if not comparison["identical"]:
         (RESULTS / "comparison.json").write_bytes(
