@@ -4,23 +4,19 @@ Verdict: `PASS_WITH_LIMITS` (cap forced by the provisional independence
 threshold and the absence of a human operator study; see limits below).
 Phase A result: `READY_FOR_CANONICALIZATION`. No truth oracle is claimed.
 
-Revision note: this is the second evidence revision. An independent
-review (REVISE, 12 findings F1-F12) rejected the first revision for
-lax authority/binding checks, unenforced predicates, producer-trusting
-evaluation, and a non-native bundle. All findings were fixed: strict
-fail-closed input validation with no defaults, per-transition
-authority, live challenge/revocation/policy predicates, hash-chained
-record ledger verified record-by-record, state-table and authority
-consistency per row, PROMOTED-positive confusion, hard divergence
-rejection, frozen Cartesian enforcement, hard-failed exclusion,
-dependency allowlist plus revision binding, native harness bundle, and
-derived (never constant) verdict. The corpus grew 60 to 72 cases with
-the review's counterexamples; contracts moved to v1.0.1.
+Revision note: this is the R3 corrective evidence revision, measured
+fresh at commit `9d4c910`. R2's nine findings are closed: explicit
+evidence bindings, shared promotion predicates, stale-view exclusion,
+complete case-bound ledgers, exact per-cell matrix, resolvable Git
+provenance, dependency identity, raw-derived publication and simultaneous
+UNKNOWN bounds. Follow-up probes also covered evidence-free reads and
+the shared-path ledger identity for all three designs. See
+`CORRECTIVE_R3.md`. The corpus contains 72 cases; the contract is v1.0.2.
 
 ## Recommendation
 
 Adopt the **minimal promote/challenge gate** exactly as frozen in
-`knowledge-gate-contract.json` v1.0.1 / `state-machine.json`:
+`knowledge-gate-contract.json` v1.0.2 / `state-machine.json`:
 
 - States: `PROPOSED -> PROMOTED / REJECTED / RETRACTED`,
   `PROMOTED -> CHALLENGED / RETRACTED`, `CHALLENGED -> PROMOTED (new
@@ -99,8 +95,10 @@ because their naive forms are unsafe under the frozen invariants.
    alignment holds only for the minimal mapping.
 4. Argumentation cycles never occur in the corpus (no cyclic attack
    graphs); convergence behavior on hostile graphs is UNKNOWN.
-5. Cloud/worktree evidence only: live DB consistency, artifact chain
-   freshness and wiki checks require the Phase B local harness.
+5. Phase A is worktree evidence. Live DB consistency, artifact-chain
+   freshness and wiki checks are a separate Phase B result; consult
+   `../evaluation-record.json` for canonical publication. Neither phase
+   proves production persistence, distributed concurrency or human UX.
 
 ## Rollback without history loss
 

@@ -3,12 +3,12 @@
 - OS: Windows-11-10.0.22631-SP0 (Windows host, PowerShell)
 - Python: 3.12.6 (`py -3.12`), stdlib only for all ticket tooling
 - `$env:PYTHONPATH = "src"` (repo-root convention; ticket scripts need no PYTHONPATH)
-- Commit: `b546d37bf063` (second evidence revision, post-review)
+- Measurement commit: `9d4c910` (R3 corrective, fresh A/B evidence)
 - Tree: single tree shared by all 18 cells (see comparison.json)
 - Clean tree: true for every cell (verified per-manifest)
 - Corpus: 72 cases x 3 designs x 3 seeds = 648 rows per run
 - Seeds (frozen, corpus-manifest.json): 11011, 22022, 33033
-- Contract: v1.0.1; corpus digest rule documented in corpus-manifest.json
+- Contract: v1.0.2; corpus digest rule documented in corpus-manifest.json
 - Line endings: LF for all generated ticket files (newline="\n");
   snapshots are byte-frozen and untouched
 
@@ -50,7 +50,8 @@ py -3.12 research/tickets/stage-1/S1-011/make_bundle.py
 
 ## Staging note (provenance-relevant)
 
-`<stage>` was a temp dir outside the repo. Reason: writing 9 cell
+`<stage>` was `D:/Project/AgentOS/.codex-work/s1-011-final-9d4c910`,
+outside the measured worktree. Reason: writing 9 cell
 outputs directly into the worktree would have made cells 2-9 record
 `clean_tree=false` (their siblings' outputs dirty the tree), breaking
 the same-clean-tree requirement. All 18 manifests therefore record one
@@ -68,8 +69,11 @@ the bytes were produced.
 - Outputs are seed-invariant by construction (ledger ids derive from
   case+design); the evaluator re-checks the exact matrix per cell and
   the comparison re-checks A/B identity (648/648 identical rows).
-- No network, no LLM, no canonical DB in any step. Missing canonical DB
-  in this worktree is expected per the task (Phase B rechecks live DB).
+- Phase A uses no network, LLM or canonical DB. Phase B uses the local
+  canonical DB through `research-plan`; `finalize_record.py` reads its
+  exact latest rows and verifies the bundle and pack bindings before
+  publishing content-addressed copies. The canonical result, when
+  published, is recorded separately in `evaluation-record.json`.
 
 ## Input hashes (pinned at run time; see corpus-manifest.json)
 
