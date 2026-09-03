@@ -156,6 +156,9 @@ def run_single(corpus: Path, out_dir: Path, executor: str, nonce: str,
     # The run's process identity is the evaluator child process: children are
     # independent OS processes with distinct PIDs, nonces, and output roots.
     summary["pid"] = eval_prov.get("evaluator_pid")
+    summary["commit_sha"] = provenance["commit_sha"]
+    summary["tree_sha"] = provenance["tree_sha"]
+    summary["branch"] = provenance["branch"]
     decisions_path = child_out / "evaluator-decisions.json"
     decisions_doc = json.loads(decisions_path.read_text(encoding="utf-8"))
     records = decisions_doc["decisions"]
@@ -210,6 +213,10 @@ def compare_runs(run_a: dict, run_b: dict) -> dict:
     pid_b = run_b.get("process_provenance", {}).get("evaluator_pid")
     if pid_a is not None and pid_b is not None and pid_a == pid_b:
         violations.append("evaluator pid collision across runs")
+    if not run_a.get("commit_sha") or not run_a.get("tree_sha"):
+        violations.append("run A lacks commit/tree binding")
+    if not run_b.get("commit_sha") or not run_b.get("tree_sha"):
+        violations.append("run B lacks commit/tree binding")
     return {
         "identical": not violations,
         "violations": violations,
