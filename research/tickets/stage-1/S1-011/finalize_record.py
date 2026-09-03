@@ -10,11 +10,12 @@ import json
 import sqlite3
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[3]
 sys.path.insert(0, str(REPO / "src"))
-from agentos.research import _normalise_config, _manifest_hash
+from agentos.research import _normalise_config, _manifest_hash, research_chain_hash
 
 
 def sha(data):
@@ -56,6 +57,28 @@ def publish(data, prefix):
     return {"path": target.relative_to(REPO).as_posix(), "sha256": digest}
 
 
+def canonical_dependencies(conn):
+    proofs = []
+    for ticket in ("S1-001", "S1-003"):
+        record = json.loads((HERE.parent / ticket / "evaluation-record.json").read_text(encoding="utf-8"))
+        series = conn.execute("SELECT * FROM research_series WHERE research_key=? ORDER BY revision DESC LIMIT 1", (ticket,)).fetchone()
+        if series is None or any(series[k] != record[rk] for k, rk in
+                                 (("goal_id", "goal_id"), ("campaign_id", "campaign_id"), ("revision", "research_revision"))):
+            raise ValueError(f"{ticket}: tracked record is not current canonical series")
+        row = conn.execute("SELECT * FROM research_evaluation WHERE goal_id=? ORDER BY evaluation_version DESC, id DESC LIMIT 1", (series["goal_id"],)).fetchone()
+        if row is None or any(row[k] != record[rk] for k, rk in
+                              (("id", "evaluation_id"), ("result", "result"), ("artifact_chain_hash", "artifact_chain_hash"))):
+            raise ValueError(f"{ticket}: tracked evaluation differs from DB")
+        chain = research_chain_hash(SimpleNamespace(conn=conn), series["goal_id"])
+        if row["result"] not in ("pass", "pass_with_limits") or chain != row["artifact_chain_hash"]:
+            raise ValueError(f"{ticket}: dependency failed or files are stale")
+        proofs.append({"ticket_id": ticket, "research_revision": series["revision"],
+                       "goal_id": series["goal_id"], "evaluation_id": row["id"],
+                       "result": row["result"], "artifact_chain_hash": chain,
+                       "chain_recomputed_from_disk": True})
+    return proofs
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--db", required=True)
@@ -69,11 +92,14 @@ def main():
     db_root = Path(args.db).resolve()
     with sqlite3.connect((db_root / "agentos.db").as_uri() + "?mode=ro", uri=True) as conn:
         conn.row_factory = sqlite3.Row
+        dependencies = canonical_dependencies(conn)
         series_row = conn.execute("SELECT * FROM research_series WHERE research_key=? ORDER BY revision DESC LIMIT 1", ("S1-011",)).fetchone()
         if series_row is None:
             raise ValueError("no canonical S1-011 series")
         series = dict(series_row)
         evaluation = dict(conn.execute("SELECT * FROM research_evaluation WHERE goal_id=? ORDER BY evaluation_version DESC, id DESC LIMIT 1", (series["goal_id"],)).fetchone())
+        if research_chain_hash(SimpleNamespace(conn=conn), series["goal_id"]) != evaluation["artifact_chain_hash"]:
+            raise ValueError("canonical artifact files changed after evaluation")
     bundle = json.loads((HERE / "bundle.json").read_text(encoding="utf-8"))
     config, errors = _normalise_config(None, bundle)
     manifest, manifest_errors = _manifest_hash(bundle, config)
@@ -96,6 +122,7 @@ def main():
     hashes = {p.relative_to(REPO).as_posix(): sha(p.read_bytes()) for p in sorted(files)}
     payload = {"schema": "agentos.s1-011.ticket-evidence/v1", "ticket_id": "S1-011",
                "series": series, "evaluation": evaluation,
+               "canonical_dependencies": dependencies,
                "canonical_pack": canonical_pack, "tracked_artifact_hashes": hashes}
     payload_hash = sha(canonical(payload))
     ticket_pack = publish(canonical({"payload": payload, "payload_sha256": payload_hash}) + b"\n", "ticket-pack")
@@ -104,6 +131,7 @@ def main():
               "campaign_id": series["campaign_id"], "evaluation_id": evaluation["id"],
               "artifact_chain_hash": evaluation["artifact_chain_hash"],
               "result": evaluation["result"], "manifest_sha256": manifest,
+              "canonical_dependencies": dependencies,
               "bundle_sha256": candidate["bundle_sha256"], "evidence_pack": canonical_pack,
               "ticket_pack": {**ticket_pack, "payload_sha256": payload_hash},
               "limitations": json.loads(evaluation["limitations_json"]),
