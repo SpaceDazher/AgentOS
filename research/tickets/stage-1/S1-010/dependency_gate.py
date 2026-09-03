@@ -19,12 +19,13 @@ host-owned and rechecked during local Phase B.
 from __future__ import annotations
 
 import hashlib
+import io
 import json
+import re
 import subprocess
 import sys
 import tarfile
-import tempfile
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 
 TICKET_ROOT = Path(__file__).resolve().parent
 REPO_ROOT = TICKET_ROOT.parents[3]
@@ -61,9 +62,26 @@ def canonical_bytes(value) -> bytes:
 
 
 def assert_repo_relative(path_str: str) -> str:
-    p = Path(path_str)
-    if p.is_absolute() or "\\" in path_str or path_str.startswith(".."):
+    """Enforce repo-relative POSIX syntax independent of the host OS.
+
+    Mirrors evaluator.safe_repo_relative: backslash paths, POSIX-rooted
+    paths (leading ``/``), Windows drive/UNC/rooted paths, traversal and
+    empty segments are all rejected on every platform, so a Windows host
+    can never resolve ``/etc/passwd`` against a drive root."""
+    if not path_str or not isinstance(path_str, str):
         raise GateError(f"path is not repo-relative POSIX: {path_str!r}")
+    if "\\" in path_str:
+        raise GateError(f"path is not repo-relative POSIX: {path_str!r}")
+    if path_str.startswith("/"):
+        raise GateError(f"POSIX-rooted path rejected: {path_str!r}")
+    if re.match(r"^[A-Za-z]:", path_str):
+        raise GateError(f"drive-letter path rejected: {path_str!r}")
+    windows = PureWindowsPath(path_str)
+    if windows.is_absolute() or windows.drive:
+        raise GateError(
+            f"windows-absolute or drive-qualified path rejected: {path_str!r}")
+    if any(part in ("", ".", "..") for part in path_str.split("/")):
+        raise GateError(f"path traversal or empty segment rejected: {path_str!r}")
     return path_str
 
 
@@ -84,20 +102,70 @@ def is_tracked(rel_path: str) -> bool:
 
 
 def archive_members() -> set[str]:
-    """Full `git archive HEAD` member listing (contract requirement)."""
+    """Full `git archive HEAD` member listing (contract requirement).
+
+    The archive is parsed in memory (io.BytesIO); no NamedTemporaryFile is
+    reopened, so the check also runs on Windows where reopening a still-open
+    temp file raises PermissionError."""
     result = subprocess.run(
         ["git", "archive", "HEAD"], cwd=REPO_ROOT,
         capture_output=True, check=False, timeout=120)
     if result.returncode != 0:
         raise GateError(f"git archive HEAD failed: {result.stderr.decode()[:200]}")
     members = set()
-    with tempfile.NamedTemporaryFile(suffix=".tar") as tmp:
-        tmp.write(result.stdout)
-        tmp.flush()
-        with tarfile.open(tmp.name, "r:") as tar:
-            for name in tar.getnames():
-                members.add(name.lstrip("./"))
+    with tarfile.open(fileobj=io.BytesIO(result.stdout), mode="r:") as tar:
+        for name in tar.getnames():
+            members.add(name.lstrip("./"))
     return members
+
+
+def verify_pack_integrity(raw: bytes, rel_path: str) -> dict:
+    """Fail-closed integrity verification of one pack's bytes.
+
+    Supported schemas (both formulas verified strictly; any mismatch or an
+    unknown schema raises GateError — there is no fallback to declared
+    values):
+
+    - ``payload+pack_sha256``: canonical(payload) == payload_sha256 and
+      canonical(pack with pack_sha256="") == pack_sha256;
+    - ``embedded-sha256``: canonical(pack minus sha256) == sha256.
+    """
+    file_sha = sha256_bytes(raw)
+    pack = json.loads(raw.decode("utf-8"))
+    if not isinstance(pack, dict):
+        raise GateError(f"pack is not a JSON object: {rel_path}")
+    if "payload" in pack and "pack_sha256" in pack:
+        payload_sha = sha256_bytes(canonical_bytes(pack["payload"]))
+        if pack.get("payload_sha256") is None or \
+                payload_sha != pack.get("payload_sha256"):
+            raise GateError(f"payload hash mismatch for {rel_path}")
+        if pack.get("pack_sha256") in (None, ""):
+            raise GateError(f"pack has empty pack_sha256: {rel_path}")
+        self_pack = {k: v for k, v in pack.items() if k != "pack_sha256"}
+        self_pack["pack_sha256"] = ""
+        self_sha = sha256_bytes(canonical_bytes(self_pack))
+        if self_sha != pack.get("pack_sha256"):
+            raise GateError(f"pack self-hash mismatch for {rel_path}")
+        schema = "payload+pack_sha256"
+    elif "sha256" in pack:
+        payload_sha = sha256_bytes(canonical_bytes(
+            {k: v for k, v in pack.items() if k != "sha256"}))
+        if payload_sha != pack.get("sha256"):
+            raise GateError(
+                f"embedded sha256 mismatch for {rel_path}: recomputed "
+                f"{payload_sha} != declared {pack.get('sha256')}")
+        self_sha = payload_sha
+        schema = "embedded-sha256"
+    else:
+        raise GateError(
+            f"unknown pack schema for {rel_path}: no verifiable integrity "
+            f"formula")
+    return {
+        "file_sha256": file_sha,
+        "payload_sha256": payload_sha,
+        "pack_sha256": self_sha,
+        "schema_verified": schema,
+    }
 
 
 def verify_pack_file(rel_path: str, archive: set[str],
@@ -118,35 +186,14 @@ def verify_pack_file(rel_path: str, archive: set[str],
             f"name {stem} != {expected_stem}")
     if rel_path not in archive:
         raise GateError(f"pack missing from git archive HEAD: {rel_path}")
-    pack = json.loads(raw.decode("utf-8"))
-    payload_sha = None
-    self_sha = None
-    if "payload" in pack:
-        payload_sha = sha256_bytes(canonical_bytes(pack["payload"]))
-    if "payload" in pack and "pack_sha256" in pack:
-        if pack.get("pack_sha256") in (None, ""):
-            raise GateError(f"pack has empty pack_sha256: {rel_path}")
-        if payload_sha != pack.get("payload_sha256"):
-            raise GateError(f"payload hash mismatch for {rel_path}")
-        self_pack = {k: v for k, v in pack.items() if k != "pack_sha256"}
-        self_pack["pack_sha256"] = ""
-        self_sha = sha256_bytes(canonical_bytes(self_pack))
-        if self_sha != pack.get("pack_sha256"):
-            raise GateError(f"pack self-hash mismatch for {rel_path}")
-    elif "sha256" in pack:
-        # S1-001 evidence-pack style: embedded sha256 covers the payload content
-        payload_sha = sha256_bytes(canonical_bytes(
-            {k: v for k, v in pack.items() if k != "sha256"}))
-        if payload_sha != pack.get("sha256"):
-            # fall back: pack["sha256"] is informational; do not fail here
-            payload_sha = pack.get("sha256")
-            self_sha = pack.get("sha256")
+    integrity = verify_pack_integrity(raw, rel_path)
     return {
         "path": rel_path,
         "file_sha256": file_sha,
-        "payload_sha256": payload_sha,
-        "pack_sha256": self_sha,
-        "pack_kind": pack.get("pack_kind"),
+        "payload_sha256": integrity["payload_sha256"],
+        "pack_sha256": integrity["pack_sha256"],
+        "schema_verified": integrity["schema_verified"],
+        "pack_kind": json.loads(raw.decode("utf-8")).get("pack_kind"),
         "in_git_archive": True,
     }
 
@@ -165,7 +212,7 @@ def check_record(rel_path: str, archive: set[str], label: str) -> dict:
     pack_rel = evidence.get("path")
     pack_info = None
     runtime_untracked = False
-    if pack_rel and f"HEAD:{pack_rel}" and is_tracked(pack_rel):
+    if pack_rel and is_tracked(pack_rel):
         pack_info = verify_pack_file(pack_rel, archive, naming="prefixed")
         raw = tracked_file(pack_rel)
         if evidence.get("sha256") and sha256_bytes(raw) != evidence["sha256"]:
