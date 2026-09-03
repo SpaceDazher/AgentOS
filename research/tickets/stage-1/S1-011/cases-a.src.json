@@ -2,325 +2,1667 @@
   "schema": "agentos.s1-011.cases-src/v1",
   "note": "Human-authored oracle. Defaults: evidence.scope=case scope, evidence.claim_version=assertion claim_version, policy_version=s1-011-policy-v1, tenant=TEN-1, workspace=WS-1, goal=GOAL-S1-011, source_revoked=[]. Digests and case_sha256 are filled by canonicalize_corpus.py and frozen in cases.json.",
   "cases": [
-    {"case_id": "S1-011-V01", "class": "valid_promotion", "severity": "high", "stage": "promotion", "probe": null,
-     "actor_role": "governance_gate", "tenant": "TEN-1", "workspace": "WS-1", "goal": "GOAL-S1-011", "scope": "SCOPE-KB-1",
-     "action": "promote", "prior_status": "PROPOSED",
-     "assertion": {"assertion_id": "A-V01", "claim_version": 1},
-     "evidence": [
-       {"evidence_id": "E-V01-1", "lineage": "LIN-V01-A", "group": "G-V01-A", "verified": true},
-       {"evidence_id": "E-V01-2", "lineage": "LIN-V01-B", "group": "G-V01-B", "verified": true}],
-     "challenge": null, "idempotency_key": "IDEM-V01",
-     "expected": {"decision": "PROMOTED", "transition": "gate_pass", "reason_code": "THRESHOLD_MET", "view_visible": true, "audit": ["PROMOTE"], "history_preserved": true}},
-    {"case_id": "S1-011-V02", "class": "valid_promotion", "severity": "medium", "stage": "promotion", "probe": null,
-     "actor_role": "governance_gate", "tenant": "TEN-1", "workspace": "WS-2", "goal": "GOAL-S1-011", "scope": "SCOPE-KB-2",
-     "action": "promote", "prior_status": "PROPOSED",
-     "assertion": {"assertion_id": "A-V02", "claim_version": 1},
-     "evidence": [
-       {"evidence_id": "E-V02-1", "lineage": "LIN-V02-A", "group": "G-V02-A", "verified": true},
-       {"evidence_id": "E-V02-2", "lineage": "LIN-V02-B", "group": "G-V02-B", "verified": true},
-       {"evidence_id": "E-V02-3", "lineage": "LIN-V02-C", "group": "G-V02-C", "verified": true}],
-     "challenge": null, "idempotency_key": "IDEM-V02",
-     "expected": {"decision": "PROMOTED", "transition": "gate_pass", "reason_code": "THRESHOLD_MET", "view_visible": true, "audit": ["PROMOTE"], "history_preserved": true}},
-    {"case_id": "S1-011-V03", "class": "valid_promotion", "severity": "high", "stage": "challenge", "probe": null,
-     "actor_role": "governance_gate", "tenant": "TEN-1", "workspace": "WS-1", "goal": "GOAL-S1-011", "scope": "SCOPE-KB-1",
-     "action": "uphold", "prior_status": "CHALLENGED",
-     "assertion": {"assertion_id": "A-V03", "claim_version": 1},
-     "evidence": [
-       {"evidence_id": "E-V03-1", "lineage": "LIN-V03-A", "group": "G-V03-A", "verified": true},
-       {"evidence_id": "E-V03-2", "lineage": "LIN-V03-B", "group": "G-V03-B", "verified": true}],
-     "challenge": {"challenge_id": "CH-V03", "state": "resolved", "in_scope": true, "fresh_evidence": true}, "idempotency_key": "IDEM-V03",
-     "expected": {"decision": "PROMOTED", "transition": "upheld_with_evidence", "reason_code": "CHALLENGE_UPHELD", "view_visible": true, "audit": ["UPHOLD"], "history_preserved": true}},
-    {"case_id": "S1-011-V04", "class": "valid_promotion", "severity": "medium", "stage": "promotion", "probe": null,
-     "actor_role": "governance_gate", "tenant": "TEN-2", "workspace": "WS-1", "goal": "GOAL-S1-011", "scope": "SCOPE-KB-1",
-     "action": "promote", "prior_status": "PROPOSED",
-     "assertion": {"assertion_id": "A-V04", "claim_version": 2},
-     "evidence": [
-       {"evidence_id": "E-V04-1", "claim_version": 2, "lineage": "LIN-V04-A", "group": "G-V04-A", "verified": true},
-       {"evidence_id": "E-V04-2", "claim_version": 2, "lineage": "LIN-V04-B", "group": "G-V04-B", "verified": true}],
-     "challenge": null, "idempotency_key": "IDEM-V04",
-     "expected": {"decision": "PROMOTED", "transition": "gate_pass", "reason_code": "THRESHOLD_MET", "view_visible": true, "audit": ["PROMOTE"], "history_preserved": true}},
-    {"case_id": "S1-011-V05", "class": "valid_promotion", "severity": "medium", "stage": "proposal", "probe": null,
-     "actor_role": "worker", "tenant": "TEN-1", "workspace": "WS-1", "goal": "GOAL-S1-011", "scope": "SCOPE-KB-1",
-     "action": "propose", "prior_status": "NONE",
-     "assertion": {"assertion_id": "A-V05", "claim_version": 1},
-     "evidence": [], "challenge": null, "idempotency_key": "IDEM-V05",
-     "expected": {"decision": "RECORDED", "transition": null, "reason_code": "THRESHOLD_MET", "view_visible": false, "audit": ["PROPOSE"], "history_preserved": true}},
-    {"case_id": "S1-011-V06", "class": "valid_promotion", "severity": "medium", "stage": "promotion", "probe": null,
-     "actor_role": "governance_gate", "tenant": "TEN-1", "workspace": "WS-1", "goal": "GOAL-S1-011", "scope": "SCOPE-KB-1",
-     "action": "promote", "prior_status": "PROPOSED",
-     "assertion": {"assertion_id": "A-V06", "claim_version": 1},
-     "evidence": [
-       {"evidence_id": "E-V06-1", "lineage": "LIN-V06-A", "group": "G-V06-A", "verified": true},
-       {"evidence_id": "E-V06-2", "lineage": "LIN-V06-B", "group": "G-V06-B", "verified": true},
-       {"evidence_id": "E-V06-3", "lineage": "LIN-V06-A", "group": "G-V06-A", "verified": true}],
-     "challenge": null, "idempotency_key": "IDEM-V06",
-     "expected": {"decision": "PROMOTED", "transition": "gate_pass", "reason_code": "THRESHOLD_MET", "view_visible": true, "audit": ["PROMOTE"], "history_preserved": true}},
-    {"case_id": "S1-011-V07", "class": "valid_promotion", "severity": "high", "stage": "promotion", "probe": null,
-     "actor_role": "governance_gate", "tenant": "TEN-1", "workspace": "WS-1", "goal": "GOAL-S1-011", "scope": "SCOPE-KB-1",
-     "action": "promote", "prior_status": "PROPOSED",
-     "assertion": {"assertion_id": "A-V07", "claim_version": 1},
-     "evidence": [
-       {"evidence_id": "E-V07-1", "lineage": "LIN-V07-A", "group": "G-V07-A", "verified": true},
-       {"evidence_id": "E-V07-2", "lineage": "LIN-V07-B", "group": "G-V07-B", "verified": true}],
-     "challenge": {"challenge_id": "CH-V07", "state": "resolved", "in_scope": true, "fresh_evidence": true}, "idempotency_key": "IDEM-V07",
-     "expected": {"decision": "PROMOTED", "transition": "gate_pass", "reason_code": "THRESHOLD_MET", "view_visible": true, "audit": ["PROMOTE"], "history_preserved": true}},
-    {"case_id": "S1-011-V08", "class": "valid_promotion", "severity": "medium", "stage": "promotion", "probe": null,
-     "actor_role": "operator", "tenant": "TEN-1", "workspace": "WS-1", "goal": "GOAL-S1-011", "scope": "SCOPE-KB-1",
-     "action": "uphold", "prior_status": "CHALLENGED",
-     "assertion": {"assertion_id": "A-V08", "claim_version": 1},
-     "evidence": [
-       {"evidence_id": "E-V08-1", "lineage": "LIN-V08-A", "group": "G-V08-A", "verified": true},
-       {"evidence_id": "E-V08-2", "lineage": "LIN-V08-B", "group": "G-V08-B", "verified": true}],
-     "challenge": {"challenge_id": "CH-V08", "state": "resolved", "in_scope": true, "fresh_evidence": true}, "idempotency_key": "IDEM-V08",
-     "expected": {"decision": "PROMOTED", "transition": "upheld_with_evidence", "reason_code": "CHALLENGE_UPHELD", "view_visible": true, "audit": ["UPHOLD"], "history_preserved": true}},
-    {"case_id": "S1-011-V09", "class": "valid_promotion", "severity": "medium", "stage": "promotion", "probe": null,
-     "actor_role": "governance_gate", "tenant": "TEN-3", "workspace": "WS-9", "goal": "GOAL-S1-011-X", "scope": "SCOPE-KB-9",
-     "action": "promote", "prior_status": "PROPOSED",
-     "assertion": {"assertion_id": "A-V09", "claim_version": 1},
-     "evidence": [
-       {"evidence_id": "E-V09-1", "scope": "SCOPE-KB-9", "lineage": "LIN-V09-A", "group": "G-V09-A", "verified": true},
-       {"evidence_id": "E-V09-2", "scope": "SCOPE-KB-9", "lineage": "LIN-V09-B", "group": "G-V09-B", "verified": true}],
-     "challenge": null, "idempotency_key": "IDEM-V09",
-     "expected": {"decision": "PROMOTED", "transition": "gate_pass", "reason_code": "THRESHOLD_MET", "view_visible": true, "audit": ["PROMOTE"], "history_preserved": true}},
-    {"case_id": "S1-011-V10", "class": "valid_promotion", "severity": "medium", "stage": "promotion", "probe": null,
-     "actor_role": "governance_gate", "tenant": "TEN-1", "workspace": "WS-1", "goal": "GOAL-S1-011", "scope": "SCOPE-KB-1",
-     "action": "promote", "prior_status": "PROPOSED",
-     "assertion": {"assertion_id": "A-V10", "claim_version": 3},
-     "evidence": [
-       {"evidence_id": "E-V10-1", "claim_version": 3, "lineage": "LIN-V10-A", "group": "G-V10-A", "verified": true},
-       {"evidence_id": "E-V10-2", "claim_version": 3, "lineage": "LIN-V10-B", "group": "G-V10-B", "verified": true}],
-     "challenge": null, "idempotency_key": "IDEM-V10",
-     "expected": {"decision": "PROMOTED", "transition": "gate_pass", "reason_code": "THRESHOLD_MET", "view_visible": true, "audit": ["PROMOTE"], "history_preserved": true}},
-    {"case_id": "S1-011-V11", "class": "valid_promotion", "severity": "low", "stage": "promotion", "probe": null,
-     "actor_role": "governance_gate", "tenant": "TEN-1", "workspace": "WS-1", "goal": "GOAL-S1-011", "scope": "SCOPE-KB-1",
-     "action": "promote", "prior_status": "PROPOSED",
-     "assertion": {"assertion_id": "A-V11", "claim_version": 1},
-     "evidence": [
-       {"evidence_id": "E-V11-1", "lineage": "LIN-V11-A", "group": "G-V11-A", "verified": true},
-       {"evidence_id": "E-V11-2", "lineage": "LIN-V11-B", "group": "G-V11-B", "verified": true},
-       {"evidence_id": "E-V11-3", "lineage": "LIN-V11-C", "group": "G-V11-C", "verified": true},
-       {"evidence_id": "E-V11-4", "lineage": "LIN-V11-D", "group": "G-V11-D", "verified": true}],
-     "challenge": null, "idempotency_key": "IDEM-V11",
-     "expected": {"decision": "PROMOTED", "transition": "gate_pass", "reason_code": "THRESHOLD_MET", "view_visible": true, "audit": ["PROMOTE"], "history_preserved": true}},
-    {"case_id": "S1-011-V12", "class": "valid_promotion", "severity": "low", "stage": "promotion", "probe": null,
-     "actor_role": "governance_gate", "tenant": "TEN-1", "workspace": "WS-1", "goal": "GOAL-S1-011", "scope": "SCOPE-KB-1",
-     "action": "derive_claim", "prior_status": "PROPOSED",
-     "assertion": {"assertion_id": "A-V12", "claim_version": 1},
-     "evidence": [
-       {"evidence_id": "E-V12-1", "lineage": "LIN-V12-A", "group": "G-V12-A", "verified": true},
-       {"evidence_id": "E-V12-2", "lineage": "LIN-V12-B", "group": "G-V12-B", "verified": true}],
-     "challenge": null, "derive": {"parent": "A-V01", "own_evidence": true}, "idempotency_key": "IDEM-V12",
-     "expected": {"decision": "PROMOTED", "transition": "gate_pass", "reason_code": "THRESHOLD_MET", "view_visible": true, "audit": ["DERIVE", "PROMOTE"], "history_preserved": true}},
-    {"case_id": "S1-011-I01", "class": "insufficient_evidence", "severity": "critical", "stage": "promotion", "probe": null,
-     "actor_role": "governance_gate", "tenant": "TEN-1", "workspace": "WS-1", "goal": "GOAL-S1-011", "scope": "SCOPE-KB-1",
-     "action": "promote", "prior_status": "PROPOSED",
-     "assertion": {"assertion_id": "A-I01", "claim_version": 1},
-     "evidence": [
-       {"evidence_id": "E-I01-1", "lineage": "LIN-I01-A", "group": "G-I01-A", "verified": true}],
-     "challenge": null, "idempotency_key": "IDEM-I01",
-     "expected": {"decision": "REJECTED", "transition": "gate_fail", "reason_code": "EVIDENCE_INSUFFICIENT", "view_visible": false, "audit": ["REJECT"], "history_preserved": true}},
-    {"case_id": "S1-011-I02", "class": "insufficient_evidence", "severity": "critical", "stage": "promotion", "probe": "A",
-     "actor_role": "governance_gate", "tenant": "TEN-1", "workspace": "WS-1", "goal": "GOAL-S1-011", "scope": "SCOPE-KB-1",
-     "action": "promote", "prior_status": "PROPOSED",
-     "assertion": {"assertion_id": "A-I02", "claim_version": 1},
-     "evidence": [
-       {"evidence_id": "E-I02-1", "lineage": "LIN-I02-SAME", "group": "G-I02-SAME", "verified": true},
-       {"evidence_id": "E-I02-2", "lineage": "LIN-I02-SAME", "group": "G-I02-SAME", "verified": true}],
-     "challenge": null, "idempotency_key": "IDEM-I02",
-     "expected": {"decision": "REJECTED", "transition": "gate_fail", "reason_code": "EVIDENCE_CORRELATED", "view_visible": false, "audit": ["REJECT"], "history_preserved": true}},
-    {"case_id": "S1-011-I03", "class": "insufficient_evidence", "severity": "critical", "stage": "promotion", "probe": "A",
-     "actor_role": "governance_gate", "tenant": "TEN-1", "workspace": "WS-1", "goal": "GOAL-S1-011", "scope": "SCOPE-KB-1",
-     "action": "promote", "prior_status": "PROPOSED",
-     "assertion": {"assertion_id": "A-I03", "claim_version": 1},
-     "evidence": [
-       {"evidence_id": "E-I03-1", "lineage": "LIN-I03-ORIGIN", "group": "G-I03-X", "verified": true},
-       {"evidence_id": "E-I03-2", "lineage": "LIN-I03-ORIGIN", "group": "G-I03-Y", "verified": true}],
-     "challenge": null, "note": "Mirror/retelling shares lineage despite distinct URLs and independence labels; groups collapse to one.",
-     "idempotency_key": "IDEM-I03",
-     "expected": {"decision": "REJECTED", "transition": "gate_fail", "reason_code": "EVIDENCE_CORRELATED", "view_visible": false, "audit": ["REJECT"], "history_preserved": true}},
-    {"case_id": "S1-011-I04", "class": "insufficient_evidence", "severity": "high", "stage": "promotion", "probe": null,
-     "actor_role": "governance_gate", "tenant": "TEN-1", "workspace": "WS-1", "goal": "GOAL-S1-011", "scope": "SCOPE-KB-1",
-     "action": "promote", "prior_status": "PROPOSED",
-     "assertion": {"assertion_id": "A-I04", "claim_version": 1},
-     "evidence": [
-       {"evidence_id": "E-I04-1", "lineage": "LIN-I04-A", "group": "G-I04-A", "verified": false},
-       {"evidence_id": "E-I04-2", "lineage": "LIN-I04-B", "group": "G-I04-B", "verified": false}],
-     "challenge": null, "idempotency_key": "IDEM-I04",
-     "expected": {"decision": "REJECTED", "transition": "gate_fail", "reason_code": "EVIDENCE_INSUFFICIENT", "view_visible": false, "audit": ["REJECT"], "history_preserved": true}},
-    {"case_id": "S1-011-I05", "class": "insufficient_evidence", "severity": "high", "stage": "promotion", "probe": null,
-     "actor_role": "governance_gate", "tenant": "TEN-1", "workspace": "WS-1", "goal": "GOAL-S1-011", "scope": "SCOPE-KB-1",
-     "action": "promote", "prior_status": "PROPOSED",
-     "assertion": {"assertion_id": "A-I05", "claim_version": 2},
-     "evidence": [
-       {"evidence_id": "E-I05-1", "claim_version": 1, "lineage": "LIN-I05-A", "group": "G-I05-A", "verified": true},
-       {"evidence_id": "E-I05-2", "claim_version": 2, "lineage": "LIN-I05-B", "group": "G-I05-B", "verified": true}],
-     "challenge": null, "idempotency_key": "IDEM-I05",
-     "expected": {"decision": "REJECTED", "transition": "gate_fail", "reason_code": "EVIDENCE_INSUFFICIENT", "view_visible": false, "audit": ["REJECT"], "history_preserved": true}},
-    {"case_id": "S1-011-I06", "class": "insufficient_evidence", "severity": "high", "stage": "promotion", "probe": null,
-     "actor_role": "governance_gate", "tenant": "TEN-1", "workspace": "WS-1", "goal": "GOAL-S1-011", "scope": "SCOPE-KB-1",
-     "action": "promote", "prior_status": "PROPOSED",
-     "assertion": {"assertion_id": "A-I06", "claim_version": 1},
-     "evidence": [
-       {"evidence_id": "E-I06-1", "scope": "SCOPE-OTHER", "lineage": "LIN-I06-A", "group": "G-I06-A", "verified": true},
-       {"evidence_id": "E-I06-2", "scope": "SCOPE-OTHER", "lineage": "LIN-I06-B", "group": "G-I06-B", "verified": true}],
-     "challenge": null, "idempotency_key": "IDEM-I06",
-     "expected": {"decision": "REJECTED", "transition": "gate_fail", "reason_code": "SCOPE_MISMATCH", "view_visible": false, "audit": ["REJECT"], "history_preserved": true}},
-    {"case_id": "S1-011-I07", "class": "insufficient_evidence", "severity": "high", "stage": "promotion", "probe": null,
-     "actor_role": "governance_gate", "tenant": "TEN-1", "workspace": "WS-1", "goal": "GOAL-S1-011", "scope": "SCOPE-KB-1",
-     "action": "promote", "prior_status": "PROPOSED",
-     "assertion": {"assertion_id": "A-I07", "claim_version": 1},
-     "evidence": [
-       {"evidence_id": "E-I07-1", "lineage": "", "group": "G-I07-A", "verified": true},
-       {"evidence_id": "E-I07-2", "lineage": "LIN-I07-B", "group": "G-I07-B", "verified": true}],
-     "challenge": null, "idempotency_key": "IDEM-I07",
-     "expected": {"decision": "REJECTED", "transition": "gate_fail", "reason_code": "EVIDENCE_INSUFFICIENT", "view_visible": false, "audit": ["REJECT"], "history_preserved": true}},
-    {"case_id": "S1-011-I08", "class": "insufficient_evidence", "severity": "critical", "stage": "promotion", "probe": "D",
-     "actor_role": "governance_gate", "tenant": "TEN-1", "workspace": "WS-1", "goal": "GOAL-S1-011", "scope": "SCOPE-KB-1",
-     "action": "promote", "prior_status": "PROPOSED",
-     "assertion": {"assertion_id": "A-I08", "claim_version": 1},
-     "evidence": [
-       {"evidence_id": "E-I08-1", "lineage": "LIN-I08-PUB", "group": "G-I08-1", "verified": true},
-       {"evidence_id": "E-I08-2", "lineage": "LIN-I08-PUB", "group": "G-I08-2", "verified": true},
-       {"evidence_id": "E-I08-3", "lineage": "LIN-I08-PUB", "group": "G-I08-3", "verified": true}],
-     "challenge": null, "note": "Three apparent sources, one publisher lineage: Sybil/collapsed independence.",
-     "idempotency_key": "IDEM-I08",
-     "expected": {"decision": "REJECTED", "transition": "gate_fail", "reason_code": "EVIDENCE_CORRELATED", "view_visible": false, "audit": ["REJECT"], "history_preserved": true}},
-    {"case_id": "S1-011-I09", "class": "insufficient_evidence", "severity": "critical", "stage": "promotion", "probe": "D",
-     "actor_role": "governance_gate", "tenant": "TEN-1", "workspace": "WS-1", "goal": "GOAL-S1-011", "scope": "SCOPE-KB-1",
-     "action": "promote", "prior_status": "PROPOSED",
-     "assertion": {"assertion_id": "A-I09", "claim_version": 1},
-     "evidence": [
-       {"evidence_id": "E-I09-1", "lineage": "LIN-I09-CIRC", "group": "G-I09-1", "verified": true},
-       {"evidence_id": "E-I09-2", "lineage": "LIN-I09-CIRC", "group": "G-I09-2", "verified": true}],
-     "challenge": null, "note": "Circular citations collapse to one lineage.",
-     "idempotency_key": "IDEM-I09",
-     "expected": {"decision": "REJECTED", "transition": "gate_fail", "reason_code": "EVIDENCE_CORRELATED", "view_visible": false, "audit": ["REJECT"], "history_preserved": true}},
-    {"case_id": "S1-011-I10", "class": "insufficient_evidence", "severity": "high", "stage": "promotion", "probe": null,
-     "actor_role": "governance_gate", "tenant": "TEN-1", "workspace": "WS-1", "goal": "GOAL-S1-011", "scope": "SCOPE-KB-1",
-     "action": "promote", "prior_status": "PROPOSED",
-     "assertion": {"assertion_id": "A-I10", "claim_version": 1},
-     "evidence": [
-       {"evidence_id": "E-I10-1", "lineage": "LIN-I10-A", "group": "G-I10-ONLY", "verified": true},
-       {"evidence_id": "E-I10-2", "lineage": "LIN-I10-B", "group": "G-I10-ONLY", "verified": true},
-       {"evidence_id": "E-I10-3", "lineage": "LIN-I10-C", "group": "G-I10-ONLY", "verified": true}],
-     "challenge": null, "idempotency_key": "IDEM-I10",
-     "expected": {"decision": "REJECTED", "transition": "gate_fail", "reason_code": "EVIDENCE_CORRELATED", "view_visible": false, "audit": ["REJECT"], "history_preserved": true}},
-    {"case_id": "S1-011-I11", "class": "insufficient_evidence", "severity": "high", "stage": "promotion", "probe": null,
-     "actor_role": "governance_gate", "tenant": "TEN-1", "workspace": "WS-1", "goal": "GOAL-S1-011", "scope": "SCOPE-KB-1",
-     "action": "promote", "prior_status": "PROPOSED",
-     "assertion": {"assertion_id": "A-I11", "claim_version": 1},
-     "evidence": [
-       {"evidence_id": "E-I11-1", "lineage": "LIN-I11-A", "group": "G-I11-A", "verified": true},
-       {"evidence_id": "E-I11-2", "lineage": "LIN-I11-B", "group": "G-I11-B", "verified": true}],
-     "challenge": null, "policy_version": "s1-011-policy-v0-stale", "idempotency_key": "IDEM-I11",
-     "expected": {"decision": "REJECTED", "transition": "gate_fail", "reason_code": "POLICY_MISMATCH", "view_visible": false, "audit": ["REJECT"], "history_preserved": true}},
-    {"case_id": "S1-011-I12", "class": "insufficient_evidence", "severity": "critical", "stage": "promotion", "probe": null,
-     "actor_role": "worker", "tenant": "TEN-1", "workspace": "WS-1", "goal": "GOAL-S1-011", "scope": "SCOPE-KB-1",
-     "action": "promote", "prior_status": "PROPOSED",
-     "assertion": {"assertion_id": "A-I12", "claim_version": 1},
-     "evidence": [
-       {"evidence_id": "E-I12-1", "lineage": "LIN-I12-A", "group": "G-I12-A", "verified": true},
-       {"evidence_id": "E-I12-2", "lineage": "LIN-I12-B", "group": "G-I12-B", "verified": true}],
-     "challenge": null, "idempotency_key": "IDEM-I12",
-     "expected": {"decision": "NO_TRANSITION", "transition": null, "reason_code": "AUTHORITY_DENIED", "view_visible": false, "audit": [], "history_preserved": true}},
-    {"case_id": "S1-011-C01", "class": "challenge_retraction", "severity": "critical", "stage": "challenge", "probe": "B",
-     "actor_role": "governance_gate", "tenant": "TEN-1", "workspace": "WS-1", "goal": "GOAL-S1-011", "scope": "SCOPE-KB-1",
-     "action": "challenge", "prior_status": "PROMOTED",
-     "assertion": {"assertion_id": "A-C01", "claim_version": 1},
-     "evidence": [
-       {"evidence_id": "E-C01-1", "lineage": "LIN-C01-A", "group": "G-C01-A", "verified": true},
-       {"evidence_id": "E-C01-2", "lineage": "LIN-C01-B", "group": "G-C01-B", "verified": true}],
-     "challenge": {"challenge_id": "CH-C01", "state": "open", "in_scope": true, "fresh_evidence": false}, "idempotency_key": "IDEM-C01",
-     "expected": {"decision": "CHALLENGED", "transition": "challenge_accepted", "reason_code": "CHALLENGE_OPENED", "view_visible": false, "audit": ["CHALLENGE"], "history_preserved": true}},
-    {"case_id": "S1-011-C02", "class": "challenge_retraction", "severity": "critical", "stage": "retraction", "probe": "B",
-     "actor_role": "governance_gate", "tenant": "TEN-1", "workspace": "WS-1", "goal": "GOAL-S1-011", "scope": "SCOPE-KB-1",
-     "action": "revoke_source", "prior_status": "PROMOTED",
-     "assertion": {"assertion_id": "A-C02", "claim_version": 1},
-     "evidence": [
-       {"evidence_id": "E-C02-1", "lineage": "LIN-C02-A", "group": "G-C02-A", "verified": true},
-       {"evidence_id": "E-C02-2", "lineage": "LIN-C02-B", "group": "G-C02-B", "verified": true}],
-     "challenge": null, "source_revoked": ["LIN-C02-A"], "idempotency_key": "IDEM-C02",
-     "expected": {"decision": "CHALLENGED", "transition": "source_revoked", "reason_code": "SOURCE_REVOKED", "view_visible": false, "audit": ["CHALLENGE"], "history_preserved": true}},
-    {"case_id": "S1-011-C03", "class": "challenge_retraction", "severity": "high", "stage": "challenge", "probe": null,
-     "actor_role": "governance_gate", "tenant": "TEN-1", "workspace": "WS-1", "goal": "GOAL-S1-011", "scope": "SCOPE-KB-1",
-     "action": "uphold", "prior_status": "CHALLENGED",
-     "assertion": {"assertion_id": "A-C03", "claim_version": 1},
-     "evidence": [
-       {"evidence_id": "E-C03-1", "lineage": "LIN-C03-A", "group": "G-C03-A", "verified": true},
-       {"evidence_id": "E-C03-2", "lineage": "LIN-C03-B", "group": "G-C03-B", "verified": true}],
-     "challenge": {"challenge_id": "CH-C03", "state": "resolved", "in_scope": true, "fresh_evidence": true}, "idempotency_key": "IDEM-C03",
-     "expected": {"decision": "PROMOTED", "transition": "upheld_with_evidence", "reason_code": "CHALLENGE_UPHELD", "view_visible": true, "audit": ["UPHOLD"], "history_preserved": true}},
-    {"case_id": "S1-011-C04", "class": "challenge_retraction", "severity": "high", "stage": "retraction", "probe": null,
-     "actor_role": "governance_gate", "tenant": "TEN-1", "workspace": "WS-1", "goal": "GOAL-S1-011", "scope": "SCOPE-KB-1",
-     "action": "retract", "prior_status": "CHALLENGED",
-     "assertion": {"assertion_id": "A-C04", "claim_version": 1},
-     "evidence": [
-       {"evidence_id": "E-C04-1", "lineage": "LIN-C04-A", "group": "G-C04-A", "verified": true}],
-     "challenge": {"challenge_id": "CH-C04", "state": "open", "in_scope": true, "fresh_evidence": false}, "idempotency_key": "IDEM-C04",
-     "expected": {"decision": "RETRACTED", "transition": "challenge_sustained_or_expired", "reason_code": "CHALLENGE_SUSTAINED", "view_visible": false, "audit": ["RETRACT"], "history_preserved": true}},
-    {"case_id": "S1-011-C05", "class": "challenge_retraction", "severity": "high", "stage": "retraction", "probe": null,
-     "actor_role": "governance_gate", "tenant": "TEN-1", "workspace": "WS-1", "goal": "GOAL-S1-011", "scope": "SCOPE-KB-1",
-     "action": "supersede", "prior_status": "PROMOTED",
-     "assertion": {"assertion_id": "A-C05", "claim_version": 1},
-     "evidence": [
-       {"evidence_id": "E-C05-1", "lineage": "LIN-C05-A", "group": "G-C05-A", "verified": true},
-       {"evidence_id": "E-C05-2", "lineage": "LIN-C05-B", "group": "G-C05-B", "verified": true}],
-     "challenge": null, "superseded_by": "A-C05-V2", "idempotency_key": "IDEM-C05",
-     "expected": {"decision": "RETRACTED", "transition": "superseded", "reason_code": "SUPERSEDED", "view_visible": false, "audit": ["SUPERSEDE"], "history_preserved": true}},
-    {"case_id": "S1-011-C06", "class": "challenge_retraction", "severity": "medium", "stage": "retraction", "probe": null,
-     "actor_role": "worker", "tenant": "TEN-1", "workspace": "WS-1", "goal": "GOAL-S1-011", "scope": "SCOPE-KB-1",
-     "action": "retract", "prior_status": "PROPOSED",
-     "assertion": {"assertion_id": "A-C06", "claim_version": 1},
-     "evidence": [], "challenge": null, "idempotency_key": "IDEM-C06",
-     "expected": {"decision": "RETRACTED", "transition": "withdrawn", "reason_code": "WITHDRAWN", "view_visible": false, "audit": ["RETRACT"], "history_preserved": true}},
-    {"case_id": "S1-011-C07", "class": "challenge_retraction", "severity": "medium", "stage": "challenge", "probe": "H",
-     "actor_role": "governance_gate", "tenant": "TEN-1", "workspace": "WS-1", "goal": "GOAL-S1-011", "scope": "SCOPE-KB-1",
-     "action": "challenge", "prior_status": "CHALLENGED",
-     "assertion": {"assertion_id": "A-C07", "claim_version": 1},
-     "evidence": [
-       {"evidence_id": "E-C07-1", "lineage": "LIN-C07-A", "group": "G-C07-A", "verified": true},
-       {"evidence_id": "E-C07-2", "lineage": "LIN-C07-B", "group": "G-C07-B", "verified": true}],
-     "challenge": {"challenge_id": "CH-C07", "state": "open", "in_scope": true, "fresh_evidence": false}, "idempotency_key": "IDEM-C07",
-     "expected": {"decision": "NO_TRANSITION", "transition": null, "reason_code": "DUPLICATE_IDEMPOTENT", "view_visible": false, "audit": [], "history_preserved": true}},
-    {"case_id": "S1-011-C08", "class": "challenge_retraction", "severity": "medium", "stage": "retraction", "probe": null,
-     "actor_role": "governance_gate", "tenant": "TEN-1", "workspace": "WS-1", "goal": "GOAL-S1-011", "scope": "SCOPE-KB-1",
-     "action": "retract", "prior_status": "CHALLENGED",
-     "assertion": {"assertion_id": "A-C08", "claim_version": 1},
-     "evidence": [
-       {"evidence_id": "E-C08-1", "lineage": "LIN-C08-A", "group": "G-C08-A", "verified": true}],
-     "challenge": {"challenge_id": "CH-C08", "state": "expired", "in_scope": true, "fresh_evidence": false}, "idempotency_key": "IDEM-C08",
-     "expected": {"decision": "RETRACTED", "transition": "challenge_sustained_or_expired", "reason_code": "CHALLENGE_SUSTAINED", "view_visible": false, "audit": ["RETRACT"], "history_preserved": true}},
-    {"case_id": "S1-011-C09", "class": "challenge_retraction", "severity": "high", "stage": "retraction", "probe": "B",
-     "actor_role": "governance_gate", "tenant": "TEN-1", "workspace": "WS-1", "goal": "GOAL-S1-011", "scope": "SCOPE-KB-1",
-     "action": "revoke_source", "prior_status": "PROMOTED",
-     "assertion": {"assertion_id": "A-C09", "claim_version": 1},
-     "evidence": [
-       {"evidence_id": "E-C09-1", "lineage": "LIN-C09-SHARED", "group": "G-C09-A", "verified": true},
-       {"evidence_id": "E-C09-2", "lineage": "LIN-C09-SHARED", "group": "G-C09-B", "verified": true}],
-     "challenge": null, "source_revoked": ["LIN-C09-SHARED"], "dependents": ["A-C09-D1", "A-C09-D2"], "idempotency_key": "IDEM-C09",
-     "expected": {"decision": "CHALLENGED", "transition": "source_revoked", "reason_code": "SOURCE_REVOKED", "view_visible": false, "audit": ["CHALLENGE"], "history_preserved": true}},
-    {"case_id": "S1-011-C10", "class": "challenge_retraction", "severity": "medium", "stage": "challenge", "probe": null,
-     "actor_role": "governance_gate", "tenant": "TEN-1", "workspace": "WS-1", "goal": "GOAL-S1-011", "scope": "SCOPE-KB-1",
-     "action": "uphold", "prior_status": "CHALLENGED",
-     "assertion": {"assertion_id": "A-C10", "claim_version": 1},
-     "evidence": [
-       {"evidence_id": "E-C10-1", "lineage": "LIN-C10-A", "group": "G-C10-A", "verified": true}],
-     "challenge": {"challenge_id": "CH-C10", "state": "open", "in_scope": true, "fresh_evidence": false}, "idempotency_key": "IDEM-C10",
-     "expected": {"decision": "NO_TRANSITION", "transition": null, "reason_code": "THRESHOLD_NOT_MET", "view_visible": false, "audit": [], "history_preserved": true}},
-    {"case_id": "S1-011-C11", "class": "challenge_retraction", "severity": "medium", "stage": "challenge", "probe": null,
-     "actor_role": "governance_gate", "tenant": "TEN-1", "workspace": "WS-1", "goal": "GOAL-S1-011", "scope": "SCOPE-KB-1",
-     "action": "challenge", "prior_status": "PROMOTED",
-     "assertion": {"assertion_id": "A-C11", "claim_version": 1},
-     "evidence": [
-       {"evidence_id": "E-C11-1", "lineage": "LIN-C11-A", "group": "G-C11-A", "verified": true},
-       {"evidence_id": "E-C11-2", "lineage": "LIN-C11-B", "group": "G-C11-B", "verified": true}],
-     "challenge": {"challenge_id": "CH-C11", "state": "open", "in_scope": false, "fresh_evidence": false}, "idempotency_key": "IDEM-C11",
-     "expected": {"decision": "NO_TRANSITION", "transition": null, "reason_code": "SCOPE_MISMATCH", "view_visible": true, "audit": [], "history_preserved": true}},
-    {"case_id": "S1-011-C12", "class": "challenge_retraction", "severity": "low", "stage": "retraction", "probe": null,
-     "actor_role": "governance_gate", "tenant": "TEN-1", "workspace": "WS-1", "goal": "GOAL-S1-011", "scope": "SCOPE-KB-1",
-     "action": "retract", "prior_status": "REJECTED",
-     "assertion": {"assertion_id": "A-C12", "claim_version": 1},
-     "evidence": [], "challenge": null, "idempotency_key": "IDEM-C12",
-     "expected": {"decision": "NO_TRANSITION", "transition": null, "reason_code": "UNKNOWN_TRANSITION", "view_visible": false, "audit": [], "history_preserved": true}}
+    {
+      "case_id": "S1-011-V01",
+      "class": "valid_promotion",
+      "severity": "high",
+      "stage": "promotion",
+      "probe": null,
+      "actor_role": "governance_gate",
+      "tenant": "TEN-1",
+      "workspace": "WS-1",
+      "goal": "GOAL-S1-011",
+      "scope": "SCOPE-KB-1",
+      "action": "promote",
+      "prior_status": "PROPOSED",
+      "assertion": {
+        "assertion_id": "A-V01",
+        "claim_version": 1
+      },
+      "evidence": [
+        {
+          "evidence_id": "E-V01-1",
+          "lineage": "LIN-V01-A",
+          "group": "G-V01-A",
+          "verified": true
+        },
+        {
+          "evidence_id": "E-V01-2",
+          "lineage": "LIN-V01-B",
+          "group": "G-V01-B",
+          "verified": true
+        }
+      ],
+      "challenge": null,
+      "idempotency_key": "IDEM-V01",
+      "expected": {
+        "decision": "PROMOTED",
+        "transition": "gate_pass",
+        "reason_code": "THRESHOLD_MET",
+        "view_visible": true,
+        "audit": [
+          "PROMOTE"
+        ],
+        "history_preserved": true
+      },
+      "policy_version": "s1-011-policy-v1"
+    },
+    {
+      "case_id": "S1-011-V02",
+      "class": "valid_promotion",
+      "severity": "medium",
+      "stage": "promotion",
+      "probe": null,
+      "actor_role": "governance_gate",
+      "tenant": "TEN-1",
+      "workspace": "WS-2",
+      "goal": "GOAL-S1-011",
+      "scope": "SCOPE-KB-2",
+      "action": "promote",
+      "prior_status": "PROPOSED",
+      "assertion": {
+        "assertion_id": "A-V02",
+        "claim_version": 1
+      },
+      "evidence": [
+        {
+          "evidence_id": "E-V02-1",
+          "lineage": "LIN-V02-A",
+          "group": "G-V02-A",
+          "verified": true
+        },
+        {
+          "evidence_id": "E-V02-2",
+          "lineage": "LIN-V02-B",
+          "group": "G-V02-B",
+          "verified": true
+        },
+        {
+          "evidence_id": "E-V02-3",
+          "lineage": "LIN-V02-C",
+          "group": "G-V02-C",
+          "verified": true
+        }
+      ],
+      "challenge": null,
+      "idempotency_key": "IDEM-V02",
+      "expected": {
+        "decision": "PROMOTED",
+        "transition": "gate_pass",
+        "reason_code": "THRESHOLD_MET",
+        "view_visible": true,
+        "audit": [
+          "PROMOTE"
+        ],
+        "history_preserved": true
+      },
+      "policy_version": "s1-011-policy-v1"
+    },
+    {
+      "case_id": "S1-011-V03",
+      "class": "valid_promotion",
+      "severity": "high",
+      "stage": "challenge",
+      "probe": null,
+      "actor_role": "governance_gate",
+      "tenant": "TEN-1",
+      "workspace": "WS-1",
+      "goal": "GOAL-S1-011",
+      "scope": "SCOPE-KB-1",
+      "action": "uphold",
+      "prior_status": "CHALLENGED",
+      "assertion": {
+        "assertion_id": "A-V03",
+        "claim_version": 1
+      },
+      "evidence": [
+        {
+          "evidence_id": "E-V03-1",
+          "lineage": "LIN-V03-A",
+          "group": "G-V03-A",
+          "verified": true
+        },
+        {
+          "evidence_id": "E-V03-2",
+          "lineage": "LIN-V03-B",
+          "group": "G-V03-B",
+          "verified": true
+        }
+      ],
+      "challenge": {
+        "challenge_id": "CH-V03",
+        "state": "resolved",
+        "in_scope": true,
+        "fresh_evidence": true
+      },
+      "idempotency_key": "IDEM-V03",
+      "expected": {
+        "decision": "PROMOTED",
+        "transition": "upheld_with_evidence",
+        "reason_code": "CHALLENGE_UPHELD",
+        "view_visible": true,
+        "audit": [
+          "UPHOLD"
+        ],
+        "history_preserved": true
+      },
+      "policy_version": "s1-011-policy-v1"
+    },
+    {
+      "case_id": "S1-011-V04",
+      "class": "valid_promotion",
+      "severity": "medium",
+      "stage": "promotion",
+      "probe": null,
+      "actor_role": "governance_gate",
+      "tenant": "TEN-2",
+      "workspace": "WS-1",
+      "goal": "GOAL-S1-011",
+      "scope": "SCOPE-KB-1",
+      "action": "promote",
+      "prior_status": "PROPOSED",
+      "assertion": {
+        "assertion_id": "A-V04",
+        "claim_version": 2
+      },
+      "evidence": [
+        {
+          "evidence_id": "E-V04-1",
+          "claim_version": 2,
+          "lineage": "LIN-V04-A",
+          "group": "G-V04-A",
+          "verified": true
+        },
+        {
+          "evidence_id": "E-V04-2",
+          "claim_version": 2,
+          "lineage": "LIN-V04-B",
+          "group": "G-V04-B",
+          "verified": true
+        }
+      ],
+      "challenge": null,
+      "idempotency_key": "IDEM-V04",
+      "expected": {
+        "decision": "PROMOTED",
+        "transition": "gate_pass",
+        "reason_code": "THRESHOLD_MET",
+        "view_visible": true,
+        "audit": [
+          "PROMOTE"
+        ],
+        "history_preserved": true
+      },
+      "policy_version": "s1-011-policy-v1"
+    },
+    {
+      "case_id": "S1-011-V05",
+      "class": "valid_promotion",
+      "severity": "medium",
+      "stage": "proposal",
+      "probe": null,
+      "actor_role": "worker",
+      "tenant": "TEN-1",
+      "workspace": "WS-1",
+      "goal": "GOAL-S1-011",
+      "scope": "SCOPE-KB-1",
+      "action": "propose",
+      "prior_status": "NONE",
+      "assertion": {
+        "assertion_id": "A-V05",
+        "claim_version": 1
+      },
+      "evidence": [],
+      "challenge": null,
+      "idempotency_key": "IDEM-V05",
+      "expected": {
+        "decision": "RECORDED",
+        "transition": null,
+        "reason_code": "THRESHOLD_MET",
+        "view_visible": false,
+        "audit": [
+          "PROPOSE"
+        ],
+        "history_preserved": true
+      },
+      "policy_version": "s1-011-policy-v1"
+    },
+    {
+      "case_id": "S1-011-V06",
+      "class": "valid_promotion",
+      "severity": "medium",
+      "stage": "promotion",
+      "probe": null,
+      "actor_role": "governance_gate",
+      "tenant": "TEN-1",
+      "workspace": "WS-1",
+      "goal": "GOAL-S1-011",
+      "scope": "SCOPE-KB-1",
+      "action": "promote",
+      "prior_status": "PROPOSED",
+      "assertion": {
+        "assertion_id": "A-V06",
+        "claim_version": 1
+      },
+      "evidence": [
+        {
+          "evidence_id": "E-V06-1",
+          "lineage": "LIN-V06-A",
+          "group": "G-V06-A",
+          "verified": true
+        },
+        {
+          "evidence_id": "E-V06-2",
+          "lineage": "LIN-V06-B",
+          "group": "G-V06-B",
+          "verified": true
+        },
+        {
+          "evidence_id": "E-V06-3",
+          "lineage": "LIN-V06-A",
+          "group": "G-V06-A",
+          "verified": true
+        }
+      ],
+      "challenge": null,
+      "idempotency_key": "IDEM-V06",
+      "expected": {
+        "decision": "PROMOTED",
+        "transition": "gate_pass",
+        "reason_code": "THRESHOLD_MET",
+        "view_visible": true,
+        "audit": [
+          "PROMOTE"
+        ],
+        "history_preserved": true
+      },
+      "policy_version": "s1-011-policy-v1"
+    },
+    {
+      "case_id": "S1-011-V07",
+      "class": "valid_promotion",
+      "severity": "high",
+      "stage": "promotion",
+      "probe": null,
+      "actor_role": "governance_gate",
+      "tenant": "TEN-1",
+      "workspace": "WS-1",
+      "goal": "GOAL-S1-011",
+      "scope": "SCOPE-KB-1",
+      "action": "promote",
+      "prior_status": "PROPOSED",
+      "assertion": {
+        "assertion_id": "A-V07",
+        "claim_version": 1
+      },
+      "evidence": [
+        {
+          "evidence_id": "E-V07-1",
+          "lineage": "LIN-V07-A",
+          "group": "G-V07-A",
+          "verified": true
+        },
+        {
+          "evidence_id": "E-V07-2",
+          "lineage": "LIN-V07-B",
+          "group": "G-V07-B",
+          "verified": true
+        }
+      ],
+      "challenge": {
+        "challenge_id": "CH-V07",
+        "state": "resolved",
+        "in_scope": true,
+        "fresh_evidence": true
+      },
+      "idempotency_key": "IDEM-V07",
+      "expected": {
+        "decision": "PROMOTED",
+        "transition": "gate_pass",
+        "reason_code": "THRESHOLD_MET",
+        "view_visible": true,
+        "audit": [
+          "PROMOTE"
+        ],
+        "history_preserved": true
+      },
+      "policy_version": "s1-011-policy-v1"
+    },
+    {
+      "case_id": "S1-011-V08",
+      "class": "valid_promotion",
+      "severity": "medium",
+      "stage": "promotion",
+      "probe": null,
+      "actor_role": "operator",
+      "tenant": "TEN-1",
+      "workspace": "WS-1",
+      "goal": "GOAL-S1-011",
+      "scope": "SCOPE-KB-1",
+      "action": "uphold",
+      "prior_status": "CHALLENGED",
+      "assertion": {
+        "assertion_id": "A-V08",
+        "claim_version": 1
+      },
+      "evidence": [
+        {
+          "evidence_id": "E-V08-1",
+          "lineage": "LIN-V08-A",
+          "group": "G-V08-A",
+          "verified": true
+        },
+        {
+          "evidence_id": "E-V08-2",
+          "lineage": "LIN-V08-B",
+          "group": "G-V08-B",
+          "verified": true
+        }
+      ],
+      "challenge": {
+        "challenge_id": "CH-V08",
+        "state": "resolved",
+        "in_scope": true,
+        "fresh_evidence": true
+      },
+      "idempotency_key": "IDEM-V08",
+      "expected": {
+        "decision": "PROMOTED",
+        "transition": "upheld_with_evidence",
+        "reason_code": "CHALLENGE_UPHELD",
+        "view_visible": true,
+        "audit": [
+          "UPHOLD"
+        ],
+        "history_preserved": true
+      },
+      "policy_version": "s1-011-policy-v1"
+    },
+    {
+      "case_id": "S1-011-V09",
+      "class": "valid_promotion",
+      "severity": "medium",
+      "stage": "promotion",
+      "probe": null,
+      "actor_role": "governance_gate",
+      "tenant": "TEN-3",
+      "workspace": "WS-9",
+      "goal": "GOAL-S1-011-X",
+      "scope": "SCOPE-KB-9",
+      "action": "promote",
+      "prior_status": "PROPOSED",
+      "assertion": {
+        "assertion_id": "A-V09",
+        "claim_version": 1
+      },
+      "evidence": [
+        {
+          "evidence_id": "E-V09-1",
+          "scope": "SCOPE-KB-9",
+          "lineage": "LIN-V09-A",
+          "group": "G-V09-A",
+          "verified": true
+        },
+        {
+          "evidence_id": "E-V09-2",
+          "scope": "SCOPE-KB-9",
+          "lineage": "LIN-V09-B",
+          "group": "G-V09-B",
+          "verified": true
+        }
+      ],
+      "challenge": null,
+      "idempotency_key": "IDEM-V09",
+      "expected": {
+        "decision": "PROMOTED",
+        "transition": "gate_pass",
+        "reason_code": "THRESHOLD_MET",
+        "view_visible": true,
+        "audit": [
+          "PROMOTE"
+        ],
+        "history_preserved": true
+      },
+      "policy_version": "s1-011-policy-v1"
+    },
+    {
+      "case_id": "S1-011-V10",
+      "class": "valid_promotion",
+      "severity": "medium",
+      "stage": "promotion",
+      "probe": null,
+      "actor_role": "governance_gate",
+      "tenant": "TEN-1",
+      "workspace": "WS-1",
+      "goal": "GOAL-S1-011",
+      "scope": "SCOPE-KB-1",
+      "action": "promote",
+      "prior_status": "PROPOSED",
+      "assertion": {
+        "assertion_id": "A-V10",
+        "claim_version": 3
+      },
+      "evidence": [
+        {
+          "evidence_id": "E-V10-1",
+          "claim_version": 3,
+          "lineage": "LIN-V10-A",
+          "group": "G-V10-A",
+          "verified": true
+        },
+        {
+          "evidence_id": "E-V10-2",
+          "claim_version": 3,
+          "lineage": "LIN-V10-B",
+          "group": "G-V10-B",
+          "verified": true
+        }
+      ],
+      "challenge": null,
+      "idempotency_key": "IDEM-V10",
+      "expected": {
+        "decision": "PROMOTED",
+        "transition": "gate_pass",
+        "reason_code": "THRESHOLD_MET",
+        "view_visible": true,
+        "audit": [
+          "PROMOTE"
+        ],
+        "history_preserved": true
+      },
+      "policy_version": "s1-011-policy-v1"
+    },
+    {
+      "case_id": "S1-011-V11",
+      "class": "valid_promotion",
+      "severity": "low",
+      "stage": "promotion",
+      "probe": null,
+      "actor_role": "governance_gate",
+      "tenant": "TEN-1",
+      "workspace": "WS-1",
+      "goal": "GOAL-S1-011",
+      "scope": "SCOPE-KB-1",
+      "action": "promote",
+      "prior_status": "PROPOSED",
+      "assertion": {
+        "assertion_id": "A-V11",
+        "claim_version": 1
+      },
+      "evidence": [
+        {
+          "evidence_id": "E-V11-1",
+          "lineage": "LIN-V11-A",
+          "group": "G-V11-A",
+          "verified": true
+        },
+        {
+          "evidence_id": "E-V11-2",
+          "lineage": "LIN-V11-B",
+          "group": "G-V11-B",
+          "verified": true
+        },
+        {
+          "evidence_id": "E-V11-3",
+          "lineage": "LIN-V11-C",
+          "group": "G-V11-C",
+          "verified": true
+        },
+        {
+          "evidence_id": "E-V11-4",
+          "lineage": "LIN-V11-D",
+          "group": "G-V11-D",
+          "verified": true
+        }
+      ],
+      "challenge": null,
+      "idempotency_key": "IDEM-V11",
+      "expected": {
+        "decision": "PROMOTED",
+        "transition": "gate_pass",
+        "reason_code": "THRESHOLD_MET",
+        "view_visible": true,
+        "audit": [
+          "PROMOTE"
+        ],
+        "history_preserved": true
+      },
+      "policy_version": "s1-011-policy-v1"
+    },
+    {
+      "case_id": "S1-011-V12",
+      "class": "valid_promotion",
+      "severity": "low",
+      "stage": "promotion",
+      "probe": null,
+      "actor_role": "governance_gate",
+      "tenant": "TEN-1",
+      "workspace": "WS-1",
+      "goal": "GOAL-S1-011",
+      "scope": "SCOPE-KB-1",
+      "action": "derive_claim",
+      "prior_status": "PROPOSED",
+      "assertion": {
+        "assertion_id": "A-V12",
+        "claim_version": 1
+      },
+      "evidence": [
+        {
+          "evidence_id": "E-V12-1",
+          "lineage": "LIN-V12-A",
+          "group": "G-V12-A",
+          "verified": true
+        },
+        {
+          "evidence_id": "E-V12-2",
+          "lineage": "LIN-V12-B",
+          "group": "G-V12-B",
+          "verified": true
+        }
+      ],
+      "challenge": null,
+      "derive": {
+        "parent": "A-V01",
+        "own_evidence": true
+      },
+      "idempotency_key": "IDEM-V12",
+      "expected": {
+        "decision": "PROMOTED",
+        "transition": "gate_pass",
+        "reason_code": "THRESHOLD_MET",
+        "view_visible": true,
+        "audit": [
+          "DERIVE",
+          "PROMOTE"
+        ],
+        "history_preserved": true
+      },
+      "policy_version": "s1-011-policy-v1"
+    },
+    {
+      "case_id": "S1-011-I01",
+      "class": "insufficient_evidence",
+      "severity": "critical",
+      "stage": "promotion",
+      "probe": null,
+      "actor_role": "governance_gate",
+      "tenant": "TEN-1",
+      "workspace": "WS-1",
+      "goal": "GOAL-S1-011",
+      "scope": "SCOPE-KB-1",
+      "action": "promote",
+      "prior_status": "PROPOSED",
+      "assertion": {
+        "assertion_id": "A-I01",
+        "claim_version": 1
+      },
+      "evidence": [
+        {
+          "evidence_id": "E-I01-1",
+          "lineage": "LIN-I01-A",
+          "group": "G-I01-A",
+          "verified": true
+        }
+      ],
+      "challenge": null,
+      "idempotency_key": "IDEM-I01",
+      "expected": {
+        "decision": "REJECTED",
+        "transition": "gate_fail",
+        "reason_code": "EVIDENCE_INSUFFICIENT",
+        "view_visible": false,
+        "audit": [
+          "REJECT"
+        ],
+        "history_preserved": true
+      },
+      "policy_version": "s1-011-policy-v1"
+    },
+    {
+      "case_id": "S1-011-I02",
+      "class": "insufficient_evidence",
+      "severity": "critical",
+      "stage": "promotion",
+      "probe": "A",
+      "actor_role": "governance_gate",
+      "tenant": "TEN-1",
+      "workspace": "WS-1",
+      "goal": "GOAL-S1-011",
+      "scope": "SCOPE-KB-1",
+      "action": "promote",
+      "prior_status": "PROPOSED",
+      "assertion": {
+        "assertion_id": "A-I02",
+        "claim_version": 1
+      },
+      "evidence": [
+        {
+          "evidence_id": "E-I02-1",
+          "lineage": "LIN-I02-SAME",
+          "group": "G-I02-SAME",
+          "verified": true
+        },
+        {
+          "evidence_id": "E-I02-2",
+          "lineage": "LIN-I02-SAME",
+          "group": "G-I02-SAME",
+          "verified": true
+        }
+      ],
+      "challenge": null,
+      "idempotency_key": "IDEM-I02",
+      "expected": {
+        "decision": "REJECTED",
+        "transition": "gate_fail",
+        "reason_code": "EVIDENCE_CORRELATED",
+        "view_visible": false,
+        "audit": [
+          "REJECT"
+        ],
+        "history_preserved": true
+      },
+      "policy_version": "s1-011-policy-v1"
+    },
+    {
+      "case_id": "S1-011-I03",
+      "class": "insufficient_evidence",
+      "severity": "critical",
+      "stage": "promotion",
+      "probe": "A",
+      "actor_role": "governance_gate",
+      "tenant": "TEN-1",
+      "workspace": "WS-1",
+      "goal": "GOAL-S1-011",
+      "scope": "SCOPE-KB-1",
+      "action": "promote",
+      "prior_status": "PROPOSED",
+      "assertion": {
+        "assertion_id": "A-I03",
+        "claim_version": 1
+      },
+      "evidence": [
+        {
+          "evidence_id": "E-I03-1",
+          "lineage": "LIN-I03-ORIGIN",
+          "group": "G-I03-X",
+          "verified": true
+        },
+        {
+          "evidence_id": "E-I03-2",
+          "lineage": "LIN-I03-ORIGIN",
+          "group": "G-I03-Y",
+          "verified": true
+        }
+      ],
+      "challenge": null,
+      "note": "Mirror/retelling shares lineage despite distinct URLs and independence labels; groups collapse to one.",
+      "idempotency_key": "IDEM-I03",
+      "expected": {
+        "decision": "REJECTED",
+        "transition": "gate_fail",
+        "reason_code": "EVIDENCE_CORRELATED",
+        "view_visible": false,
+        "audit": [
+          "REJECT"
+        ],
+        "history_preserved": true
+      },
+      "policy_version": "s1-011-policy-v1"
+    },
+    {
+      "case_id": "S1-011-I04",
+      "class": "insufficient_evidence",
+      "severity": "high",
+      "stage": "promotion",
+      "probe": null,
+      "actor_role": "governance_gate",
+      "tenant": "TEN-1",
+      "workspace": "WS-1",
+      "goal": "GOAL-S1-011",
+      "scope": "SCOPE-KB-1",
+      "action": "promote",
+      "prior_status": "PROPOSED",
+      "assertion": {
+        "assertion_id": "A-I04",
+        "claim_version": 1
+      },
+      "evidence": [
+        {
+          "evidence_id": "E-I04-1",
+          "lineage": "LIN-I04-A",
+          "group": "G-I04-A",
+          "verified": false
+        },
+        {
+          "evidence_id": "E-I04-2",
+          "lineage": "LIN-I04-B",
+          "group": "G-I04-B",
+          "verified": false
+        }
+      ],
+      "challenge": null,
+      "idempotency_key": "IDEM-I04",
+      "expected": {
+        "decision": "REJECTED",
+        "transition": "gate_fail",
+        "reason_code": "EVIDENCE_INSUFFICIENT",
+        "view_visible": false,
+        "audit": [
+          "REJECT"
+        ],
+        "history_preserved": true
+      },
+      "policy_version": "s1-011-policy-v1"
+    },
+    {
+      "case_id": "S1-011-I05",
+      "class": "insufficient_evidence",
+      "severity": "high",
+      "stage": "promotion",
+      "probe": null,
+      "actor_role": "governance_gate",
+      "tenant": "TEN-1",
+      "workspace": "WS-1",
+      "goal": "GOAL-S1-011",
+      "scope": "SCOPE-KB-1",
+      "action": "promote",
+      "prior_status": "PROPOSED",
+      "assertion": {
+        "assertion_id": "A-I05",
+        "claim_version": 2
+      },
+      "evidence": [
+        {
+          "evidence_id": "E-I05-1",
+          "claim_version": 1,
+          "lineage": "LIN-I05-A",
+          "group": "G-I05-A",
+          "verified": true
+        },
+        {
+          "evidence_id": "E-I05-2",
+          "claim_version": 2,
+          "lineage": "LIN-I05-B",
+          "group": "G-I05-B",
+          "verified": true
+        }
+      ],
+      "challenge": null,
+      "idempotency_key": "IDEM-I05",
+      "expected": {
+        "decision": "REJECTED",
+        "transition": "gate_fail",
+        "reason_code": "EVIDENCE_INSUFFICIENT",
+        "view_visible": false,
+        "audit": [
+          "REJECT"
+        ],
+        "history_preserved": true
+      },
+      "policy_version": "s1-011-policy-v1"
+    },
+    {
+      "case_id": "S1-011-I06",
+      "class": "insufficient_evidence",
+      "severity": "high",
+      "stage": "promotion",
+      "probe": null,
+      "actor_role": "governance_gate",
+      "tenant": "TEN-1",
+      "workspace": "WS-1",
+      "goal": "GOAL-S1-011",
+      "scope": "SCOPE-KB-1",
+      "action": "promote",
+      "prior_status": "PROPOSED",
+      "assertion": {
+        "assertion_id": "A-I06",
+        "claim_version": 1
+      },
+      "evidence": [
+        {
+          "evidence_id": "E-I06-1",
+          "scope": "SCOPE-OTHER",
+          "lineage": "LIN-I06-A",
+          "group": "G-I06-A",
+          "verified": true
+        },
+        {
+          "evidence_id": "E-I06-2",
+          "scope": "SCOPE-OTHER",
+          "lineage": "LIN-I06-B",
+          "group": "G-I06-B",
+          "verified": true
+        }
+      ],
+      "challenge": null,
+      "idempotency_key": "IDEM-I06",
+      "expected": {
+        "decision": "REJECTED",
+        "transition": "gate_fail",
+        "reason_code": "SCOPE_MISMATCH",
+        "view_visible": false,
+        "audit": [
+          "REJECT"
+        ],
+        "history_preserved": true
+      },
+      "policy_version": "s1-011-policy-v1"
+    },
+    {
+      "case_id": "S1-011-I07",
+      "class": "insufficient_evidence",
+      "severity": "high",
+      "stage": "promotion",
+      "probe": null,
+      "actor_role": "governance_gate",
+      "tenant": "TEN-1",
+      "workspace": "WS-1",
+      "goal": "GOAL-S1-011",
+      "scope": "SCOPE-KB-1",
+      "action": "promote",
+      "prior_status": "PROPOSED",
+      "assertion": {
+        "assertion_id": "A-I07",
+        "claim_version": 1
+      },
+      "evidence": [
+        {
+          "evidence_id": "E-I07-1",
+          "lineage": "",
+          "group": "G-I07-A",
+          "verified": true
+        },
+        {
+          "evidence_id": "E-I07-2",
+          "lineage": "LIN-I07-B",
+          "group": "G-I07-B",
+          "verified": true
+        }
+      ],
+      "challenge": null,
+      "idempotency_key": "IDEM-I07",
+      "expected": {
+        "decision": "REJECTED",
+        "transition": "gate_fail",
+        "reason_code": "INVALID_EVIDENCE_BINDING",
+        "view_visible": false,
+        "audit": [
+          "REJECT"
+        ],
+        "history_preserved": true
+      },
+      "policy_version": "s1-011-policy-v1"
+    },
+    {
+      "case_id": "S1-011-I08",
+      "class": "insufficient_evidence",
+      "severity": "critical",
+      "stage": "promotion",
+      "probe": "D",
+      "actor_role": "governance_gate",
+      "tenant": "TEN-1",
+      "workspace": "WS-1",
+      "goal": "GOAL-S1-011",
+      "scope": "SCOPE-KB-1",
+      "action": "promote",
+      "prior_status": "PROPOSED",
+      "assertion": {
+        "assertion_id": "A-I08",
+        "claim_version": 1
+      },
+      "evidence": [
+        {
+          "evidence_id": "E-I08-1",
+          "lineage": "LIN-I08-PUB",
+          "group": "G-I08-1",
+          "verified": true
+        },
+        {
+          "evidence_id": "E-I08-2",
+          "lineage": "LIN-I08-PUB",
+          "group": "G-I08-2",
+          "verified": true
+        },
+        {
+          "evidence_id": "E-I08-3",
+          "lineage": "LIN-I08-PUB",
+          "group": "G-I08-3",
+          "verified": true
+        }
+      ],
+      "challenge": null,
+      "note": "Three apparent sources, one publisher lineage: Sybil/collapsed independence.",
+      "idempotency_key": "IDEM-I08",
+      "expected": {
+        "decision": "REJECTED",
+        "transition": "gate_fail",
+        "reason_code": "EVIDENCE_CORRELATED",
+        "view_visible": false,
+        "audit": [
+          "REJECT"
+        ],
+        "history_preserved": true
+      },
+      "policy_version": "s1-011-policy-v1"
+    },
+    {
+      "case_id": "S1-011-I09",
+      "class": "insufficient_evidence",
+      "severity": "critical",
+      "stage": "promotion",
+      "probe": "D",
+      "actor_role": "governance_gate",
+      "tenant": "TEN-1",
+      "workspace": "WS-1",
+      "goal": "GOAL-S1-011",
+      "scope": "SCOPE-KB-1",
+      "action": "promote",
+      "prior_status": "PROPOSED",
+      "assertion": {
+        "assertion_id": "A-I09",
+        "claim_version": 1
+      },
+      "evidence": [
+        {
+          "evidence_id": "E-I09-1",
+          "lineage": "LIN-I09-CIRC",
+          "group": "G-I09-1",
+          "verified": true
+        },
+        {
+          "evidence_id": "E-I09-2",
+          "lineage": "LIN-I09-CIRC",
+          "group": "G-I09-2",
+          "verified": true
+        }
+      ],
+      "challenge": null,
+      "note": "Circular citations collapse to one lineage.",
+      "idempotency_key": "IDEM-I09",
+      "expected": {
+        "decision": "REJECTED",
+        "transition": "gate_fail",
+        "reason_code": "EVIDENCE_CORRELATED",
+        "view_visible": false,
+        "audit": [
+          "REJECT"
+        ],
+        "history_preserved": true
+      },
+      "policy_version": "s1-011-policy-v1"
+    },
+    {
+      "case_id": "S1-011-I10",
+      "class": "insufficient_evidence",
+      "severity": "high",
+      "stage": "promotion",
+      "probe": null,
+      "actor_role": "governance_gate",
+      "tenant": "TEN-1",
+      "workspace": "WS-1",
+      "goal": "GOAL-S1-011",
+      "scope": "SCOPE-KB-1",
+      "action": "promote",
+      "prior_status": "PROPOSED",
+      "assertion": {
+        "assertion_id": "A-I10",
+        "claim_version": 1
+      },
+      "evidence": [
+        {
+          "evidence_id": "E-I10-1",
+          "lineage": "LIN-I10-A",
+          "group": "G-I10-ONLY",
+          "verified": true
+        },
+        {
+          "evidence_id": "E-I10-2",
+          "lineage": "LIN-I10-B",
+          "group": "G-I10-ONLY",
+          "verified": true
+        },
+        {
+          "evidence_id": "E-I10-3",
+          "lineage": "LIN-I10-C",
+          "group": "G-I10-ONLY",
+          "verified": true
+        }
+      ],
+      "challenge": null,
+      "idempotency_key": "IDEM-I10",
+      "expected": {
+        "decision": "REJECTED",
+        "transition": "gate_fail",
+        "reason_code": "EVIDENCE_CORRELATED",
+        "view_visible": false,
+        "audit": [
+          "REJECT"
+        ],
+        "history_preserved": true
+      },
+      "policy_version": "s1-011-policy-v1"
+    },
+    {
+      "case_id": "S1-011-I11",
+      "class": "insufficient_evidence",
+      "severity": "high",
+      "stage": "promotion",
+      "probe": null,
+      "actor_role": "governance_gate",
+      "tenant": "TEN-1",
+      "workspace": "WS-1",
+      "goal": "GOAL-S1-011",
+      "scope": "SCOPE-KB-1",
+      "action": "promote",
+      "prior_status": "PROPOSED",
+      "assertion": {
+        "assertion_id": "A-I11",
+        "claim_version": 1
+      },
+      "evidence": [
+        {
+          "evidence_id": "E-I11-1",
+          "lineage": "LIN-I11-A",
+          "group": "G-I11-A",
+          "verified": true
+        },
+        {
+          "evidence_id": "E-I11-2",
+          "lineage": "LIN-I11-B",
+          "group": "G-I11-B",
+          "verified": true
+        }
+      ],
+      "challenge": null,
+      "policy_version": "s1-011-policy-v0-stale",
+      "idempotency_key": "IDEM-I11",
+      "expected": {
+        "decision": "REJECTED",
+        "transition": "gate_fail",
+        "reason_code": "POLICY_MISMATCH",
+        "view_visible": false,
+        "audit": [
+          "REJECT"
+        ],
+        "history_preserved": true
+      }
+    },
+    {
+      "case_id": "S1-011-I12",
+      "class": "insufficient_evidence",
+      "severity": "critical",
+      "stage": "promotion",
+      "probe": null,
+      "actor_role": "worker",
+      "tenant": "TEN-1",
+      "workspace": "WS-1",
+      "goal": "GOAL-S1-011",
+      "scope": "SCOPE-KB-1",
+      "action": "promote",
+      "prior_status": "PROPOSED",
+      "assertion": {
+        "assertion_id": "A-I12",
+        "claim_version": 1
+      },
+      "evidence": [
+        {
+          "evidence_id": "E-I12-1",
+          "lineage": "LIN-I12-A",
+          "group": "G-I12-A",
+          "verified": true
+        },
+        {
+          "evidence_id": "E-I12-2",
+          "lineage": "LIN-I12-B",
+          "group": "G-I12-B",
+          "verified": true
+        }
+      ],
+      "challenge": null,
+      "idempotency_key": "IDEM-I12",
+      "expected": {
+        "decision": "NO_TRANSITION",
+        "transition": null,
+        "reason_code": "AUTHORITY_DENIED",
+        "view_visible": false,
+        "audit": [],
+        "history_preserved": true
+      },
+      "policy_version": "s1-011-policy-v1"
+    },
+    {
+      "case_id": "S1-011-C01",
+      "class": "challenge_retraction",
+      "severity": "critical",
+      "stage": "challenge",
+      "probe": "B",
+      "actor_role": "governance_gate",
+      "tenant": "TEN-1",
+      "workspace": "WS-1",
+      "goal": "GOAL-S1-011",
+      "scope": "SCOPE-KB-1",
+      "action": "challenge",
+      "prior_status": "PROMOTED",
+      "assertion": {
+        "assertion_id": "A-C01",
+        "claim_version": 1
+      },
+      "evidence": [
+        {
+          "evidence_id": "E-C01-1",
+          "lineage": "LIN-C01-A",
+          "group": "G-C01-A",
+          "verified": true
+        },
+        {
+          "evidence_id": "E-C01-2",
+          "lineage": "LIN-C01-B",
+          "group": "G-C01-B",
+          "verified": true
+        }
+      ],
+      "challenge": {
+        "challenge_id": "CH-C01",
+        "state": "open",
+        "in_scope": true,
+        "fresh_evidence": false
+      },
+      "idempotency_key": "IDEM-C01",
+      "expected": {
+        "decision": "CHALLENGED",
+        "transition": "challenge_accepted",
+        "reason_code": "CHALLENGE_OPENED",
+        "view_visible": false,
+        "audit": [
+          "CHALLENGE"
+        ],
+        "history_preserved": true
+      },
+      "policy_version": "s1-011-policy-v1"
+    },
+    {
+      "case_id": "S1-011-C02",
+      "class": "challenge_retraction",
+      "severity": "critical",
+      "stage": "retraction",
+      "probe": "B",
+      "actor_role": "governance_gate",
+      "tenant": "TEN-1",
+      "workspace": "WS-1",
+      "goal": "GOAL-S1-011",
+      "scope": "SCOPE-KB-1",
+      "action": "revoke_source",
+      "prior_status": "PROMOTED",
+      "assertion": {
+        "assertion_id": "A-C02",
+        "claim_version": 1
+      },
+      "evidence": [
+        {
+          "evidence_id": "E-C02-1",
+          "lineage": "LIN-C02-A",
+          "group": "G-C02-A",
+          "verified": true
+        },
+        {
+          "evidence_id": "E-C02-2",
+          "lineage": "LIN-C02-B",
+          "group": "G-C02-B",
+          "verified": true
+        }
+      ],
+      "challenge": null,
+      "source_revoked": [
+        "LIN-C02-A"
+      ],
+      "idempotency_key": "IDEM-C02",
+      "expected": {
+        "decision": "CHALLENGED",
+        "transition": "source_revoked",
+        "reason_code": "SOURCE_REVOKED",
+        "view_visible": false,
+        "audit": [
+          "CHALLENGE"
+        ],
+        "history_preserved": true
+      },
+      "policy_version": "s1-011-policy-v1"
+    },
+    {
+      "case_id": "S1-011-C03",
+      "class": "challenge_retraction",
+      "severity": "high",
+      "stage": "challenge",
+      "probe": null,
+      "actor_role": "governance_gate",
+      "tenant": "TEN-1",
+      "workspace": "WS-1",
+      "goal": "GOAL-S1-011",
+      "scope": "SCOPE-KB-1",
+      "action": "uphold",
+      "prior_status": "CHALLENGED",
+      "assertion": {
+        "assertion_id": "A-C03",
+        "claim_version": 1
+      },
+      "evidence": [
+        {
+          "evidence_id": "E-C03-1",
+          "lineage": "LIN-C03-A",
+          "group": "G-C03-A",
+          "verified": true
+        },
+        {
+          "evidence_id": "E-C03-2",
+          "lineage": "LIN-C03-B",
+          "group": "G-C03-B",
+          "verified": true
+        }
+      ],
+      "challenge": {
+        "challenge_id": "CH-C03",
+        "state": "resolved",
+        "in_scope": true,
+        "fresh_evidence": true
+      },
+      "idempotency_key": "IDEM-C03",
+      "expected": {
+        "decision": "PROMOTED",
+        "transition": "upheld_with_evidence",
+        "reason_code": "CHALLENGE_UPHELD",
+        "view_visible": true,
+        "audit": [
+          "UPHOLD"
+        ],
+        "history_preserved": true
+      },
+      "policy_version": "s1-011-policy-v1"
+    },
+    {
+      "case_id": "S1-011-C04",
+      "class": "challenge_retraction",
+      "severity": "high",
+      "stage": "retraction",
+      "probe": null,
+      "actor_role": "governance_gate",
+      "tenant": "TEN-1",
+      "workspace": "WS-1",
+      "goal": "GOAL-S1-011",
+      "scope": "SCOPE-KB-1",
+      "action": "retract",
+      "prior_status": "CHALLENGED",
+      "assertion": {
+        "assertion_id": "A-C04",
+        "claim_version": 1
+      },
+      "evidence": [
+        {
+          "evidence_id": "E-C04-1",
+          "lineage": "LIN-C04-A",
+          "group": "G-C04-A",
+          "verified": true
+        }
+      ],
+      "challenge": {
+        "challenge_id": "CH-C04",
+        "state": "open",
+        "in_scope": true,
+        "fresh_evidence": false
+      },
+      "idempotency_key": "IDEM-C04",
+      "expected": {
+        "decision": "RETRACTED",
+        "transition": "challenge_sustained_or_expired",
+        "reason_code": "CHALLENGE_SUSTAINED",
+        "view_visible": false,
+        "audit": [
+          "RETRACT"
+        ],
+        "history_preserved": true
+      },
+      "policy_version": "s1-011-policy-v1"
+    },
+    {
+      "case_id": "S1-011-C05",
+      "class": "challenge_retraction",
+      "severity": "high",
+      "stage": "retraction",
+      "probe": null,
+      "actor_role": "governance_gate",
+      "tenant": "TEN-1",
+      "workspace": "WS-1",
+      "goal": "GOAL-S1-011",
+      "scope": "SCOPE-KB-1",
+      "action": "supersede",
+      "prior_status": "PROMOTED",
+      "assertion": {
+        "assertion_id": "A-C05",
+        "claim_version": 1
+      },
+      "evidence": [
+        {
+          "evidence_id": "E-C05-1",
+          "lineage": "LIN-C05-A",
+          "group": "G-C05-A",
+          "verified": true
+        },
+        {
+          "evidence_id": "E-C05-2",
+          "lineage": "LIN-C05-B",
+          "group": "G-C05-B",
+          "verified": true
+        }
+      ],
+      "challenge": null,
+      "superseded_by": "A-C05-V2",
+      "idempotency_key": "IDEM-C05",
+      "expected": {
+        "decision": "RETRACTED",
+        "transition": "superseded",
+        "reason_code": "SUPERSEDED",
+        "view_visible": false,
+        "audit": [
+          "SUPERSEDE"
+        ],
+        "history_preserved": true
+      },
+      "policy_version": "s1-011-policy-v1"
+    },
+    {
+      "case_id": "S1-011-C06",
+      "class": "challenge_retraction",
+      "severity": "medium",
+      "stage": "retraction",
+      "probe": null,
+      "actor_role": "worker",
+      "tenant": "TEN-1",
+      "workspace": "WS-1",
+      "goal": "GOAL-S1-011",
+      "scope": "SCOPE-KB-1",
+      "action": "retract",
+      "prior_status": "PROPOSED",
+      "assertion": {
+        "assertion_id": "A-C06",
+        "claim_version": 1
+      },
+      "evidence": [],
+      "challenge": null,
+      "idempotency_key": "IDEM-C06",
+      "expected": {
+        "decision": "RETRACTED",
+        "transition": "withdrawn",
+        "reason_code": "WITHDRAWN",
+        "view_visible": false,
+        "audit": [
+          "RETRACT"
+        ],
+        "history_preserved": true
+      },
+      "policy_version": "s1-011-policy-v1"
+    },
+    {
+      "case_id": "S1-011-C07",
+      "class": "challenge_retraction",
+      "severity": "medium",
+      "stage": "challenge",
+      "probe": "H",
+      "actor_role": "governance_gate",
+      "tenant": "TEN-1",
+      "workspace": "WS-1",
+      "goal": "GOAL-S1-011",
+      "scope": "SCOPE-KB-1",
+      "action": "challenge",
+      "prior_status": "CHALLENGED",
+      "assertion": {
+        "assertion_id": "A-C07",
+        "claim_version": 1
+      },
+      "evidence": [
+        {
+          "evidence_id": "E-C07-1",
+          "lineage": "LIN-C07-A",
+          "group": "G-C07-A",
+          "verified": true
+        },
+        {
+          "evidence_id": "E-C07-2",
+          "lineage": "LIN-C07-B",
+          "group": "G-C07-B",
+          "verified": true
+        }
+      ],
+      "challenge": {
+        "challenge_id": "CH-C07",
+        "state": "open",
+        "in_scope": true,
+        "fresh_evidence": false
+      },
+      "idempotency_key": "IDEM-C07",
+      "expected": {
+        "decision": "NO_TRANSITION",
+        "transition": null,
+        "reason_code": "DUPLICATE_IDEMPOTENT",
+        "view_visible": false,
+        "audit": [],
+        "history_preserved": true
+      },
+      "policy_version": "s1-011-policy-v1"
+    },
+    {
+      "case_id": "S1-011-C08",
+      "class": "challenge_retraction",
+      "severity": "medium",
+      "stage": "retraction",
+      "probe": null,
+      "actor_role": "governance_gate",
+      "tenant": "TEN-1",
+      "workspace": "WS-1",
+      "goal": "GOAL-S1-011",
+      "scope": "SCOPE-KB-1",
+      "action": "retract",
+      "prior_status": "CHALLENGED",
+      "assertion": {
+        "assertion_id": "A-C08",
+        "claim_version": 1
+      },
+      "evidence": [
+        {
+          "evidence_id": "E-C08-1",
+          "lineage": "LIN-C08-A",
+          "group": "G-C08-A",
+          "verified": true
+        }
+      ],
+      "challenge": {
+        "challenge_id": "CH-C08",
+        "state": "expired",
+        "in_scope": true,
+        "fresh_evidence": false
+      },
+      "idempotency_key": "IDEM-C08",
+      "expected": {
+        "decision": "RETRACTED",
+        "transition": "challenge_sustained_or_expired",
+        "reason_code": "CHALLENGE_SUSTAINED",
+        "view_visible": false,
+        "audit": [
+          "RETRACT"
+        ],
+        "history_preserved": true
+      },
+      "policy_version": "s1-011-policy-v1"
+    },
+    {
+      "case_id": "S1-011-C09",
+      "class": "challenge_retraction",
+      "severity": "high",
+      "stage": "retraction",
+      "probe": "B",
+      "actor_role": "governance_gate",
+      "tenant": "TEN-1",
+      "workspace": "WS-1",
+      "goal": "GOAL-S1-011",
+      "scope": "SCOPE-KB-1",
+      "action": "revoke_source",
+      "prior_status": "PROMOTED",
+      "assertion": {
+        "assertion_id": "A-C09",
+        "claim_version": 1
+      },
+      "evidence": [
+        {
+          "evidence_id": "E-C09-1",
+          "lineage": "LIN-C09-SHARED",
+          "group": "G-C09-A",
+          "verified": true
+        },
+        {
+          "evidence_id": "E-C09-2",
+          "lineage": "LIN-C09-SHARED",
+          "group": "G-C09-B",
+          "verified": true
+        }
+      ],
+      "challenge": null,
+      "source_revoked": [
+        "LIN-C09-SHARED"
+      ],
+      "dependents": [
+        "A-C09-D1",
+        "A-C09-D2"
+      ],
+      "idempotency_key": "IDEM-C09",
+      "expected": {
+        "decision": "CHALLENGED",
+        "transition": "source_revoked",
+        "reason_code": "SOURCE_REVOKED",
+        "view_visible": false,
+        "audit": [
+          "CHALLENGE"
+        ],
+        "history_preserved": true
+      },
+      "policy_version": "s1-011-policy-v1"
+    },
+    {
+      "case_id": "S1-011-C10",
+      "class": "challenge_retraction",
+      "severity": "medium",
+      "stage": "challenge",
+      "probe": null,
+      "actor_role": "governance_gate",
+      "tenant": "TEN-1",
+      "workspace": "WS-1",
+      "goal": "GOAL-S1-011",
+      "scope": "SCOPE-KB-1",
+      "action": "uphold",
+      "prior_status": "CHALLENGED",
+      "assertion": {
+        "assertion_id": "A-C10",
+        "claim_version": 1
+      },
+      "evidence": [
+        {
+          "evidence_id": "E-C10-1",
+          "lineage": "LIN-C10-A",
+          "group": "G-C10-A",
+          "verified": true
+        }
+      ],
+      "challenge": {
+        "challenge_id": "CH-C10",
+        "state": "open",
+        "in_scope": true,
+        "fresh_evidence": false
+      },
+      "idempotency_key": "IDEM-C10",
+      "expected": {
+        "decision": "NO_TRANSITION",
+        "transition": null,
+        "reason_code": "THRESHOLD_NOT_MET",
+        "view_visible": false,
+        "audit": [],
+        "history_preserved": true
+      },
+      "policy_version": "s1-011-policy-v1"
+    },
+    {
+      "case_id": "S1-011-C11",
+      "class": "challenge_retraction",
+      "severity": "medium",
+      "stage": "challenge",
+      "probe": null,
+      "actor_role": "governance_gate",
+      "tenant": "TEN-1",
+      "workspace": "WS-1",
+      "goal": "GOAL-S1-011",
+      "scope": "SCOPE-KB-1",
+      "action": "challenge",
+      "prior_status": "PROMOTED",
+      "assertion": {
+        "assertion_id": "A-C11",
+        "claim_version": 1
+      },
+      "evidence": [
+        {
+          "evidence_id": "E-C11-1",
+          "lineage": "LIN-C11-A",
+          "group": "G-C11-A",
+          "verified": true
+        },
+        {
+          "evidence_id": "E-C11-2",
+          "lineage": "LIN-C11-B",
+          "group": "G-C11-B",
+          "verified": true
+        }
+      ],
+      "challenge": {
+        "challenge_id": "CH-C11",
+        "state": "open",
+        "in_scope": false,
+        "fresh_evidence": false
+      },
+      "idempotency_key": "IDEM-C11",
+      "expected": {
+        "decision": "NO_TRANSITION",
+        "transition": null,
+        "reason_code": "SCOPE_MISMATCH",
+        "view_visible": true,
+        "audit": [],
+        "history_preserved": true
+      },
+      "policy_version": "s1-011-policy-v1"
+    },
+    {
+      "case_id": "S1-011-C12",
+      "class": "challenge_retraction",
+      "severity": "low",
+      "stage": "retraction",
+      "probe": null,
+      "actor_role": "governance_gate",
+      "tenant": "TEN-1",
+      "workspace": "WS-1",
+      "goal": "GOAL-S1-011",
+      "scope": "SCOPE-KB-1",
+      "action": "retract",
+      "prior_status": "REJECTED",
+      "assertion": {
+        "assertion_id": "A-C12",
+        "claim_version": 1
+      },
+      "evidence": [],
+      "challenge": null,
+      "idempotency_key": "IDEM-C12",
+      "expected": {
+        "decision": "NO_TRANSITION",
+        "transition": null,
+        "reason_code": "UNKNOWN_TRANSITION",
+        "view_visible": false,
+        "audit": [],
+        "history_preserved": true
+      },
+      "policy_version": "s1-011-policy-v1"
+    }
   ]
 }

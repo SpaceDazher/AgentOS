@@ -1,35 +1,216 @@
 {
   "schema": "agentos.s1-011.knowledge-gate-contract/v1",
-  "contract_version": "1.0.0",
+  "contract_version": "1.0.1",
   "policy_version": "s1-011-policy-v1",
   "record_schema": "agentos.s1-011.knowledge-record-schema/v1",
   "meaning_of_promoted": "PROMOTED means only that the assertion passed the versioned governance gate for the stated scope and policy version. It is NOT objective truth.",
   "actor_roles": {
-    "worker": {"may": ["propose_assertion", "submit_evidence", "open_challenge"], "may_not": ["promote", "dismiss_challenge", "accept_goal", "change_policy"]},
-    "governance_gate": {"may": ["promote", "reject", "uphold", "retract", "revoke"], "may_not": ["accept_goal", "change_policy", "change_capability"], "note": "Deterministic threshold + authority check; final transition only here."},
-    "operator": {"may": ["resolve_challenge", "escalate", "revoke_source", "rollback_model"], "may_not": ["rewrite_history", "accept_goal_via_knowledge"]},
-    "reader": {"may": ["read_eligible_view"], "may_not": ["transition", "cross_scope_read"]}
+    "worker": {
+      "may": [
+        "propose_assertion",
+        "submit_evidence",
+        "open_challenge"
+      ],
+      "may_not": [
+        "promote",
+        "dismiss_challenge",
+        "accept_goal",
+        "change_policy"
+      ]
+    },
+    "governance_gate": {
+      "may": [
+        "promote",
+        "reject",
+        "uphold",
+        "retract",
+        "revoke"
+      ],
+      "may_not": [
+        "accept_goal",
+        "change_policy",
+        "change_capability"
+      ],
+      "note": "Deterministic threshold + authority check; final transition only here."
+    },
+    "operator": {
+      "may": [
+        "resolve_challenge",
+        "escalate",
+        "revoke_source",
+        "rollback_model"
+      ],
+      "may_not": [
+        "rewrite_history",
+        "accept_goal_via_knowledge"
+      ]
+    },
+    "reader": {
+      "may": [
+        "read_eligible_view"
+      ],
+      "may_not": [
+        "transition",
+        "cross_scope_read"
+      ]
+    }
   },
   "states": {
-    "PROPOSED": {"terminal": false, "in_derived_view": false},
-    "PROMOTED": {"terminal": false, "in_derived_view": true},
-    "CHALLENGED": {"terminal": false, "in_derived_view": false},
-    "REJECTED": {"terminal": true, "in_derived_view": false},
-    "RETRACTED": {"terminal": true, "in_derived_view": false}
+    "PROPOSED": {
+      "terminal": false,
+      "in_derived_view": false
+    },
+    "PROMOTED": {
+      "terminal": false,
+      "in_derived_view": true
+    },
+    "CHALLENGED": {
+      "terminal": false,
+      "in_derived_view": false
+    },
+    "REJECTED": {
+      "terminal": true,
+      "in_derived_view": false
+    },
+    "RETRACTED": {
+      "terminal": true,
+      "in_derived_view": false
+    }
   },
   "transitions": [
-    {"from": "PROPOSED", "event": "gate_pass", "to": "PROMOTED", "actor": "governance_gate", "pre": ["provisional_threshold_met", "no_unresolved_challenge", "no_source_revocation", "provenance_complete", "policy_version_current"], "post": ["decision_recorded", "audit_event_PROMOTE", "view_includes_claim"]},
-    {"from": "PROPOSED", "event": "gate_fail", "to": "REJECTED", "actor": "governance_gate", "pre": ["threshold_or_validity_failed"], "post": ["decision_recorded", "audit_event_REJECT", "history_preserved"]},
-    {"from": "PROPOSED", "event": "withdrawn", "to": "RETRACTED", "actor": "worker", "pre": ["author_withdraws"], "post": ["decision_recorded", "audit_event_RETRACT", "history_preserved"]},
-    {"from": "PROMOTED", "event": "challenge_accepted", "to": "CHALLENGED", "actor": "governance_gate", "pre": ["challenge_wellformed", "challenge_in_scope"], "post": ["decision_recorded", "audit_event_CHALLENGE", "view_excludes_claim"]},
-    {"from": "PROMOTED", "event": "source_revoked", "to": "CHALLENGED", "actor": "governance_gate", "pre": ["source_status_REVOKED"], "post": ["decision_recorded", "audit_event_CHALLENGE", "view_excludes_claim", "downstream_invalidated"]},
-    {"from": "PROMOTED", "event": "superseded", "to": "RETRACTED", "actor": "governance_gate", "pre": ["successor_version_proposed"], "post": ["decision_recorded", "audit_event_SUPERSEDE", "SUPERSEDES_link", "view_excludes_old_version"]},
-    {"from": "CHALLENGED", "event": "upheld_with_evidence", "to": "PROMOTED", "actor": "governance_gate", "pre": ["provisional_threshold_met_again", "challenge_resolved"], "post": ["new_decision_version", "audit_event_UPHOLD", "old_decision_not_updated", "view_includes_claim"]},
-    {"from": "CHALLENGED", "event": "challenge_sustained_or_expired", "to": "RETRACTED", "actor": "governance_gate", "pre": ["challenge_sustained", "or_challenge_sla_expired"], "post": ["decision_recorded", "audit_event_RETRACT", "view_excludes_claim"]}
+    {
+      "from": "PROPOSED",
+      "event": "gate_pass",
+      "to": "PROMOTED",
+      "actor": "governance_gate",
+      "pre": [
+        "provisional_threshold_met",
+        "no_unresolved_challenge",
+        "no_source_revocation",
+        "provenance_complete",
+        "policy_version_current"
+      ],
+      "post": [
+        "decision_recorded",
+        "audit_event_PROMOTE",
+        "view_includes_claim"
+      ]
+    },
+    {
+      "from": "PROPOSED",
+      "event": "gate_fail",
+      "to": "REJECTED",
+      "actor": "governance_gate",
+      "pre": [
+        "threshold_or_validity_failed"
+      ],
+      "post": [
+        "decision_recorded",
+        "audit_event_REJECT",
+        "history_preserved"
+      ]
+    },
+    {
+      "from": "PROPOSED",
+      "event": "withdrawn",
+      "to": "RETRACTED",
+      "actor": "worker",
+      "pre": [
+        "author_withdraws"
+      ],
+      "post": [
+        "decision_recorded",
+        "audit_event_RETRACT",
+        "history_preserved"
+      ]
+    },
+    {
+      "from": "PROMOTED",
+      "event": "challenge_accepted",
+      "to": "CHALLENGED",
+      "actor": "governance_gate",
+      "pre": [
+        "challenge_wellformed",
+        "challenge_in_scope"
+      ],
+      "post": [
+        "decision_recorded",
+        "audit_event_CHALLENGE",
+        "view_excludes_claim"
+      ]
+    },
+    {
+      "from": "PROMOTED",
+      "event": "source_revoked",
+      "to": "CHALLENGED",
+      "actor": "governance_gate",
+      "pre": [
+        "source_status_REVOKED"
+      ],
+      "post": [
+        "decision_recorded",
+        "audit_event_CHALLENGE",
+        "view_excludes_claim",
+        "downstream_invalidated"
+      ]
+    },
+    {
+      "from": "PROMOTED",
+      "event": "superseded",
+      "to": "RETRACTED",
+      "actor": "governance_gate",
+      "pre": [
+        "successor_version_proposed"
+      ],
+      "post": [
+        "decision_recorded",
+        "audit_event_SUPERSEDE",
+        "SUPERSEDES_link",
+        "view_excludes_old_version"
+      ]
+    },
+    {
+      "from": "CHALLENGED",
+      "event": "upheld_with_evidence",
+      "to": "PROMOTED",
+      "actor": "governance_gate",
+      "pre": [
+        "provisional_threshold_met_again",
+        "challenge_resolved"
+      ],
+      "post": [
+        "new_decision_version",
+        "audit_event_UPHOLD",
+        "old_decision_not_updated",
+        "view_includes_claim"
+      ]
+    },
+    {
+      "from": "CHALLENGED",
+      "event": "challenge_sustained_or_expired",
+      "to": "RETRACTED",
+      "actor": "governance_gate",
+      "pre": [
+        "challenge_sustained",
+        "or_challenge_sla_expired"
+      ],
+      "post": [
+        "decision_recorded",
+        "audit_event_RETRACT",
+        "view_excludes_claim"
+      ]
+    }
   ],
   "provisional_evidence_threshold": {
     "rule": "MVP candidate under test; carries NO production validity. Use beyond S1-011 caps verdict at PASS_WITH_LIMITS with explicit production block.",
-    "requires": ["at_least_two_verified_evidence", "at_least_two_independence_groups", "all_evidence_same_claim_version_and_scope", "no_unresolved_challenge_or_revocation", "provenance_digest_policy_present", "final_transition_by_governance_gate_only"]
+    "requires": [
+      "at_least_two_verified_evidence",
+      "at_least_two_independence_groups",
+      "all_evidence_same_claim_version_and_scope",
+      "no_unresolved_challenge_or_revocation",
+      "provenance_digest_policy_present",
+      "final_transition_by_governance_gate_only"
+    ]
   },
   "evidence_eligibility": {
     "eligible": "verified=true AND provenance.source_status=ACTIVE AND evidence.claim_version == assertion.claim_version AND evidence.scope == assertion.scope AND independence_group declared",
@@ -56,13 +237,83 @@
     "concurrency": "Concurrent promote/challenge or duplicate idempotency keys resolve to exactly one active decision; challenge is never lost; transition+audit commit atomically or not at all.",
     "idempotency": "Duplicate idempotency_key returns the recorded decision without creating a new one."
   },
-  "fail_closed": ["missing_provenance", "missing_policy_version", "missing_actor_authority", "missing_evidence_binding", "missing_transition_reason", "revoked_source", "cross_scope_access", "unknown_transition", "stale_epoch"],
-  "reason_codes": ["THRESHOLD_MET", "THRESHOLD_NOT_MET", "EVIDENCE_INSUFFICIENT", "EVIDENCE_CORRELATED", "CHALLENGE_OPENED", "CHALLENGE_UPHELD", "CHALLENGE_SUSTAINED", "SOURCE_REVOKED", "SUPERSEDED", "WITHDRAWN", "REPLAY_REJECTED", "STALE_EPOCH", "AUTHORITY_DENIED", "POLICY_MISMATCH", "SCOPE_MISMATCH", "EXTERNAL_CONTENT_QUARANTINED", "DUPLICATE_IDEMPOTENT", "CONCURRENT_RESOLVED", "UNKNOWN_TRANSITION"],
+  "fail_closed": [
+    "missing_provenance",
+    "missing_policy_version",
+    "missing_actor_authority",
+    "missing_evidence_binding",
+    "missing_transition_reason",
+    "revoked_source",
+    "cross_scope_access",
+    "unknown_transition",
+    "stale_epoch"
+  ],
+  "reason_codes": [
+    "THRESHOLD_MET",
+    "THRESHOLD_NOT_MET",
+    "EVIDENCE_INSUFFICIENT",
+    "EVIDENCE_CORRELATED",
+    "CHALLENGE_OPENED",
+    "CHALLENGE_UPHELD",
+    "CHALLENGE_SUSTAINED",
+    "SOURCE_REVOKED",
+    "SUPERSEDED",
+    "WITHDRAWN",
+    "REPLAY_REJECTED",
+    "STALE_EPOCH",
+    "AUTHORITY_DENIED",
+    "POLICY_MISMATCH",
+    "SCOPE_MISMATCH",
+    "EXTERNAL_CONTENT_QUARANTINED",
+    "DUPLICATE_IDEMPOTENT",
+    "CONCURRENT_RESOLVED",
+    "UNKNOWN_TRANSITION",
+    "MISSING_REQUIRED_FIELD",
+    "INVALID_EVIDENCE_BINDING"
+  ],
   "external_content": "External documents/tool output are untrusted: claims of verified/promoted/resolved, policy or capability change requests, and Goal acceptance announcements cause NO transition; the case is quarantined.",
   "migration_expiry_rollback": {
     "migration": "Adopting a richer model later replays the immutable history through the new gate; past decisions are re-evaluated, never edited.",
     "expiry": "Decisions bind to policy_version; a policy change expires standing PROMOTED claims into re-evaluation (CHALLENGED), not silent retention.",
     "rollback": "Roll back by selecting the prior contract version and re-running the gate over preserved history; no history loss by construction."
   },
-  "s1_003_alignment": "S1-003 KnowledgeAssertion lifecycle (proposed/under_review/promoted/challenged/retracted/superseded/rejected) maps onto this contract with under_review folded into PROPOSED and superseded expressed as RETRACTED+SUPERSEDES. DelegationGrant revoked maps to source_revoked handling. No S1-003 fixture contradicts this mapping."
+  "s1_003_alignment": "S1-003 KnowledgeAssertion lifecycle (proposed/under_review/promoted/challenged/retracted/superseded/rejected) maps onto this contract with under_review folded into PROPOSED and superseded expressed as RETRACTED+SUPERSEDES. DelegationGrant revoked maps to source_revoked handling. No S1-003 fixture contradicts this mapping.",
+  "event_authority": {
+    "gate_pass": [
+      "governance_gate"
+    ],
+    "gate_fail": [
+      "governance_gate"
+    ],
+    "withdrawn": [
+      "worker",
+      "operator"
+    ],
+    "challenge_accepted": [
+      "worker",
+      "governance_gate",
+      "operator"
+    ],
+    "source_revoked": [
+      "governance_gate",
+      "operator"
+    ],
+    "superseded": [
+      "governance_gate"
+    ],
+    "upheld_with_evidence": [
+      "governance_gate",
+      "operator"
+    ],
+    "challenge_sustained_or_expired": [
+      "governance_gate",
+      "operator"
+    ]
+  },
+  "input_validation": {
+    "no_defaults": "Missing actor_role never defaults to governance_gate; missing/empty policy_version never defaults to current; missing/empty tenant/workspace/goal/scope fail closed.",
+    "evidence_binding": "Each evidence item must carry a 64-hex digest equal to digest(evidence_id) under the corpus digest rule, verified===true (strict boolean), non-empty lineage and independence group, matching claim version/scope, and a non-revoked source lineage.",
+    "unresolved_challenge": "An open in-scope challenge blocks any promotion path.",
+    "current_predicate": "Promotion, duplicate-key shortcut, replay and read paths all evaluate the full derived-view inclusion predicate at decision time; a stale record never restores visibility."
+  }
 }

@@ -3,59 +3,524 @@
   "contract": "agentos.s1-011.knowledge-gate-contract/v1",
   "scoring_rule": "UNKNOWN/NO_DATA cells are never scored as zero; they abstain and propagate as unknowns into sensitivity. Any hard invariant failure excludes a design regardless of weighted score.",
   "designs": [
-    {"id": "minimal-gate", "name": "Minimal promote/challenge gate",
-     "mechanics": "Fixed 5-state machine (contract §9). Promotion iff provisional threshold holds: >=2 verified evidence, >=2 independence groups, same claim version/scope, no unresolved challenge/revocation, provenance/digest/policy present, governance-only final step. Challenge moves PROMOTED->CHALLENGED immediately with view exclusion; re-promotion needs a new decision.",
-     "state_space": "5 states x 8 events; threshold is a closed checklist.",
-     "authority": "worker proposes; governance_gate decides; operator resolves/escalates.",
-     "cost_model": "operator_actions_per_case ~ challenge_rate x resolution_steps; backlog = open challenges older than SLA hypothesis."},
-    {"id": "argumentation", "name": "Argumentation model",
-     "mechanics": "Claims with attack/support relations; acceptability via grounded-style semantics: a claim is IN iff it has >=1 accepted supporter and every attacker is OUT; an attacker is OUT iff it has an accepted counter-attacker or is itself defeated by evidence. Supporters/attackers are evidence-backed arguments with provenance. Cycles default to OUT (fail closed).",
-     "state_space": "Claim graph + IN/OUT/UNDECIDED labels; semantics computed by fixed-point iteration with a step cap; UNDECIDED after cap means non-promotion.",
-     "authority": "worker proposes arguments; governance_gate computes semantics and admits only IN claims; operator resolves UNDECIDED clusters.",
-     "cost_model": "operator_actions_per_case ~ undecided_clusters + attack_graph_review_steps; backlog = UNDECIDED claims awaiting operator structuring."},
-    {"id": "tms", "name": "Truth-maintenance model",
-     "mechanics": "Beliefs with justifications (IN/OUT support lists). A belief is IN iff at least one justification holds (all IN-nodes IN, all OUT-nodes OUT) and no contradiction node is IN. Source revocation flips the source node OUT, propagating downstream automatically (belief revision). Contradictions trigger dependency-directed backtracking to the assumption set.",
-     "state_space": "Belief network + justification records; propagation is monotonic except revision steps which are versioned and audited.",
-     "authority": "worker asserts with justifications; TMS propagates automatically; governance_gate admits only IN beliefs; operator resolves contradictions.",
-     "cost_model": "operator_actions_per_case ~ contradiction_events x backtracking_steps; backlog = unresolved contradiction sets."}
+    {
+      "id": "minimal-gate",
+      "name": "Minimal promote/challenge gate",
+      "mechanics": "Fixed 5-state machine (contract \u00a79). Promotion iff provisional threshold holds: >=2 verified evidence, >=2 independence groups, same claim version/scope, no unresolved challenge/revocation, provenance/digest/policy present, governance-only final step. Challenge moves PROMOTED->CHALLENGED immediately with view exclusion; re-promotion needs a new decision.",
+      "state_space": "5 states x 8 events; threshold is a closed checklist.",
+      "authority": "worker proposes; governance_gate decides; operator resolves/escalates.",
+      "cost_model": "operator_actions_per_case ~ challenge_rate x resolution_steps; backlog = open challenges older than SLA hypothesis."
+    },
+    {
+      "id": "argumentation",
+      "name": "Argumentation model",
+      "mechanics": "Claims with attack/support relations; acceptability via grounded-style semantics: a claim is IN iff it has >=1 accepted supporter and every attacker is OUT; an attacker is OUT iff it has an accepted counter-attacker or is itself defeated by evidence. Supporters/attackers are evidence-backed arguments with provenance. Cycles default to OUT (fail closed).",
+      "state_space": "Claim graph + IN/OUT/UNDECIDED labels; semantics computed by fixed-point iteration with a step cap; UNDECIDED after cap means non-promotion.",
+      "authority": "worker proposes arguments; governance_gate computes semantics and admits only IN claims; operator resolves UNDECIDED clusters.",
+      "cost_model": "operator_actions_per_case ~ undecided_clusters + attack_graph_review_steps; backlog = UNDECIDED claims awaiting operator structuring."
+    },
+    {
+      "id": "tms",
+      "name": "Truth-maintenance model",
+      "mechanics": "Beliefs with justifications (IN/OUT support lists). A belief is IN iff at least one justification holds (all IN-nodes IN, all OUT-nodes OUT) and no contradiction node is IN. Source revocation flips the source node OUT, propagating downstream automatically (belief revision). Contradictions trigger dependency-directed backtracking to the assumption set.",
+      "state_space": "Belief network + justification records; propagation is monotonic except revision steps which are versioned and audited.",
+      "authority": "worker asserts with justifications; TMS propagates automatically; governance_gate admits only IN beliefs; operator resolves contradictions.",
+      "cost_model": "operator_actions_per_case ~ contradiction_events x backtracking_steps; backlog = unresolved contradiction sets."
+    }
   ],
-  "dimensions": ["safety_fail_closed", "provenance_auditability", "challenge_retraction", "explainability", "operator_load", "complexity", "replay_testability", "ontology_shacl_fit", "migration_rollback", "evolvability"],
+  "dimensions": [
+    "safety_fail_closed",
+    "provenance_auditability",
+    "challenge_retraction",
+    "explainability",
+    "operator_load",
+    "complexity",
+    "replay_testability",
+    "ontology_shacl_fit",
+    "migration_rollback",
+    "evolvability"
+  ],
   "cells": {
     "minimal-gate": {
-      "safety_fail_closed": {"evidence_class": "design_analysis", "refs": ["contract:fail_closed", "contract:provisional_evidence_threshold"], "confidence": "high", "assumptions": ["threshold checklist is complete"], "unknowns": ["real-world correlation miss rate"], "residual_risks": ["provisional threshold is uncalibrated until S1-012"]},
-      "provenance_auditability": {"evidence_class": "design_analysis", "refs": ["record_schema:provenance", "contract:reason_codes"], "confidence": "high", "assumptions": ["digests cover canonical bytes"], "unknowns": [], "residual_risks": []},
-      "challenge_retraction": {"evidence_class": "design_analysis", "refs": ["contract:challenge", "contract:retraction_revocation_supersession"], "confidence": "high", "assumptions": ["immediate view exclusion is sufficient"], "unknowns": ["downstream invalidation latency at scale"], "residual_risks": []},
-      "explainability": {"evidence_class": "design_analysis", "refs": ["contract:meaning_of_promoted"], "confidence": "high", "assumptions": ["5 states fit operator mental model"], "unknowns": ["no human study until S1-013"], "residual_risks": ["assumed comprehensibility is unvalidated"]},
-      "operator_load": {"evidence_class": "simulation_estimate", "refs": ["contract:challenge.sla_hypothesis"], "confidence": "medium", "assumptions": ["challenge rate is low"], "unknowns": ["true challenge rate", "resolution step cost"], "residual_risks": ["backlog growth if challenge rate is high"]},
-      "complexity": {"evidence_class": "design_analysis", "refs": ["state-machine:edges"], "confidence": "high", "assumptions": [], "unknowns": [], "residual_risks": []},
-      "replay_testability": {"evidence_class": "design_analysis", "refs": ["contract:stale_replay_concurrency"], "confidence": "high", "assumptions": ["deterministic checklist evaluation"], "unknowns": [], "residual_risks": []},
-      "ontology_shacl_fit": {"evidence_class": "dependency_evidence", "refs": ["S1-003:fixtures.json", "state-machine:s1_003_mapping"], "confidence": "high", "assumptions": ["mapping is exact"], "unknowns": [], "residual_risks": []},
-      "migration_rollback": {"evidence_class": "design_analysis", "refs": ["contract:migration_expiry_rollback"], "confidence": "high", "assumptions": ["history replay is faithful"], "unknowns": [], "residual_risks": []},
-      "evolvability": {"evidence_class": "design_analysis", "refs": ["contract:migration_expiry_rollback"], "confidence": "medium", "assumptions": ["richer models can consume the same records"], "unknowns": ["argumentation/TMS input requirements"], "residual_risks": ["rework if record schema proves insufficient"]}
+      "safety_fail_closed": {
+        "evidence_class": "design_analysis",
+        "refs": [
+          "contract:fail_closed",
+          "contract:provisional_evidence_threshold"
+        ],
+        "confidence": "high",
+        "assumptions": [
+          "threshold checklist is complete"
+        ],
+        "unknowns": [
+          "real-world correlation miss rate"
+        ],
+        "residual_risks": [
+          "provisional threshold is uncalibrated until S1-012"
+        ],
+        "utility": null,
+        "utility_basis": "measured from hard counters"
+      },
+      "provenance_auditability": {
+        "evidence_class": "design_analysis",
+        "refs": [
+          "record_schema:provenance",
+          "contract:reason_codes"
+        ],
+        "confidence": "high",
+        "assumptions": [
+          "digests cover canonical bytes"
+        ],
+        "unknowns": [],
+        "residual_risks": [],
+        "utility": null,
+        "utility_basis": "measured"
+      },
+      "challenge_retraction": {
+        "evidence_class": "design_analysis",
+        "refs": [
+          "contract:challenge",
+          "contract:retraction_revocation_supersession"
+        ],
+        "confidence": "high",
+        "assumptions": [
+          "immediate view exclusion is sufficient"
+        ],
+        "unknowns": [
+          "downstream invalidation latency at scale"
+        ],
+        "residual_risks": [],
+        "utility": null,
+        "utility_basis": "measured"
+      },
+      "explainability": {
+        "evidence_class": "design_analysis",
+        "refs": [
+          "contract:meaning_of_promoted"
+        ],
+        "confidence": "high",
+        "assumptions": [
+          "5 states fit operator mental model"
+        ],
+        "unknowns": [
+          "no human study until S1-013"
+        ],
+        "residual_risks": [
+          "assumed comprehensibility is unvalidated"
+        ],
+        "utility": 0.8,
+        "utility_basis": "5 states plus reason codes suffice for the operator story; no human study yet so not 1.0"
+      },
+      "operator_load": {
+        "evidence_class": "simulation_estimate",
+        "refs": [
+          "contract:challenge.sla_hypothesis"
+        ],
+        "confidence": "medium",
+        "assumptions": [
+          "challenge rate is low"
+        ],
+        "unknowns": [
+          "true challenge rate",
+          "resolution step cost"
+        ],
+        "residual_risks": [
+          "backlog growth if challenge rate is high"
+        ],
+        "utility": 0.6,
+        "utility_basis": "model estimate only, challenge-rate assumption unvalidated"
+      },
+      "complexity": {
+        "evidence_class": "design_analysis",
+        "refs": [
+          "state-machine:edges"
+        ],
+        "confidence": "high",
+        "assumptions": [],
+        "unknowns": [],
+        "residual_risks": [],
+        "utility": 1.0,
+        "utility_basis": "5 states x 8 events, stdlib-only, smallest state space of the three"
+      },
+      "replay_testability": {
+        "evidence_class": "design_analysis",
+        "refs": [
+          "contract:stale_replay_concurrency"
+        ],
+        "confidence": "high",
+        "assumptions": [
+          "deterministic checklist evaluation"
+        ],
+        "unknowns": [],
+        "residual_risks": [],
+        "utility": null,
+        "utility_basis": "measured"
+      },
+      "ontology_shacl_fit": {
+        "evidence_class": "dependency_evidence",
+        "refs": [
+          "S1-003:fixtures.json",
+          "state-machine:s1_003_mapping"
+        ],
+        "confidence": "high",
+        "assumptions": [
+          "mapping is exact"
+        ],
+        "unknowns": [],
+        "residual_risks": [],
+        "utility": 1.0,
+        "utility_basis": "exact S1-003 KnowledgeAssertion mapping, verified against fixtures"
+      },
+      "migration_rollback": {
+        "evidence_class": "design_analysis",
+        "refs": [
+          "contract:migration_expiry_rollback"
+        ],
+        "confidence": "high",
+        "assumptions": [
+          "history replay is faithful"
+        ],
+        "unknowns": [],
+        "residual_risks": [],
+        "utility": 1.0,
+        "utility_basis": "history replay over preserved records"
+      },
+      "evolvability": {
+        "evidence_class": "design_analysis",
+        "refs": [
+          "contract:migration_expiry_rollback"
+        ],
+        "confidence": "medium",
+        "assumptions": [
+          "richer models can consume the same records"
+        ],
+        "unknowns": [
+          "argumentation/TMS input requirements"
+        ],
+        "residual_risks": [
+          "rework if record schema proves insufficient"
+        ],
+        "utility": 0.6,
+        "utility_basis": "records reusable by richer models; their input requirements unknown"
+      }
     },
     "argumentation": {
-      "safety_fail_closed": {"evidence_class": "design_analysis", "refs": ["alternatives:argumentation.mechanics"], "confidence": "medium", "assumptions": ["cycles and non-convergence default OUT"], "unknowns": ["convergence behavior on hostile graphs"], "residual_risks": ["UNDECIDED handling may leak into promotion under schedule pressure"]},
-      "provenance_auditability": {"evidence_class": "design_analysis", "refs": ["alternatives:argumentation.mechanics"], "confidence": "medium", "assumptions": ["arguments carry provenance like evidence"], "unknowns": ["attack-relation provenance"], "residual_risks": ["graph edges may lack audit binding"]},
-      "challenge_retraction": {"evidence_class": "design_analysis", "refs": ["alternatives:argumentation.mechanics"], "confidence": "medium", "assumptions": ["challenge maps to attacker insertion"], "unknowns": ["retraction propagation cost"], "residual_risks": ["stale IN labels after retraction if recompute is skipped"]},
-      "explainability": {"evidence_class": "design_analysis", "refs": ["SRC-07:G-06"], "confidence": "low", "assumptions": ["operators read graphs"], "unknowns": ["no human study until S1-013; G-06 notes rare production testing"], "residual_risks": ["graph explanations may confuse operators"]},
-      "operator_load": {"evidence_class": "simulation_estimate", "refs": ["alternatives:argumentation.cost_model"], "confidence": "low", "assumptions": ["UNDECIDED rate is low"], "unknowns": ["true UNDECIDED rate", "graph review cost"], "residual_risks": ["every UNDECIDED cluster needs operator structuring"]},
-      "complexity": {"evidence_class": "design_analysis", "refs": ["alternatives:argumentation.state_space"], "confidence": "high", "assumptions": [], "unknowns": [], "residual_risks": ["fixed-point + step cap + cycle policy is the most complex of the three"]},
-      "replay_testability": {"evidence_class": "design_analysis", "refs": ["alternatives:argumentation.state_space"], "confidence": "medium", "assumptions": ["iteration order is canonicalized"], "unknowns": ["order sensitivity"], "residual_risks": ["nondeterministic tie-breaks if not canonicalized"]},
-      "ontology_shacl_fit": {"evidence_class": "UNKNOWN", "refs": [], "confidence": "unknown", "assumptions": [], "unknowns": ["no SHACL mapping for attack/support relations exists"], "residual_risks": ["S1-003 shapes would need extension"]},
-      "migration_rollback": {"evidence_class": "design_analysis", "refs": [], "confidence": "medium", "assumptions": ["IN/OUT labels are recomputable from history"], "unknowns": ["label stability across versions"], "residual_risks": []},
-      "evolvability": {"evidence_class": "design_analysis", "refs": [], "confidence": "high", "assumptions": [], "unknowns": [], "residual_risks": []}
+      "safety_fail_closed": {
+        "evidence_class": "design_analysis",
+        "refs": [
+          "alternatives:argumentation.mechanics"
+        ],
+        "confidence": "medium",
+        "assumptions": [
+          "cycles and non-convergence default OUT"
+        ],
+        "unknowns": [
+          "convergence behavior on hostile graphs"
+        ],
+        "residual_risks": [
+          "UNDECIDED handling may leak into promotion under schedule pressure"
+        ],
+        "utility": null,
+        "utility_basis": "measured"
+      },
+      "provenance_auditability": {
+        "evidence_class": "design_analysis",
+        "refs": [
+          "alternatives:argumentation.mechanics"
+        ],
+        "confidence": "medium",
+        "assumptions": [
+          "arguments carry provenance like evidence"
+        ],
+        "unknowns": [
+          "attack-relation provenance"
+        ],
+        "residual_risks": [
+          "graph edges may lack audit binding"
+        ],
+        "utility": null,
+        "utility_basis": "measured"
+      },
+      "challenge_retraction": {
+        "evidence_class": "design_analysis",
+        "refs": [
+          "alternatives:argumentation.mechanics"
+        ],
+        "confidence": "medium",
+        "assumptions": [
+          "challenge maps to attacker insertion"
+        ],
+        "unknowns": [
+          "retraction propagation cost"
+        ],
+        "residual_risks": [
+          "stale IN labels after retraction if recompute is skipped"
+        ],
+        "utility": null,
+        "utility_basis": "measured"
+      },
+      "explainability": {
+        "evidence_class": "design_analysis",
+        "refs": [
+          "SRC-07:G-06"
+        ],
+        "confidence": "low",
+        "assumptions": [
+          "operators read graphs"
+        ],
+        "unknowns": [
+          "no human study until S1-013; G-06 notes rare production testing"
+        ],
+        "residual_risks": [
+          "graph explanations may confuse operators"
+        ],
+        "utility": 0.4,
+        "utility_basis": "attack graphs need operator graph literacy; G-06 notes rare production testing"
+      },
+      "operator_load": {
+        "evidence_class": "simulation_estimate",
+        "refs": [
+          "alternatives:argumentation.cost_model"
+        ],
+        "confidence": "low",
+        "assumptions": [
+          "UNDECIDED rate is low"
+        ],
+        "unknowns": [
+          "true UNDECIDED rate",
+          "graph review cost"
+        ],
+        "residual_risks": [
+          "every UNDECIDED cluster needs operator structuring"
+        ],
+        "utility": 0.4,
+        "utility_basis": "every UNDECIDED cluster needs operator structuring; rate unknown"
+      },
+      "complexity": {
+        "evidence_class": "design_analysis",
+        "refs": [
+          "alternatives:argumentation.state_space"
+        ],
+        "confidence": "high",
+        "assumptions": [],
+        "unknowns": [],
+        "residual_risks": [
+          "fixed-point + step cap + cycle policy is the most complex of the three"
+        ],
+        "utility": 0.4,
+        "utility_basis": "fixed-point iteration plus step cap plus cycle policy; largest of the three"
+      },
+      "replay_testability": {
+        "evidence_class": "design_analysis",
+        "refs": [
+          "alternatives:argumentation.state_space"
+        ],
+        "confidence": "medium",
+        "assumptions": [
+          "iteration order is canonicalized"
+        ],
+        "unknowns": [
+          "order sensitivity"
+        ],
+        "residual_risks": [
+          "nondeterministic tie-breaks if not canonicalized"
+        ],
+        "utility": null,
+        "utility_basis": "measured"
+      },
+      "ontology_shacl_fit": {
+        "evidence_class": "UNKNOWN",
+        "refs": [],
+        "confidence": "unknown",
+        "assumptions": [],
+        "unknowns": [
+          "no SHACL mapping for attack/support relations exists"
+        ],
+        "residual_risks": [
+          "S1-003 shapes would need extension"
+        ],
+        "utility": null,
+        "utility_basis": "no SHACL mapping for attack/support relations exists"
+      },
+      "migration_rollback": {
+        "evidence_class": "design_analysis",
+        "refs": [],
+        "confidence": "medium",
+        "assumptions": [
+          "IN/OUT labels are recomputable from history"
+        ],
+        "unknowns": [
+          "label stability across versions"
+        ],
+        "residual_risks": [],
+        "utility": 0.6,
+        "utility_basis": "labels recomputable but stability across versions unknown"
+      },
+      "evolvability": {
+        "evidence_class": "design_analysis",
+        "refs": [],
+        "confidence": "high",
+        "assumptions": [],
+        "unknowns": [],
+        "residual_risks": [],
+        "utility": 1.0,
+        "utility_basis": "is itself a richer model"
+      }
     },
     "tms": {
-      "safety_fail_closed": {"evidence_class": "design_analysis", "refs": ["alternatives:tms.mechanics"], "confidence": "medium", "assumptions": ["revision steps are versioned and audited"], "unknowns": ["automatic propagation may outrun operator oversight"], "residual_risks": ["auto-revision changes derived view without a fresh governance decision"]},
-      "provenance_auditability": {"evidence_class": "design_analysis", "refs": ["alternatives:tms.mechanics"], "confidence": "medium", "assumptions": ["justifications are recorded"], "unknowns": ["justification completeness"], "residual_risks": []},
-      "challenge_retraction": {"evidence_class": "design_analysis", "refs": ["alternatives:tms.mechanics"], "confidence": "high", "assumptions": ["revocation propagates monotonically"], "unknowns": [], "residual_risks": []},
-      "explainability": {"evidence_class": "design_analysis", "refs": ["SRC-07:G-06"], "confidence": "low", "assumptions": ["operators follow justification chains"], "unknowns": ["no human study until S1-013; G-06 notes rare production testing"], "residual_risks": ["backtracking explanations are the hardest to follow"]},
-      "operator_load": {"evidence_class": "simulation_estimate", "refs": ["alternatives:tms.cost_model"], "confidence": "low", "assumptions": ["contradictions are rare"], "unknowns": ["true contradiction rate", "backtracking cost"], "residual_risks": ["each contradiction set needs operator resolution"]},
-      "complexity": {"evidence_class": "design_analysis", "refs": ["alternatives:tms.state_space"], "confidence": "high", "assumptions": [], "unknowns": [], "residual_risks": ["propagation + backtracking exceeds minimal gate but trails argumentation fixed-points"]},
-      "replay_testability": {"evidence_class": "design_analysis", "refs": ["alternatives:tms.mechanics"], "confidence": "medium", "assumptions": ["revision order is canonicalized"], "unknowns": ["backtracking choice points"], "residual_risks": ["revision interleavings may diverge"]},
-      "ontology_shacl_fit": {"evidence_class": "UNKNOWN", "refs": [], "confidence": "unknown", "assumptions": [], "unknowns": ["no SHACL mapping for justifications exists"], "residual_risks": ["S1-003 shapes would need extension"]},
-      "migration_rollback": {"evidence_class": "design_analysis", "refs": [], "confidence": "medium", "assumptions": ["belief versions are replayable"], "unknowns": [], "residual_risks": []},
-      "evolvability": {"evidence_class": "design_analysis", "refs": [], "confidence": "high", "assumptions": [], "unknowns": [], "residual_risks": []}
+      "safety_fail_closed": {
+        "evidence_class": "design_analysis",
+        "refs": [
+          "alternatives:tms.mechanics"
+        ],
+        "confidence": "medium",
+        "assumptions": [
+          "revision steps are versioned and audited"
+        ],
+        "unknowns": [
+          "automatic propagation may outrun operator oversight"
+        ],
+        "residual_risks": [
+          "auto-revision changes derived view without a fresh governance decision"
+        ],
+        "utility": null,
+        "utility_basis": "measured"
+      },
+      "provenance_auditability": {
+        "evidence_class": "design_analysis",
+        "refs": [
+          "alternatives:tms.mechanics"
+        ],
+        "confidence": "medium",
+        "assumptions": [
+          "justifications are recorded"
+        ],
+        "unknowns": [
+          "justification completeness"
+        ],
+        "residual_risks": [],
+        "utility": null,
+        "utility_basis": "measured"
+      },
+      "challenge_retraction": {
+        "evidence_class": "design_analysis",
+        "refs": [
+          "alternatives:tms.mechanics"
+        ],
+        "confidence": "high",
+        "assumptions": [
+          "revocation propagates monotonically"
+        ],
+        "unknowns": [],
+        "residual_risks": [],
+        "utility": null,
+        "utility_basis": "measured"
+      },
+      "explainability": {
+        "evidence_class": "design_analysis",
+        "refs": [
+          "SRC-07:G-06"
+        ],
+        "confidence": "low",
+        "assumptions": [
+          "operators follow justification chains"
+        ],
+        "unknowns": [
+          "no human study until S1-013; G-06 notes rare production testing"
+        ],
+        "residual_risks": [
+          "backtracking explanations are the hardest to follow"
+        ],
+        "utility": 0.3,
+        "utility_basis": "backtracking explanations hardest to follow; G-06 applies"
+      },
+      "operator_load": {
+        "evidence_class": "simulation_estimate",
+        "refs": [
+          "alternatives:tms.cost_model"
+        ],
+        "confidence": "low",
+        "assumptions": [
+          "contradictions are rare"
+        ],
+        "unknowns": [
+          "true contradiction rate",
+          "backtracking cost"
+        ],
+        "residual_risks": [
+          "each contradiction set needs operator resolution"
+        ],
+        "utility": 0.4,
+        "utility_basis": "each contradiction set needs operator resolution; rate unknown"
+      },
+      "complexity": {
+        "evidence_class": "design_analysis",
+        "refs": [
+          "alternatives:tms.state_space"
+        ],
+        "confidence": "high",
+        "assumptions": [],
+        "unknowns": [],
+        "residual_risks": [
+          "propagation + backtracking exceeds minimal gate but trails argumentation fixed-points"
+        ],
+        "utility": 0.6,
+        "utility_basis": "propagation plus backtracking exceeds minimal gate, trails argumentation fixed-points"
+      },
+      "replay_testability": {
+        "evidence_class": "design_analysis",
+        "refs": [
+          "alternatives:tms.mechanics"
+        ],
+        "confidence": "medium",
+        "assumptions": [
+          "revision order is canonicalized"
+        ],
+        "unknowns": [
+          "backtracking choice points"
+        ],
+        "residual_risks": [
+          "revision interleavings may diverge"
+        ],
+        "utility": null,
+        "utility_basis": "measured"
+      },
+      "ontology_shacl_fit": {
+        "evidence_class": "UNKNOWN",
+        "refs": [],
+        "confidence": "unknown",
+        "assumptions": [],
+        "unknowns": [
+          "no SHACL mapping for justifications exists"
+        ],
+        "residual_risks": [
+          "S1-003 shapes would need extension"
+        ],
+        "utility": null,
+        "utility_basis": "no SHACL mapping for justifications exists"
+      },
+      "migration_rollback": {
+        "evidence_class": "design_analysis",
+        "refs": [],
+        "confidence": "medium",
+        "assumptions": [
+          "belief versions are replayable"
+        ],
+        "unknowns": [],
+        "residual_risks": [],
+        "utility": 0.6,
+        "utility_basis": "belief versions replayable in principle"
+      },
+      "evolvability": {
+        "evidence_class": "design_analysis",
+        "refs": [],
+        "confidence": "high",
+        "assumptions": [],
+        "unknowns": [],
+        "residual_risks": [],
+        "utility": 1.0,
+        "utility_basis": "is itself a richer model"
+      }
     }
   }
 }

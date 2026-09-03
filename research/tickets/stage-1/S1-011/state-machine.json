@@ -1,24 +1,75 @@
 {
   "schema": "agentos.s1-011.state-machine/v1",
   "contract": "agentos.s1-011.knowledge-gate-contract/v1",
-  "contract_version": "1.0.0",
+  "contract_version": "1.0.1",
   "initial": "PROPOSED",
-  "states": ["PROPOSED", "PROMOTED", "CHALLENGED", "REJECTED", "RETRACTED"],
-  "terminal": ["REJECTED", "RETRACTED"],
+  "states": [
+    "PROPOSED",
+    "PROMOTED",
+    "CHALLENGED",
+    "REJECTED",
+    "RETRACTED"
+  ],
+  "terminal": [
+    "REJECTED",
+    "RETRACTED"
+  ],
   "edges": [
-    {"from": "PROPOSED", "event": "gate_pass", "to": "PROMOTED"},
-    {"from": "PROPOSED", "event": "gate_fail", "to": "REJECTED"},
-    {"from": "PROPOSED", "event": "withdrawn", "to": "RETRACTED"},
-    {"from": "PROMOTED", "event": "challenge_accepted", "to": "CHALLENGED"},
-    {"from": "PROMOTED", "event": "source_revoked", "to": "CHALLENGED"},
-    {"from": "PROMOTED", "event": "superseded", "to": "RETRACTED"},
-    {"from": "CHALLENGED", "event": "upheld_with_evidence", "to": "PROMOTED"},
-    {"from": "CHALLENGED", "event": "challenge_sustained_or_expired", "to": "RETRACTED"}
+    {
+      "from": "PROPOSED",
+      "event": "gate_pass",
+      "to": "PROMOTED"
+    },
+    {
+      "from": "PROPOSED",
+      "event": "gate_fail",
+      "to": "REJECTED"
+    },
+    {
+      "from": "PROPOSED",
+      "event": "withdrawn",
+      "to": "RETRACTED"
+    },
+    {
+      "from": "PROMOTED",
+      "event": "challenge_accepted",
+      "to": "CHALLENGED"
+    },
+    {
+      "from": "PROMOTED",
+      "event": "source_revoked",
+      "to": "CHALLENGED"
+    },
+    {
+      "from": "PROMOTED",
+      "event": "superseded",
+      "to": "RETRACTED"
+    },
+    {
+      "from": "CHALLENGED",
+      "event": "upheld_with_evidence",
+      "to": "PROMOTED"
+    },
+    {
+      "from": "CHALLENGED",
+      "event": "challenge_sustained_or_expired",
+      "to": "RETRACTED"
+    }
   ],
   "reentry_rule": "CHALLENGED->PROMOTED creates a NEW governance decision/version; the old decision is never updated.",
   "s1_003_mapping": {
-    "KnowledgeAssertion": {"proposed": "PROPOSED", "under_review": "PROPOSED", "promoted": "PROMOTED", "challenged": "CHALLENGED", "retracted": "RETRACTED", "superseded": "RETRACTED+SUPERSEDES", "rejected": "REJECTED"},
-    "DelegationGrant": {"note": "Grant revoked/expired/exhausted/denied revoke the authority that a gate decision may rely on; treated as source_revoked input, not as assertion states."},
+    "KnowledgeAssertion": {
+      "proposed": "PROPOSED",
+      "under_review": "PROPOSED",
+      "promoted": "PROMOTED",
+      "challenged": "CHALLENGED",
+      "retracted": "RETRACTED",
+      "superseded": "RETRACTED+SUPERSEDES",
+      "rejected": "REJECTED"
+    },
+    "DelegationGrant": {
+      "note": "Grant revoked/expired/exhausted/denied revoke the authority that a gate decision may rely on; treated as source_revoked input, not as assertion states."
+    },
     "contradiction": "none: every S1-003 fixture state has exactly one image in this machine"
   }
 }

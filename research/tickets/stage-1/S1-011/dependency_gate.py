@@ -7,7 +7,11 @@ Verifies, from actual bytes rather than narrative:
 - pack payload self-hash (pack minus "sha256") matches payload_sha256;
 - repo-relative paths stay inside the ticket dir (no traversal);
 - bytes reproduce from a clean `git archive HEAD` (no .git, no live DB);
-- record verdict/revision matches docs/RESEARCH_STAGE_1_TICKETS.md;
+- record verdict is in the positive allowlist {pass, pass_with_limits}
+  (a FAIL/BLOCKED dependency can never be PROVEN) and matches
+  docs/RESEARCH_STAGE_1_TICKETS.md;
+- record research_revision is bound to the ticket's docs segment (the
+  revision number must be stated there, not just copied from the record);
 - S1-003 executable SHACL lifecycle semantics still PASS with the expected
   proposed/promoted/rejected/superseded/revoked fixture states present.
 
@@ -23,10 +27,10 @@ from __future__ import annotations
 import hashlib
 import io
 import json
+import re
 import subprocess
 import sys
 import tarfile
-import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[4]
@@ -75,27 +79,38 @@ def archive_bytes(rel: str) -> bytes:
         return member.read()
 
 
-def docs_status(ticket: str) -> str:
+def docs_segment(ticket: str) -> str:
     docs = DOCS.read_text(encoding="utf-8")
     marker = f"### {ticket} "
     seg = docs[docs.index(marker):]
     end = seg.find("### ", 10)
-    seg = seg[:end] if end != -1 else seg
+    return seg[:end] if end != -1 else seg
+
+
+def docs_status(ticket: str) -> str:
+    seg = docs_segment(ticket)
     for line in seg.splitlines():
         if line.startswith("- **Status:**"):
             return line
     raise RuntimeError(f"no Status line for {ticket} in tickets doc")
 
 
-def check(ticket: str) -> dict:
+ALLOWED_VERDICTS = {"pass", "pass_with_limits"}
+
+
+def check(ticket: str, rec_override: dict | None = None,
+          docs_override: str | None = None) -> dict:
     problems: list[str] = []
     rec_path = ROOT / "research/tickets/stage-1" / ticket / "evaluation-record.json"
-    if not rec_path.is_file():
-        return {"ticket": ticket, "status": "NOT_PROVEN",
-                "problems": [f"evaluation-record.json missing: {rec_path}"]}
-    if not git_tracked(f"research/tickets/stage-1/{ticket}/evaluation-record.json"):
-        problems.append("evaluation-record.json not git-tracked")
-    rec = json.loads(rec_path.read_text(encoding="utf-8"))
+    if rec_override is not None:
+        rec = rec_override
+    else:
+        if not rec_path.is_file():
+            return {"ticket": ticket, "status": "NOT_PROVEN",
+                    "problems": [f"evaluation-record.json missing: {rec_path}"]}
+        if not git_tracked(f"research/tickets/stage-1/{ticket}/evaluation-record.json"):
+            problems.append("evaluation-record.json not git-tracked")
+        rec = json.loads(rec_path.read_text(encoding="utf-8"))
 
     evidence = rec.get("evidence_pack") or {}
     pack_rel = evidence.get("path", "")
@@ -134,11 +149,31 @@ def check(ticket: str) -> dict:
             problems.append(str(exc))
 
     try:
-        status_line = docs_status(ticket)
-        expected = (rec.get("result") or "").upper()
-        if f"`{expected}`" not in status_line:
+        if docs_override is not None:
+            segment = docs_override
+            status_lines = [line for line in segment.splitlines()
+                            if line.startswith("- **Status:**")]
+            if not status_lines:
+                raise RuntimeError("no Status line in docs override")
+            status_line = status_lines[0]
+        else:
+            status_line = docs_status(ticket)
+            segment = docs_segment(ticket)
+        verdict = rec.get("result") or ""
+        if verdict not in ALLOWED_VERDICTS:
             problems.append(
-                f"docs status does not record {expected}: {status_line[:120]}")
+                f"dependency verdict {verdict!r} not in positive "
+                f"allowlist; FAIL/BLOCKED can never be PROVEN")
+        elif f"`{verdict.upper()}`" not in status_line:
+            problems.append(
+                f"docs status does not record {verdict.upper()}: "
+                f"{status_line[:120]}")
+        revision = rec.get("research_revision")
+        mentioned = set(re.findall(r"[Rr]evision\s+(\d+)", segment))
+        if str(revision) not in mentioned:
+            problems.append(
+                f"research_revision {revision!r} not bound to the "
+                f"ticket docs segment")
     except (ValueError, RuntimeError) as exc:
         problems.append(f"docs status check failed: {exc}")
 
@@ -189,7 +224,8 @@ def main() -> int:
                  "live DB consistency must be rechecked by the Phase B "
                  "local harness."),
     }
-    OUT.write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
+    OUT.write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8",
+                   newline="\n")
     print(json.dumps(doc, indent=2))
     if not doc["all_proven"]:
         failed = [r["ticket"] for r in results if r["status"] != "PROVEN"]

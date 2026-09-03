@@ -2,20 +2,21 @@
   "schema": "agentos.s1-011.corpus-manifest/v1",
   "ticket": "S1-011",
   "hashes": {
-    "cases.json": "2a234621f10abce57600a2994df6c5244ba88f60526b52807a5fdaae31ef046a",
-    "knowledge-gate-contract.json": "3dd77de5299c78fcabd4e514da013596b491a340472c1870526d45103a6559d0",
-    "state-machine.json": "6ca1a0b42eecf8a11eb70399ad3d3fd801482ac4f97464bea947d2e66410e2e5",
+    "cases.json": "5b34ad0c4851caa0a68cfffe0201c6c494702826e6a22e41cdb220f40491ac38",
+    "knowledge-gate-contract.json": "922e75923b7bd0b8a437b826cb86427c3f42ddf159e2eae1035919478e5b80a6",
+    "state-machine.json": "900d89fa760c8c200f9108581dbb7bb283d12c03a218cf601a7ef2c69cc0b052",
     "rubric.json": "598997d6a8735d05efa29018a7e912aec8cf5c398e0c6486bc1317602338c929",
-    "design-alternatives.json": "4ebf23262e39ab446089a717e5e05378a674ee5b3bab52774938abd09325dceb",
+    "design-alternatives.json": "78ba45a846b5ada6b4d46da68e32f907c816efc499d83a938bb9430b056c90f4",
     "knowledge-record.schema.json": "f5ab71684f3e7d67cb767a186f3886da94c9c42a58ec02c74c9c96e4325a125d",
-    "source-registry.json": "f420f0e1c1ad4937fc74dd127eb79f4b039e5ee618be03c28a118c6983ba4164",
-    "cases-a.src.json": "ddc7307c7e4689851c586ea6b6251625d6e163f5994180083bb6d34e01607fe5",
-    "cases-b.src.json": "a55bb04e9175daedb8d28fca44ae4efdb0bc0b5ab462bed43148dc3f6cb97e08",
-    "runner.py": "1705353444d6603c05ed399536d9299fd0dd164f65682ba872fe2cbf54629f3c",
-    "evaluator.py": "3872fd2793080a6aaf0c57729b856e4b68125a41369183aade4c6de329206c31",
-    "compare_runs.py": "1aafa9cac1ecaa00b854b71a75664bee0b3b4c0f74a5aebb4cd79b0ede0ac29a",
-    "dependency_gate.py": "ef7d590191c41a46b7c71b2c7f6961b2f362be6a7b25a4b8dd7ac673d01d8cb2",
-    "canonicalize_corpus.py": "2fb16ea8c24b8bd0f7fa298b26d8c717ed77f817cb0c4179f94a3e30bb721477"
+    "source-registry.json": "2206cb8e4657495100f0abd8b2130e8c11f278342b7ad65523be8c6b8b8131da",
+    "cases-a.src.json": "9ca7f37053cb3a0f1c6bf3f111269910d91dfa93f30fa70f960b387a90b9ec1d",
+    "cases-b.src.json": "a6eb596a2687e9bbbff9463839c6e6fb3c73f0dd8a8a39c9e732439cf95acf09",
+    "runner.py": "2216a9a3e00d3c87bebe311ac7d8f0c354a3d61595524bc71037cbe6939f6fd6",
+    "evaluator.py": "cf36c875ba317cc2269db399b1b350d3b1d8a7ac2577ebea80dcb2533b14030e",
+    "compare_runs.py": "0ec78357439ad2a175328209fc73cba41ce64777bacfe37c24adec939bc7a68e",
+    "dependency_gate.py": "e25027650a62656e0f9f00c4d43e64dd6cc019f292768637cc6f7ccc2a93e7d6",
+    "canonicalize_corpus.py": "746928009553ad8c147af41fe5f4e89d7a90e78ea3342d2fb562978e2e1369d5",
+    "make_bundle.py": "b51d543c2b19db625485f376067a32ac09961de93e3134d179098adb18972d27"
   },
   "seeds": [
     11011,
@@ -23,24 +24,24 @@
     33033
   ],
   "matrix": {
-    "cases": 60,
+    "cases": 72,
     "designs": [
       "minimal-gate",
       "argumentation",
       "tms"
     ],
     "seeds_per_cell": 3,
-    "rows_per_run": 540
+    "rows_per_run": 648
   },
   "defaults": {
     "tenant": "TEN-1",
     "workspace": "WS-1",
     "goal": "GOAL-S1-011",
-    "policy_version": "s1-011-policy-v1",
     "evidence.scope": "case scope",
     "evidence.claim_version": "assertion claim_version"
   },
   "digest_rule": "digest(symbolic_id)=SHA256(s1-011:digest:<id>); case_sha256=SHA256(canonical_json(case without case_sha256))",
-  "runner_hash": "1705353444d6603c05ed399536d9299fd0dd164f65682ba872fe2cbf54629f3c",
-  "evaluator_hash": "3872fd2793080a6aaf0c57729b856e4b68125a41369183aade4c6de329206c31"
+  "runner_hash": "2216a9a3e00d3c87bebe311ac7d8f0c354a3d61595524bc71037cbe6939f6fd6",
+  "evaluator_hash": "cf36c875ba317cc2269db399b1b350d3b1d8a7ac2577ebea80dcb2533b14030e",
+  "contract_version": "1.0.1"
 }

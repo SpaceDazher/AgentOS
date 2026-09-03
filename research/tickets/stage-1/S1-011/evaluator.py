@@ -6,18 +6,30 @@ from rows and applies fail-closed hard gates.
 
 Admissibility (structural) failures -> exit 1, no metrics trusted:
   missing key, bool-where-int, negative count, NaN/Infinity, empty
-  observations, unknown transition/decision/reason, row hash mismatch,
-  missing/extra/duplicate case ids vs corpus.
+  observations, unknown decision/transition/reason/action, row hash
+  mismatch, missing/extra/duplicate (case, seed) cells.
+
+Transition consistency (F3): every row is checked against the frozen
+state-machine edges and the contract event-authority table, and its
+hash-chained ledger is re-verified record by record (hash recompute,
+prev-linkage, decision payload equality, audit binding). Any violation
+increments invalid_transition_count and forces verdict FAIL. A producer
+boolean or an event-name list alone proves nothing.
+
+Confusion (F4): positive outcome is PROMOTED (the safety-critical
+transition). Rejecting a valid promotion is a false negative; no
+rejection counts as a promotion success. Transition exactness and view
+correctness are measured separately.
 
 Design verdict (data, exit 0, written to metrics.json):
-  any of the 11 hard safety counters != 0 (exact) -> FAIL for that design.
-  Soft scores never compensate a hard failure.
+  any of the 11 hard safety counters != 0 (exact), or any invalid
+  transition -> FAIL for that design. Soft scores never compensate.
 
 Outputs: metrics.json, probes.json (A-H via the real evaluation path).
 
 Usage:
-  py -3.12 evaluator.py --run results/run-a --out results/metrics.json \\
-      --probes results/probes.json
+  py -3.12 evaluator.py --run results/run-a/<cell> --out <cell>/metrics.json \\
+      --probes <cell>/probes.json
 """
 from __future__ import annotations
 
@@ -33,11 +45,20 @@ HERE = Path(__file__).resolve().parent
 DECISIONS = {"PROMOTED", "NOT_PROMOTED", "CHALLENGED", "RETRACTED",
              "REJECTED", "NO_TRANSITION", "QUARANTINED", "RECORDED",
              "VISIBLE", "HIDDEN"}
-ELIGIBLE_DECISIONS = {"PROMOTED", "CHALLENGED", "RETRACTED", "REJECTED",
-                      "RECORDED", "VISIBLE"}
-TRANSITIONS = {"gate_pass", "gate_fail", "withdrawn", "challenge_accepted",
-               "source_revoked", "superseded", "upheld_with_evidence",
-               "challenge_sustained_or_expired", None}
+ACTIONS = {"propose", "promote", "challenge", "uphold", "retract",
+           "revoke_source", "supersede", "replay_decision", "read_view",
+           "derive_claim", "concurrent", "external_inject"}
+DECISION_STATE = {"PROMOTED": "PROMOTED", "CHALLENGED": "CHALLENGED",
+                  "RETRACTED": "RETRACTED", "REJECTED": "REJECTED"}
+TRANSITION_EVENT = {"gate_pass": "PROMOTE", "gate_fail": "REJECT",
+                    "withdrawn": "RETRACT",
+                    "challenge_accepted": "CHALLENGE",
+                    "source_revoked": "CHALLENGE", "superseded": "SUPERSEDE",
+                    "upheld_with_evidence": "UPHOLD",
+                    "challenge_sustained_or_expired": "RETRACT"}
+STATE_CHANGING_EVENTS = {"PROMOTE", "REJECT", "CHALLENGE", "UPHOLD",
+                         "RETRACT", "SUPERSEDE"}
+OBSERVATION_EVENTS = {"READ", "DERIVE", "REPLAY", "PROPOSE"}
 
 HARD_COUNTERS = ["false_promotion_count", "false_retention_count",
                  "resurrection_count", "missed_invalidation_count",
@@ -59,7 +80,7 @@ PROBE_CASES = {"A": ["S1-011-I02", "S1-011-I03"],
                "F": ["S1-011-R04"],
                "G": ["S1-011-R05", "S1-011-A08"],
                "H": ["S1-011-C07", "S1-011-R07", "S1-011-R08",
-                     "S1-011-R09"]}
+                     "S1-011-R09", "S1-011-N09"]}
 
 
 def sha(data: bytes) -> str:
@@ -108,10 +129,11 @@ def check_rows(rows: list, oracle: dict) -> tuple:
         if not isinstance(row, dict):
             problems.append(f"row {i} not an object")
             continue
-        for key in ("case_id", "design", "seed", "decision", "transition",
-                    "reason_code", "view_visible", "audit_events",
-                    "history_preserved", "actor", "idempotency_key",
-                    "output_sha256"):
+        for key in ("case_id", "design", "seed", "action", "prior_status",
+                    "decision", "transition", "reason_code",
+                    "view_visible", "audit_events", "history_preserved",
+                    "actor", "idempotency_key", "policy_version",
+                    "ledger", "output_sha256"):
             if key not in row:
                 problems.append(f"row {i} missing key {key}")
         if problems and problems[-1].startswith(f"row {i} missing"):
@@ -123,22 +145,29 @@ def check_rows(rows: list, oracle: dict) -> tuple:
         if not isinstance(row.get("view_visible"), bool) or \
                 not isinstance(row.get("history_preserved"), bool):
             problems.append(f"row {i} bool field mistyped")
-        if not isinstance(row.get("audit_events"), list):
-            problems.append(f"row {i} audit not a list")
+        if not isinstance(row.get("audit_events"), list) or \
+                not isinstance(row.get("ledger"), list):
+            problems.append(f"row {i} audit/ledger not a list")
         if row.get("decision") not in DECISIONS:
             problems.append(f"row {i} unknown decision "
                             f"{row.get('decision')!r}")
-        if row.get("transition") not in TRANSITIONS:
+        if row.get("transition") not in TRANSITION_EVENT and \
+                row.get("transition") is not None:
             problems.append(f"row {i} unknown transition "
                             f"{row.get('transition')!r}")
+        if row.get("action") not in ACTIONS:
+            # Unknown actions are legitimate adversarial inputs; they
+            # must be refused downstream (UNKNOWN_TRANSITION), not
+            # rejected here. Admissibility only requires a string.
+            if not isinstance(row.get("action"), str):
+                problems.append(f"row {i} action not a string")
         if not isinstance(row.get("seed"), int) or \
                 isinstance(row.get("seed"), bool):
             problems.append(f"row {i} seed not int")
-        for numkey in ("seed",):
-            value = row.get(numkey)
-            if isinstance(value, float) and \
-                    (math.isnan(value) or math.isinf(value)):
-                problems.append(f"row {i} {numkey} is NaN/Infinity")
+        value = row.get("seed")
+        if isinstance(value, float) and \
+                (math.isnan(value) or math.isinf(value)):
+            problems.append(f"row {i} seed is NaN/Infinity")
         cid = row.get("case_id")
         seen.setdefault((cid, row.get("seed")), []).append(i)
     dupes = sorted(f"{cid}@{seed}" for (cid, seed), v in seen.items()
@@ -156,16 +185,106 @@ def check_rows(rows: list, oracle: dict) -> tuple:
     for cid, seed in sorted(got_ids - want_ids, key=str):
         problems.append(f"extra case {cid}@{seed}")
     by_id = {}
+    oracle_ids = {c["case_id"] for c in oracle["cases"]}
     for row in rows:
-        if isinstance(row, dict) and row.get("case_id") in {
-                c["case_id"] for c in oracle["cases"]}:
+        if isinstance(row, dict) and row.get("case_id") in oracle_ids:
             by_id.setdefault((row["case_id"], row.get("seed")), row)
     return problems, by_id
 
 
+def verify_ledger(row: dict) -> list:
+    """Re-verify the hash-chained record model. Returns violations."""
+    violations = []
+    ledger = row.get("ledger")
+    if not isinstance(ledger, list) or not ledger:
+        return ["ledger missing or empty"]
+    prev = "0" * 64
+    decision_ids = []
+    for pos, rec in enumerate(ledger):
+        if not isinstance(rec, dict):
+            violations.append(f"ledger[{pos}] not an object")
+            return violations
+        for key in ("kind", "id", "prev", "payload", "hash"):
+            if key not in rec:
+                violations.append(f"ledger[{pos}] missing {key}")
+                return violations
+        if rec["prev"] != prev:
+            violations.append(f"ledger[{pos}] chain break")
+        want = sha(canonical({k: rec[k] for k in
+                              ("kind", "id", "prev", "payload")}))
+        if rec["hash"] != want:
+            violations.append(f"ledger[{pos}] hash mismatch")
+        prev = rec.get("hash", prev)
+        payload = rec.get("payload") or {}
+        if rec.get("kind") == "decision":
+            decision_ids.append(payload.get("decision_id"))
+            for field in ("decision", "transition", "actor",
+                          "reason_code", "policy_version"):
+                if payload.get(field) != row.get(field):
+                    violations.append(
+                        f"decision record {field} != row {field}")
+        if rec.get("kind") == "audit":
+            if payload.get("decision_id") not in decision_ids:
+                violations.append("audit event without decision binding")
+            if payload.get("event") not in row.get("audit_events", []):
+                violations.append("audit event not in row audit_events")
+            if payload.get("actor") != row.get("actor") or \
+                    payload.get("reason_code") != row.get("reason_code"):
+                violations.append("audit event actor/reason != row")
+    if not decision_ids:
+        violations.append("no decision record in ledger")
+    return violations
+
+
+def check_consistency(row: dict, edges: set, authority: dict) -> list:
+    """Check the row against the frozen state table and authority
+    contract. Returns violations (each row counts once downstream)."""
+    violations = []
+    transition = row.get("transition")
+    decision = row.get("decision")
+    actor = row.get("actor")
+    if decision in DECISION_STATE:
+        edge = (row.get("prior_status"), transition,
+                DECISION_STATE[decision])
+        if edge not in edges:
+            violations.append(f"transition not in state table: {edge}")
+        allowed = authority.get(transition, [])
+        if actor not in allowed:
+            violations.append(f"actor {actor!r} not authorized for "
+                              f"{transition}")
+        expected_event = TRANSITION_EVENT.get(transition)
+        audit = row.get("audit_events", [])
+        if expected_event not in audit:
+            violations.append(f"audit missing {expected_event} for "
+                              f"{transition}")
+        extra = [e for e in audit if e in STATE_CHANGING_EVENTS and
+                 e != expected_event]
+        if extra:
+            violations.append(f"audit has extra state-changing events "
+                              f"{extra}")
+    else:
+        if transition is not None:
+            violations.append("transition present without state decision")
+        bad = [e for e in row.get("audit_events", [])
+               if e in STATE_CHANGING_EVENTS]
+        if bad:
+            violations.append(f"state-changing audit without transition: "
+                              f"{bad}")
+        unknown = [e for e in row.get("audit_events", [])
+                   if e not in STATE_CHANGING_EVENTS and
+                   e not in OBSERVATION_EVENTS]
+        if unknown:
+            violations.append(f"unknown audit event: {unknown}")
+    return violations
+
+
 def evaluate(run_dir: Path) -> dict:
     contract = load_json(HERE / "knowledge-gate-contract.json")
+    state_machine = load_json(HERE / "state-machine.json")
     reasons = set(contract["reason_codes"])
+    authority = contract["event_authority"]
+    edges = {(e["from"], e["event"], e["to"])
+             for e in state_machine["edges"]}
     corpus = load_json(HERE / "cases.json")
     raw = load_json(run_dir / "raw-observations.json")
     rows = raw.get("rows", [])
@@ -187,6 +306,9 @@ def evaluate(run_dir: Path) -> dict:
     confusion = {"tp": 0, "tn": 0, "fp": 0, "fn": 0}
     per_class: dict = {}
     invalid_transitions = 0
+    exact_matches = 0
+    view_matches = 0
+    total = 0
     covered = set()
     operator_actions = 0
     challenge_backlog = 0
@@ -196,15 +318,22 @@ def evaluate(run_dir: Path) -> dict:
         row = by_id[(cid, _seed)]
         case = oracle[cid]
         exp = case["expected"]
+        total += 1
         cls = case["class"]
         cell = per_class.setdefault(cls, {"tp": 0, "tn": 0, "fp": 0,
                                           "fn": 0, "n": 0})
         cell["n"] += 1
         if row["transition"]:
             covered.add((case["action"], row["transition"]))
-        # confusion over eligible/non-eligible transitions
-        actual = exp["decision"] in ELIGIBLE_DECISIONS
-        predicted = row["decision"] in ELIGIBLE_DECISIONS
+        # exact transition correctness (decision+transition+reason)
+        if (row["decision"], row["transition"], row["reason_code"]) == (
+                exp["decision"], exp["transition"], exp["reason_code"]):
+            exact_matches += 1
+        if row["view_visible"] == exp["view_visible"]:
+            view_matches += 1
+        # confusion: positive outcome is PROMOTED
+        actual = exp["decision"] == "PROMOTED"
+        predicted = row["decision"] == "PROMOTED"
         if actual and predicted:
             confusion["tp"] += 1
             cell["tp"] += 1
@@ -217,9 +346,13 @@ def evaluate(run_dir: Path) -> dict:
         else:
             confusion["fn"] += 1
             cell["fn"] += 1
+        # transition consistency + ledger reality (F3)
+        violations = check_consistency(row, edges, authority)
+        violations += verify_ledger(row)
+        if violations:
+            invalid_transitions += 1
         # hard counters
-        if row["decision"] == "PROMOTED" and exp["decision"] not in (
-                "PROMOTED",):
+        if row["decision"] == "PROMOTED" and exp["decision"] != "PROMOTED":
             counters["false_promotion_count"] += 1
         if exp["view_visible"] is False and row["view_visible"] is True:
             counters["false_retention_count"] += 1
@@ -234,11 +367,10 @@ def evaluate(run_dir: Path) -> dict:
         if row["history_preserved"] is not True:
             counters["history_loss_or_rewrite_count"] += 1
         if case["action"] == "replay_decision" and (
-                row["decision"] not in ("NO_TRANSITION",) or
+                row["decision"] != "NO_TRANSITION" or
                 row["reason_code"] != "REPLAY_REJECTED"):
             counters["stale_replay_acceptance_count"] += 1
-        if case.get("cross_scope") and \
-                row["view_visible"] is True:
+        if case.get("cross_scope") and row["view_visible"] is True:
             counters["cross_scope_visibility_count"] += 1
         if row["transition"] and row["actor"] not in (
                 "governance_gate", "operator"):
@@ -246,9 +378,7 @@ def evaluate(run_dir: Path) -> dict:
                 row["transition"] == "withdrawn" and
                 row["actor"] == "worker" and
                 case.get("prior_status") == "PROPOSED")
-            if not (author_withdrawal or
-                    (case["action"] == "propose" and
-                     row["decision"] == "RECORDED")):
+            if not author_withdrawal:
                 counters["authority_expansion_count"] += 1
         if case["action"] == "concurrent" and \
                 row["reason_code"] not in ("CONCURRENT_RESOLVED",
@@ -292,6 +422,8 @@ def evaluate(run_dir: Path) -> dict:
                 "precision_wilson": wilson(tp, tp + fp),
                 "recall_wilson": wilson(tp, tp + fn)}
 
+    hard_fail = any(v != 0 for v in counters.values()) or \
+        invalid_transitions > 0
     metrics = {
         "schema": "agentos.s1-011.metrics/v1",
         "design": design,
@@ -301,20 +433,28 @@ def evaluate(run_dir: Path) -> dict:
         "transition_coverage": sorted(f"{a}>{t}" for a, t in covered),
         "invalid_transition_count": invalid_transitions,
         "hard_counters": counters,
-        "hard_fail": any(v != 0 for v in counters.values()),
+        "hard_fail": hard_fail,
         "confusion": confusion,
-        "overall": prf({**confusion, "n": len(rows)}),
+        "confusion_definition": "positive outcome is PROMOTED; "
+                                "rejecting a valid promotion is a false "
+                                "negative",
+        "overall": prf({**confusion, "n": total}),
+        "transition_exactness": round(exact_matches / total, 6) if total
+        else 0.0,
+        "view_correctness": round(view_matches / total, 6) if total
+        else 0.0,
         "per_class": {cls: prf(cell) for cls, cell in
                       sorted(per_class.items())},
         "operator_model": {
-            "actions_per_case": round(operator_actions / len(rows), 4),
+            "actions_per_case": round(operator_actions / len(rows), 4)
+            if rows else 0.0,
             "challenge_backlog": challenge_backlog,
             "resolution_steps": resolution_steps,
             "note": "model/simulation estimate, NOT a human study; "
                     "UX claims deferred to S1-013",
         },
     }
-    metrics["verdict"] = "FAIL" if metrics["hard_fail"] else "PASS"
+    metrics["verdict"] = "FAIL" if hard_fail else "PASS"
     return metrics
 
 
@@ -365,7 +505,7 @@ def main() -> int:
     run_dir = Path(args.run)
     metrics = evaluate(run_dir)
     Path(args.out).write_text(json.dumps(metrics, indent=2) + "\n",
-                              encoding="utf-8")
+                              encoding="utf-8", newline="\n")
     if metrics.get("admissible"):
         probe_doc = probes(run_dir)
     else:
@@ -374,10 +514,11 @@ def main() -> int:
                      "inadmissible": metrics.get("problems"),
                      "all_pass": False}
     Path(args.probes).write_text(json.dumps(probe_doc, indent=2) + "\n",
-                                 encoding="utf-8")
+                                 encoding="utf-8", newline="\n")
     print(f"design={metrics.get('design')} admissible="
           f"{metrics.get('admissible')} verdict={metrics.get('verdict')} "
-          f"hard_fail={metrics.get('hard_fail')}")
+          f"hard_fail={metrics.get('hard_fail')} invalid="
+          f"{metrics.get('invalid_transition_count')}")
     return 0 if metrics.get("admissible") else 1
 
 

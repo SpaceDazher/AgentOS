@@ -32,9 +32,6 @@ class Inadmissible(Exception):
     """Raised when a run pair cannot be honestly compared."""
 
 
-CONFIDENCE = {"high": 1.0, "medium": 0.6, "low": 0.3}
-
-
 def load_json(path: Path):
     return json.loads(path.read_text(encoding="utf-8"))
 
@@ -107,9 +104,14 @@ def compare(doc_a: dict, doc_b: dict) -> dict:
                 {k: v for k, v in other.items()
                  if k not in ("output_sha256",)}:
             identical += 1
+    if identical != total:
+        # Semantic divergence between two runs of the same matrix is
+        # inadmissible evidence, never a noted mismatch (F5).
+        raise Inadmissible(f"semantic divergence: {identical}/{total} "
+                           f"identical rows")
     return {"admissible": True, "rows_compared": total,
             "identical_rows": identical,
-            "fully_reproducible": identical == total}
+            "fully_reproducible": True}
 
 
 def dimension_values(metrics: dict, alternatives: dict) -> dict:
@@ -131,8 +133,8 @@ def dimension_values(metrics: dict, alternatives: dict) -> dict:
     for dim in ("explainability", "operator_load", "complexity",
                 "ontology_shacl_fit", "migration_rollback",
                 "evolvability"):
-        confidence = cells[dim]["confidence"]
-        values[dim] = CONFIDENCE.get(confidence)
+        # Utility estimate from the frozen cell (F11: never confidence).
+        values[dim] = cells[dim].get("utility")
     return values
 
 
@@ -194,6 +196,26 @@ def sensitivity(scores: dict, weights: dict | None = None,
         compositions.append({"composition": i, "winner": winner,
                              "flip": winner != base_winner,
                              "unknown_dependent": winner == "TIE"})
+    # UNKNOWN disclosure (F11): re-score with every abstained dimension
+    # forced to worst (0.0) and best (1.0). A winner change means the
+    # conclusion depends on unknown values.
+    disclosures = []
+    unknown_dependent = base_winner == "TIE"
+    for design, values in sorted(scores.items()):
+        abstained = [dim for dim in dims if values.get(dim) is None]
+        for forced in (0.0, 1.0):
+            disclosed = dict(values)
+            for dim in abstained:
+                disclosed[dim] = forced
+            winner, _ = pick_winner({d: (disclosed if d == design
+                                         else v)
+                                     for d, v in scores.items()},
+                                    weights)
+            changed = winner != base_winner
+            unknown_dependent = unknown_dependent or changed
+            disclosures.append({"design": design, "forced": forced,
+                                "winner": winner, "changed": changed,
+                                "abstained": abstained})
     flips = [s for s in sweeps if s["flip"]] + \
         [c for c in compositions if c["flip"]]
     return {"schema": "agentos.s1-011.sensitivity/v1",
@@ -202,11 +224,12 @@ def sensitivity(scores: dict, weights: dict | None = None,
             "base_ranking": base_ranked,
             "per_weight_sweeps": sweeps,
             "seeded_compositions": compositions,
+            "unknown_disclosures": disclosures,
+            "unknown_dependent": unknown_dependent,
             "winner": base_winner,
             "flips": flips,
             "flip_count": len(flips),
-            "tie_or_unknown": base_winner == "TIE" or any(
-                c["unknown_dependent"] for c in compositions)}
+            "tie_or_unknown": base_winner == "TIE" or unknown_dependent}
 
 
 def load_run(run_dir: Path) -> dict:
@@ -215,6 +238,59 @@ def load_run(run_dir: Path) -> dict:
             "probes": load_json(run_dir / "probes.json"),
             "rows": load_json(run_dir / "raw-observations.json")
             .get("rows", [])}
+
+
+def check_series(cells_a: dict, cells_b: dict, manifest: dict) -> list:
+    """Global series validation against the frozen manifest. Returns
+    problems (empty means admissible series). Checks: frozen Cartesian
+    cell set, one commit/tree, clean everywhere, input hashes bound to
+    frozen bytes, all process identities present and globally distinct."""
+    problems = []
+    expected_cells = sorted(
+        f"{design}-{seed}" for design in manifest["matrix"]["designs"]
+        for seed in manifest["seeds"])
+    if sorted(cells_a) != expected_cells or \
+            sorted(cells_b) != expected_cells:
+        problems.append(f"run cells != frozen matrix {expected_cells}: "
+                        f"a={sorted(cells_a)} b={sorted(cells_b)}")
+        return problems
+    all_manifests = [cells_a[n]["manifest"] for n in cells_a] + \
+        [cells_b[n]["manifest"] for n in cells_b]
+    commits = {m.get("commit") for m in all_manifests}
+    trees = {m.get("tree") for m in all_manifests}
+    if len(commits) != 1 or len(trees) != 1:
+        problems.append(f"series spans commits {sorted(commits)} / "
+                        f"trees {sorted(trees)}")
+    if any(not m.get("clean_tree") for m in all_manifests):
+        problems.append("dirty tree in series")
+    frozen_hashes = manifest["hashes"]
+    for m in all_manifests:
+        recorded = m.get("input_hashes", {}) or {}
+        for name, pinned in frozen_hashes.items():
+            if recorded.get(name) != pinned:
+                problems.append(f"input hash for {name} not bound to "
+                                f"frozen bytes")
+                break
+    identity_keys = ("pid", "ppid", "invocation_id", "nonce",
+                     "executor_id", "output_root")
+    seen_identities = set()
+    for m in all_manifests:
+        for key in identity_keys:
+            if m.get(key) is None:
+                problems.append(f"manifest missing {key}")
+                break
+        fingerprint = tuple(m.get(key) for key in identity_keys)
+        if fingerprint in seen_identities:
+            problems.append("reused process identity across cells")
+        seen_identities.add(fingerprint)
+    return problems
+
+
+def select_eligible(per_design: dict, metrics_by_design: dict) -> dict:
+    """Exclude hard-failed designs before any ranking (F10). A design
+    with a non-PASS verdict never enters scoring or sensitivity."""
+    return {design: values for design, values in per_design.items()
+            if metrics_by_design.get(design, {}).get("verdict") == "PASS"}
 
 
 def load_root(root: Path) -> dict:
@@ -230,7 +306,11 @@ def load_root(root: Path) -> dict:
 
 def merged_metrics(cells: dict, design: str, tmp: Path):
     """Re-evaluate seed-merged rows for one design via the real path."""
-    import evaluator as evaluator_mod
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        "s1011_evaluator", HERE / "evaluator.py")
+    evaluator_mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(evaluator_mod)
     rows = []
     for name in sorted(cells):
         for row in cells[name]["rows"]:
@@ -243,7 +323,7 @@ def merged_metrics(cells: dict, design: str, tmp: Path):
     (work / "raw-observations.json").write_text(json.dumps(
         {"schema": "agentos.s1-011.raw-observations/v1", "design": design,
          "seed": "merged", "rows": rows}, indent=2) + "\n",
-        encoding="utf-8")
+        encoding="utf-8", newline="\n")
     metrics = evaluator_mod.evaluate(work)
     probe_doc = evaluator_mod.probes(work)
     return metrics, probe_doc, rows
@@ -262,9 +342,13 @@ def main() -> int:
     root_b = Path(args.b)
     cells_a = load_root(root_a)
     cells_b = load_root(root_b)
-    if sorted(cells_a) != sorted(cells_b):
-        print(f"INADMISSIBLE: cell sets differ: {sorted(cells_a)} != "
-              f"{sorted(cells_b)}", file=sys.stderr)
+    # Frozen Cartesian product (F6): designs x seeds from the manifest,
+    # not from whatever the producer happened to emit.
+    manifest = load_json(HERE / "corpus-manifest.json")
+    series_problems = check_series(cells_a, cells_b, manifest)
+    if series_problems:
+        for line in series_problems:
+            print(f"INADMISSIBLE: {line}", file=sys.stderr)
         return 1
     pair_results = {}
     try:
@@ -298,37 +382,64 @@ def main() -> int:
                 print(f"INADMISSIBLE: merged {design} not admissible: "
                       f"{metrics.get('problems')}", file=sys.stderr)
                 return 1
+            # Both series must independently support the same verdict
+            # and counters (F5): A-only scoring is inadmissible.
+            metrics_b, _, _ = merged_metrics(cells_b, design, tmp)
+            if not metrics_b.get("admissible") or \
+                    metrics_b.get("verdict") != metrics.get("verdict") \
+                    or metrics_b.get("hard_counters") != \
+                    metrics.get("hard_counters"):
+                print(f"INADMISSIBLE: series B disagrees on {design}",
+                      file=sys.stderr)
+                return 1
             merged_metrics_doc[design] = metrics
             merged_probes_doc[design] = probe_doc
             per_design[design] = dimension_values(metrics, alternatives)
-    sens = sensitivity(per_design)
-    commits = {cells_a[n]["manifest"]["commit"] for n in cells_a} | \
-        {cells_b[n]["manifest"]["commit"] for n in cells_b}
-    trees = {cells_a[n]["manifest"]["tree"] for n in cells_a} | \
-        {cells_b[n]["manifest"]["tree"] for n in cells_b}
+    # Hard-failed designs are excluded before any ranking (F10).
+    eligible = select_eligible(per_design, merged_metrics_doc)
+    if not eligible:
+        blocked = {"schema": "agentos.s1-011.comparison/v1",
+                   "verdict": "BLOCKED",
+                   "reason": "no design passes the hard gates",
+                   "cells": sorted(cells_a)}
+        Path(args.out).write_text(json.dumps(blocked, indent=2) + "\n",
+                                  encoding="utf-8", newline="\n")
+        print("BLOCKED: no design passes the hard gates",
+              file=sys.stderr)
+        return 1
+    sens = sensitivity(eligible)
+    all_manifests = [cells_a[n]["manifest"] for n in cells_a] + \
+        [cells_b[n]["manifest"] for n in cells_b]
+    commits = sorted({m.get("commit") for m in all_manifests})
+    trees = sorted({m.get("tree") for m in all_manifests})
     comparison = {"schema": "agentos.s1-011.comparison/v1",
+                  "verdict": "DECIDED",
                   "cells": sorted(cells_a),
                   "pair_results": pair_results,
                   "commits": sorted(commits),
                   "trees": sorted(trees),
                   "design_values": per_design,
+                  "eligible_designs": sorted(eligible),
+                  "excluded_designs": sorted(set(per_design) - set(eligible)),
                   "sensitivity_winner": sens["winner"],
-                  "sensitivity_flips": sens["flip_count"]}
+                  "sensitivity_flips": sens["flip_count"],
+                  "unknown_dependent": sens["unknown_dependent"]}
     Path(args.out).write_text(json.dumps(comparison, indent=2) + "\n",
-                              encoding="utf-8")
+                              encoding="utf-8", newline="\n")
     Path(args.sensitivity).write_text(json.dumps(sens, indent=2) + "\n",
-                                      encoding="utf-8")
+                                      encoding="utf-8", newline="\n")
     Path(args.metrics).write_text(
         json.dumps({"schema": "agentos.s1-011.metrics-merged/v1",
                     "designs": merged_metrics_doc}, indent=2) + "\n",
-        encoding="utf-8")
+        encoding="utf-8", newline="\n")
     Path(args.probes).write_text(
         json.dumps({"schema": "agentos.s1-011.probes-merged/v1",
                     "designs": merged_probes_doc}, indent=2) + "\n",
-        encoding="utf-8")
+        encoding="utf-8", newline="\n")
     total_rows = sum(r["rows_compared"] for r in pair_results.values())
     print(f"admissible cells={len(pair_results)} rows={total_rows} "
-          f"winner={sens['winner']} flips={sens['flip_count']}")
+          f"winner={sens['winner']} flips={sens['flip_count']} "
+          f"unknown_dependent={sens['unknown_dependent']}")
     return 0
 
 

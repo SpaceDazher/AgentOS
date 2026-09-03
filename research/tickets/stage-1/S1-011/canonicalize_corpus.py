@@ -70,7 +70,8 @@ def build() -> dict:
     doc = {"schema": "agentos.s1-011.cases/v1",
            "contract": "agentos.s1-011.knowledge-gate-contract/v1",
            "cases": [fill(c) for c in cases]}
-    OUT.write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
+    OUT.write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8",
+                   newline="\n")
     print(f"wrote {OUT} with {len(doc['cases'])} cases")
     return doc
 
