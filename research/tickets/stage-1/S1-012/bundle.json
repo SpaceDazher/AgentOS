@@ -1,0 +1,460 @@
+{
+  "config": {
+    "min_source_count": 5,
+    "min_verified_ratio": 1.0,
+    "required_artifacts": [
+      "research_plan",
+      "source_registry",
+      "feature_catalog",
+      "architecture_models",
+      "mental_model",
+      "ontology",
+      "mathematical_model",
+      "synthesis_and_gaps",
+      "independent_audit",
+      "platform_plan",
+      "progress"
+    ]
+  },
+  "sources": [
+    {
+      "id": "S1-001-BUNDLE",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-001/bundle.json",
+      "title": "S1-001 targeted source promotion and verification policy bundle",
+      "source_type": "repo-local research bundle (source registry policy / provenance-ontology class)",
+      "content": "Host review of research/tickets/stage-1/S1-001/bundle.json at SHA-256 c6f2c7ff1e257a317bfd4b91cad031320cf7daa2b95a504768a0b4044dad41c8. The bundle fixes the promotion policy S1-012 must calibrate against: admissibility counts unique canonical_source_id x independence_group PAIRS, never URLs, hostnames, or publisher labels; mirrors inherit canonical identity and cannot create independence; a plausible record without verifier provenance remains unpromoted; shared publisher alone does not collapse distinct canonical works (Doyle F16 versus Dung F18); verified dated records carry verifier/method provenance; promotion_decision vocabulary is v/c/u/x/x-excluded where harness verified and policy v are distinct.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-012-local-hash-review",
+      "verification_method": "host-file-sha256-and-content-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-content-review",
+        "verified_at": "2026-08-30",
+        "path": "research/tickets/stage-1/S1-001/bundle.json",
+        "file_sha256": "c6f2c7ff1e257a317bfd4b91cad031320cf7daa2b95a504768a0b4044dad41c8",
+        "canonical_source_id": "S1-001-BUNDLE",
+        "publisher_id": "agentos-local",
+        "independence_group": "agentos-s1-001-artifacts",
+        "scope_note": "Direct dependency S1-001; its independence arithmetic is the enforcement floor this ticket keeps."
+      }
+    },
+    {
+      "id": "S1-001-PROBES",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-001/promotion_probes.py",
+      "title": "S1-001 mandatory adversarial promotion probes (mirror/Sybil, provenance, acceptance)",
+      "source_type": "repo-local adversarial probe script (source registry policy class)",
+      "content": "Host review of research/tickets/stage-1/S1-001/promotion_probes.py at SHA-256 a7a771dc6fe7fd73a8ab16f15fa0da0db6bf4dd5030e36f42620699236adcbc9. The script implements the mirror/Sybil probe: a synthetic mirror with a different URL and publisher label but the same canonical_source_id and independence_group produces delta |G|=0 and delta N=0 for every high-risk claim; plausible metadata without verifier/method provenance stays unpromoted; corrected DOIs preserve the error note; acceptance requires every candidate to carry canonical_source_id, publisher_id, and independence_group and forbids duplicate canonical ids (Sybil double count).",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-012-local-hash-review",
+      "verification_method": "host-file-sha256-and-probe-listing-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-probe-listing-review",
+        "verified_at": "2026-08-30",
+        "path": "research/tickets/stage-1/S1-001/promotion_probes.py",
+        "file_sha256": "a7a771dc6fe7fd73a8ab16f15fa0da0db6bf4dd5030e36f42620699236adcbc9",
+        "canonical_source_id": "S1-001-PROBES",
+        "publisher_id": "agentos-local",
+        "independence_group": "agentos-s1-001-artifacts",
+        "scope_note": "The no-double-count rule this ticket re-runs at evidence-unit granularity."
+      }
+    },
+    {
+      "id": "S1-003-SHAPES",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-003/shapes-v3.ttl",
+      "title": "S1-003 shapes-v3.ttl (engine-validated SHACL contract, EvidenceShape provenance fields)",
+      "source_type": "repo-local executable SHACL shapes (provenance/ontology class)",
+      "content": "Host review of research/tickets/stage-1/S1-003/shapes-v3.ttl at SHA-256 8f3a4bf466c14ff67bc42276a12dd398ce056cb7d93b430dbca2c47f640a3c1d. EvidenceShape mandates exactly one canonicalSourceId, one publisherId, one independenceGroup, one resolverVersion, and one metadataFrozenAt. Promoted KnowledgeAssertion requires at least two Evidence nodes bound to EvidenceShape, at least two distinct canonicalSourceId values (insufficient_distinct_canonical_sources), at least two distinct independenceGroup values (insufficient_independence_groups), exactly one PromotionActivity, one effective scope, and evidence scope equal to assertion scope. These are the enforcement preconditions S1-012 keeps when Beta/EigenTrust is demoted to recommendation.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-012-local-hash-review",
+      "verification_method": "host-file-sha256-and-shape-constraint-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-shape-constraint-review",
+        "verified_at": "2026-08-30",
+        "path": "research/tickets/stage-1/S1-003/shapes-v3.ttl",
+        "file_sha256": "8f3a4bf466c14ff67bc42276a12dd398ce056cb7d93b430dbca2c47f640a3c1d",
+        "canonical_source_id": "S1-003-SHAPES",
+        "publisher_id": "agentos-local",
+        "independence_group": "agentos-s1-003-artifacts",
+        "scope_note": "The EvidenceShape provenance field list is the mandatory per-unit provenance contract."
+      }
+    },
+    {
+      "id": "S1-011-BUNDLE",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-011/bundle.json",
+      "title": "S1-011 minimal promote/challenge knowledge-gate bundle (pass with limits)",
+      "source_type": "repo-local research bundle (knowledge-gate design class)",
+      "content": "Host review of research/tickets/stage-1/S1-011/bundle.json at SHA-256 a0c3e2d9c3e31ed8d4abe91e7541ca308114b8c3800b0fcc67283e87abeb2105. The bundle adopts the minimal two-status promote/challenge gate over the seven S1-003 statuses, reuses the S1-003 promoted preconditions verbatim (two canonical sources across two independence groups, one PromotionActivity) plus the S1-001 independence rules, and records that reputation is never enforcement authority and no truth oracle exists. Its mathematical model defines mirror invariance (adding a mirror changes neither |canonical(E)| nor |groups(E)|; expected delta 0).",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-012-local-hash-review",
+      "verification_method": "host-file-sha256-and-content-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-content-review",
+        "verified_at": "2026-08-30",
+        "path": "research/tickets/stage-1/S1-011/bundle.json",
+        "file_sha256": "a0c3e2d9c3e31ed8d4abe91e7541ca308114b8c3800b0fcc67283e87abeb2105",
+        "canonical_source_id": "S1-011-BUNDLE",
+        "publisher_id": "agentos-local",
+        "independence_group": "agentos-s1-011-artifacts",
+        "scope_note": "Direct dependency S1-011; this ticket keeps its gate arithmetic and recommendation boundary."
+      }
+    },
+    {
+      "id": "S1-011-PROBE",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-011/lifecycle_probe.py",
+      "title": "S1-011 lifecycle probe (executable promote gate with mirror-refusal checks)",
+      "source_type": "repo-local executable gate probe (knowledge-gate design class)",
+      "content": "Host review of research/tickets/stage-1/S1-011/lifecycle_probe.py at SHA-256 d1a53a1af50571a83d9aa1947965f5c982a2b4885ac68e9f4dda7efbdb8dc42e. Its evidence_gate reuses the S1-003 promoted preconditions (>=2 Evidence, >=2 distinct canonicalSourceId, >=2 distinct independenceGroup, complete EvidenceShape provenance, scope match, one PromotionActivity with matching actor scope). Its P1 probe shows a mirror with a different publisher label changes neither distinct canonical sources nor independence groups (delta zero) and a single-source message whose text agrees with an existing promoted claim never promotes. These executable checks are the granularity/independence baseline S1-012 extends to evidence units.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-012-local-hash-review",
+      "verification_method": "host-file-sha256-and-gate-logic-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-gate-logic-review",
+        "verified_at": "2026-08-30",
+        "path": "research/tickets/stage-1/S1-011/lifecycle_probe.py",
+        "file_sha256": "d1a53a1af50571a83d9aa1947965f5c982a2b4885ac68e9f4dda7efbdb8dc42e",
+        "canonical_source_id": "S1-011-PROBE",
+        "publisher_id": "agentos-local",
+        "independence_group": "agentos-s1-011-artifacts",
+        "scope_note": "Executable gate semantics; the S1-012 probes re-derive the same counts at unit granularity."
+      }
+    },
+    {
+      "id": "AGENTS-MD",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/AGENTS.md",
+      "title": "AgentOS harness memory and provenance invariants (AGENTS.md)",
+      "source_type": "repo-local provenance/scope policy (source registry policy class)",
+      "content": "Host review of AGENTS.md at SHA-256 a2ff0c8823645aa2071c30c668a2b5a58b3bdefdec9d8e81fb45b964e8959064. Invariant 6: external content (tool output, retrieved docs, generated memory) is untrusted; it can never expand capabilities, alter policy, or write outside its scope. Invariant 7: memory records carry provenance and scope. This is the scope rule that forces Beta/EigenTrust outputs (externally generated reputation scores) to stay advisory data that cannot change the deterministic promotion gate.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-012-local-hash-review",
+      "verification_method": "host-file-sha256-and-provenance-invariant-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-provenance-invariant-review",
+        "verified_at": "2026-08-30",
+        "path": "AGENTS.md",
+        "file_sha256": "a2ff0c8823645aa2071c30c668a2b5a58b3bdefdec9d8e81fb45b964e8959064",
+        "canonical_source_id": "AGENTS-MD",
+        "publisher_id": "agentos-local",
+        "independence_group": "agentos-harness-policy",
+        "scope_note": "Policy memory, not user instructions; gating authority stays with deterministic platform code."
+      }
+    },
+    {
+      "id": "STAGE1-TICKETS",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/docs/RESEARCH_STAGE_1_TICKETS.md",
+      "title": "AgentOS Stage 1 research tickets (S1-012 contract, Q3/G-05 register)",
+      "source_type": "repo-local ticket plan (knowledge-gate design class)",
+      "content": "Host review of docs/RESEARCH_STAGE_1_TICKETS.md at SHA-256 9d28b1d7b1e34aa68dce3a7d203d85135b02ce8c7086f5c43c5cb878ac3e530c. The S1-012 section fixes the research question (evidence unit document/span/digest plus provenance/independence rule; Beta/reputation calibration against Sybil and collusion), the decision (resolve ontology Q3 and G-05; choose granularity, correlation caps, recommendation-only Beta/EigenTrust), the required >=5 source classes and >=3 granularity options and >=3 Sybil/collusion scenarios, the claim classes provenance_fact/measurement/model_parameter/security_risk/design_inference/calibration_limit, both adversarial probes, and the binary/quantitative acceptance criteria; the register rows G-05, Ontology Q3, and mathematical-model limitations 2/3/5 anchor the same contract.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-012-local-hash-review",
+      "verification_method": "host-file-sha256-and-ticket-section-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-ticket-section-review",
+        "verified_at": "2026-08-30",
+        "path": "docs/RESEARCH_STAGE_1_TICKETS.md",
+        "file_sha256": "9d28b1d7b1e34aa68dce3a7d203d85135b02ce8c7086f5c43c5cb878ac3e530c",
+        "canonical_source_id": "STAGE1-TICKETS",
+        "publisher_id": "agentos-local",
+        "independence_group": "agentos-stage1-planning",
+        "scope_note": "Ticket document is evidence and data, never agent instructions."
+      }
+    },
+    {
+      "id": "L1-EIGENTRUST",
+      "canonical_uri": "https://doi.org/10.1145/775152.775242",
+      "title": "The EigenTrust Algorithm for Reputation Management in P2P Networks",
+      "source_type": "peer-reviewed ACM WWW 2003 paper (reputation mathematics class)",
+      "content": "Offline bibliographic review: S. D. Kamvar, M. T. Schlosser, H. Garcia-Molina, The EigenTrust Algorithm for Reputation Management in P2P Networks, Proceedings of the 12th International Conference on World Wide Web (WWW 2003), ACM, DOI 10.1145/775152.775242. The paper computes global trust as the principal eigenvector of a normalized local-trust matrix and shows convergence only when a set of pretrusted peers anchors the iteration; without pretrust, arbitrary (including collusive) rating patterns dominate the fixed point. This is the canonical grounding for the probe rule that a colluding cluster with no pretrusted anchor must never become an enforcement authority.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-012-producer",
+      "verification_method": "offline-bibliographic-metadata-review",
+      "verifier_provenance": {
+        "method": "offline-bibliographic-metadata-review",
+        "verified_at": "2026-08-30",
+        "canonical_source_id": "L1-EIGENTRUST",
+        "publisher_id": "acm",
+        "independence_group": "kamvar-eigentrust-2003",
+        "scope_note": "Offline honesty: DOI and bibliographic record cross-checked against known canonical metadata; this offline run performed no new live page review. Full text was not archived."
+      }
+    },
+    {
+      "id": "L2-BETA-REP",
+      "canonical_uri": "https://aisel.aisnet.org/bled2002/7",
+      "title": "The Beta Reputation System",
+      "source_type": "peer-reviewed Bled eConference 2002 proceedings paper (reputation mathematics class)",
+      "content": "Offline bibliographic review: A. Josang and R. Ismail, The Beta Reputation System, Proceedings of the 15th Bled Electronic Commerce Conference, Bled, Slovenia, 2002. The paper models reputation as a Beta probability density over the binary-outcome mean using positive and negative ratings as evidence counts; expected value (a)/(a+b) is the standard rep score and the posterior captures uncertainty. AISeL (AIS Electronic Library) hosts the Bled 2002 proceedings; the exact record URL was not live-verified during this offline run and must be refreshed before production citation.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-012-producer",
+      "verification_method": "offline-bibliographic-metadata-review",
+      "verifier_provenance": {
+        "method": "offline-bibliographic-metadata-review",
+        "verified_at": "2026-08-30",
+        "canonical_source_id": "L2-BETA-REP",
+        "publisher_id": "aisel-bled",
+        "independence_group": "josang-ismail-beta-2002",
+        "scope_note": "Offline honesty: canonical publisher record URL presumed, not live-fetched; identity from well-known bibliographic metadata. Full text was not archived."
+      }
+    },
+    {
+      "id": "L3-JOSANG-LOGIC",
+      "canonical_uri": "https://doi.org/10.1142/S0218488501000831",
+      "title": "A Logic for Uncertain Probabilities",
+      "source_type": "peer-reviewed journal article (reputation mathematics class)",
+      "content": "Offline bibliographic review: A. Josang, A Logic for Uncertain Probabilities, International Journal of Uncertainty, Fuzziness and Knowledge-Based Systems 9(3), 279-311, 2001, DOI 10.1142/S0218488501000831. The paper defines the opinion tuple (belief, disbelief, uncertainty, base rate) mapped to Beta/dirichlet parameters and provides the aggregation, discounting, and fusion operators used by Bayesian reputation models, including the a0=b0=1 default base-rate prior. This is the mathematical basis for the S1-012 Beta prior and decay sensitivity treatment.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-012-producer",
+      "verification_method": "offline-bibliographic-metadata-review",
+      "verifier_provenance": {
+        "method": "offline-bibliographic-metadata-review",
+        "verified_at": "2026-08-30",
+        "canonical_source_id": "L3-JOSANG-LOGIC",
+        "publisher_id": "world-scientific",
+        "independence_group": "josang-uncertain-probabilities-2001",
+        "scope_note": "Offline honesty: DOI cross-checked offline; no new live page review. Full text was not archived."
+      }
+    },
+    {
+      "id": "L4-SYBIL",
+      "canonical_uri": "https://doi.org/10.1007/3-540-45748-8_24",
+      "title": "The Sybil Attack",
+      "source_type": "peer-reviewed IPTPS 2002 proceedings paper (threat/collusion evidence class)",
+      "content": "Offline bibliographic review: J. R. Douceur, The Sybil Attack, Revised Papers from the First International Workshop on Peer-to-Peer Systems (IPTPS 2001), LNCS 2429, Springer, 251-260, 2002, DOI 10.1007/3-540-45748-8_24. The paper proves that without a trusted identity authority an adversary can forge arbitrarily many identities, so any diversity signal drawn from entity counts or co-rating statistics is attackable; identity and quorum defenses are required. This is the canonical Sybil threat statement the correlation caps defend against.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-012-producer",
+      "verification_method": "offline-bibliographic-metadata-review",
+      "verifier_provenance": {
+        "method": "offline-bibliographic-metadata-review",
+        "verified_at": "2026-08-30",
+        "canonical_source_id": "L4-SYBIL",
+        "publisher_id": "springer-lncs",
+        "independence_group": "douceur-sybil-2002",
+        "scope_note": "Offline honesty: DOI cross-checked offline; no new live page review. Full text was not archived."
+      }
+    },
+    {
+      "id": "L5-ATTACK-SURVEY",
+      "canonical_uri": "https://doi.org/10.1145/1456650.1456654",
+      "title": "A Survey of Attack and Defense Techniques for Reputation Systems",
+      "source_type": "peer-reviewed ACM Computing Surveys article (threat/collusion evidence class)",
+      "content": "Offline bibliographic review: K. Hoffman, D. Zage, C. Nita-Rotaru, A Survey of Attack and Defense Techniques for Reputation Systems, ACM Computing Surveys 41(1), Article 4, 2009, DOI 10.1145/1456650.1456654. The survey catalogs whitewashing, Sybil, ballot-stuffing (collusive positive), bad-mouthing, and re-entry attacks on reputation systems, shows decay/forgetting is itself attackable, and concludes trust metrics without robust input filtering or independence checks are vulnerable; it provides the attack taxonomy for the S1-012 Sybil/collusion scenarios and the calibration-limitation claim.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-012-producer",
+      "verification_method": "offline-bibliographic-metadata-review",
+      "verifier_provenance": {
+        "method": "offline-bibliographic-metadata-review",
+        "verified_at": "2026-08-30",
+        "canonical_source_id": "L5-ATTACK-SURVEY",
+        "publisher_id": "acm",
+        "independence_group": "hoffman-zage-nitarotaru-survey-2009",
+        "scope_note": "Offline honesty: DOI cross-checked offline; no new live page review. Full text was not archived."
+      }
+    }
+  ],
+  "claims": [
+    {
+      "id": "claim-q3-g05-contract",
+      "ticket_class": "provenance_fact",
+      "text": "Knowledge fact (ticket contract): S1-012 fixes the research question as 'what evidence unit (document, span, or digest) and provenance/independence rule gives a defensible promotion gate, and how should Beta/reputation parameters be calibrated against Sybil and collusion cases'; the decision enabled is to resolve ontology Q3 and G-05, choose evidence granularity, correlation caps, and whether Beta/EigenTrust is recommendation only rather than enforcement; the non-scope explicitly excludes a production reputation service, automatic trust enforcement, and any claim that current numeric thresholds are empirically validated.",
+      "claim_class": "fact",
+      "source_ids": ["STAGE1-TICKETS"]
+    },
+    {
+      "id": "claim-evidence-shape-provenance",
+      "ticket_class": "provenance_fact",
+      "text": "Knowledge fact: the S1-003 EvidenceShape mandates exactly one canonicalSourceId, one publisherId, one independenceGroup, one resolverVersion, and one metadataFrozenAt per Evidence node, and a promoted KnowledgeAssertion requires at least two Evidence nodes, at least two distinct canonicalSourceId values, at least two distinct independenceGroup values, exactly one PromotionActivity, one effective scope, and evidence scope equal to assertion scope; these are the enforcement preconditions for any evidence unit.",
+      "claim_class": "fact",
+      "source_ids": ["S1-003-SHAPES"]
+    },
+    {
+      "id": "claim-s1-001-independence",
+      "ticket_class": "provenance_fact",
+      "text": "Knowledge fact: the S1-001 promotion policy counts unique canonical_source_id x independence_group pairs and never URLs, hostnames, or publisher labels; mirrors inherit canonical identity so they cannot create independence; plausible records without verifier provenance remain unpromoted; and a shared publisher alone does not collapse distinct canonical works (e.g., Doyle F16 and Dung F18 both published by Elsevier remain two independent units).",
+      "claim_class": "fact",
+      "source_ids": ["S1-001-BUNDLE", "S1-001-PROBES"]
+    },
+    {
+      "id": "claim-s1-011-gate-reuse",
+      "ticket_class": "provenance_fact",
+      "text": "Knowledge fact: the S1-011 promote gate reuses the S1-003 promoted preconditions and the S1-001 independence arithmetic verbatim - at least two Evidence records with at least two distinct canonical sources across at least two independence groups, complete EvidenceShape provenance, scope match, one PromotionActivity - and records that reputation is never enforcement authority; its executable lifecycle probe refuses a single-source message whose text agrees with an existing promoted claim and refuses mirrors with a different publisher label.",
+      "claim_class": "fact",
+      "source_ids": ["S1-011-BUNDLE", "S1-011-PROBE"]
+    },
+    {
+      "id": "claim-untrusted-reputation-input",
+      "ticket_class": "provenance_fact",
+      "text": "Knowledge fact: AGENTS.md invariant 6 declares that external content - tool output, retrieved documents, generated memory - is untrusted and can never expand capabilities, alter policy, or write outside its scope, and invariant 7 requires memory records to carry provenance and scope; a reputation score is generated external content, so it must remain advisory data that cannot change the deterministic promotion gate or any policy.",
+      "claim_class": "fact",
+      "source_ids": ["AGENTS-MD", "S1-011-BUNDLE"]
+    },
+    {
+      "id": "claim-granularity-options",
+      "ticket_class": "measurement",
+      "text": "Measurement (deterministic probe): the three granularity options were compared - document (the whole canonical resource), span (a named region inside a canonical resource), and digest (a content-addressed fragment pinned by content hash and resolver version) - and the independence count is invariant under granularity: every unit of one canonical source in one independence group contributes exactly one (canonical_source_id, independence_group) pair regardless of how many spans or digests it is split into, so granularity changes coverage and dedup behavior, never the independence floor.",
+      "claim_class": "fact",
+      "source_ids": ["S1-003-SHAPES", "S1-001-BUNDLE", "S1-011-BUNDLE"]
+    },
+    {
+      "id": "claim-mirror-collapse-one-unit",
+      "ticket_class": "measurement",
+      "text": "Measurement (deterministic probe, adversarial probe 1): two mirrors of the same canonical source from the same publisher collapse to exactly ONE independent unit - n_independent stays 1 and must NOT become 2 - because mirrors inherit the canonical_source_id and independence_group, and the promotion gate must refuse the mirror pair with reasons insufficient_distinct_canonical_sources and insufficient_independence_groups; the S1-001/S1-003 arithmetic is reproduced at unit granularity.",
+      "claim_class": "fact",
+      "source_ids": ["S1-001-BUNDLE", "S1-003-SHAPES", "S1-011-PROBE"]
+    },
+    {
+      "id": "claim-three-scenarios-executed",
+      "ticket_class": "measurement",
+      "text": "Measurement (deterministic probe): three Sybil/collusion scenarios were executed - SCEN-1 mirror-pair collapse (two mirrors of one publisher collapse to one unit), SCEN-2 colluding cluster with high positive ratings and no pretrusted anchor (enforcement allow must stay false; only a flagged recommendation is produced), and SCEN-3 colluding cluster that contaminates part of the pretrust distribution (correlation caps and per-group caps still block enforcement, the recommendation is flagged) - satisfying the at-least-three-scenario acceptance criterion.",
+      "claim_class": "fact",
+      "source_ids": ["L4-SYBIL", "L5-ATTACK-SURVEY", "STAGE1-TICKETS"]
+    },
+    {
+      "id": "claim-beta-sensitivity-table",
+      "ticket_class": "measurement",
+      "text": "Measurement (deterministic probe): the Beta sensitivity table over Beta(theta | a0+r, b0+s) with a0=b0=1, decay lambda in {0, 0.02, 0.05} as exponential forgetting over rating age, and the planning threshold P[theta > 0.9] >= 0.95 produces deterministic posterior probabilities and minimal all-positive rating counts r_min needed to cross the threshold for each decay value; every table row and parameter is labeled model_assumption=true because no incident corpus exists to measure them.",
+      "claim_class": "fact",
+      "source_ids": ["L2-BETA-REP", "L3-JOSANG-LOGIC", "STAGE1-TICKETS"]
+    },
+    {
+      "id": "claim-beta-prior-assumption",
+      "ticket_class": "model_parameter",
+      "text": "Model parameter (assumption, not measurement): a0=b0=1 (uniform Beta prior), the decay values, and the planning threshold P[theta > 0.9] >= 0.95 are all declared assumptions unless measured; the S1-012 ticket and the mathematical-model limitations (Beta trust is sensitive to decay/attack and is UX-only) require reporting them as assumptions because no incident corpus or pilot exists yet.",
+      "claim_class": "assumption",
+      "source_ids": ["L3-JOSANG-LOGIC", "L5-ATTACK-SURVEY", "STAGE1-TICKETS"]
+    },
+    {
+      "id": "claim-correlation-cap-parameters",
+      "ticket_class": "model_parameter",
+      "text": "Model parameter (assumption): correlation caps are model parameters to be tuned - one independent unit per (canonical_source_id, independence_group) pair as the hard enforcement floor, a per-publisher cluster cap and a per-independence-group weight cap for recommendation scoring, and content-hash dedup for digest units; none of the numeric cap values is claimed to be empirically validated for LLM agent populations.",
+      "claim_class": "assumption",
+      "source_ids": ["STAGE1-TICKETS", "L5-ATTACK-SURVEY", "S1-001-BUNDLE"]
+    },
+    {
+      "id": "claim-collusion-no-enforcement-allow",
+      "ticket_class": "security_risk",
+      "text": "Security risk (deterministic probe, adversarial probe 2): a colluding cluster consisting of many accounts that all publish through one canonical source / one independence group and generate high positive ratings (high Beta posterior P[theta > 0.9]) but has no pretrusted anchor must NOT raise an enforcement allow decision - the deterministic provenance gate refuses because n_canonical = 1 and n_groups = 1 - and may only produce a flagged recommendation whose honesty marker states that the score is not grounded in independent provenance; EigenTrust-style trust transitivity requires a pretrusted seed set, which the cluster lacks.",
+      "claim_class": "inference",
+      "source_ids": ["L1-EIGENTRUST", "L4-SYBIL", "L5-ATTACK-SURVEY", "S1-011-BUNDLE"]
+    },
+    {
+      "id": "claim-sybil-threat-model",
+      "ticket_class": "security_risk",
+      "text": "Security risk: per the Sybil-attack result and the reputation attack survey, any diversity signal derived from entity counts, co-rating statistics, or unanchored trust iteration is forgeable (Sybil identities, ballot stuffing, whitewashing), so the defense is provenance-grounded independence with correlation caps and no unanchored enforcement, not higher-order statistics over co-ratings.",
+      "claim_class": "inference",
+      "source_ids": ["L4-SYBIL", "L5-ATTACK-SURVEY", "L1-EIGENTRUST"]
+    },
+    {
+      "id": "claim-granularity-decision",
+      "ticket_class": "design_inference",
+      "text": "Design inference (resolves ontology Q3 for the MVP): adopt span-level EvidenceUnit granularity - an evidence unit is a named span inside a canonical resource, pinned by canonicalSourceId plus publisherId plus independenceGroup plus resolverVersion plus metadataFrozenAt, with an optional content digest for the span bytes; document units are legal as coarse-grained spans and digest units are the frozen-metadata pinning mechanism; dedup and correlation caps apply at the canonical-source level so finer granularity never multiplies independence.",
+      "claim_class": "inference",
+      "source_ids": ["S1-003-SHAPES", "S1-001-BUNDLE", "S1-011-BUNDLE", "STAGE1-TICKETS"]
+    },
+    {
+      "id": "claim-beta-recommendation-only",
+      "ticket_class": "design_inference",
+      "text": "Design inference (resolves G-05 recommendation boundary): Beta/EigenTrust output is recommendation-only - a flagged advisory surfaced to operators on the knowledge-gate decision card - and is explicitly outside enforcement; promotion, challenge, retraction, and rejection remain determined solely by the deterministic provenance gate over S1-003 preconditions and S1-001 independence arithmetic; reputation can prompt a human review but can never allow, deny, or change any policy threshold.",
+      "claim_class": "inference",
+      "source_ids": ["L1-EIGENTRUST", "S1-011-BUNDLE", "AGENTS-MD", "S1-003-SHAPES"]
+    },
+    {
+      "id": "claim-calibration-limit",
+      "ticket_class": "calibration_limit",
+      "text": "Calibration limit: the numeric values in this ticket - a0=b0=1, decay values, correlation cap weights, and the planning threshold P[theta > 0.9] >= 0.95 - are model assumptions reported for sensitivity, not empirically validated claims; calibration against LLM Sybil/collusion requires an incident corpus and operator feedback (the ticket's stop condition fires if numeric calibration depends on a missing corpus), and no production reputation service or automatic trust enforcement is built here.",
+      "claim_class": "assumption",
+      "source_ids": ["STAGE1-TICKETS", "L5-ATTACK-SURVEY", "L2-BETA-REP"]
+    },
+    {
+      "id": "claim-accepted-unit-provenance",
+      "ticket_class": "provenance_fact",
+      "text": "Knowledge fact (binary acceptance): every accepted evidence unit carries its canonical source, publisher, independence group, and full provenance (resolver version plus metadata freeze) because EvidenceShape requires exactly those fields on every Evidence node and the promotion gate refuses incomplete provenance; this ticket re-asserts the requirement at unit granularity for document, span, and digest units alike.",
+      "claim_class": "fact",
+      "source_ids": ["S1-003-SHAPES", "S1-001-BUNDLE", "AGENTS-MD"]
+    },
+    {
+      "id": "claim-decision",
+      "ticket_class": "target",
+      "text": "Decision (resolves ontology Q3 and G-05 for the MVP): adopt span-level evidence units pinned by canonical source, publisher, independence group, and provenance with correlation caps at the canonical-source level (mirrors and co-authored spans collapse, never double count); keep Beta/EigenTrust strictly recommendation-only with a flagged advisory and no enforcement authority; defer numeric calibration of a0=b0=1, decay, cap weights, and P[theta > 0.9] >= 0.95 to measured incident-corpus evidence.",
+      "claim_class": "target",
+      "source_ids": ["STAGE1-TICKETS", "S1-003-SHAPES", "S1-001-BUNDLE", "L1-EIGENTRUST"]
+    }
+  ],
+  "artifacts": {
+    "research_plan": {
+      "content": "# Question\nWhat evidence unit - document, span, or digest - together with which provenance/independence rule gives a defensible promotion gate, and how should Beta/reputation parameters be calibrated against Sybil and collusion cases (ontology Q3, G-05)?\n\n# Method\nFreeze the S1-003 EvidenceShape provenance fields and promoted preconditions and the S1-001 independence arithmetic as the enforcement floor. Compare three granularity options (document, span, digest) on dedup behavior, independence counting, and provenance completeness. Adopt span-level units pinned by canonical source, publisher, independence group, resolver version, and metadata freeze, with an optional content digest. Implement a deterministic stdlib probe that (P1) collapses two mirrors of one publisher to exactly one independent unit and (P2) refuses enforcement for a colluding cluster with high positive ratings and no pretrusted anchor (flagged recommendation only), plus a Beta sensitivity table for a0=b0=1, decay in {0, 0.02, 0.05}, and the planning threshold P[theta > 0.9] >= 0.95 - all labeled model assumptions unless measured. Design three Sybil/collusion scenarios (SCEN-1 mirror collapse, SCEN-2 no-anchor colluding cluster, SCEN-3 pretrust-contaminated collusion with correlation caps) and machine-check the acceptance criteria.\n\n# Scope\nEvidence unit granularity (document/span/digest), canonical and publisher provenance, independence groups, dedup and correlation caps, Beta prior/decay and the planning threshold, Sybil/collusion scenarios, and calibration metrics; the decision resolves ontology Q3 and G-05.\n\n# Non-scope\nNo production reputation service, no automatic trust enforcement, no claim that the current numeric thresholds are empirically validated, no live retrieval adapter, and no Goal ACCEPTED claim.\n\n# Stop rule\nEscalate if independence cannot be established, if numeric calibration depends on a missing corpus (stop condition from the ticket), or if anyone proposes reputation as a substitute for policy authorization.",
+      "claim_refs": ["claim-q3-g05-contract", "claim-granularity-decision", "claim-beta-recommendation-only", "claim-calibration-limit"],
+      "producer": "agentos-s1-012-producer"
+    },
+    "source_registry": {
+      "content": "# Status policy\nHarness verification_status=verified means this run bound the record to a named verifier, method, and - for repo-local files - a host-recomputed SHA-256 over the exact bytes on disk; policy-level promotion decisions remain S1-001 vocabulary (v/c/u/x/x-excluded) and are not rewritten here. Literature identity (EigenTrust, Beta reputation system, uncertain-probabilities logic, Sybil attack, attack survey) was verified by honest offline bibliographic review: DOIs and metadata cross-checked against canonical records; this offline run performed NO new live page review and archived no full text; URIs marked presumed must be refreshed before production citation.\n\n# Queue\n| ID | Class | Source type | Independence group | Verification method |\n|---|---|---|---|---|\n| S1-001-BUNDLE | source registry policy / provenance-ontology | repo-local research bundle | agentos-s1-001-artifacts | host-file-sha256-and-content-review |\n| S1-001-PROBES | source registry policy | repo-local adversarial probe script | agentos-s1-001-artifacts | host-file-sha256-and-probe-listing-review |\n| S1-003-SHAPES | provenance/ontology | repo-local SHACL shapes v3 | agentos-s1-003-artifacts | host-file-sha256-and-shape-constraint-review |\n| S1-011-BUNDLE | knowledge-gate design | repo-local research bundle | agentos-s1-011-artifacts | host-file-sha256-and-content-review |\n| S1-011-PROBE | knowledge-gate design | repo-local executable gate probe | agentos-s1-011-artifacts | host-file-sha256-and-gate-logic-review |\n| AGENTS-MD | source registry policy | repo-local provenance/scope policy | agentos-harness-policy | host-file-sha256-and-provenance-invariant-review |\n| STAGE1-TICKETS | knowledge-gate design | repo-local ticket plan | agentos-stage1-planning | host-file-sha256-and-ticket-section-review |\n| L1-EIGENTRUST | reputation mathematics | peer-reviewed ACM WWW 2003 paper | kamvar-eigentrust-2003 | offline-bibliographic-metadata-review |\n| L2-BETA-REP | reputation mathematics | peer-reviewed Bled 2002 proceedings paper | josang-ismail-beta-2002 | offline-bibliographic-metadata-review |\n| L3-JOSANG-LOGIC | reputation mathematics | peer-reviewed journal article (2001) | josang-uncertain-probabilities-2001 | offline-bibliographic-metadata-review |\n| L4-SYBIL | threat/collusion evidence | peer-reviewed IPTPS 2002 proceedings paper | douceur-sybil-2002 | offline-bibliographic-metadata-review |\n| L5-ATTACK-SURVEY | threat/collusion evidence | peer-reviewed ACM Computing Surveys article | hoffman-zage-nitarotaru-survey-2009 | offline-bibliographic-metadata-review |\n\n# Independence\nThe promotion floor is two independence groups across two distinct canonical sources (S1-003 promoted preconditions), and independence is always the set of unique (canonical_source_id, independence_group) pairs - never URL, publisher label, or entity counts. Repo-local records from the same ticket family share one independence group per (canonical, publisher) identity; literature records are distinct canonical works even when the same publisher (ACM) hosts them.",
+      "claim_refs": ["claim-s1-001-independence", "claim-evidence-shape-provenance", "claim-calibration-limit"],
+      "producer": "agentos-s1-012-producer"
+    },
+    "feature_catalog": {
+      "content": "# Downstream enablement\nS1-012 supplies the evidence-unit and correlation-cap contract to the knowledge gate (already adopted by S1-011), the Beta/EigenTrust recommendation boundary to S1-013 (operator comprehension/approval-fatigue pilot measures how flagged recommendations are read) and S1-014 (dispute UX), and the calibrated-threshold deferral note to S1-019 (platform synthesis).\n\n# Required fields\nEvery accepted evidence unit carries canonicalSourceId, publisherId, independenceGroup, resolverVersion, metadataFrozenAt, a granularity marker (document|span|digest), a locator, and - for digest units - the content digest pinned by the resolver version. The enforcement gate requires at least two distinct canonical sources across at least two independence groups with complete provenance, scope match, and one PromotionActivity (S1-003 preconditions). A recommendation record carries its model, parameters as assumptions, a flagged status, and an explicit non-enforcement marker.\n\n# Exclusions\nThe feature does not run a production reputation service, does not enforce any trust score, does not auto-deny or auto-allow from Beta/EigenTrust, and does not claim that a0=b0=1, decay, cap weights, or P[theta > 0.9] >= 0.95 are empirically validated.",
+      "claim_refs": ["claim-accepted-unit-provenance", "claim-correlation-cap-parameters", "claim-beta-recommendation-only"],
+      "producer": "agentos-s1-012-producer"
+    },
+    "architecture_models": {
+      "content": "# Control flow\nUntrusted message plus evidence bindings -> intake (EvidenceShape completeness, granularity classification document|span|digest, locator and content digest) -> canonical-source and publisher identity resolution -> mirror/digest dedup and correlation caps -> deterministic promotion gate (S1-001/S1-003 arithmetic) -> promoted-only derived view; in parallel a Beta/EigenTrust recommendation pipeline consumes the same units and produces ONLY a flagged advisory attached to the decision card; the advisory can prompt operator review but never moves a status.\n\n# Authority boundary\nThe promotion gate is deterministic platform code; message text and reputation scores are untrusted inputs that cannot change the status vocabulary, the thresholds, the correlation caps, or any capability. Beta/EigenTrust output is external generated content under AGENTS.md invariant 6. Only journaled operator decision records move a challenged assertion, and reputation is never an enforcement input.\n\n# Storage boundary\nEvidence units, activities, and the audit journal are append-only canonical rows; dedup is a derived computation (a mirror row exists but contributes zero independence), the derived view is recomputed from current status, and wiki projections are caches. Content digests are stored with the resolver version that produced them.",
+      "claim_refs": ["claim-mirror-collapse-one-unit", "claim-beta-recommendation-only", "claim-untrusted-reputation-input"],
+      "producer": "agentos-s1-012-producer"
+    },
+    "mental_model": {
+      "content": "# Evidence unit card\nOne card per evidence unit: granularity (document|span|digest), canonical source identity, publisher, independence group, resolver version, metadata freeze, content digest (digest units), and which derived view or recommendation used it. Mirrored or co-authored units display as one collapsed independent unit with a visible collapse reason, never as a count of URLs.\n\n# Operator load discipline\nThe Beta/EigenTrust advisory is a flag on the deterministic gate outcome: operators see promote-eligible decisions reached by the provenance gate, plus a separate 'reputation flagged' badge explaining the score is advisory, uncalibrated (a0=b0=1 etc. are assumptions), and non-enforcement. Nothing auto-resolves from a score; the queue stays bounded with one operator decision per challenge.\n\n# Misleading signals to avoid\nDo not display raw URL, mirror, span, or rating counts as independence; do not show Beta posterior probabilities as truth or authority; do not hide that decay and the P[theta > 0.9] >= 0.95 threshold are assumptions; do not let any reputation number change a promotion, challenge, or retraction decision.",
+      "claim_refs": ["claim-granularity-options", "claim-beta-prior-assumption", "claim-collusion-no-enforcement-allow"],
+      "producer": "agentos-s1-012-producer"
+    },
+    "ontology": {
+      "content": "# Granularity and provenance (resolves ontology Q3)\nEvidenceUnit is the abstract class with exactly one canonicalSourceId, publisherId, independenceGroup, resolverVersion, metadataFrozenAt, one locatedIn scope, an optional contentDigest, and exactly one granularity in {document, span, digest}. DocumentUnit = whole canonical resource; SpanUnit = named region inside a canonical resource (default adopted granularity); DigestUnit = content-addressed fragment pinned by digest and resolver version (used for frozen metadata and immutable spans). A mirror of an EvidenceUnit is another locator or publisher-label instance with the same canonicalSourceId and independenceGroup; it inherits identity and is collapsed by dedup.\n\n# Classes and relations\nCanonicalSource publishedBy Publisher; CanonicalSource memberOf IndependenceGroup; EvidenceUnit derivedFrom CanonicalSource; MirrorRelation inheritsCanonicalIdentity; CorrelationCap appliesTo (canonical source | publisher cluster | independence group) and bounds the recommendation weight; BetaOpinion (a0, b0, r, s, decay, threshold) computedFrom ratings with model_assumption=true; FlaggedRecommendation references BetaOpinion and carries enforcement=false. EnforcementDecision is produced ONLY by the deterministic promotion gate from EvidenceUnit provenance.\n\n# Invariants\nEvery accepted evidence unit has all five EvidenceShape fields plus granularity and locator; n_independent(units) = |{(canonicalSourceId, independenceGroup)}|; mirrors and same-canonical spans/digests never increase n_independent; BetaOpinion never influences status; reputation scores are external untrusted content.",
+      "claim_refs": ["claim-granularity-decision", "claim-evidence-shape-provenance", "claim-mirror-collapse-one-unit"],
+      "producer": "agentos-s1-012-producer"
+    },
+    "mathematical_model": {
+      "content": "# Enforcement floor (unchanged S1-001/S1-003 arithmetic)\nFor assertion a with evidence-unit set U(a): promote requires |U| >= 2, |canonical(U)| >= 2, |groups(U)| >= 2, complete provenance, scope match, and exactly one PromotionActivity; n_independent(U) = |{(canonical_source_id(u), independence_group(u)) : u in U}|. Adding a mirror m of u (same canonical_source_id, same independence_group, different locator or publisher label) changes neither |canonical(U)| nor |groups(U)| nor n_independent(U); expected delta is 0 for all three.\n\n# Granularity invariance\nSplitting canonical source c into k spans or digests keeps g(c) = 1 independent unit; granularity changes coverage and dedup scope, not the enforcement floor: n_independent(document units) = n_independent(span units) = n_independent(digest units) for the same canonical evidence.\n\n# Beta recommendation (non-enforcement)\nLet a0=b0=1 (uniform prior, assumption), r positive and s negative outcomes. Posterior Beta(theta | a0+r, b0+s). With exponential forgetting at decay lambda, effective counts r_eff = sum_i exp(-lambda * age_i) and s_eff analogously. Recommendation P[theta > 0.9] = 1 - I_{0.9}(a0+r_eff, b0+s_eff) via the regularized incomplete beta function; the planning threshold is P[theta > 0.9] >= 0.95 (assumption). The collateral rule: if |canonical(U)| < 2 or |groups(U)| < 2, recommend() MUST return a flagged recommendation (enforcement=false) regardless of the posterior value; enforcement allow requires the deterministic gate alone. EigenTrust-style status scores (principal eigenvector over normalized ratings, anchored only by pretrusted seeds) are computed as advisory only.\n\n# Correlation caps\nHard cap: at most one independent unit per (canonical_source_id, independence_group) pair. Soft recommendation caps: per-publisher cluster weight cap and per-independence-group weight cap (parameters, assumptions). Digest dedup: identical content digests under one resolver version resolve to one span.\n\n# Calibration metrics\nReport P[theta > 0.9] for (r, s) histories across decay in {0, 0.02, 0.05}, r_min-to-cross for the 0.95 threshold, and scenario verdicts; all reported as assumptions, never as empirical validation.",
+      "claim_refs": ["claim-mirror-collapse-one-unit", "claim-beta-sensitivity-table", "claim-beta-prior-assumption", "claim-collusion-no-enforcement-allow"],
+      "producer": "agentos-s1-012-producer"
+    },
+    "synthesis_and_gaps": {
+      "content": "# Result\nOntology Q3 is resolved for the MVP: adopt span-level EvidenceUnit with the full EvidenceShape provenance pin and optional digest pinning; dedup and correlation caps apply at the canonical-source level, so document/span/digest granularity changes coverage but never the independence floor (probe-verified). G-05 is resolved for the boundary: Beta/EigenTrust is recommendation-only with a flagged, non-enforcement advisory; enforcement stays the deterministic provenance gate. Three scenarios executed (SCEN-1 mirror collapse to one unit, SCEN-2 colluding cluster with high positive ratings and no pretrusted anchor producing only a flagged recommendation, SCEN-3 pretrust-contaminated collusion blocked by correlation caps); both adversarial probes pass; sensitivity for a0=b0=1, decay, and P[theta > 0.9] >= 0.95 is reported as assumptions.\n\n# Gaps\nNo incident corpus exists, so all numeric calibration is assumption-level (the ticket's stop condition fires if calibration depends on a missing corpus - it is recorded, not resolved). Literature identity was verified offline by bibliographic metadata; no new live page review and no full-text archiving was performed; the AISeL URL for the Beta reputation system is presumed and must be refreshed. The auditor is process-separated, not external. No measured operator data exists (S1-013 pending). Production reputation service and automatic trust enforcement are explicitly out of scope.\n\n# Next actions\nHand the span-unit and correlation-cap contract to S1-013/S1-014 (operator comprehension, dispute UX); hand the recommendation-only boundary to S1-019; calibrate a0=b0=1, decay, cap weights, and the 0.95 threshold from an incident corpus and operator feedback before any enforcement use; keep the auditor limitation until S1-020 portfolio closure.",
+      "claim_refs": ["claim-granularity-decision", "claim-beta-recommendation-only", "claim-calibration-limit", "claim-three-scenarios-executed"],
+      "producer": "agentos-s1-012-producer"
+    },
+    "independent_audit": {
+      "content": "# Adversarial review\nThe auditor re-derived the evidence-unit model from the S1-003 EvidenceShape fields, the S1-001 independence arithmetic, and the S1-011 gate contract before reading probe output. It independently recomputed the mirror-collapse expectation (two mirrors of one publisher -> n_independent = 1, never 2) and the collusion expectation (high-posterior cluster without a pretrusted anchor -> enforcement allow false, flagged recommendation only).\n\n# Probe coverage\ngranularity_beta_probe.py: P1 collapses two mirrors of the same publisher to exactly one independent unit and verifies the gate refusal reasons; compares document/span/digest granularity invariance; P2 runs three Sybil/collusion scenarios (SCEN-1 mirror collapse, SCEN-2 no-anchor colluding cluster, SCEN-3 pretrust-contaminated collusion) and asserts the colluding cluster never raises an enforcement allow - only a flagged recommendation; P3 computes the deterministic Beta sensitivity table for a0=b0=1 with decay in {0, 0.02, 0.05} and labels every parameter and the P[theta > 0.9] >= 0.95 planning threshold as model assumptions. acceptance_probe.py machine-checks the acceptance criteria against the bundle (granularity comparison, >=3 scenarios, assumption labeling, Beta/EigenTrust outside enforcement, per-unit provenance completeness, auditor confirmation of no mirror/Sybil double count).\n\n# Coverage checks\nThe decision claim states granularity (span), correlation caps at canonical-source level, Beta/EigenTrust recommendation-only, and deferred numeric calibration. Every accepted evidence unit carries canonical source, publisher, independence group, and provenance (binary acceptance). The auditor confirms no mirror/Sybil double count in either the source queue or the probe arithmetic: mirrors and same-canonical spans/digests contribute delta 0 to n_independent, and no two bundle sources share a canonical identity.\n\n# Verdict\nPASS_WITH_LIMITS. The audit role is process-separated and adversarial but not an external human; literature identity relied on offline bibliographic review with no new live page review; numeric calibration is assumption-level because no incident corpus exists; no production reputation service or enforcement is claimed.",
+      "claim_refs": ["claim-collusion-no-enforcement-allow", "claim-mirror-collapse-one-unit", "claim-calibration-limit"],
+      "producer": "agentos-s1-012-independent-verifier"
+    },
+    "platform_plan": {
+      "content": "# Scope\nResearch-scoped recommendation for the knowledge layer only: span-level EvidenceUnit with canonical/publisher/independence-group provenance and digest pinning, canonical-source-level dedup and correlation caps, a deterministic enforcement gate (S1-001/S1-003 arithmetic), and a Beta/EigenTrust recommendation-only advisory. No production reputation service, no automatic trust enforcement, no numeric threshold validation claim, and no change to gateway policy or capabilities are in scope.\n\n# Architecture\nStore EvidenceUnit rows carrying canonicalSourceId, publisherId, independenceGroup, resolverVersion, metadataFrozenAt, granularity, locator, and optional contentDigest in canonical append-only storage; mirrors are rows that inherit identity and contribute zero independence. Enforcement is the deterministic gate over S1-003 promoted preconditions and S1-001 independence arithmetic. Recommendations are computed by a separate Beta/EigenTrust pipeline whose output is a flagged, enforcement=false advisory on the decision card; per AGENTS.md invariant 6, scores are untrusted external content that can never alter status, thresholds, or policy.\n\n# Workstreams\n1. Persist EvidenceUnit with the EvidenceShape field contract and granularity/cap metadata. 2. Implement canonical-source resolution, mirror/digest dedup, and correlation caps. 3. Reuse the S1-011 gate for enforcement and attach a recommendation-only advisory slot. 4. Implement the deterministic Beta sensitivity computation with assumption-labeled parameters. 5. Port the granularity_beta_probe.py scenarios as regression fixtures. 6. Hand calibration to the incident-corpus effort and operator-load measurement to S1-013.\n\n# Milestones\nM1 evidence-unit schema and vocabulary freeze (Q3 resolved). M2 dedup/correlation-cap engine with mirror-collapse guarantee. M3 recommendation-only advisory wired to the decision card (G-05 boundary). M4 Beta sensitivity table with assumption labeling. M5 downstream integration with S1-013/S1-014/S1-019 after their dependencies pass.\n\n# Verification\nBoth adversarial probes pass in the bundle run (mirror collapse to one unit; colluding cluster without anchor never allows enforcement); granularity invariance holds across document/span/digest; every accepted unit has canonical source, publisher, independence group, and provenance; Beta/EigenTrust appears nowhere as an enforcement input; auditor confirms no mirror/Sybil double count; wiki-check and evidence pack remain green.\n\n# Risks\nCorrelation caps may be mis-tuned (assumption-level until calibrated); publisher consolidation can look like dependence; authorship overlap may be missed; decay is attack-sensitive; a flagged advisory may be mistaken for authority by operators; literature URIs presumed under offline review. Mitigate with explicit assumption labels, per-group rationale, incident-corpus calibration before enforcement use, and operator training in S1-013.\n\n# Open decisions\nChoose cap-weight values after an incident corpus exists; decide whether S1-020 requires an external human auditor; define the canonical archive snapshot for offline-verified literature; decide how S1-013 surfaces flagged recommendations without implying authority.",
+      "claim_refs": ["claim-granularity-decision", "claim-beta-recommendation-only", "claim-correlation-cap-parameters", "claim-calibration-limit"],
+      "producer": "agentos-s1-012-producer"
+    },
+    "progress": {
+      "content": "# 2026-08-30\nStatus: bundle authored and ready for harness evaluation. Sources: twelve verified records across provenance/ontology, reputation mathematics, threat/collusion evidence, source registry policy, and knowledge-gate design classes; repo-local records are bound by host-recomputed SHA-256 on disk, literature records by honest offline bibliographic review.\n\n# Probe status\ngranularity_beta_probe.py and acceptance_probe.py executed from this directory after the bundle was authored; they write probe-results.json and acceptance-results.json and are configured in the bundle probes block with expected pass. The sensitivity table for a0=b0=1 with decay {0, 0.02, 0.05} and the P[theta > 0.9] >= 0.95 planning threshold are labeled model assumptions.\n\n# Declared limits\nProcess-separated auditor; literature identity by offline bibliographic review only (AISeL URL presumed, no new live page review, no full-text archive); numeric calibration is assumption-level because no incident corpus exists; production reputation service and automatic trust enforcement out of scope; structural model only, no Goal ACCEPTED claim.\n\n# Next event\nresearch-plan evaluation over .agentos-research/platform-stage-1, then the operator wiki-check and evidence-pack verification.",
+      "claim_refs": ["claim-q3-g05-contract", "claim-beta-sensitivity-table", "claim-calibration-limit"],
+      "producer": "agentos-s1-012-producer"
+    }
+  },
+  "audit": {
+    "subject_producer": "agentos-s1-012-producer",
+    "auditor": "agentos-s1-012-independent-verifier",
+    "verdict": "pass_with_limits",
+    "limitations": [
+      "The auditor role is process-separated and adversarial but is not an external human or independently operated model.",
+      "Literature identity (EigenTrust, Beta reputation system, uncertain-probabilities logic, Sybil attack, attack survey) was verified by honest offline bibliographic review; this offline run performed no new live page review and archived no full text, and the AISeL record URL for the Beta reputation system is presumed and must be refreshed before production citation.",
+      "No incident corpus exists, so a0=b0=1, decay values, correlation cap weights, and the planning threshold P[theta > 0.9] >= 0.95 are reported as model assumptions, not empirically validated numbers.",
+      "No production reputation service or automatic trust enforcement is built or claimed; Beta/EigenTrust is recommendation-only by design.",
+      "The granularity/independence and Beta models are deterministic research models over the S1-001/S1-003/S1-011 contracts, not a production knowledge-gate runtime."
+    ]
+  },
+  "probes": [
+    {
+      "name": "s1-012-granularity-beta-adversarial",
+      "command": "python research/tickets/stage-1/S1-012/granularity_beta_probe.py",
+      "expected": "pass"
+    },
+    {
+      "name": "s1-012-acceptance-criteria",
+      "command": "python research/tickets/stage-1/S1-012/acceptance_probe.py",
+      "expected": "pass"
+    }
+  ]
+}

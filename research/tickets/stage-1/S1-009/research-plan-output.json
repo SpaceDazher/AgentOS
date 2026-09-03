@@ -1,0 +1,41 @@
+{
+  "status": "pass_with_limits",
+  "summary": "deterministic research evaluation passed with limits",
+  "next_actions": [],
+  "goal_id": "goal_NVCP2VJKVCK1PXH101M1K6DABD",
+  "campaign_id": "rcamp_RN286DV3JRA5PV1P01M1K6DABD",
+  "artifact_chain_hash": "481f67230599916adf4b42ccf447aa6d267e4d06c6d9fb8a949682ea6b8b3a09",
+  "thresholds": {
+    "min_source_count": 3,
+    "min_verified_ratio": 1.0
+  },
+  "probes": [
+    {
+      "name": "governance-record",
+      "command": "python research/tickets/stage-1/S1-009/adapter_roadmap_probe.py --probe governance-record",
+      "expected": "pass",
+      "observed": "pass",
+      "result": "pass",
+      "detail": "{\"probe\": \"governance-record\", \"checks_total\": 12, \"checks_failed\": 0}\n{\"probe\": \"governance-record\", \"schema\": \"agentos.s1-009-probe-verdict/v1\", \"status\": \"pass\", \"observed\": \"pass\", \"checks_total\": 12, \"checks_failed\": 0, \"failed_checks\": [], \"checks\": [{\"name\": \"envelope-declares-governance-record-requirement\", \"ok\": true, \"detail\": \"adapter_contract_rules must state that a protocol result never becomes a delegation grant or knowledge promotion without the hub's governance record\"}, {\"name\": \"no-record-mcp-tool-result\", \"ok\": true, \"detail\": \"MCP tool result: delegation=False promotion=False - content-level claims must not create governance effects\"}, {\"name\": \"no-record-a2a-task-complete\", \"ok\": true, \"detail\": \"A2A task complete: delegation=False promotion=False - content-level claims must not create governance effects\"}, {\"name\": \"no-record-a2a-task-message\", \"ok\": true, \"detail\": \"A2A task message: delegation=False promotion=False - content-level claims must not create governance effects\"}, {\"name\": \"no-silent-grant-mcp-tool-result\", \"ok\": true, \"detail\": \"near-miss / absent grant must stay false\"}, {\"name\": \"no-silent-grant-a2a-task-complete\", \"ok\": true, \"detail\": \"near-miss / absent grant must stay false\"}, {\"name\": \"explicit-grant-a2a-task-message\", \"ok\": true, \"detail\": \"the only true delegation is the exact purpose+operation grant\"}, {\"name\": \"revoked-grant-delegates-nothing\", \"ok\": true, \"detail\": \"an inactive/revoked grant must not delegate\"}, {\"name\": \"no-silent-promotion-mcp-tool-result\", \"ok\": true, \"detail\": \"digests without a promotion verdict must stay unpromoted\"}, {\"name\": \"explicit-promotion-a2a-task-complete\", \"ok\": true, \"detail\": \"d2 is promoted because the hub promotion verdict accepted it\"}, {\"name\": \"no-silent-promotion-a2a-task-message\", \"ok\": true, \"detail\": \"digests without a promotion verdict must stay unpromoted\"}, {\"name\": \"rejected-verdict-never-promotes\", \"ok\": true, \"detail\": \"gate verdict 'rejected' must not promote\"}]}",
+      "passed": true
+    },
+    {
+      "name": "exact-action-boundary",
+      "command": "python research/tickets/stage-1/S1-009/adapter_roadmap_probe.py --probe exact-action-boundary",
+      "expected": "pass",
+      "observed": "pass",
+      "result": "pass",
+      "detail": "{\"probe\": \"exact-action-boundary\", \"checks_total\": 8, \"checks_failed\": 0}\n{\"probe\": \"exact-action-boundary\", \"schema\": \"agentos.s1-009-probe-verdict/v1\", \"status\": \"pass\", \"observed\": \"pass\", \"checks_total\": 8, \"checks_failed\": 0, \"failed_checks\": [], \"checks\": [{\"name\": \"envelope-declares-exact-action-bindings\", \"ok\": true, \"detail\": \"adapter_contract_rules must require registry capability + atomic exact-action approval\"}, {\"name\": \"model-provided-capabilities-fail-boundary\", \"ok\": true, \"detail\": \"capabilities must come from the hub registry/policy, not model output; claims=[False, False, False], invoke={'ok': False, 'denied': 'capability_denied'}\"}, {\"name\": \"card-skill-capabilities-fail-boundary\", \"ok\": true, \"detail\": \"self-asserted card skills must be re-verified against the registry; claim=False, invoke={'ok': False, 'denied': 'capability_denied'}\"}, {\"name\": \"hub-policy-is-the-only-capability-source\", \"ok\": true, \"detail\": \"without a hub grant even a hub_policy request must return False; control_granted=False, ledger=[{'name': 'files.write', 'source': 'model_output', 'granted': False}, {'name': 'write_external', 'source': 'model_output', 'granted': False}, {'name': 'delegate_to_b', 'source': 'model_output', 'granted': False}, {'name': 'files.write', 'source': 'a2a_card_skill', 'granted': False}, {'name': 'files.write', 'source': 'hub_policy', 'granted': False}]\"}, {\"name\": \"registry-adapter-with-bound-approval-passes\", \"ok\": true, \"detail\": \"required_capability present + exact-action approval bound and consumed: {'ok': True, 'identity': 'files.write@1.0'}\"}, {\"name\": \"approval-replay-rejected\", \"ok\": true, \"detail\": \"an approval must be consumed atomically exactly once; replay got {'ok': False, 'denied': 'approval_invalid'}\"}, {\"name\": \"misbound-approval-rejected\", \"ok\": true, \"detail\": \"approval bound to different canonical args/target must be rejected\"}, {\"name\": \"dangerous-without-approval-refused\", \"ok\": true, \"detail\": \"dangerous effect without an exact",
+      "passed": true
+    },
+    {
+      "name": "capability-matrix-coverage",
+      "command": "python research/tickets/stage-1/S1-009/adapter_roadmap_probe.py --probe capability-matrix-coverage",
+      "expected": "pass",
+      "observed": "pass",
+      "result": "pass",
+      "detail": "{\"probe\": \"capability-matrix-coverage\", \"checks_total\": 9, \"checks_failed\": 0}\n{\"probe\": \"capability-matrix-coverage\", \"schema\": \"agentos.s1-009-probe-verdict/v1\", \"status\": \"pass\", \"observed\": \"pass\", \"checks_total\": 9, \"checks_failed\": 0, \"failed_checks\": [], \"checks\": [{\"name\": \"matrix-covers-nine-required-capabilities\", \"ok\": true, \"detail\": \"capability ids present=10; missing=[]\"}, {\"name\": \"at-least-two-timestamped-current-revisions\", \"ok\": true, \"detail\": \"current_revisions=[{'protocol': 'MCP', 'revision': '2025-11-25', 'timestamp': '2026-08-31', 'note': 'tools/resources/prompts + authorization extension + Tasks utility'}, {'protocol': 'A2A', 'revision': 'v1.0', 'timestamp': '2026-08-31', 'note': 'Agent Card, task lifecycle, messages/parts, artifacts'}]\"}, {\"name\": \"missing-semantics-rows-have-adapter-field-or-non-support\", \"ok\": true, \"detail\": \"5 hub_add rows translated; decision vocabulary enforced\"}, {\"name\": \"envelope-separates-three-layers\", \"ok\": true, \"detail\": \"layers=['protocol_transport', 'task_tool_surface', 'hub_governance']\"}, {\"name\": \"roadmap-has-versioned-adapter-stages\", \"ok\": true, \"detail\": \"roadmap versions=['v0.1', 'v0.2', 'v0.3', 'v1.0']\"}, {\"name\": \"roadmap-governing-rule-blocks-authz-meaning-changes\", \"ok\": true, \"detail\": \"governing_rule must block translations that change authorization meaning\"}, {\"name\": \"ticket-claim-classes-present-and-mapped\", \"ok\": true, \"detail\": \"counts={'protocol_fact': 5, 'gap': 6, 'adapter_contract': 5, 'design_inference': 2, 'roadmap_decision': 2}; short={}; problems=[]\"}, {\"name\": \"no-production-integration-claimed\", \"ok\": true, \"detail\": \"scope limits intact\"}, {\"name\": \"repo-local-source-hashes-verified-from-disk\", \"ok\": true, \"detail\": \"9 file bindings checked; problems=[]\"}]}",
+      "passed": true
+    }
+  ]
+}

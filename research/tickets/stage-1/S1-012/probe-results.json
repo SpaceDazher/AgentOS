@@ -1,0 +1,362 @@
+{
+  "schema": "agentos.s1-012-granularity-beta-probe/v1",
+  "probe": "s1-012-granularity-beta-adversarial",
+  "expected": "pass",
+  "observed": "pass",
+  "status": "pass",
+  "total_checks": 25,
+  "passed_checks": 25,
+  "failures": [],
+  "checks": [
+    {
+      "check": "P0_ibeta_closed_form_and_symmetry",
+      "passed": true,
+      "detail": "I_x(a,1)==x^a and I_0.5(a,a)==0.5 within 1e-9"
+    },
+    {
+      "check": "P1_two_mirrors_collapse_to_one_unit",
+      "passed": true,
+      "detail": {
+        "n_independent": 1,
+        "n_canonical": 1,
+        "n_groups": 1
+      }
+    },
+    {
+      "check": "P1_mirror_gate_refuses",
+      "passed": true,
+      "detail": [
+        "insufficient_distinct_canonical_sources",
+        "insufficient_independence_groups"
+      ]
+    },
+    {
+      "check": "P1_publisher_label_never_counts",
+      "passed": true,
+      "detail": {
+        "n_independent": 1,
+        "publishers": [
+          "pub-A",
+          "pub-CDN"
+        ]
+      }
+    },
+    {
+      "check": "P1_granularity_invariance",
+      "passed": true,
+      "detail": {
+        "document": 1,
+        "span": 1,
+        "digest": 1
+      }
+    },
+    {
+      "check": "P1_granularity_changes_coverage_not_independence",
+      "passed": true,
+      "detail": {
+        "span_units": 3,
+        "n_independent": 1
+      }
+    },
+    {
+      "check": "P1_control_two_independent_groups_promote",
+      "passed": true,
+      "detail": {
+        "n_units": 2,
+        "n_canonical": 2,
+        "n_groups": 2,
+        "n_independent": 2,
+        "allow": true,
+        "reasons": []
+      }
+    },
+    {
+      "check": "SCEN1_enforcement_refuses_mirror_pair",
+      "passed": true,
+      "detail": {
+        "n_units": 2,
+        "n_canonical": 1,
+        "n_groups": 1,
+        "n_independent": 1,
+        "allow": false,
+        "reasons": [
+          "insufficient_distinct_canonical_sources",
+          "insufficient_independence_groups"
+        ]
+      }
+    },
+    {
+      "check": "SCEN2_colluding_cluster_high_posterior",
+      "passed": true,
+      "detail": {
+        "p_theta_gt_09": 0.995362,
+        "a": 51.0,
+        "b": 1.0
+      }
+    },
+    {
+      "check": "SCEN2_no_enforcement_allow_for_unanchored_cluster",
+      "passed": true,
+      "detail": {
+        "gate_allow": false,
+        "cluster_n_independent": 1,
+        "posterior_gt_0.95": 0.995362
+      }
+    },
+    {
+      "check": "SCEN2_only_flagged_recommendation",
+      "passed": true,
+      "detail": {
+        "category": "flagged",
+        "enforcement": false
+      }
+    },
+    {
+      "check": "SCEN2_unanchored_cluster_dominates_status",
+      "passed": true,
+      "detail": {
+        "cluster_share_no_anchor": 0.995025
+      }
+    },
+    {
+      "check": "SCEN2_honest_anchor_lowers_cluster_share",
+      "passed": true,
+      "detail": {
+        "cluster_share_no_anchor": 0.995025,
+        "cluster_share_honest_anchor": 0.413895
+      }
+    },
+    {
+      "check": "SCEN2_eigentrust_status_stays_advisory",
+      "passed": true,
+      "detail": {
+        "category": "flagged",
+        "enforcement": false,
+        "flagged": true,
+        "rationale": "EigenTrust status is unanchored or anchor-dependent; cluster share without a pretrusted seed reaches 0.995; score is advisory only"
+      }
+    },
+    {
+      "check": "SCEN3_naive_gate_exploitable_by_fabricated_ids",
+      "passed": true,
+      "detail": {
+        "n_independent_naive": 5
+      }
+    },
+    {
+      "check": "SCEN3_correlation_cap_collapses_content_sybil",
+      "passed": true,
+      "detail": {
+        "deduped_units": 1,
+        "n_independent_capped": 1
+      }
+    },
+    {
+      "check": "SCEN3_capped_stack_only_flagged_recommendation",
+      "passed": true,
+      "detail": {
+        "category": "flagged"
+      }
+    },
+    {
+      "check": "SCEN3_per_group_weight_cap_applies",
+      "passed": true,
+      "detail": {
+        "raw_cluster_weight": 1.0,
+        "cap": 0.5,
+        "capped": 0.5
+      }
+    },
+    {
+      "check": "P3_table_has_all_histories_and_decays",
+      "passed": true,
+      "detail": {
+        "rows": 8,
+        "decays": [
+          0.0,
+          0.02,
+          0.05
+        ]
+      }
+    },
+    {
+      "check": "P3_threshold_monotone_in_clean_ratings",
+      "passed": true,
+      "detail": {
+        "p_d0_clean": [
+          0.686189,
+          0.814698,
+          0.890581,
+          0.935389,
+          0.961848,
+          0.995362
+        ]
+      }
+    },
+    {
+      "check": "P3_negative_ratings_lower_posterior",
+      "passed": true,
+      "detail": {
+        "p(30,0)": 0.961848,
+        "p(30,5)": 0.145397
+      }
+    },
+    {
+      "check": "P3_decay_lowers_posterior",
+      "passed": true,
+      "detail": {
+        "p_gt09_d0": [
+          0.686189,
+          0.814698,
+          0.890581,
+          0.935389,
+          0.961848,
+          0.995362
+        ],
+        "p_gt09_d0.05": [
+          0.599054,
+          0.695666,
+          0.754473,
+          0.792281,
+          0.817646,
+          0.86353
+        ]
+      }
+    },
+    {
+      "check": "P3_threshold_crossing_sanity",
+      "passed": true,
+      "detail": {
+        "p(r=10)": 0.686189,
+        "p(r=30)": 0.961848,
+        "r_min_decay0": 28
+      }
+    },
+    {
+      "check": "P3_decay_increases_required_ratings",
+      "passed": true,
+      "detail": {
+        "r_min": {
+          "decay_0": 28,
+          "decay_0.02": 41,
+          "decay_0.05": -1
+        },
+        "insight": "lambda=0.05 makes P[theta>0.9]>=0.95 unapproachable from all-positive ratings; threshold is decay-dependent"
+      }
+    },
+    {
+      "check": "P3_assumptions_labelled",
+      "passed": true,
+      "detail": {
+        "prior": "a0=b0=1 (uniform) - model assumption",
+        "model": "Beta(theta | a0+r_eff, b0+s_eff)",
+        "decay_model": "exponential forgetting, age 1= newest (assumption)",
+        "planning_threshold": "P[theta > 0.9] >= 0.95 - model assumption",
+        "computed_by": "regularized incomplete beta (stdlib)"
+      }
+    }
+  ],
+  "details": {
+    "scenarios": {
+      "SCEN-1": {
+        "name": "mirror-pair collapse",
+        "verdict": "enforcement refused, 1 independent unit"
+      },
+      "SCEN-2": {
+        "name": "colluding cluster, high ratings, no anchor",
+        "verdict": "enforcement refused; flagged recommendation only"
+      },
+      "SCEN-3": {
+        "name": "content-Sybil cluster (fabricated canonical ids)",
+        "verdict": "correlation cap absorbs mirrors; enforcement refused"
+      }
+    },
+    "granularity": {
+      "document": 1,
+      "span": 1,
+      "digest": 1,
+      "invariant": "n_independent == 1 for one canonical source at every granularity"
+    },
+    "beta_sensitivity": {
+      "meta": {
+        "prior": "a0=b0=1 (uniform) - model assumption",
+        "model": "Beta(theta | a0+r_eff, b0+s_eff)",
+        "decay_model": "exponential forgetting, age 1= newest (assumption)",
+        "planning_threshold": "P[theta > 0.9] >= 0.95 - model assumption",
+        "computed_by": "regularized incomplete beta (stdlib)"
+      },
+      "table": [
+        {
+          "r": 10,
+          "s": 0,
+          "model_assumption": true,
+          "p_gt09_d0": 0.686189,
+          "p_gt09_d0.02": 0.650333,
+          "p_gt09_d0.05": 0.599054
+        },
+        {
+          "r": 15,
+          "s": 0,
+          "model_assumption": true,
+          "p_gt09_d0": 0.814698,
+          "p_gt09_d0.02": 0.767096,
+          "p_gt09_d0.05": 0.695666
+        },
+        {
+          "r": 20,
+          "s": 0,
+          "model_assumption": true,
+          "p_gt09_d0": 0.890581,
+          "p_gt09_d0.02": 0.838752,
+          "p_gt09_d0.05": 0.754473
+        },
+        {
+          "r": 25,
+          "s": 0,
+          "model_assumption": true,
+          "p_gt09_d0": 0.935389,
+          "p_gt09_d0.02": 0.884387,
+          "p_gt09_d0.05": 0.792281
+        },
+        {
+          "r": 30,
+          "s": 0,
+          "model_assumption": true,
+          "p_gt09_d0": 0.961848,
+          "p_gt09_d0.02": 0.91444,
+          "p_gt09_d0.05": 0.817646
+        },
+        {
+          "r": 30,
+          "s": 5,
+          "model_assumption": true,
+          "p_gt09_d0": 0.145397,
+          "p_gt09_d0.02": 0.07419,
+          "p_gt09_d0.05": 0.031956
+        },
+        {
+          "r": 40,
+          "s": 10,
+          "model_assumption": true,
+          "p_gt09_d0": 0.010873,
+          "p_gt09_d0.02": 0.002987,
+          "p_gt09_d0.05": 0.00093
+        },
+        {
+          "r": 50,
+          "s": 0,
+          "model_assumption": true,
+          "p_gt09_d0": 0.995362,
+          "p_gt09_d0.02": 0.9667,
+          "p_gt09_d0.05": 0.86353
+        }
+      ],
+      "r_min_to_cross": {
+        "decay_0": 28,
+        "decay_0.02": 41,
+        "decay_0.05": -1
+      }
+    },
+    "enforcement_policy": "Beta/EigenTrust is recommendation-only; enforcement allow requires the provenance gate"
+  }
+}

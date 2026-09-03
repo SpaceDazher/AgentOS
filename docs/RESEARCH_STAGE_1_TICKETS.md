@@ -175,13 +175,13 @@ from a lower wave to a higher wave, and S1-020 is the sole closure sink.
 | S1-003 | W0 | P0 | formal | PASS | — | executable SHACL/ontology validation |
 | S1-004 | W1 | P0 | formal | PASS_WITH_LIMITS | S1-002, S1-003 | bounded formal/simulation checks for INV1–INV6 and delivery safety |
 | S1-005 | W1 | P1 | architecture | PASS_WITH_LIMITS | S1-002 | QA1 modular monolith versus containers |
-| S1-006 | W2 | P1 | architecture | READY | S1-002, S1-005 | QA2 in-process versus durable execution backend |
-| S1-007 | W2 | P0 | security | READY | S1-003, S1-005 | QA3 retrieval/index scope isolation |
-| S1-008 | W2 | P0 | security | READY | S1-002, S1-004 | revocation propagation bound of ≤5 seconds |
-| S1-009 | W2 | P1 | architecture | READY | S1-001, S1-005 | MCP/A2A delegation and knowledge adapter roadmap |
+| S1-006 | W2 | P1 | architecture | PASS_WITH_LIMITS | S1-002, S1-005 | QA2 in-process versus durable execution backend |
+| S1-007 | W2 | P0 | security | PASS_WITH_LIMITS | S1-003, S1-005 | QA3 retrieval/index scope isolation |
+| S1-008 | W2 | P0 | security | PASS_WITH_LIMITS | S1-002, S1-004 | revocation propagation bound of ≤5 seconds |
+| S1-009 | W2 | P1 | architecture | PASS_WITH_LIMITS | S1-001, S1-005 | MCP/A2A delegation and knowledge adapter roadmap |
 | S1-010 | W3 | P0 | security | READY | S1-001, S1-009 | tool-poisoning detection and quarantine evidence |
 | S1-011 | W1 | P0 | knowledge | PASS_WITH_LIMITS | S1-001, S1-003 | minimal promote/challenge knowledge gate |
-| S1-012 | W2 | P0 | knowledge | READY | S1-001, S1-003, S1-011 | evidence independence and Beta/Sybil calibration |
+| S1-012 | W2 | P0 | knowledge | PASS_WITH_LIMITS | S1-001, S1-003, S1-011 | evidence independence and Beta/Sybil calibration |
 | S1-013 | W3 | P1 | hci | READY | S1-011, S1-012 | 15–20-person comprehension and approval-fatigue pilot |
 | S1-014 | W4 | P1 | hci | READY | S1-011, S1-013 | claim-dispute card versus graph |
 | S1-015 | W4 | P2 | hci | READY | S1-013 | petname principal naming study |
@@ -531,9 +531,18 @@ $env:PYTHONPATH = "src"
 python -m agentos.cli research-plan --topic "S1-005 QA1 runtime topology modular monolith versus containers" --bundle "research/tickets/stage-1/S1-005/bundle.json" --db ".agentos-research/platform-stage-1"
 ```
 
-### S1-006 — QA2 execution backend: in-process versus durable engine
+### S1-006 — QA2 execution backend:in-process versus durable engine
 
-- **Status:** `READY`
+- **Status:** `PASS_WITH_LIMITS` — recorded 2026-08-31: goal
+  `goal_0Y5RC32BDZ4P42J801M1K83GR7`, evaluation
+  `reval_ZNEFXTF5EZCGVKDW01M1K84BWS`, artifact chain
+  `2b8142f0…c067c5`, evidence-pack/v3 `latest_evaluation_valid=true`,
+  wiki-check ok (974 files,  ̈2684 links.  ̈14 sources,̨18 claims,v 11 artifacts.
+  QA2:in-process(38) vs durable(21) design matrix over 8 dims,3 load
+   levels same DAG + p95/p99 + recovery-or-unavailable,6 crash/replay scenarios;
+   probes replay-resume  ̈11/11 + comparability 11/11 (both near-misses rejected;
+   real-engine benchmark p95 ~407/1174/3058 ms + recovery ~438/558/583 ms;
+   Durable-engine numbers are explicit 'unavailable' labels,not inferred.)
 - **Priority:** `P1`
 - **Wave:** `W2`
 - **Owner:** `architecture`
@@ -583,7 +592,16 @@ python -m agentos.cli research-plan --topic "S1-006 QA2 execution backend in pro
 
 ### S1-007 — QA3 retrieval and index isolation
 
-- **Status:** `READY`
+- **Status:** `PASS_WITH_LIMITS` — recorded 2026-08-31: goal
+  `goal_1EXW70D594KMHPW101M1K6T4BN`, evaluation
+  `reval_JS8R0PWVPW0ZK61101M1K6T5J5`, artifact chain
+  `97ccf8e6…2a944`, evidence-pack/v3 `latest_evaluation_valid=true`,
+  wiki-check ok (640 files, 1733 links). 17 sources (4 evidence classes),
+  16 claims, 11 artifacts. QA3: per-scope indexing for profiles A/B,
+  retrieval-time scope check + version-bumped cache invalidation, RLS as
+  defense in depth. Probes cross-scope-isolation 13/13 and
+  cache-revocation 16/16 (0 disclosures, 0 stale servings), driving the
+  real ToolGateway memory-scoping path.
 - **Priority:** `P0`
 - **Wave:** `W2`
 - **Owner:** `security`
@@ -634,7 +652,17 @@ python -m agentos.cli research-plan --topic "S1-007 QA3 retrieval and index isol
 
 ### S1-008 — Revocation latency validation (≤5 seconds)
 
-- **Status:** `READY`
+- **Status:** `PASS_WITH_LIMITS` — recorded 2026-08-31: goal
+  `goal_Z5S80Z8E9C5RR0HX01M1K7V7CJ`, evaluation
+  `reval_8HD6G8FHQKMBWRWM01M1K7VAEB`, artifact chain
+  `3a43f777…4467`, evidence-pack/v3 `latest_evaluation_valid=true`,
+  wiki-check ok (803 files. 13 sources (10 repo-local SHA-256-bound,
+  RFC 7009/9111, Gray & Cheriton Leases),, ̨12 claims,,̂ 11 artifacts..
+  revocation_probe.py over the real gateway grant/revoke/consume + hash-chained
+  journal:: 34 traces((gateway/retrieval/delegation,, cold/warm cache,, outages/,
+  unknown)), all <=5 s((min 0.018 ms,, p95 2.157 ms,, max  2.323 ms)),
+  100% deny/reconcile on unknown;; probes cached-auth-after-revoke +
+  dropped-hop pass.. <=5 s remains a bounded research target,, NOT an SLA..
 - **Priority:** `P0`
 - **Wave:** `W2`
 - **Owner:** `security`
@@ -686,7 +714,16 @@ python -m agentos.cli research-plan --topic "S1-008 revocation latency validatio
 
 ### S1-009 — MCP/A2A delegation and knowledge semantics roadmap
 
-- **Status:** `READY`
+- **Status:** `PASS_WITH_LIMITS` — recorded 2026-08-31: goal
+  `goal_NVCP2VJKVCK1PXH101M1K6DABD`, evaluation
+  `reval_ZM3GB049BT44XWH501M1K6DBHT`, artifact chain
+  `481f6723…b3a09`, evidence-pack/v3 `latest_evaluation_valid=true`,
+  wiki-check ok (640 files,  ̈1733 links).).  ̈13 sources (MCP 2025-11-25,
+  A2A v1.0, SV2/SV3 surveys; 9 repo-local SHA-256-bound),,  ̈20 claims,
+   ̈11 artifacts((capability matrix, canonical envelope 3 layers, adapter
+  roadmap v0.1–v1.0). Probes governance-record 12/12 + exact-action`
+  boundary 8/8 + capability-matrix-coverage 9/9.. G-02/H9: governance`
+  semantics have no protocol carrier and materialize as explicit hub governance records.`
 - **Priority:** `P1`
 - **Wave:** `W2`
 - **Owner:** `architecture`
@@ -846,7 +883,17 @@ python -m agentos.cli research-plan --topic "S1-011 minimal knowledge gate promo
 
 ### S1-012 — Evidence granularity, independence, and Beta/Sybil calibration
 
-- **Status:** `READY`
+- **Status:** `PASS_WITH_LIMITS` — recorded 2026-08-31: goal
+  `goal_0D0F3SSHQ6GRH28S01M1K782C8`, evaluation
+  `reval_YGECT48NY3R5MZPT01M1K783CZ`, artifact chain
+  `00b6dd6a…3325b`, evidence-pack/v3 `latest_evaluation_valid=true`,
+  wiki-check ok (753 files, 2057 links.  ̈12 sources (5 classes),, ̨18 claims,̂ 11 artifacts..
+  Probes granularity-beta-adversarial 25/25 + acceptance-criteria 18/18..
+  Mirror-collapse: two mirrors of the same publisher = ONE independent unit;
+  colluding cluster without pretrusted anchor = flagged recommendation only
+  (enforcement=false). Beta sensitivity((a0=b0=1): P[theta>0.9]>=0.95 at
+  r=28 (lambda=0)and r=41 (lambda=0.02); unreachable at lambda=0.05 —
+  decay + threshold calibrated together..
 - **Priority:** `P0`
 - **Wave:** `W2`
 - **Owner:** `knowledge`

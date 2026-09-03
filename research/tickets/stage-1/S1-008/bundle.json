@@ -1,0 +1,501 @@
+{
+  "config": {
+    "min_source_count": 3,
+    "min_verified_ratio": 1.0,
+    "required_artifacts": [
+      "research_plan",
+      "source_registry",
+      "feature_catalog",
+      "architecture_models",
+      "mental_model",
+      "ontology",
+      "mathematical_model",
+      "synthesis_and_gaps",
+      "independent_audit",
+      "platform_plan",
+      "progress"
+    ]
+  },
+  "sources": [
+    {
+      "id": "GATEWAY-IMPL",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/src/agentos/gateway.py",
+      "title": "AgentOS ToolGateway implementation (approval grant/consume/revoke, fencing, reconciliation)",
+      "source_type": "repo-local executable implementation (authorization-model class)",
+      "content": "src/agentos/gateway.py: grant_approval creates a GRANTED approval bound to (actor, operation, tool_identity, canonical args, target, policy_version, expiry, nonce); consume_approval is ONE conditional UPDATE GRANTED->CONSUMED only where nonce/op/identity/args/target/actor match and expires_at > now, else deny; revoke_approval CAS-updates GRANTED->REVOKED and appends approval.revoked to the journal; invoke() re-resolves the authoritative contract, checks capability, consumes the exact-action approval atomically, checks lease/fencing, and denies (ApprovalInvalid) on any non-GRANTED nonce. Host file SHA-256 eddbb189dd09b488c5211cbae6bce2f9f3cf194527483ee6ca3747617c05c12a.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-008-local-hash-review",
+      "verification_method": "host-file-sha256-and-section-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-section-review",
+        "verified_at": "2026-09-02",
+        "path": "src/agentos/gateway.py",
+        "file_sha256": "eddbb189dd09b488c5211cbae6bce2f9f3cf194527483ee6ca3747617c05c12a",
+        "external_path_at_review": "src/agentos/gateway.py",
+        "external_file_sha256_at_review": "eddbb189dd09b488c5211cbae6bce2f9f3cf194527483ee6ca3747617c05c12a",
+        "canonical_source_id": "src/agentos/gateway.py",
+        "publisher_id": "local-agentos-worktree",
+        "independence_group": "gateway-impl",
+        "scope_note": "The exact-action approval state machine is the authoritative deny/allow boundary for authorization decisions."
+      }
+    },
+    {
+      "id": "JOURNAL-IMPL",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/src/agentos/journal.py",
+      "title": "AgentOS transactional transition + hash-chained audit journal",
+      "source_type": "repo-local source (runtime-propagation class: timestamped audit)",
+      "content": "src/agentos/journal.py writes every guarded state change and its audit event in ONE sqlite transaction; audit rows are hash-chained (row N stores the digest of row N-1) with a head anchor mirrored outside the database. Both grant_approval and revoke_approval go through append_event, so every authorization state transition carries a timestamped, tamper-evident audit trail. Host file SHA-256 22912da9df95e918c7bf3beaf861b78d1505612fe4afdf32f2dc6b493ef2cdc6.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-008-local-hash-review",
+      "verification_method": "host-file-sha256-and-section-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-section-review",
+        "verified_at": "2026-09-02",
+        "path": "src/agentos/journal.py",
+        "file_sha256": "22912da9df95e918c7bf3beaf861b78d1505612fe4afdf32f2dc6b493ef2cdc6",
+        "external_path_at_review": "src/agentos/journal.py",
+        "external_file_sha256_at_review": "22912da9df95e918c7bf3beaf861b78d1505612fe4afdf32f2dc6b493ef2cdc6",
+        "canonical_source_id": "src/agentos/journal.py",
+        "publisher_id": "local-agentos-worktree",
+        "independence_group": "journal-impl",
+        "scope_note": "Timestamp provenance for revoke/deny decisions comes from this audit path."
+      }
+    },
+    {
+      "id": "SPEC-CONTRACT",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/spec/SPEC.md",
+      "title": "AgentOS executable specification (gateway/policy, approval state machine)",
+      "source_type": "repo-local executable spec (authorization-model class)",
+      "content": "spec/SPEC.md section 2 documents the Approval machine GRANTED -> CONSUMED | EXPIRED | REVOKED with exactly-once consumption enforced by one conditional UPDATE (gateway.consume_approval), and section 6 documents the gateway pipeline (resolve -> validate -> capability -> sensitivity/approval -> consume -> idempotency -> lease/fence -> execute -> activity+audit). Revocation semantics are the documented grant state machine; nothing outside it is claimed. Host file SHA-256 e0b091bf38b7f27e22a4d37eb1b3d000b5154cc3ff64736bd4aea99f0ee4ffbc.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-008-local-hash-review",
+      "verification_method": "host-file-sha256-and-section-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-section-review",
+        "verified_at": "2026-09-02",
+        "path": "spec/SPEC.md",
+        "file_sha256": "e0b091bf38b7f27e22a4d37eb1b3d000b5154cc3ff64736bd4aea99f0ee4ffbc",
+        "external_path_at_review": "spec/SPEC.md",
+        "external_file_sha256_at_review": "e0b091bf38b7f27e22a4d37eb1b3d000b5154cc3ff64736bd4aea99f0ee4ffbc",
+        "canonical_source_id": "spec/SPEC.md",
+        "publisher_id": "local-agentos-worktree",
+        "independence_group": "gateway-impl",
+        "scope_note": "The executable contract the reference implementation must stay consistent with."
+      }
+    },
+    {
+      "id": "AGENTS-INVARIANTS",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/AGENTS.md",
+      "title": "AgentOS non-negotiable invariants (revocation monotonicity, unknown->reconciliation)",
+      "source_type": "repo-local architectural invariants (authorization-model class)",
+      "content": "AGENTS.md invariants: approvals bind to actor + exact operation + canonical args + expiry and are consumed atomically exactly once (5); unknown outcomes escalate to reconciliation, never blind retry (4); transition + audit commit atomically or not at all (8). These underpin the INV5-style revocation monotonicity and the deny-or-reconcile rule for unknown propagation. Host file SHA-256 a2ff0c8823645aa2071c30c668a2b5a58b3bdefdec9d8e81fb45b964e8959064.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-008-local-hash-review",
+      "verification_method": "host-file-sha256-and-section-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-section-review",
+        "verified_at": "2026-09-02",
+        "path": "AGENTS.md",
+        "file_sha256": "a2ff0c8823645aa2071c30c668a2b5a58b3bdefdec9d8e81fb45b964e8959064",
+        "external_path_at_review": "AGENTS.md",
+        "external_file_sha256_at_review": "a2ff0c8823645aa2071c30c668a2b5a58b3bdefdec9d8e81fb45b964e8959064",
+        "canonical_source_id": "AGENTS.md",
+        "publisher_id": "local-agentos-worktree",
+        "independence_group": "gateway-impl",
+        "scope_note": "Evidence/design input only; document instructions are never executed."
+      }
+    },
+    {
+      "id": "S1-002-BENCH",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-002/benchmark.py",
+      "title": "S1-002 local control-plane benchmark runner (perf_counter_ns methodology)",
+      "source_type": "repo-local executable benchmark (measured/trace-method class)",
+      "content": "S1-002 benchmark.py measures the real ToolGateway read path with time.perf_counter_ns, three loads (10/34/100 events/s), cold/warm separation, p95/p99/max, queue depth, busy ratio, and a raw timestamped JSON record. It establishes the monotonic-clock timing methodology and the local SQLite/WAL headroom baseline that S1-008 reuses for revoke-to-deny measurement. Host file SHA-256 227c0ea500fa520f8060eef2e2da34e052df6b275ccb0e729310e560398e66f9.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-008-local-hash-review",
+      "verification_method": "host-file-sha256-and-section-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-section-review",
+        "verified_at": "2026-09-02",
+        "path": "research/tickets/stage-1/S1-002/benchmark.py",
+        "file_sha256": "227c0ea500fa520f8060eef2e2da34e052df6b275ccb0e729310e560398e66f9",
+        "external_path_at_review": "research/tickets/stage-1/S1-002/benchmark.py",
+        "external_file_sha256_at_review": "227c0ea500fa520f8060eef2e2da34e052df6b275ccb0e729310e560398e66f9",
+        "canonical_source_id": "research/tickets/stage-1/S1-002/benchmark.py",
+        "publisher_id": "local-agentos-worktree",
+        "independence_group": "benchmark-method",
+        "scope_note": "Provides the timing/clock method and workload boundary reused by this ticket."
+      }
+    },
+    {
+      "id": "S1-002-RAW",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-002/raw-results.json",
+      "title": "S1-002 committed raw benchmark results",
+      "source_type": "repo-local measured evidence (measured/trace-method class)",
+      "content": "raw-results.json is the committed timestamped raw record of the S1-002 local benchmark (533984 bytes; schema agentos.s1-002-benchmark/v1; run 2026-08-24T17:52:01.458Z..17:52:47.550Z; 1728 paced events + 2000 storage-probe events; seed 20260824; environment AgentOS/CPython/SQLite/WAL). Single-process authorization+audit latencies are milliseconds-scale with p95/p99 well below the 20 ms planning point, establishing local headroom that makes the <=5 s revocation bound plausible in the measured envelope. Host file SHA-256 29b240883e960740799e77b228c9eac5c4c7caa0e77d7f8050701358e42eef6a.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-008-local-hash-review",
+      "verification_method": "host-file-sha256-and-content-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-content-review",
+        "verified_at": "2026-09-02",
+        "path": "research/tickets/stage-1/S1-002/raw-results.json",
+        "file_sha256": "29b240883e960740799e77b228c9eac5c4c7caa0e77d7f8050701358e42eef6a",
+        "external_path_at_review": "research/tickets/stage-1/S1-002/raw-results.json",
+        "external_file_sha256_at_review": "29b240883e960740799e77b228c9eac5c4c7caa0e77d7f8050701358e42eef6a",
+        "canonical_source_id": "research/tickets/stage-1/S1-002/raw-results.json",
+        "publisher_id": "local-agentos-worktree",
+        "independence_group": "measured-evidence",
+        "scope_note": "Measured local evidence; not elevated to production evidence."
+      }
+    },
+    {
+      "id": "S1-004-SIM",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-004/invariant_simulation.py",
+      "title": "S1-004 seeded invariant simulation (INV5 revocation monotonicity)",
+      "source_type": "repo-local executable formal simulation (runtime-propagation class)",
+      "content": "invariant_simulation.py deterministically models the AgentOS envelope and checks INV5 (revocation monotonicity: grants move active->revoked and never back; a revoked grant can never authorize again), INV1..INV6 and SAF with 3 seeds x 1,000,000 simulated operations, adversarial post-revoke allow attempts denied by guards, and unknown outcomes entering reconciliation. Host file SHA-256 16448656d5710601b0f9538338b6143c969f2d05490ac43a5c792a71407c6bf3.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-008-local-hash-review",
+      "verification_method": "host-file-sha256-and-source-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-source-review",
+        "verified_at": "2026-09-02",
+        "path": "research/tickets/stage-1/S1-004/invariant_simulation.py",
+        "file_sha256": "16448656d5710601b0f9538338b6143c969f2d05490ac43a5c792a71407c6bf3",
+        "external_path_at_review": "research/tickets/stage-1/S1-004/invariant_simulation.py",
+        "external_file_sha256_at_review": "16448656d5710601b0f9538338b6143c969f2d05490ac43a5c792a71407c6bf3",
+        "canonical_source_id": "research/tickets/stage-1/S1-004/invariant_simulation.py",
+        "publisher_id": "local-agentos-worktree",
+        "independence_group": "simulation-impl",
+        "scope_note": "Executable runtime-propagation semantics for INV5; verdicts are the reported acceptance evidence."
+      }
+    },
+    {
+      "id": "S1-004-RESULTS",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-004/probe-results.json",
+      "title": "S1-004 committed probe results (INV5 = 0 violations across 3 seeds)",
+      "source_type": "repo-local measured evidence (runtime-propagation class)",
+      "content": "Committed S1-004 probe-results.json reports 0 violations across INV1..INV6/SAF at seeds 1201/3407/5527 (acceptance run at 1,000,000 ops per seed recorded in acceptance-run-1m.json), including the revoked-grant guards (revoked_grant, post_revoke_spend, stale_revoke_attempt) and reconciliation without blind retry. Host file SHA-256 e87471339ef6bc4d3a523978a31e8d85322f84c8caa6fc7f1029c4564f8ef6ab.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-008-local-hash-review",
+      "verification_method": "host-file-sha256-and-content-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-content-review",
+        "verified_at": "2026-09-02",
+        "path": "research/tickets/stage-1/S1-004/probe-results.json",
+        "file_sha256": "e87471339ef6bc4d3a523978a31e8d85322f84c8caa6fc7f1029c4564f8ef6ab",
+        "external_path_at_review": "research/tickets/stage-1/S1-004/probe-results.json",
+        "external_file_sha256_at_review": "e87471339ef6bc4d3a523978a31e8d85322f84c8caa6fc7f1029c4564f8ef6ab",
+        "canonical_source_id": "research/tickets/stage-1/S1-004/probe-results.json",
+        "publisher_id": "local-agentos-worktree",
+        "independence_group": "s1-004-results",
+        "scope_note": "Reported acceptance evidence from the S1-004 dependency ticket."
+      }
+    },
+    {
+      "id": "S1-008-PROBE",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-008/revocation_probe.py",
+      "title": "S1-008 revocation-latency probe (executable; 34 traces + 2 adversarial probes)",
+      "source_type": "repo-local executable probe (measured/trace-method class)",
+      "content": "revocation_probe.py is the committed executable probe for this ticket: it drives the real Gateway grant/revoke/consume path, propagates revocations to in-process retrieval/delegation mirrors over measured per-hop latencies, records revoke-to-deny latency with perf_counter_ns plus revoke_at/deny_at UTC timestamps, surfaces clock assumptions on every trace, and runs the cached-auth-after-revoke and dropped-hop adversarial probes with deny/reconcile enforcement (committed run 2026-09-02: 34 traces, all <=5 s). Host file SHA-256 c9eac2f082eab25a1c4186dcd8dc57e9591869fc676505b6823e502660eaac82.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-008-local-hash-review",
+      "verification_method": "host-file-sha256-and-source-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-source-review",
+        "verified_at": "2026-09-02",
+        "path": "research/tickets/stage-1/S1-008/revocation_probe.py",
+        "file_sha256": "c9eac2f082eab25a1c4186dcd8dc57e9591869fc676505b6823e502660eaac82",
+        "external_path_at_review": "research/tickets/stage-1/S1-008/revocation_probe.py",
+        "external_file_sha256_at_review": "c9eac2f082eab25a1c4186dcd8dc57e9591869fc676505b6823e502660eaac82",
+        "canonical_source_id": "research/tickets/stage-1/S1-008/revocation_probe.py",
+        "publisher_id": "local-agentos-worktree",
+        "independence_group": "probe-impl",
+        "scope_note": "Executable measurement+trace method for this ticket; verdicts are the reported acceptance evidence."
+      }
+    },
+    {
+      "id": "TICKET-SPEC",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/docs/RESEARCH_STAGE_1_TICKETS.md",
+      "title": "Stage-1 ticket register (S1-008 section; G-08; PARK-03)",
+      "source_type": "repo-local research-direction document (measured/trace-method class)",
+      "content": "docs/RESEARCH_STAGE_1_TICKETS.md section S1-008 fixes the research question, decision, scope/non-scope, source evidence (SRC-07 G-08 and step 1; SRC-06 section 2.3 / section 7 INV5 / section 8; SRC-03 sections 3-4; SRC-08 sections 4-5; SRC-09 round 13), claim classes, FLOW-11, adversarial probes, acceptance criteria, and the stop/escalation rule. It records G-08 (no cross-component revocation standard at <=5 s) and PARK-03 (planning targets until benchmark evidence exists). Host file SHA-256 20cf1eb5f3a52f7b273d0b9ac50318e083fe37378f5cbedc58c1b2ad8377c1e8.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-008-local-hash-review",
+      "verification_method": "host-file-sha256-and-section-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-section-review",
+        "verified_at": "2026-09-02",
+        "path": "docs/RESEARCH_STAGE_1_TICKETS.md",
+        "file_sha256": "20cf1eb5f3a52f7b273d0b9ac50318e083fe37378f5cbedc58c1b2ad8377c1e8",
+        "external_path_at_review": "docs/RESEARCH_STAGE_1_TICKETS.md",
+        "external_file_sha256_at_review": "20cf1eb5f3a52f7b273d0b9ac50318e083fe37378f5cbedc58c1b2ad8377c1e8",
+        "canonical_source_id": "docs/RESEARCH_STAGE_1_TICKETS.md",
+        "publisher_id": "local-agentos-worktree",
+        "independence_group": "ticket-definition",
+        "scope_note": "Defines the bounded research question and acceptance envelope for this ticket."
+      }
+    },
+    {
+      "id": "RFC7009-REVOCATION",
+      "canonical_uri": "https://www.rfc-editor.org/rfc/rfc7009",
+      "title": "RFC 7009 - OAuth 2.0 Token Revocation",
+      "source_type": "canonical protocol specification (revocation-propagation class)",
+      "content": "RFC 7009 defines the token-revocation endpoint: revocation is a one-way, idempotent operation after which protected resources must refuse the token, and the semantics must hold regardless of which party observes the revocation. It is cited as context for revocation-propagation expectations, not as an adopted AgentOS protocol.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-008-bibliographic-review",
+      "verification_method": "publisher-and-author-metadata-cross-check",
+      "verifier_provenance": {
+        "method": "publisher-and-author-metadata-cross-check",
+        "verified_at": "2026-09-02",
+        "publisher_id": "ietf-rfc-editor",
+        "canonical_source_id": "rfc7009",
+        "independence_group": "revocation-standard",
+        "scope_note": "Offline bibliographic identity; no live fetch performed (host is offline)."
+      }
+    },
+    {
+      "id": "RFC9111-CACHING",
+      "canonical_uri": "https://www.rfc-editor.org/rfc/rfc9111",
+      "title": "RFC 9111 - HTTP Caching",
+      "source_type": "canonical protocol specification (cache-invalidation class)",
+      "content": "RFC 9111 defines cache freshness and invalidation of HTTP caches: stale representations must not be used beyond their freshness lifetime and invalidation must be observable within the cache's stated lifetime. This informs the ticket's cached-projection requirement: a cached authorization allow is only valid while it re-validates against the authoritative store within the stated bound.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-008-bibliographic-review",
+      "verification_method": "publisher-and-author-metadata-cross-check",
+      "verifier_provenance": {
+        "method": "publisher-and-author-metadata-cross-check",
+        "verified_at": "2026-09-02",
+        "publisher_id": "ietf-rfc-editor",
+        "canonical_source_id": "rfc9111",
+        "independence_group": "caching-standard",
+        "scope_note": "Offline bibliographic identity; no external fetch performed (host is offline)."
+      }
+    },
+    {
+      "id": "GRAY-CHERITON-LEASES",
+      "canonical_uri": "https://dl.acm.org/doi/10.1145/74850.74870",
+      "title": "Leases: An Efficient Fault-Tolerant Mechanism for Distributed File Cache Consistency (Gray &amp; Cheriton, SOSP 1989)",
+      "source_type": "canonical peer-reviewed paper (clock/lease-semantics class)",
+      "content": "Gray and Cheriton's 1989 SOSP paper establishes leases as the standard bounded-staleness mechanism: a cached copy may be served for at most the lease interval after an authoritative change, after which the cache must re-validate. This is the clock/availability semantics underlying the <=5 s bounded-staleness framing of cached authorization projections.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-008-bibliographic-review",
+      "verification_method": "publisher-and-author-metadata-cross-check",
+      "verifier_provenance": {
+        "method": "publisher-and-author-metadata-cross-check",
+        "verified_at": "2026-09-02",
+        "publisher_id": "acm-digital-library",
+        "canonical_source_id": "gray-cheriton-leases-1989",
+        "independence_group": "lease-literature",
+        "scope_note": "Offline bibliographic identity only; DOI binding by canonical citation, not live fetch."
+      }
+    }
+  ],
+  "claims": [
+    {
+      "id": "claim-revoke-transition-atomic",
+      "claim_class": "fact",
+      "text": "[security_invariant] Revocation is a guarded state transition on the documented grant state machine: gateway.revoke_approval CAS-updates the persisted approval only from GRANTED to REVOKED (INV5 monotone, never back), the transition and its approval.revoked audit event commit atomically in the hash-chained journal, and consume_approval refuses any non-GRANTED row (REVOKED/CONSUMED/EXPIRED or binding mismatch), so a revoked approval can never authorize a new decision.",
+      "source_ids": ["GATEWAY-IMPL", "JOURNAL-IMPL", "SPEC-CONTRACT"]
+    },
+    {
+      "id": "claim-inv5-monotone",
+      "claim_class": "fact",
+      "text": "[security_invariant] The S1-004 dependency models INV5 (revocation monotonicity: a revoked grant can never authorize again; post-revoke allows are denied; un-revoke attempts are refused) among its acceptance invariants and reports zero violations across the three seeded acceptance runs (3 seeds x 1,000,000 operations) in its committed probe results, so INV5 remains true in the modeled envelope.",
+      "source_ids": ["S1-004-SIM", "S1-004-RESULTS", "AGENTS-INVARIANTS"]
+    },
+    {
+      "id": "claim-revocation-trace-count",
+      "claim_class": "fact",
+      "text": "[latency_measurement] The committed S1-008 revocation probe run (2026-09-02, deterministic seed 20260902) generated 34 revoke-to-deny traces spanning the gateway, retrieval, and delegation components, including cold-cache and warm-cache cases and outage/unknown cases; every trace records revoke_at/deny_at UTC timestamps plus a monotonic perf_counter_ns revoke-to-deny latency.",
+      "source_ids": ["S1-008-PROBE", "S1-002-BENCH", "S1-002-RAW"]
+    },
+    {
+      "id": "claim-revoke-deny-under-5s",
+      "claim_class": "fact",
+      "text": "[latency_measurement] In the committed S1-008 run all 34 observed revoke-to-deny latencies were at or below the 5.0 s bound (observed min ~0.02 ms, p95 ~2.2 ms, max ~2.4 ms on this single-host SQLite/WAL control plane); no allow after the stated bound was observed, and every outage/unknown trace ended in explicit deny or reconciliation.",
+      "source_ids": ["S1-008-PROBE", "S1-002-BENCH", "S1-002-RAW"]
+    },
+    {
+      "id": "claim-target-not-slo",
+      "claim_class": "target",
+      "text": "[target] The <=5-second revoke-to-deny value remains a bounded research target for the measured single-host control-plane path: it is not a production SLA, legal/security certification, or cross-component production standard; it must be re-scoped per profile (or withdrawn) before any production commitment, consistent with G-08 and PARK-03.",
+      "source_ids": ["TICKET-SPEC", "S1-002-RAW", "S1-002-BENCH"]
+    },
+    {
+      "id": "claim-clock-assumptions",
+      "claim_class": "assumption",
+      "text": "[operational_limit] Trace timing uses time.perf_counter_ns (monotonic; only differences are meaningful) for revoke-to-deny duration and datetime.now(timezone.utc) ISO-8601 wall timestamps for revoke_at/deny_at provenance; no NTP/TrueTime-type uncertainty is assumed on the measured single-host path, and cross-host clock skew is explicitly unmeasured and out of scope until a distributed measurement exists.",
+      "source_ids": ["S1-008-PROBE", "S1-002-BENCH", "GRAY-CHERITON-LEASES"]
+    },
+    {
+      "id": "claim-failure-mode-deny-or-reconcile",
+      "claim_class": "fact",
+      "text": "[failure_mode] Injected failures in the S1-008 probe (revoke immediately before a cached authorization check; a dropped propagation hop returning unknown; outage_unknown and outage_reconcile cases; a real unknown-activity reconcile) resolve to explicit deny or reconciliation on every trace and adversarial probe; the system never silently allows after a revocation and unknown outcomes enter reconciliation rather than blind retry.",
+      "source_ids": ["S1-008-PROBE", "AGENTS-INVARIANTS", "S1-004-SIM"]
+    },
+    {
+      "id": "claim-no-production-sla",
+      "claim_class": "assumption",
+      "text": "[operational_limit] No production SLA, legal/security certification, or revocation semantics outside the documented grant state machine (approval GRANTED -> CONSUMED | EXPIRED | REVOKED) is claimed by this ticket; the offline local measurement set is bounded evidence, not a commitment, and external revocation standards (RFC 7009) are cited only as context, not as an implemented protocol.",
+      "source_ids": ["TICKET-SPEC", "SPEC-CONTRACT", "RFC7009-REVOCATION"]
+    },
+    {
+      "id": "claim-cache-invalidation",
+      "claim_class": "inference",
+      "text": "[failure_mode] Cached projections are trustworthy only while they re-check revocation against the authoritative store on (or within) each decision; the probe treats any cached allow after the stated bound as a violation, consistent with HTTP cache invalidation (RFC 9111) and one-way token revocation propagation (RFC 7009), and the real gateway's exact-action consume denies the revoked nonce.",
+      "source_ids": ["RFC9111-CACHING", "RFC7009-REVOCATION", "GATEWAY-IMPL", "S1-008-PROBE"]
+    },
+    {
+      "id": "claim-bounded-staleness-lease",
+      "claim_class": "assumption",
+      "text": "[operational_limit] The <=5 s bound corresponds to lease/bounded-staleness semantics (Gray & Cheriton 1989): a cached projection may serve a decision for at most the lease interval after the authoritative change; enforcing it requires a clock with bounded uncertainty and an explicit outage path (deny or reconcile on unknown propagation, exactly as the probe asserts).",
+      "source_ids": ["GRAY-CHERITON-LEASES", "S1-008-PROBE", "S1-004-SIM"]
+    },
+    {
+      "id": "claim-escalation-path",
+      "claim_class": "inference",
+      "text": "[operational_limit] Escalation path (ticket stop rule): any observed allow after the bound, a missing timestamp provenance, or a component that cannot participate in revocation escalates immediately to re-scoping or withdrawing the <=5 s target (never silently extending it); G-08 remains open until cross-component revocation measurement exists, and a profile-specific limit or withdrawal is the documented fallback decision.",
+      "source_ids": ["TICKET-SPEC", "S1-002-RAW", "S1-002-BENCH", "S1-004-SIM"]
+    },
+    {
+      "id": "claim-revoke-denied-consumption",
+      "claim_class": "fact",
+      "text": "[security_invariant] After gateway.revoke_approval, a subsequent consume_approval with the same nonce raises ApprovalInvalid (the row is no longer GRANTED or the binding fails), so revocation is observed at the exact-action consumption boundary of the real gateway; the S1-008 probe asserts this deny for every trace and adversarial scenario.",
+      "source_ids": ["GATEWAY-IMPL", "SPEC-CONTRACT", "S1-008-PROBE"]
+    }
+  ],
+  "artifacts": {
+    "research_plan": {
+      "content": "# Research Plan - S1-008 revocation latency validation (<=5 seconds)\n\n# Question\nCan the platform enforce that new authorization decisions observe revocation within <=5 seconds across gateway, retrieval, delegation, and cached projections, with deny-decision timestamps, explicit clock assumptions, and defined unknown/outage behavior?\n\n# Decision to enable\nDecide whether the <=5-second value remains a bounded research target, needs a profile-specific limit, or must be withdrawn (PARK-03, G-08).\n\n# Trace methodology\n1. Components: gateway PDP (the exact-action consume/deny boundary), retrieval (cached index projections), and delegation (derived grant chain), each exercised with cold-cache and warm-cache cases.\n2. Trace count: 30+ deterministic traces committed in probe-results.json (committed value: 34).\n3. Per-trace fields: revoke_at / deny_at wall-clock UTC timestamps; revoke-to-deny latency from time.perf_counter_ns (monotonic); deny decision and denial reason; INV5 status after revoke; clock-assumption flag surfaced per trace (never silent).\n4. Propagation: revocations are propagated to in-process component mirrors over measured per-hop latencies (single-host boundary; S1-005 modular monolith); a future distributed hop is a measured claim, not this ticket's evidence.\n5. Outage path: a dropped propagation hop yields unknown state which must resolve to deny or reconciliation, never a silent allow (AGENTS.md invariant 4).\n6. Acceptance: every observed revoke-to-deny latency <= 5 s (observed values are sub-5 s on this host) and both adversarial probes must pass; INV5 must remain true.\n\n# Stop rule\nEscalate immediately on any unauthorized allow after the bound, a missing timestamp provenance, or a component that cannot participate in revocation.",
+      "claim_refs": [
+        "claim-revocation-trace-count",
+        "claim-revoke-deny-under-5s",
+        "claim-clock-assumptions",
+        "claim-failure-mode-deny-or-reconcile"
+      ],
+      "producer": "agentos-s1-008-producer"
+    },
+    "source_registry": {
+      "content": "# Source registry - S1-008\n\n| id | uri | class | verification method |\n|---|---|---|---|\n| GATEWAY-IMPL | local src/agentos/gateway.py | authorization model | host-file-sha256-and-section-review |\n| JOURNAL-IMPL | local src/agentos/journal.py | runtime propagation (audit) | host-file-sha256-and-section-review |\n| SPEC-CONTRACT | local spec/SPEC.md | authorization model | host-file-sha256-and-section-review |\n| AGENTS-INVARIANTS | local AGENTS.md | authorization model | host-file-sha256-and-section-review |\n| S1-002-BENCH | local S1-002/benchmark.py | measured/trace method | host-file-sha256-and-section-review |\n| S1-002-RAW | local S1-002/raw-results.json | measured evidence | host-file-sha256-and-content-review |\n| S1-004-SIM | local S1-004/invariant_simulation.py | runtime propagation (INV5) | host-file-sha256-and-source-review |\n| S1-004-RESULTS | local S1-004/probe-results.json | measured evidence | host-file-sha256-and-content-review |\n| S1-008-PROBE | local S1-008/revocation_probe.py | measured/trace method | host-file-sha256-and-source-review |\n| TICKET-SPEC | local docs/RESEARCH_STAGE_1_TICKETS.md | direction/acceptance | host-file-sha256-and-section-review |\n| RFC7009-REVOCATION | rfc-editor.org RFC 7009 | revocation propagation | publisher-and-author-metadata-cross-check |\n| RFC9111-CACHING | rfc-editor.org RFC 9111 | cache invalidation | publisher-and-author-metadata-cross-check |\n| GRAY-CHERITON-LEASES | dl.acm.org leases 1989 | clock/lease semantics | publisher-and-author-metadata-cross-check |\n\nThree required classes are covered: authorization model (GATEWAY-IMPL / SPEC-CONTRACT / AGENTS-INVARIANTS), runtime propagation (JOURNAL-IMPL / S1-004-SIM / RFC7009-REVOCATION), and measured/trace method (S1-002-BENCH / S1-002-RAW / S1-008-PROBE / TICKET-SPEC). All workspace-relative paths are bound to real SHA-256 digests computed with hashlib at review (verifier_provenance.file_sha256, machine-validated).",
+      "claim_refs": [
+        "claim-revocation-trace-count",
+        "claim-clock-assumptions"
+      ],
+      "producer": "agentos-s1-008-producer"
+    },
+    "feature_catalog": {
+      "content": "# Feature catalog - S1-008\n\n- Revoke state transition: GRANTED -> REVOKED CAS transition, journal-atomic, INV5 monotone.\n- Exact-action consumption: consume_approval denies any non-GRANTED nonce (approval.invalid path).\n- Propagation path: revocation broadcast to retrieval and delegation mirrors over measured per-hop latency.\n- Cache invalidation: cached projections re-check the authoritative store; post-bound cached allow is a violation (RFC 9111 semantics).\n- Deny-decision timestamp: each trace carries revoke_at and deny_at UTC timestamps plus a monotonic duration.\n- Clock assumptions: perf_counter_ns monotonic duration, UTC wall clock, single-host skew assumption surfaced.\n- Unknown/outage behavior: dropped hop -> deny or reconciliation, never silent allow (unknown -> reconciliation).\n- Escalation path: allow-after-bound, missing timestamp, or non-revocable component escalates to re-scoping/withdrawing the target.",
+      "claim_refs": [
+        "claim-revoke-transition-atomic",
+        "claim-failure-mode-deny-or-reconcile",
+        "claim-cache-invalidation"
+      ],
+      "producer": "agentos-s1-008-producer"
+    },
+    "architecture_models": {
+      "content": "# Architecture models - S1-008\n\nAuthorized gateway path (SPEC section 6 / gateway.py): resolve -> validate -> canonicalize -> capability -> sensitivity/approval -> consume (atomic exact-action) -> idempotency -> lease/fence -> execute -> activity record + audit event. Revocation lives in the same store: revoke_approval updates the persisted row and the journal; the next consume matches only GRANTED rows and denies.\n\nRetrieval model: the retrieval index keeps cached projections of approvals; a projection is serveable only while its freshness lifetime (lease) has not expired and the authoritative store confirms GRANTED; post-revoke confirmation is a deny (RFC 9111 invalidation + Gray/Cheriton lease bound).\n\nDelegation model: a child grant is derived from a parent; revocation of the parent updates the derivation map, and the next child decision reads the chain and denies (bounded monotonic propagation in-process; the multi-hop protocol is out of scope).\n\nMeasured topology note: single-process SQLite/WAL control plane (S1-005 modular monolith; S1-002 baseline); retrieval/delegation propagation hops are modeled and measured in-process.",
+      "claim_refs": [
+        "claim-revoke-denied-consumption",
+        "claim-bounded-staleness-lease",
+        "claim-cache-invalidation"
+      ],
+      "producer": "agentos-s1-008-producer"
+    },
+    "mental_model": {
+      "content": "# Mental model - S1-008\n\nAn authorization decision is a lease on a cached projection: the cache may serve the stored decision only until the lease (<=5 s target) expires or the authoritative store says otherwise; revocation flips the store, the lease ends, and the next decision must be deny. An unknown propagation hop behaves like an expired lease (deny-closed), and an unknown activity outcome enters reconciliation. Every measured number carries a clock badge: duration = monotonic perf_counter_ns, timestamps = UTC wall clock, asymmetry = single-host only. The <=5 s number is a research target with an open revisit note, not an SLA badge, until a representative production-like measurement exists.",
+      "claim_refs": [
+        "claim-bounded-staleness-lease",
+        "claim-clock-assumptions",
+        "claim-failure-mode-deny-or-reconcile"
+      ],
+      "producer": "agentos-s1-008-producer"
+    },
+    "ontology": {
+      "content": "# Ontology - S1-008\n\n- Approval(id, nonce, actor, operation, tool_identity, args_canonical_json, target, expires_at, status in {GRANTED, CONSUMED, EXPIRED, REVOKED}); GRANTED -> {CONSUMED, EXPIRED, REVOKED}, one-way (INV5).\n- CachedProjection(resource, nonce, fresh_until, authority_check); serviceable only within the bound and when the authority confirms GRANTED.\n- ComponentMirror(name, revoked, fresh, last_hop_ms): in-process propagation endpoint for retrieval/delegation.\n- RevocationTrace(id, component, cache_state, case, revoke_at, deny_at, revoke_to_deny_ms, duration_clock, wall_clock, decision, deny_reason, inv5_status_after, ok).\n- UnknownState: dropped-hop -> decision must be deny or reconciled (reconciliation is a separate authorized operation; no blind retry).\n- BoundTarget: <=5 s is a bounded research target, not a production SLA; profile-specific limit or withdrawal is the documented fallback (G-08 / PARK-03).",
+      "claim_refs": [
+        "claim-revoke-transition-atomic",
+        "claim-target-not-slo",
+        "claim-clock-assumptions"
+      ],
+      "producer": "agentos-s1-008-producer"
+    },
+    "mathematical_model": {
+      "content": "# Mathematical model - S1-008\n\nINV5 (from S1-004 / AGENTS.md): revoked(g) is monotone; post-revoke allow(g) is a violation. Deny predicate: consume(nonce) succeeds only when status(nonce)=GRANTED AND expires_at > wall_now (single conditional UPDATE; REVOKED => rowcount 0 => deny).\n\nLatency: revoke_to_deny_ms = (deny_at_mono - revoke_commit_mono) / 1e6 using time.perf_counter_ns; wall timestamps are UTC ISO-8601 (revoke_at, deny_at).\n\nBound: accepted iff forall trace: revoke_to_deny <= 5.0 s.\n\nCommitted run (2026-09-02, seed 20260902): 34 traces; min ~0.02 ms, p50 ~0.4 ms, p95 ~2.2 ms, max ~2.4 ms; 100% within bound; unknown/outage cases -> deny or reconciliation 100%.\n\nClock model: duration from a monotonic clock (differences only); wall timestamps from the system UTC clock; single-host, no NTP/TrueTime uncertainty modeled; distributed skew is out of scope and must be measured before the bound can be widened.",
+      "claim_refs": [
+        "claim-revoke-deny-under-5s",
+        "claim-inv5-monotone",
+        "claim-target-not-slo"
+      ],
+      "producer": "agentos-s1-008-producer"
+    },
+    "synthesis_and_gaps": {
+      "content": "# Synthesis and gaps - S1-008\n\nResult: 34 revocation traces across gateway/retrieval/delegation with cold/warm/outage cases show revoke-to-deny latencies well within the 5 s bound on the measured single-host path (observed max < 3 ms), both adversarial probes pass (no cached allow after the bound; dropped hop -> deny or reconcile, never silent allow), clock assumptions are surfaced on every trace, and INV5 remains true in the S1-004 modeled envelope. The <=5 s value therefore survives as a bounded research target for this path.\n\nGaps (honest): multi-host/network propagation is not measured (in-process mirrors only); NTP/TrueTime-equivalent clock skew is not measured; production workload (concurrency, external calls) is out of scope (S1-002 boundary); the profile-specific limit and the SLA/legal-certification decisions are explicitly parked (PARK-03).\n\nEscalation path: any later allow-after-bound, missing timestamp, or component unable to revoke raises this ticket's stop rule to withdraw or re-scope the target.",
+      "claim_refs": [
+        "claim-escalation-path",
+        "claim-no-production-sla",
+        "claim-target-not-slo"
+      ],
+      "producer": "agentos-s1-008-producer"
+    },
+    "independent_audit": {
+      "content": "# Independent audit - S1-008\n\nAuditor: agentos-s1-008-independent-verifier (process-separated, adversarial).\n\nChecks performed: re-ran the committed probe (34 traces + both adversarial probes) and reproduced the pass verdict; recomputed the repo-local source SHA-256 bindings against the files on disk via hashlib; inspected every trace record for revoke_at/deny_at wall timestamps and monotonic latency fields (clock assumptions surfaced, not silent); confirmed deny/reconcile behavior on dropped-hop and unknown cases, that no allow-after-bound was observed, and that measured latencies leave a wide margin to the 5 s target; confirmed the INV5 revocation-monotonicity claim aligns with the S1-004 evidence; confirmed no production-SLA language (the value is stated as a bounded research target).\n\nVerdict: pass_with_limits.\n\nLimitations: the auditor is process-separated within one local environment, not an external human or independently operated model; the measurement set is single-host and cannot validate a distributed bound; the historical S1-002 raw data is treated as committed evidence, not re-measured here.",
+      "claim_refs": [
+        "claim-revoke-deny-under-5s",
+        "claim-revocation-trace-count",
+        "claim-clock-assumptions",
+        "claim-escalation-path"
+      ],
+      "producer": "agentos-s1-008-independent-verifier"
+    },
+    "platform_plan": {
+      "content": "# Scope\n\nAdopt the executable revocation probe as the CI research-plan probe for S1-008 and keep the <=5 s revoke-to-deny value as a bounded research target of the single-host control plane; do not surface it as a production SLA. Escalation: any allow after the bound or missing timestamp provenance raises the target for re-scoping or withdrawal.\n\n# Architecture\n\nRevocation stays on the gateway's atomic store (approval table + journal) per SPEC section 2/6; cached projections (retrieval) and derived grants (delegation) must re-validate against the authoritative store within the bound. Propagation hops outside the single process are out of this ticket's measured envelope.\n\n# Workstreams\n\n1. Trace: keep research/tickets/stage-1/S1-008/revocation_probe.py as the reproducible trace + adversarial probe; 2. Measurement: extend to representative concurrency and profile splitting when S1-002/S1-006 workloads mature; 3. Escalation: wire any fail-open probe observation to the ticket issue tracker for target re-scoping.\n\n# Milestones\n\nM1 (this ticket): probe + bundle PASS_WITH_LIMITS, 34 traces, both probes pass. M2: profile-specific revocation limit if a distributed measurement is approved. M3: revisit G-08 with cross-component measurement and a clock-skew bound.\n\n# Verification\n\nRe-run `python research/tickets/stage-1/S1-008/revocation_probe.py` (full) -> >=30 traces, all within 5 s, both adversarial probes pass, and probe-results.json is rewritten; the bundle research-plan re-run returns pass / pass_with_limits.\n\n# Risks\n\nFailing to re-validate cache projections (cached allow after the bound), unmeasured clock skew in a future multi-host deployment, a new component that cannot observe revocation, and over-claiming the single-host measurement as a production SLA.\n\n# Open decisions\n\n- Whether the <=5 s value is kept, made profile-specific, or withdrawn after a distributed benchmark (the decision this ticket enables).\n- The exact clock-skew bound technique for multi-host deployments (TrueTime-style or lease-based bounded staleness).",
+      "claim_refs": [
+        "claim-target-not-slo",
+        "claim-escalation-path",
+        "claim-clock-assumptions",
+        "claim-cache-invalidation"
+      ],
+      "producer": "agentos-s1-008-producer"
+    },
+    "progress": {
+      "content": "# Progress - S1-008\n\n1. 2026-09-01: ticket scope analyzed from the documented source evidence (SRC-07 G-08, SRC-06 INV5/revocation bound, SRC-03 sections 3-4, SRC-08 sections 4-5, SRC-09 round-13) and the stop/escalation rule.\n2. 2026-09-02: authored sources/claims (authorization model, runtime propagation, measured/trace method, cache/lease literature); wrote the executable probe, ran it (full mode -> 34 traces, all <=5 s, both adversarial probes pass), and committed probe-results.json.\n3. 2026-09-02: validated the bundle through the research-plan CLI; iterated on any validation errors until the deterministic research evaluation passed with limits.\n\nStatus: PASS_WITH_LIMITS (single-host bounded evidence; distributed propagation and clock-skew bound remain gaps).",
+      "claim_refs": [
+        "claim-revocation-trace-count",
+        "claim-revoke-deny-under-5s",
+        "claim-target-not-slo"
+      ],
+      "producer": "agentos-s1-008-producer"
+    }
+  },
+  "audit": {
+    "subject_producer": "agentos-s1-008-producer",
+    "auditor": "agentos-s1-008-independent-verifier",
+    "verdict": "pass_with_limits",
+    "limitations": [
+      "The measurement set is single-host SQLite/WAL; distributed, multi-host revocation propagation is not measured and the 5 s value cannot be claimed beyond this path.",
+      "Cross-host clock skew and NTP/TrueTime-style time uncertainty are not measured; trace timestamps are single-host UTC wall time plus monotonic durations.",
+      "In-process mirrors stand in for retrieval/delegation propagation hops; a real network hop may exhibit different latency and failure modes.",
+      "Production SLA, legal/security certification, and revocation semantics outside the documented grant state machine are explicitly out of scope.",
+      "The auditor role is process-separated within one local environment, not an external human or independently operated model."
+    ]
+  },
+  "probes": [
+    {
+      "name": "s1-008-revocation-latency",
+      "command": "python research/tickets/stage-1/S1-008/revocation_probe.py",
+      "expected": "pass"
+    },
+    {
+      "name": "s1-008-cached-auth-after-revoke",
+      "command": "python research/tickets/stage-1/S1-008/revocation_probe.py cached-revoke",
+      "expected": "pass"
+    },
+    {
+      "name": "s1-008-dropped-hop",
+      "command": "python research/tickets/stage-1/S1-008/revocation_probe.py dropped-hop",
+      "expected": "pass"
+    }
+  ]
+}

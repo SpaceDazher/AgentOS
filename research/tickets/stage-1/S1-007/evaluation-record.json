@@ -1,0 +1,38 @@
+{
+  "schema": "agentos.ticket-evaluation-record/v1",
+  "ticket_id": "S1-007",
+  "recorded_at": "2026-08-31T00:00:00Z",
+  "db_root": ".agentos-research/platform-stage-1",
+  "campaign_id": "rcamp_18WRV1TJ2LF4GKZW1M1K6T4BN",
+  "goal_id": "goal_1EXW70D594KMHPW101M1K6T4BN",
+  "evaluation_id": "reval_JS8R0PWVPW0ZK61101M1K6T5J5",
+  "evaluation_version": 1,
+  "result": "pass_with_limits",
+  "artifact_chain_hash": "97ccf8e6e17b76486e3ac9056b37d8704c5cc4ef470fe1e94b7c88396562a944",
+  "evidence_pack": {
+    "schema": "agentos.evidence-pack/v3",
+    "path": ".agentos-research/platform-stage-1/goals/goal_1EXW70D594KMHPW101M1K6T4BN/evidence-pack.json",
+    "sha256": "97ccf8e6e17b76486e3ac9056b37d8704c5cc4ef470fe1e94b7c88396562a944",
+    "chain_fresh": true,
+    "latest_evaluation_valid": true,
+    "embedded_sha256_matches": true
+  },
+  "probes": [
+    {"name": "cross-scope-isolation", "command": "python research/tickets/stage-1/S1-007/retrieval_isolation_probe.py --probe cross-scope-isolation", "expected": "pass", "observed": "pass", "result": "pass", "checks": 13, "cases": "6 isolation cases over 3 scopes; 0 disclosures; deny byte-identical, p50 delta 0.001 ms"},
+    {"name": "cache-revocation", "command": "python research/tickets/stage-1/S1-007/retrieval_isolation_probe.py --probe cache-revocation", "expected": "pass", "observed": "pass", "result": "pass", "checks": 16, "cases": "6 cache/revocation cases over 3 scopes; 0 stale servings, 0 disclosures"}
+  ],
+  "wiki_check": {
+    "ok": true,
+    "files": 640,
+    "links_checked": 1733,
+    "issues": []
+  },
+  "limitations": [
+    "Retrieval isolation verified on the local deterministic fixture set (3 scopes, 12 cases); not a production search service.",
+    "Profile C isolation is deferred to S1-018 (admin-blind indexing boundary out of scope here).",
+    "Timing non-disclosure (p50 delta 0.001 ms) is a local single-process measurement, not a remote-timing guarantee.",
+    "Literature sources (OWASP) verified by offline official-documentation review; no live network fetch.",
+    "Auditor is a process-separated role within one local environment, not an external human or independently operated model."
+  ],
+  "note": "S1-007 authored + validated: bundle.json with 17 verified sources (4 evidence classes), 16 claims, 11 artifacts (QA3 contract: per-scope indexing for profiles A/B, scope-addressed index, retrieval-time scope check + version-bumped cache invalidation, RLS as defense in depth); probes cross-scope-isolation 13/13 and cache-revocation 16/16 (0 disclosures, 0 stale servings); drives the real ToolGateway memory-scoping path. research-plan PASS is a research evaluation; it never sets Goal ACCEPTED (release gate only)."
+}

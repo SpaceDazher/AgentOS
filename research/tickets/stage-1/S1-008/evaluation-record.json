@@ -1,0 +1,47 @@
+{
+  "schema": "agentos.ticket-evaluation-record/v1",
+  "ticket_id": "S1-008",
+  "recorded_at": "2026-08-31T00:00:00Z",
+  "db_root": ".agentos-research/platform-stage-1",
+  "campaign_id": "rcamp_JTDR7XA5C655BS9R01M1K7V7CJ",
+  "goal_id": "goal_Z5S80Z8E9C5RR0HX01M1K7V7CJ",
+  "evaluation_id": "reval_8HD6G8FHQKMBWRWM01M1K7VAEB",
+  "evaluation_version": 1,
+  "result": "pass_with_limits",
+  "artifact_chain_hash": "3a43f777097b8759c24690af1590d889fc396d68f45e2d862bec177d09424467",
+  "evidence_pack": {
+    "schema": "agentos.evidence-pack/v3",
+    "path": ".agentos-research/platform-stage-1/goals/goal_Z5S80Z8E9C5RR0HX01M1K7V7CJ/evidence-pack.json",
+    "sha256": "3a43f777097b8759c24690af1590d889fc396d68f45e2d862bec177d09424467",
+    "chain_fresh": true,
+    "latest_evaluation_valid": true,
+    "embedded_sha256_matches": true
+  },
+  "probes": [
+    {"name": "s1-008-revocation-latency", "command": "python research/tickets/stage-1/S1-008/revocation_probe.py", "expected": "pass", "observed": "pass", "result": "pass", "traces": 34, "all_within_5s": true, "max_latency_ms": 2.3229, "p95_latency_ms": 2.1567},
+    {"name": "s1-008-cached-auth-after-revoke", "command": "python research/tickets/stage-1/S1-008/revocation_probe.py cached-revoke", "expected": "pass", "observed": "pass", "result": "pass"},
+    {"name": "s1-008-dropped-hop", "command": "python research/tickets/stage-1/S1-008/revocation_probe.py dropped-hop", "expected": "pass", "observed": "pass", "result": "pass"}
+  ],
+  "acceptance": {
+    "trace_count_ge_30": true,
+    "every_observed_le_5s": true,
+    "deny_or_reconcile_on_unknown": true,
+    "no_production_sla_language": true,
+    "both_probes_pass": true,
+    "inv5_true": true
+  },
+  "wiki_check": {
+    "ok": true,
+    "files": 803,
+    "links_checked": 2133,
+    "issues": []
+  },
+  "limitations": [
+    "34 revoke-to-deny traces are a single-host deterministic run over the real gateway approval state machine and journal, not a production distributed deployment.",
+    "The <=5 s value remains a bounded research target; no production SLA or certification is claimed.",
+    "RFC 7009 / RFC 9111 / Gray & Cheriton (Leases, 1989) verified offline by bibliographic/official-documentation review; no live network fetch.",
+    "Clock assumptions are surfaced and timestamped in each trace but are monotonic-local, not synchronized wall-clock across components.",
+    "Auditor is a process-separated role within one local environment, not an external human or independently operated model."
+  ],
+  "note": "S1-008 authored + validated: bundle.json with 13 verified sources (10 repo-local SHA-256-bound, RFC 7009/9111, Gray & Cheriton Leases), 12 claims, 11 artifacts; revocation_probe.py over the real gateway grant/revoke/consume + hash-chained journal: 34 traces across gateway/retrieval/delegation (cold+warm cache, outage/unknown), all <=5 s (min 0.018 ms, p95 2.157 ms, max 2.323 ms), 100% deny/reconcile on unknown; probes cached-auth-after-revoke + dropped-hop pass. research-plan PASS is a research evaluation; it never sets Goal ACCEPTED (release gate only)."
+}

@@ -1,0 +1,182 @@
+{
+  "schema": "agentos.s1-006-probe-results/v1",
+  "ticket": "S1-006",
+  "probes": [
+    {
+      "probe": "replay-resume",
+      "schema": "agentos.s1-006-probe-verdict/v1",
+      "status": "pass",
+      "observed": "pass",
+      "checks_total": 11,
+      "checks_failed": 0,
+      "failed_checks": [],
+      "checks": [
+        {
+          "name": "crash-a-outbox-replay-exactly-once",
+          "ok": true,
+          "detail": "exec={'t:a:sync': 1, 't:b:sync': 1, 't:c:sync': 1, 't:d:sync': 1, 't:e:sync': 1} receipts={'t:a:sync': 1, 't:b:sync': 1, 't:c:sync': 1, 't:d:sync': 1, 't:e:sync': 1} dup-publish-refused=True"
+        },
+        {
+          "name": "crash-b-unknown-outcome-reconciled-never-replayed",
+          "ok": true,
+          "detail": "exec={'t:a:sync': 1, 't:b:sync': 1, 't:c:sync': 1, 't:d:sync': 1, 't:e:sync': 1} state=RECONCILED_SUCCEEDED"
+        },
+        {
+          "name": "crash-c-mid-dag-resume-no-re-execution",
+          "ok": true,
+          "detail": "exec={'t:a:sync': 1, 't:b:sync': 1, 't:c:sync': 1, 't:d:sync': 1, 't:e:sync': 1}"
+        },
+        {
+          "name": "crash-d-double-resume-no-duplication",
+          "ok": true,
+          "detail": "refused=5 exec={'t:a:sync': 1, 't:b:sync': 1, 't:c:sync': 1, 't:d:sync': 1, 't:e:sync': 1}"
+        },
+        {
+          "name": "near-miss-naive-resume-duplicated-effect-rejected",
+          "ok": true,
+          "detail": "reasons=['duplicate delivery with unresolved UNKNOWN outcome (reconciliation required)', 'no reconciliation of the original outcome', 'receipt is not unique (same receipt re-emitted)']"
+        },
+        {
+          "name": "reconciled-but-non-unique-receipt-rejected",
+          "ok": true,
+          "detail": "reasons=['receipt is not unique (same receipt re-emitted)']"
+        },
+        {
+          "name": "reconciled-duplicate-with-unique-receipt-accepted",
+          "ok": true,
+          "detail": "receipts=['r-t:a:sync-1', 'r-t:a:sync-2']"
+        },
+        {
+          "name": "unknown-outcome-never-blind-retried",
+          "ok": true,
+          "detail": "blind-retry-refused=True exec=1"
+        },
+        {
+          "name": "checkpoint-corruption-refused-fail-closed",
+          "ok": true,
+          "detail": "stored_sha=cc88d4c9a9308197ab334552a95aeb986b966cf878193ea57c0249af4b8b94e0 tampered_sha=0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        {
+          "name": "dependency-ready-ordering-preserved-after-crash",
+          "ok": true,
+          "detail": "b_before=0 c_before=0 final_ok=True"
+        },
+        {
+          "name": "repo-local-source-hashes-verified-from-disk",
+          "ok": true,
+          "detail": "11 file bindings checked; problems=[]"
+        }
+      ]
+    },
+    {
+      "probe": "comparability",
+      "schema": "agentos.s1-006-probe-verdict/v1",
+      "status": "pass",
+      "observed": "pass",
+      "checks_total": 11,
+      "checks_failed": 0,
+      "failed_checks": [],
+      "checks": [
+        {
+          "name": "three-load-levels-with-p95p99-and-recovery-or-unavailable",
+          "ok": true,
+          "detail": "rates=['10', '100', '34'] p95p99=True same_dag=True recovery=True problems=[]"
+        },
+        {
+          "name": "at-least-four-crash-replay-scenarios-complete",
+          "ok": true,
+          "detail": "scenarios=6 problems=[]"
+        },
+        {
+          "name": "six-plus-dimensions-scored-totals-consistent",
+          "ok": true,
+          "detail": "recomputed={'in_process_scheduler': 38, 'durable_execution_engine': 21} declared={'in_process_scheduler': 38, 'durable_execution_engine': 21} problems=[]"
+        },
+        {
+          "name": "near-miss-different-dag-rejected-incomparable",
+          "ok": true,
+          "detail": "reasons=['different task DAGs between backends']"
+        },
+        {
+          "name": "near-miss-omitted-crash-recovery-rejected-incomparable",
+          "ok": true,
+          "detail": "reasons=['crash recovery omitted from the comparison']"
+        },
+        {
+          "name": "bundle-comparison-comparable-same-dag-with-recovery",
+          "ok": true,
+          "detail": "comparability reasons=[]"
+        },
+        {
+          "name": "single-recommendation-with-trigger-evidence-and-non-goals",
+          "ok": true,
+          "detail": "problems=[]"
+        },
+        {
+          "name": "no-production-backend-installed-claim",
+          "ok": true,
+          "detail": "forbidden positive claims: none"
+        },
+        {
+          "name": "ticket-claim-class-coverage-present-and-mapped",
+          "ok": true,
+          "detail": "counts={'architecture_fact': 5, 'benchmark_measurement': 3, 'tradeoff': 2, 'failure_mode': 4, 'decision': 4} short={} problems=[]"
+        },
+        {
+          "name": "independent-audit-producer-binding",
+          "ok": true,
+          "detail": "platform=agentos-s1-006-producer audit_artifact=agentos-s1-006-independent-verifier verdict=pass_with_limits"
+        },
+        {
+          "name": "live-benchmark-recorded",
+          "ok": true,
+          "detail": "levels measured: ['10', '100', '34']"
+        }
+      ]
+    }
+  ],
+  "benchmark": {
+    "schema": "agentos.s1-006-p95p99-benchmark/v1",
+    "environment": "single-host Windows, CPython, SQLite/WAL, in-process engine (agentos from repo)",
+    "method": "dependency-ready scheduling pass = plan_tasks + schedule_ready_tasks on a chain DAG of `rate` tasks; 6 passes per level; recovery = lease-expire -> recover_expired_runs -> resume_task(FakeWorker)",
+    "load_levels": {
+      "10": {
+        "rate_events_per_second": 10,
+        "dag_id": "s1-006-dag-wave-v1",
+        "passes": {
+          "n": 6,
+          "p50": 327.3406,
+          "p95": 350.1979,
+          "p99": 350.1979,
+          "max": 411.1302
+        },
+        "recovery_time_ms": 528.539
+      },
+      "34": {
+        "rate_events_per_second": 34,
+        "dag_id": "s1-006-dag-wave-v1",
+        "passes": {
+          "n": 6,
+          "p50": 911.7217,
+          "p95": 1101.8128,
+          "p99": 1101.8128,
+          "max": 1142.032
+        },
+        "recovery_time_ms": 399.4951
+      },
+      "100": {
+        "rate_events_per_second": 100,
+        "dag_id": "s1-006-dag-wave-v1",
+        "passes": {
+          "n": 6,
+          "p50": 2575.001,
+          "p95": 3051.5014,
+          "p99": 3051.5014,
+          "max": 3055.9448
+        },
+        "recovery_time_ms": 473.1399
+      }
+    }
+  },
+  "final_verdict": "pass"
+}

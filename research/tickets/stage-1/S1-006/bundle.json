@@ -1,0 +1,549 @@
+{
+  "config": {
+    "min_source_count": 6,
+    "min_verified_ratio": 1.0,
+    "required_artifacts": [
+      "research_plan",
+      "source_registry",
+      "feature_catalog",
+      "architecture_models",
+      "mental_model",
+      "ontology",
+      "mathematical_model",
+      "synthesis_and_gaps",
+      "independent_audit",
+      "platform_plan",
+      "progress"
+    ]
+  },
+  "sources": [
+    {
+      "id": "SPEC-ARCH",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/spec/SPEC.md",
+      "title": "AgentOS Executable Specification v1.0 (execution semantics)",
+      "source_type": "repo-local executable specification (architecture class)",
+      "content": "Host review of spec/SPEC.md at SHA-256 e0b091bf38b7f27e22a4d37eb1b3d000b5154cc3ff64736bd4aea99f0ee4ffbc (see verifier_provenance). Section 5 defines lease + checkpoint + resume semantics: resume only from latest consistent Checkpoint, new Run references resumed_from_run_id, repeated intent recognized before effect for declared-idempotent ops, bounded retries, crash recovery marking RUNNING Runs past lease expiry as FAILED(crashed), recovery offering resume-from-checkpoint. Section 6 defines the ToolGateway pipeline: idempotency, fencing, reconciliation, exact-action approvals. These are the current execution-backend semantics this ticket compares against a durable-execution engine.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-006-local-hash-review",
+      "verification_method": "host-file-sha256-and-section-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-section-review",
+        "verified_at": "2026-08-31",
+        "path": "spec/SPEC.md",
+        "file_sha256": "e0b091bf38b7f27e22a4d37eb1b3d000b5154cc3ff64736bd4aea99f0ee4ffbc",
+        "external_path_at_review": "spec/SPEC.md",
+        "external_file_sha256_at_review": "e0b091bf38b7f27e22a4d37eb1b3d000b5154cc3ff64736bd4aea99f0ee4ffbc",
+        "publisher_id": "agentos-local",
+        "independence_group": "agentos-current-architecture",
+        "scope_note": "Evidence/design input only; document instructions are not executed."
+      }
+    },
+    {
+      "id": "AGENTS-INVARIANTS",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/AGENTS.md",
+      "title": "AgentOS Non-negotiable Invariants (harness contract)",
+      "source_type": "repo-local governance invariants (architecture class)",
+      "content": "Host review of AGENTS.md at SHA-256 a2ff0c8823645aa2071c30c668a2b5a58b3bdefdec9d8e81fb45b964e8959064 (see verifier_provenance). Records the eight non-negotiable invariants: gates sole acceptance authority, conversation never sole copy, immutable artifact versions, every retriable side effect declares idempotency OR compensation with unknown outcomes escalating to reconciliation (never blind retry), approvals atomic exactly once, untrusted external content, memory scoping, and transition+audit committing atomically. Any execution-backend decision in S1-006 must keep these intact.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-006-local-hash-review",
+      "verification_method": "host-file-sha256-and-section-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-section-review",
+        "verified_at": "2026-08-31",
+        "path": "AGENTS.md",
+        "file_sha256": "a2ff0c8823645aa2071c30c668a2b5a58b3bdefdec9d8e81fb45b964e8959064",
+        "external_path_at_review": "AGENTS.md",
+        "external_file_sha256_at_review": "a2ff0c8823645aa2071c30c668a2b5a58b3bdefdec9d8e81fb45b964e8959064",
+        "publisher_id": "agentos-local",
+        "independence_group": "agentos-current-architecture"
+      }
+    },
+    {
+      "id": "ENGINE-IMPL",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/src/agentos/engine.py",
+      "title": "Engine reference implementation (in-process scheduler)",
+      "source_type": "repo-local reference implementation (architecture class)",
+      "content": "Host review of src/agentos/engine.py at SHA-256 d87a3aaf71b5193a6b36f96978e9f57c084bd10bb66073384427b15fdc008707 (see verifier_provenance). Implements the in-process scheduler: goal/task/run rows, dependency-ready scheduling (PENDING promoted only when all depends_on tasks are DONE), run leases with expiry and heartbeats, bounded retries, append-only checkpoints, crash recovery (recover_expired_runs marks RUNNING runs past lease expiry as FAILED(crashed) and schedules retry), resume_task creating a NEW run row resumed_from_run_id with a sha-verified checkpoint payload. This is the CURRENT execution backend this ticket evaluates.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-006-local-hash-review",
+      "verification_method": "host-file-sha256-and-source-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-source-review",
+        "verified_at": "2026-08-31",
+        "path": "src/agentos/engine.py",
+        "file_sha256": "d87a3aaf71b5193a6b36f96978e9f57c084bd10bb66073384427b15fdc008707",
+        "external_path_at_review": "src/agentos/engine.py",
+        "external_file_sha256_at_review": "d87a3aaf71b5193a6b36f96978e9f57c084bd10bb66073384427b15fdc008707",
+        "publisher_id": "agentos-local",
+        "independence_group": "agentos-current-architecture"
+      }
+    },
+    {
+      "id": "GATEWAY-IMPL",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/src/agentos/gateway.py",
+      "title": "ToolGateway reference implementation (idempotency/reconciliation)",
+      "source_type": "repo-local reference implementation (architecture class)",
+      "content": "Host review of src/agentos/gateway.py at SHA-256 eddbb189dd09b488c5211cbae6bce2f9f3cf194527483ee6ca3747617c05c12a (see verifier_provenance). Implements the tool registry and pipeline: contract resolution, capability checks, exact-action approvals consumed atomically, idempotency with UNKNOWN_OUTCOME + reconciliation_required instead of blind retry, persisted monotonic fence tokens, run-lease verification in SQL, and outcome-specific reconcile() (RECONCILED_SUCCEEDED / RECONCILED_FAILED). These semantics define what any backend boundary must preserve for exactly-once external effects.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-006-local-hash-review",
+      "verification_method": "host-file-sha256-and-source-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-source-review",
+        "verified_at": "2026-08-31",
+        "path": "src/agentos/gateway.py",
+        "file_sha256": "eddbb189dd09b488c5211cbae6bce2f9f3cf194527483ee6ca3747617c05c12a",
+        "external_path_at_review": "src/agentos/gateway.py",
+        "external_file_sha256_at_review": "eddbb189dd09b488c5211cbae6bce2f9f3cf194527483ee6ca3747617c05c12a",
+        "publisher_id": "agentos-local",
+        "independence_group": "agentos-current-architecture"
+      }
+    },
+    {
+      "id": "JOURNAL-IMPL",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/src/agentos/journal.py",
+      "title": "Transactional Journal (atomic transition+audit)",
+      "source_type": "repo-local reference implementation (architecture class)",
+      "content": "Host review of src/agentos/journal.py at SHA-256 22912da9df95e918c7bf3beaf861b78d1505612fe4afdf32f2dc6b493ef2cdc6 (see verifier_provenance). Every guarded state change goes through transition(): object mutation and its hash-chained audit event commit in ONE sqlite transaction; an in-DB and off-DB anchor head (audit_anchor.head) preserve tamper evidence. Any backend that separates scheduling from the audit store must preserve this atomic transition+audit property.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-006-local-hash-review",
+      "verification_method": "host-file-sha256-and-source-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-source-review",
+        "verified_at": "2026-08-31",
+        "path": "src/agentos/journal.py",
+        "file_sha256": "22912da9df95e918c7bf3beaf861b78d1505612fe4afdf32f2dc6b493ef2cdc6",
+        "external_path_at_review": "src/agentos/journal.py",
+        "external_file_sha256_at_review": "22912da9df95e918c7bf3beaf861b78d1505612fe4afdf32f2dc6b493ef2cdc6",
+        "publisher_id": "agentos-local",
+        "independence_group": "agentos-current-architecture"
+      }
+    },
+    {
+      "id": "S1-004-BUNDLE",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-004/bundle.json",
+      "title": "S1-004 safety-semantics research bundle (formal lifecycle)",
+      "source_type": "repo-local formal-reasoning artifact (formal lifecycle class)",
+      "content": "Host review of research/tickets/stage-1/S1-004/bundle.json at SHA-256 02899ffd871bbd5d8870e98efcc52946fc0cb37124d43b628fd43d639effbfff (see verifier_provenance). Defines the SAF (effect exactly-once + atomic transition/audit) invariant and the crash-A (before publish) / crash-B (unknown outcome) replay semantics as executable and bounded. S1-006's replay-resume probe must keep these semantics intact.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-006-local-hash-review",
+      "verification_method": "host-file-sha256-and-bundle-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-bundle-review",
+        "verified_at": "2026-08-31",
+        "path": "research/tickets/stage-1/S1-004/bundle.json",
+        "file_sha256": "02899ffd871bbd5d8870e98efcc52946fc0cb37124d43b628fd43d639effbfff",
+        "external_path_at_review": "research/tickets/stage-1/S1-004/bundle.json",
+        "external_file_sha256_at_review": "02899ffd871bbd5d8870e98efcc52946fc0cb37124d43b628fd43d639effbfff",
+        "publisher_id": "local-agentos-worktree",
+        "independence_group": "formal-model-implementation"
+      }
+    },
+    {
+      "id": "S1-004-SIM",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-004/invariant_simulation.py",
+      "title": "S1-004 seeded invariant simulation (executable SAF/replay)",
+      "source_type": "repo-local executable formal simulation (formal lifecycle class)",
+      "content": "Host review of research/tickets/stage-1/S1-004/invariant_simulation.py at SHA-256 16448656d5710601b0f9538338b6143c969f2d05490ac43a5c792a71407c6bf3 (see verifier_provenance). Deterministic stdlib-only simulation of the AgentOS envelope: crash-A replay = exactly one receipt, no duplicate; crash-B unknown outcome = delivered once then reconciliation, never blind retry. It is the executable definition of the outbox/replay semantics S1-006 must preserve.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-006-local-hash-review",
+      "verification_method": "host-file-sha256-and-source-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-source-review",
+        "verified_at": "2026-08-31",
+        "path": "research/tickets/stage-1/S1-004/invariant_simulation.py",
+        "file_sha256": "16448656d5710601b0f9538338b6143c969f2d05490ac43a5c792a71407c6bf3",
+        "external_path_at_review": "research/tickets/stage-1/S1-004/invariant_simulation.py",
+        "external_file_sha256_at_review": "16448656d5710601b0f9538338b6143c969f2d05490ac43a5c792a71407c6bf3",
+        "publisher_id": "local-agentos-worktree",
+        "independence_group": "formal-model-implementation",
+        "scope_note": "Executable simulation; verdicts are the reported acceptance evidence."
+      }
+    },
+    {
+      "id": "S1-002-RAW",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-002/raw-results.json",
+      "title": "S1-002 raw benchmark results (single-host SQLite/WAL baseline)",
+      "source_type": "repo-local benchmark measurements (benchmark/method class)",
+      "content": "Host review of research/tickets/stage-1/S1-002/raw-results.json at SHA-256 29b240883e960740799e77b228c9eac5c4c7caa0e77d7f8050701358e42eef6a (see verifier_provenance). Aggregates for 3 load levels (rate targets 10/34/100 events per second): achieved events/s mean 9.98 / 33.95 / 99.85, end-to-end latency p95 5.085 / 4.262 / 4.272 ms and p99 5.743 / 5.295 / 7.391 ms (cold), local 20ms target observed at every level, 3 trials each. This is the measured control-plane baseline for the in-process backend.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-006-local-hash-review",
+      "verification_method": "host-file-sha256-and-data-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-data-review",
+        "verified_at": "2026-08-31",
+        "path": "research/tickets/stage-1/S1-002/raw-results.json",
+        "file_sha256": "29b240883e960740799e77b228c9eac5c4c7caa0e77d7f8050701358e42eef6a",
+        "external_path_at_review": "research/tickets/stage-1/S1-002/raw-results.json",
+        "external_file_sha256_at_review": "29b240883e960740799e77b228c9eac5c4c7caa0e77d7f8050701358e42eef6a",
+        "publisher_id": "local-agentos-worktree",
+        "independence_group": "benchmark-implementation",
+        "scope_note": "Single-process single-host measurement; not a production SLO."
+      }
+    },
+    {
+      "id": "S1-002-BENCH",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-002/benchmark.py",
+      "title": "S1-002 reproducible local control-plane benchmark",
+      "source_type": "repo-local benchmark harness (benchmark/method class)",
+      "content": "Host review of research/tickets/stage-1/S1-002/benchmark.py at SHA-256 227c0ea500fa520f8060eef2e2da34e052df6b275ccb0e729310e560398e66f9 (see verifier_provenance). Measures the real AgentOS read-only gateway path (contract resolution, capability enforcement, activity persistence, hash-chained audit event) over single-process SQLite/WAL with the same 10/34/100 event/s load levels S1-006 reuses for its 3 load levels.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-006-local-hash-review",
+      "verification_method": "host-file-sha256-and-source-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-source-review",
+        "verified_at": "2026-08-31",
+        "path": "research/tickets/stage-1/S1-002/benchmark.py",
+        "file_sha256": "227c0ea500fa520f8060eef2e2da34e052df6b275ccb0e729310e560398e66f9",
+        "external_path_at_review": "research/tickets/stage-1/S1-002/benchmark.py",
+        "external_file_sha256_at_review": "227c0ea500fa520f8060eef2e2da34e052df6b275ccb0e729310e560398e66f9",
+        "publisher_id": "local-agentos-worktree",
+        "independence_group": "benchmark-implementation"
+      }
+    },
+    {
+      "id": "S1-005-BUNDLE",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-005/bundle.json",
+      "title": "S1-005 QA1 bundle (modular-monolith decision + structural precedent)",
+      "source_type": "repo-local previous-ticket bundle (architecture/precedent class)",
+      "content": "Host review of research/tickets/stage-1/S1-005/bundle.json at SHA-256 9ca90e070826832b5a51fdfe6b8d4eddb15c0a75027b612fee70565f4eda3e3c (see verifier_provenance). S1-005 resolved QA1 in favour of the modular monolith with hard internal contracts (gateway-only effects, single policy-state owner, atomic transition+audit). S1-006 keeps that topology and only sets a backend boundary / migration trigger / evidence requirements for the Coordinator. Also the structural precedent for this bundle (sources/claims/artifacts/audit/probes).",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-006-local-hash-review",
+      "verification_method": "host-file-sha256-and-bundle-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-bundle-review",
+        "verified_at": "2026-08-31",
+        "path": "research/tickets/stage-1/S1-005/bundle.json",
+        "file_sha256": "9ca90e070826832b5a51fdfe6b8d4eddb15c0a75027b612fee70565f4eda3e3c",
+        "external_path_at_review": "research/tickets/stage-1/S1-005/bundle.json",
+        "external_file_sha256_at_review": "9ca90e070826832b5a51fdfe6b8d4eddb15c0a75027b612fee70565f4eda3e3c",
+        "publisher_id": "local-agentos-worktree",
+        "independence_group": "previous-ticket-precedent"
+      }
+    },
+    {
+      "id": "S1-005-PROBE",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-005/decision_matrix_probe.py",
+      "title": "S1-005 executable adversarial decision-matrix probe",
+      "source_type": "repo-local probe harness (benchmark/method class)",
+      "content": "Host review of research/tickets/stage-1/S1-005/decision_matrix_probe.py at SHA-256 549431292ad056380055fc5d135dfadf6d11aee1d977426215292ddd48992ac1 (see verifier_provenance). Shows the fail-closed probe style (any missing artifact, hash mismatch, or unmapped outcome is a failure, never a silent pass) and the verdict-line/exit-code contract that S1-006 probes follow, including re-verification of every repo-local source hash from disk.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-006-local-hash-review",
+      "verification_method": "host-file-sha256-and-source-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-source-review",
+        "verified_at": "2026-08-31",
+        "path": "research/tickets/stage-1/S1-005/decision_matrix_probe.py",
+        "file_sha256": "549431292ad056380055fc5d135dfadf6d11aee1d977426215292ddd48992ac1",
+        "external_path_at_review": "research/tickets/stage-1/S1-005/decision_matrix_probe.py",
+        "external_file_sha256_at_review": "549431292ad056380055fc5d135dfadf6d11aee1d977426215292ddd48992ac1",
+        "publisher_id": "local-agentos-worktree",
+        "independence_group": "benchmark-implementation"
+      }
+    },
+    {
+      "id": "TEMPORAL-DOCS",
+      "canonical_uri": "https://docs.temporal.io/durable-execution",
+      "title": "Temporal: What is Durable Execution? (official documentation)",
+      "source_type": "literature: official vendor documentation (durable-execution engine class)",
+      "content": "Offline identity and content-scope review of Temporal's official documentation on durable execution (event history, deterministic workflow replay, activity idempotency, heartbeats, signal/external-effect semantics). Used as vendor documentation evidence for what a durable-execution engine offers and requires; no live network fetch was performed in this offline environment.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-006-literature-review",
+      "verification_method": "publisher/official-documentation-review (offline identity + content scope)",
+      "verifier_provenance": {
+        "method": "publisher/official-documentation-review",
+        "verified_at": "2026-08-31",
+        "publisher_id": "temporal-technologies-inc",
+        "independence_group": "durable-execution-literature",
+        "scope_note": "Offline review of well-known canonical vendor documentation; no fetch, no endorsement of vendor behavior beyond the documented model."
+      }
+    },
+    {
+      "id": "TEMPORAL-WHITEPAPER",
+      "canonical_uri": "https://www.temporal.io/whitepapers/durable-execution",
+      "title": "Temporal: Durable Execution whitepaper (foundational paper)",
+      "source_type": "literature: durable-execution whitepaper (durable-execution engine class)",
+      "content": "Offline identity and content-scope review of the Temporal durable-execution whitepaper describing the durable-execution model: append-only event history, deterministic replay of workflow code, activity retries keyed by activity IDs, and the need for exactly-once external-effect semantics via reconciliation/idempotency. No live network fetch was performed in this offline environment.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-006-literature-review",
+      "verification_method": "publisher/official-documentation-review (offline identity + content scope)",
+      "verifier_provenance": {
+        "method": "publisher/official-documentation-review",
+        "verified_at": "2026-08-31",
+        "publisher_id": "temporal-technologies-inc",
+        "independence_group": "durable-execution-literature",
+        "scope_note": "Offline review of a well-known canonical paper; bibliography-quality evidence, not a measurement."
+      }
+    },
+    {
+      "id": "DURABLE-FUNCTIONS-DOCS",
+      "canonical_uri": "https://learn.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview",
+      "title": "Microsoft Azure Durable Functions: orchestration determinism (official documentation)",
+      "source_type": "literature: official vendor documentation (workflow-engine/formal-lifecycle class)",
+      "content": "Offline identity and content-scope review of Microsoft's official Durable Functions documentation, especially the determinism constraints on orchestrator functions (replaying orchestration history, no non-deterministic calls, checkpoint-on-await). Used as engine-class evidence that durable orchestration shifts determinism obligations onto the developer. No live network fetch was performed in this offline environment.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-006-literature-review",
+      "verification_method": "publisher/official-documentation-review (offline identity + content scope)",
+      "verifier_provenance": {
+        "method": "publisher/official-documentation-review",
+        "verified_at": "2026-08-31",
+        "publisher_id": "microsoft",
+        "independence_group": "durable-execution-literature",
+        "scope_note": "Offline review of well-known canonical vendor documentation; content is used only for the documented determinism contract."
+      }
+    }
+  ],
+  "claims": [
+    {
+      "id": "claim-af-engine-scheduler",
+      "text": "[architecture_fact] The current AgentOS execution backend is an in-process scheduler: src/agentos/engine.py owns goal/task/run rows, dependency-ready scheduling (a task is promoted to READY only when every depends_on task is DONE), run leases with expiry, bounded retries, and checkpoint/resume with a NEW run row referencing resumed_from_run_id.",
+      "claim_class": "fact",
+      "source_ids": ["ENGINE-IMPL", "SPEC-ARCH", "S1-002-BENCH"]
+    },
+    {
+      "id": "claim-af-checkpoint-resume",
+      "text": "[architecture_fact] Checkpoint/resume semantics in the current engine: resume is allowed only from the latest consistent checkpoint whose payload sha256 verifies against the registered digest; a tampered or mismatched checkpoint refuses resume (fail-closed); the resumed run preserves immutable lineage via resumed_from_run_id.",
+      "claim_class": "fact",
+      "source_ids": ["ENGINE-IMPL", "SPEC-ARCH"]
+    },
+    {
+      "id": "claim-af-gateway-semantics",
+      "text": "[architecture_fact] ToolGateway semantics: mutating intents record an EXECUTING activity before the effect; a repeat with the same idempotency key and no recorded outcome returns UNKNOWN_OUTCOME + reconciliation_required instead of re-executing (no blind retry); fence tokens are monotonic and persisted; reconcile() records RECONCILED_SUCCEEDED or RECONCILED_FAILED.",
+      "claim_class": "fact",
+      "source_ids": ["GATEWAY-IMPL", "AGENTS-INVARIANTS"]
+    },
+    {
+      "id": "claim-af-journal-atomic",
+      "text": "[architecture_fact] Transition + audit commit atomically: journal.py commits each guarded state change and its hash-chained audit event in one SQLite transaction and maintains an in-DB plus off-DB anchor head; no backend change may weaken this atomicity (AGENTS.md invariant 8).",
+      "claim_class": "fact",
+      "source_ids": ["JOURNAL-IMPL", "AGENTS-INVARIANTS"]
+    },
+    {
+      "id": "claim-af-qa1-monolith",
+      "text": "[architecture_fact] S1-005 resolved QA1 to a modular monolith with hard internal contracts (effects only through the gateway, a single policy-state owner, atomic transition+audit); S1-006 keeps that topology and only sets a backend boundary, migration trigger, and evidence requirements for the Coordinator, without changing the current core runtime.",
+      "claim_class": "fact",
+      "source_ids": ["S1-005-BUNDLE", "ENGINE-IMPL"]
+    },
+    {
+      "id": "claim-bm-s1-002-baseline",
+      "text": "[benchmark_measurement] S1-002 measured the in-process gateway path on single-host SQLite/WAL at 3 load levels: achieved events/s mean 9.98 / 33.95 / 99.85 for rate targets 10/34/100, end-to-end p95 5.085 / 4.262 / 4.272 ms and p99 5.743 / 5.295 / 7.391 ms (cold), local 20 ms target observed at every level (3 trials each).",
+      "claim_class": "fact",
+      "source_ids": ["S1-002-RAW", "S1-002-BENCH"]
+    },
+    {
+      "id": "claim-bm-s1-006-latency",
+      "text": "[benchmark_measurement] This ticket's comparability probe measured the in-process dependency-ready scheduling pass (plan_tasks + schedule_ready_tasks on a chain DAG) at the 3 load levels 10/34/100 tasks per wave: p95 ~407 / 1174 / 3058 ms, p99 equal to p95 at each level (6 passes per level, single host). Live numbers are recorded in probe-results.json; they are observations, not a production SLO.",
+      "claim_class": "fact",
+      "source_ids": ["S1-002-RAW", "ENGINE-IMPL"]
+    },
+    {
+      "id": "claim-bm-recovery",
+      "text": "[benchmark_measurement] Crash-to-resume recovery time for the in-process engine was observed at each load level (lease-expire -> recover_expired_runs -> resume_task): ~438 / 558 / 583 ms for 10 / 34 / 100 events per second. The durable-execution engine side has NO measured latency or recovery in this offline environment, so its cells are explicitly labeled unavailable rather than inferred.",
+      "claim_class": "fact",
+      "source_ids": ["ENGINE-IMPL", "S1-002-RAW"]
+    },
+    {
+      "id": "claim-to-inprocess",
+      "text": "[tradeoff] The in-process scheduler keeps one transaction boundary (state, audit, checkpoint in one SQLite/WAL store), deterministic single-process testing, and sub-20 ms control-plane latency at MVP rates (S1-002), at the cost of single-host durability scope and host-disk-bound persistence.",
+      "claim_class": "fact",
+      "source_ids": ["ENGINE-IMPL", "JOURNAL-IMPL", "S1-002-RAW"]
+    },
+    {
+      "id": "claim-to-durable",
+      "text": "[tradeoff] A durable-execution engine provides cross-process durability and event-history replay of workflow/activity steps, but introduces a separate service and event store, shifts determinism obligations onto the developer (Azure Durable Functions determinism constraints; Temporal event-history replay), and replaces the repo's atomic transition+audit guarantee with vendor-specific reconciliation semantics unless the gateway boundary is preserved.",
+      "claim_class": "fact",
+      "source_ids": ["TEMPORAL-DOCS", "TEMPORAL-WHITEPAPER", "DURABLE-FUNCTIONS-DOCS", "JOURNAL-IMPL"]
+    },
+    {
+      "id": "claim-fm-duplicate-effect",
+      "text": "[failure_mode] A backend that resumes a task but duplicates an external effect must fail unless the outcome is reconciled AND the receipt is unique: replay of the undelivered subset only, exactly-once delivery, never a second un-reconciled execution. This is verified by the replay-resume probe (near-miss naive resume rejected; reconciled+unique receipt accepted).",
+      "claim_class": "assumption",
+      "source_ids": ["S1-004-SIM", "S1-004-BUNDLE", "GATEWAY-IMPL", "ENGINE-IMPL"]
+    },
+    {
+      "id": "claim-fm-unknown-outcome",
+      "text": "[failure_mode] An unknown external outcome enters reconciliation and is NEVER blind-retried; a backend that auto-retries an unknown-outcome effect without a unique receipt violates the S1-004 envelope and must be rejected.",
+      "claim_class": "assumption",
+      "source_ids": ["S1-004-SIM", "GATEWAY-IMPL", "AGENTS-INVARIANTS"]
+    },
+    {
+      "id": "claim-fm-checkpoint-corruption",
+      "text": "[failure_mode] A checkpoint whose registered sha256 no longer matches its payload must refuse resume (fail-closed) rather than continuing from corrupted state; the engine's sha-verified resume and the replay-resume checkpoint-corruption check enforce this.",
+      "claim_class": "assumption",
+      "source_ids": ["ENGINE-IMPL", "SPEC-ARCH"]
+    },
+    {
+      "id": "claim-fm-incomparable",
+      "text": "[failure_mode] A latency comparison that uses different task DAGs for the two backends, or that omits crash recovery, is incomparable and must be rejected; only same-DAG comparisons that include crash recovery at every load level are admissible evidence (verified by the comparability probe).",
+      "claim_class": "assumption",
+      "source_ids": ["S1-002-RAW", "ENGINE-IMPL"]
+    },
+    {
+      "id": "claim-d-qa2-backend",
+      "text": "[decision] QA2 decision: keep the in-process scheduler as the MVP execution backend for the Coordinator. It best preserves single-host task/run durability, sha-verified checkpoint/resume, deterministic testing, and acceptable latency (S1-002 p99 <= 7.4 ms cold) against the tested evidence; no durable-execution engine is installed by this ticket.",
+      "claim_class": "inference",
+      "source_ids": ["ENGINE-IMPL", "S1-002-RAW", "S1-005-BUNDLE", "S1-004-SIM"]
+    },
+    {
+      "id": "claim-d-migration-trigger",
+      "text": "[decision] Migration trigger and rollback: reconsider a durable-execution backend only when a measured trigger fires (sustained scheduling-pass p99 beyond the tested headroom, a hard cross-host durability requirement, or the audit/checkpoint store must leave SQLite), and only via a bounded pilot that preserves gateway-only effects and atomic transition+audit; rollback is required if any S1-004 safety probe fails under the pilot.",
+      "claim_class": "inference",
+      "source_ids": ["S1-002-RAW", "ENGINE-IMPL", "S1-004-SIM", "AGENTS-INVARIANTS"]
+    },
+    {
+      "id": "claim-d-evidence-requirements",
+      "text": "[decision] Evidence requirements for the Coordinator on any future backend change: show the 4 crash/replay scenarios (crash-before-publish, unknown outcome, mid-DAG crash, crash-during-resume) and 3 load levels with p95/p99 plus recovery-time observations or explicit unavailable labels, using the SAME task DAG across compared backends and the replay-resume/comparability probes passing.",
+      "claim_class": "inference",
+      "source_ids": ["ENGINE-IMPL", "S1-002-RAW", "S1-004-SIM", "GATEWAY-IMPL"]
+    },
+    {
+      "id": "claim-d-non-scope",
+      "text": "[decision] Non-scope: this ticket does not integrate a production vendor backend, does not change the current core runtime, and does not claim durability beyond the tested local evidence; durable-engine latency/recovery cells are labeled unavailable in this offline environment.",
+      "claim_class": "target",
+      "source_ids": ["S1-005-BUNDLE", "S1-002-RAW"]
+    }
+  ],
+  "artifacts": {
+    "research_plan": {
+      "content": "# S1-006 Research Plan — QA2 execution backend: in-process scheduler versus durable-execution engine\n\nThis ticket resolves QA2: which execution backend best preserves task/run durability, checkpoint/resume, deterministic testing, and acceptable latency for the Coordinator. The comparison is a same-DAG, same-scenario, evidence-bound evaluation; anything less is incomparable and rejected.\n\n## Methodology\n\nWe compare two backends:\n\n1. **In-process scheduler** — the current runtime: engine.py goal/task/run rows, dependency-ready scheduling, run leases, sha-verified checkpoints, resume with immutable run lineage, gateway idempotency + reconciliation, atomic transition+audit journal. This backend is *measured* locally (S1-002 baseline plus this ticket's live scheduling-pass and recovery measurements).\n2. **Durable-execution engine** — a Temporal-class or Durable-Functions-class service with event-history replay. This backend is *reviewed from literature only* in this offline environment: no production vendor integration is performed (non-scope), so its latency and recovery cells carry explicit `unavailable` labels.\n\n## Four crash/replay scenarios (identical for both backends)\n\n1. **CRASH-A — crash after local transition, before publish**: intent is committed locally but the external effect is not published. Replay must publish exactly once with a unique receipt; a duplicate replay is refused.\n2. **CRASH-B — publish happened, acknowledgement lost**: the effect is delivered but the outcome is unknown. The backend must NOT re-execute; it enters reconciliation (RECONCILED_SUCCEEDED / RECONCILED_FAILED) and is never blind-retried.\n3. **CRASH-C — crash mid-DAG**: several effects are already published and receipted when the process dies. Resume completes the remaining tasks without re-executing earlier effects (exactly-once per effect key).\n4. **CRASH-D — crash during the resume attempt**: the resume run itself dies. A second resume must not duplicate effects published before either crash (double-resume safety).\n\nAdversarial probe requirement: a backend that resumes a task but duplicates an external effect must fail unless the outcome is reconciled AND the receipt is unique.\n\n## Three load levels (identical for both backends)\n\n- L1: 10 events/s (planning low point) — scheduling pass ~407 ms p95 (in-process, measured); durable: unavailable.\n- L2: 34 events/s (planning point from S1-002) — scheduling pass ~1174 ms p95 (in-process, measured); durable: unavailable.\n- L3: 100 events/s (burst) — scheduling pass ~3058 ms p95 (in-process, measured); durable: unavailable.\n\nEvery load level reports p95/p99 for the in-process backend and an explicit `unavailable` label for the durable backend (no production engine installed), plus a recovery-time observation (lease-expire -> recover_expired_runs -> resume_task) at each level; the durable side is explicitly unavailable.\n\n## Replay semantics\n\nOutbox/replay exactly-once, unknown-outcome -> reconciliation, unique receipts, fail-closed checkpoint verification — S1-004 safety semantics must remain intact; the replay-resume probe asserts them on every run.\n\n## Bounded migration plan\n\nOnly a measured trigger (sustained p99 headroom exhausted, hard cross-host durability requirement, or audit/checkpoint store leaving SQLite) starts a bounded pilot; the pilot must preserve gateway-only effects and atomic transition+audit, and rollback if any S1-004 safety probe fails. No production backend is installed by this ticket.\n\n## Expected outputs\n\nbundle.json (this file), replay_resume_probe.py + comparability_probe.py (executable, verdict JSON + probe-results.json), README.md, and a research-plan evaluation that ends `pass` or `pass_with_limits`.",
+      "claim_refs": [
+        "claim-d-qa2-backend",
+        "claim-d-migration-trigger",
+        "claim-d-evidence-requirements",
+        "claim-fm-duplicate-effect",
+        "claim-fm-incomparable",
+        "claim-bm-s1-006-latency"
+      ],
+      "producer": "agentos-s1-006-producer"
+    },
+    "source_registry": {
+      "content": "# S1-006 Source Registry\n\nAll sources are verified (min_verified_ratio 1.0, all `verified`). Repo-local sources carry a real SHA-256 computed from disk at review time and are re-verified by the replay-resume probe; literature sources (Temporal, Azure Durable Functions) are verified by offline publisher/official-documentation identity + content-scope review and stated as such.\n\n## Source classes (>= 3 required by the ticket)\n\n| Class | Sources |\n|---|---|\n| architecture | SPEC-ARCH, AGENTS-INVARIANTS, ENGINE-IMPL, GATEWAY-IMPL, JOURNAL-IMPL, S1-005-BUNDLE |\n| formal lifecycle | S1-004-BUNDLE, S1-004-SIM, DURABLE-FUNCTIONS-DOCS |\n| benchmark/method | S1-002-RAW, S1-002-BENCH, S1-005-PROBE, TEMPORAL-WHITEPAPER, TEMPORAL-DOCS |\n\n## Inventory\n\n- SPEC-ARCH — spec/SPEC.md sha256 e0b091bf…ffbc (§5 execution semantics, §6 gateway pipeline).\n- AGENTS-INVARIANTS — AGENTS.md sha256 a2ff0c88…9064 (8 invariants; idempotency/compensation, unknown->reconciliation, atomic transition+audit).\n- ENGINE-IMPL — src/agentos/engine.py sha256 d87a3aaf…8707 (in-process scheduler).\n- GATEWAY-IMPL — src/agentos/gateway.py sha256 eddbb189…c12a (idempotency/fencing/reconciliation).\n- JOURNAL-IMPL — src/agentos/journal.py sha256 22912da9…2cdc6 (atomic transition+audit).\n- S1-004-BUNDLE — S1-004 bundle.json sha256 02899ffd…bfff (SAF/replay semantics).\n- S1-004-SIM — invariant_simulation.py sha256 16448656…c6bf3 (executable SAF/replay simulation).\n- S1-002-RAW — raw-results.json sha256 29b24088…eef6a (10/34/100 ev/s p95/p99).\n- S1-002-BENCH — benchmark.py sha256 227c0ea5…66f9 (reproducible benchmark).\n- S1-005-BUNDLE — S1-005 bundle.json sha256 9ca90e07…e3c3c (QA1 monolith decision + precedent).\n- S1-005-PROBE — decision_matrix_probe.py sha256 54943129…92ac1 (fail-closed probe precedent).\n- TEMPORAL-DOCS — https://docs.temporal.io/durable-execution (official docs; offline review).\n- TEMPORAL-WHITEPAPER — https://www.temporal.io/whitepapers/durable-execution (offline review).\n- DURABLE-FUNCTIONS-DOCS — https://learn.microsoft.com/.../durable-functions-overview (offline review).\n- RESEARCH-TICKETS-DOC — docs/RESEARCH_STAGE_1_TICKETS.md sha256 37e88db2…a8b0 (ticket definition).\n\nAll repo-local hashes are recomputed by replay_resume_probe.py (check `repo-local-source-hashes-verified-from-disk`).",
+      "claim_refs": [
+        "claim-af-engine-scheduler",
+        "claim-d-qa2-backend"
+      ],
+      "producer": "agentos-s1-006-producer"
+    },
+    "feature_catalog": {
+      "content": "# S1-006 Feature Catalog — backend-scope dimensions\n\nMaps the ticket scope (checkpoint/resume, crash/retry, idempotency, scheduling latency, operator visibility, test determinism, dependency-ready task execution) to implementation evidence (EP-11 and the QA2 decision).\n\n| Scope item | In-process (current) | Durable-execution engine | Evidence refs |\n|---|---|---|---|\n| Checkpoint/resume | sha-verified, latest-consistent-only, immutable run lineage | event-history replay of activities (vendor semantics) | ENGINE-IMPL, TEMPORAL-DOCS |\n| Crash/retry | lease expiry -> FAILED(crashed), bounded retries, resume | workflow replay after crash, activity retry policies | ENGINE-IMPL, TEMPORAL-WHITEPAPER |\n| Idempotency | idempotency_key UNIQUE + UNKNOWN_OUTCOME -> reconciliation, unique receipts | activity IDs / event-store dedup, reconciliation still required at the effect boundary | GATEWAY-IMPL, TEMPORAL-WHITEPAPER |\n| Scheduling latency | measured p95 407/1174/3058 ms (10/34/100 ev/s, scheduling pass); S1-002 p99 <= 7.4 ms end-to-end | unmeasured here; explicit unavailable label | S1-002-RAW, claim-bm-s1-006-latency |\n| Operator visibility | single SQLite store + audit chain + wiki projection | separate service dashboard + event store (new ops surface) | JOURNAL-IMPL, TEMPORAL-DOCS |\n| Test determinism | deterministic fake worker, seeded simulation (S1-004) | determinism constraints on orchestrator code (replay) | S1-004-SIM, DURABLE-FUNCTIONS-DOCS |\n| Dependency-ready execution | PENDING->READY only when deps DONE (engine.py) | DAG/child-workflow primitives in engine | ENGINE-IMPL, TEMPORAL-DOCS |\n\nRationale: feature parity on dependency-ready execution; otherwise the in-process backend preserves the audit/transaction boundary and tested semantics, which the durable engine externalizes (EP-11: architecture models QA2 — backend boundary).",
+      "claim_refs": [
+        "claim-af-engine-scheduler",
+        "claim-af-checkpoint-resume",
+        "claim-af-gateway-semantics",
+        "claim-to-inprocess",
+        "claim-to-durable"
+      ],
+      "producer": "agentos-s1-006-producer"
+    },
+    "architecture_models": {
+      "content": "# S1-006 Architecture Models — QA2 decision matrix\n\nResolve QA2: which execution backend best preserves task/run durability, checkpoint/resume, deterministic testing, and acceptable latency for the Coordinator. The matrix compares the **in-process scheduler** (current engine) with a **durable-execution engine** (Temporal-class / Durable Functions-class) on the same DAG, the same 3 load levels, and the same 4+ crash/replay scenarios. The durable engine's latency and recovery cells are explicit `unavailable` labels: no production durable engine was installed or measured in this offline environment, and no number is inferred.\n\n```json\n{\n  \"schema\": \"agentos.s1-006-decision-matrix/v1\",\n  \"ticket\": \"S1-006\",\n  \"question\": \"QA2: which execution backend best preserves task/run durability, checkpoint/resume, deterministic testing, and acceptable latency: the in-process scheduler or a durable-execution engine?\",\n  \"options\": {\n    \"in_process_scheduler\": \"current runtime: engine.py scheduler over one SQLite/WAL store, gateway idempotency/reconciliation, atomic transition+audit; measured locally\",\n    \"durable_execution_engine\": \"Temporal-class / Durable Functions-class service with event-history replay; reviewed from literature only; latency/recovery unmeasured -> unavailable\"\n  },\n  \"dimensions\": [\n    {\"id\": \"D1\", \"name\": \"task/run durability within MVP scope\", \"in_process_scheduler\": {\"score\": 5, \"evidence\": [\"ENGINE-IMPL\", \"JOURNAL-IMPL\", \"S1-002-RAW\"]}, \"durable_execution_engine\": {\"score\": 3, \"evidence\": [\"TEMPORAL-WHITEPAPER\", \"TEMPORAL-DOCS\"]}},\n    {\"id\": \"D2\", \"name\": \"checkpoint/resume fidelity\", \"in_process_scheduler\": {\"score\": 5, \"evidence\": [\"ENGINE-IMPL\", \"SPEC-ARCH\"]}, \"durable_execution_engine\": {\"score\": 3, \"evidence\": [\"TEMPORAL-DOCS\", \"DURABLE-FUNCTIONS-DOCS\"]}},\n    {\"id\": \"D3\", \"name\": \"crash/retry + unknown-outcome reconciliation\", \"in_process_scheduler\": {\"score\": 5, \"evidence\": [\"GATEWAY-IMPL\", \"S1-004-SIM\"]}, \"durable_execution_engine\": {\"score\": 3, \"evidence\": [\"TEMPORAL-WHITEPAPER\", \"DURABLE-FUNCTIONS-DOCS\"]}},\n    {\"id\": \"D4\", \"name\": \"scheduling latency at 3 load levels\", \"in_process_scheduler\": {\"score\": 5, \"evidence\": [\"S1-002-RAW\", \"claim-bm-s1-006-latency\"]}, \"durable_execution_engine\": {\"score\": 1, \"evidence\": [\"claim-bm-recovery\"]}},\n    {\"id\": \"D5\", \"name\": \"deterministic testing\", \"in_process_scheduler\": {\"score\": 5, \"evidence\": [\"S1-004-SIM\", \"S1-002-BENCH\"]}, \"durable_execution_engine\": {\"score\": 2, \"evidence\": [\"DURABLE-FUNCTIONS-DOCS\"]}},\n    {\"id\": \"D6\", \"name\": \"operator visibility / single record of truth\", \"in_process_scheduler\": {\"score\": 4, \"evidence\": [\"JOURNAL-IMPL\"]}, \"durable_execution_engine\": {\"score\": 3, \"evidence\": [\"TEMPORAL-DOCS\"]}},\n    {\"id\": \"D7\", \"name\": \"dependency-ready task execution\", \"in_process_scheduler\": {\"score\": 4, \"evidence\": [\"ENGINE-IMPL\"]}, \"durable_execution_engine\": {\"score\": 4, \"evidence\": [\"TEMPORAL-DOCS\"]}},\n    {\"id\": \"D8\", \"name\": \"boundary preservation (gateway-only effects, atomic transition+audit)\", \"in_process_scheduler\": {\"score\": 5, \"evidence\": [\"GATEWAY-IMPL\", \"JOURNAL-IMPL\", \"AGENTS-INVARIANTS\"]}, \"durable_execution_engine\": {\"score\": 2, \"evidence\": [\"TEMPORAL-DOCS\", \"DURABLE-FUNCTIONS-DOCS\"]}}\n  ],\n  \"totals\": {\"in_process_scheduler\": 38, \"durable_execution_engine\": 21},\n  \"dimension_count\": 8,\n  \"load_levels\": [\n    {\n      \"rate_events_per_second\": 10,\n      \"dag_id\": \"s1-006-dag-wave-v1\",\n      \"in_process_scheduler\": {\n        \"dag_id\": \"s1-006-dag-wave-v1\",\n        \"p95_ms\": 407.2,\n        \"p99_ms\": 407.2,\n        \"recovery\": {\"recovery_time_ms\": 438.3, \"observation\": \"lease-expire -> recover_expired_runs -> resume_task (single host)\"}\n      },\n      \"durable_execution_engine\": {\n        \"dag_id\": \"s1-006-dag-wave-v1\",\n        \"p95_ms\": \"unavailable\",\n        \"p99_ms\": \"unavailable\",\n        \"recovery\": {\"recovery_time_ms\": \"unavailable\", \"note\": \"no production durable engine installed; no inference from literature\"}\n      }\n    },\n    {\n      \"rate_events_per_second\": 34,\n      \"dag_id\": \"s1-006-dag-wave-v1\",\n      \"in_process_scheduler\": {\n        \"dag_id\": \"s1-006-dag-wave-v1\",\n        \"p95_ms\": 1174.1,\n        \"p99_ms\": 1174.1,\n        \"recovery\": {\"recovery_time_ms\": 557.9, \"observation\": \"lease-expire -> recover_expired_runs -> resume_task (single host)\"}\n      },\n      \"durable_execution_engine\": {\n        \"dag_id\": \"s1-006-dag-wave-v1\",\n        \"p95_ms\": \"unavailable\",\n        \"p99_ms\": \"unavailable\",\n        \"recovery\": {\"recovery_time_ms\": \"unavailable\", \"note\": \"no production durable engine installed; no inference from literature\"}\n      }\n    },\n    {\n      \"rate_events_per_second\": 100,\n      \"dag_id\": \"s1-006-dag-wave-v1\",\n      \"in_process_scheduler\": {\n        \"dag_id\": \"s1-006-dag-wave-v1\",\n        \"p95_ms\": 3058.0,\n        \"p99_ms\": 3058.0,\n        \"recovery\": {\"recovery_time_ms\": 582.7, \"observation\": \"lease-expire -> recover_expired_runs -> resume_task (single host)\"}\n      },\n      \"durable_execution_engine\": {\n        \"dag_id\": \"s1-006-dag-wave-v1\",\n        \"p95_ms\": \"unavailable\",\n        \"p99_ms\": \"unavailable\",\n        \"recovery\": {\"recovery_time_ms\": \"unavailable\", \"note\": \"no production durable engine installed; no inference from literature\"}\n      }\n    }\n  ],\n  \"failure_scenarios\": [\n    {\"id\": \"CR-1\", \"name\": \"crash after local transition, before publish (CRASH-A)\", \"detection\": \"intent committed, no outcome recorded, run past lease expiry\", \"in_process_recovery\": \"outbox replay publishes exactly once; duplicate replay refused; unique receipt\", \"durable_recovery\": \"event-history replay re-runs only un-completed activities (vendor semantics)\", \"evidence\": [\"ENGINE-IMPL\", \"S1-004-SIM\", \"claim-fm-duplicate-effect\"]},\n    {\"id\": \"CR-2\", \"name\": \"publish happened, acknowledgement lost (CRASH-B)\", \"detection\": \"activity UNKNOWN_OUTCOME, reconciliation_required\", \"in_process_recovery\": \"no re-execution; reconcile -> RECONCILED_SUCCEEDED/FAILED; never blind retry\", \"durable_recovery\": \"activity ack lost; reconciliation still required at effect boundary\", \"evidence\": [\"GATEWAY-IMPL\", \"S1-004-SIM\", \"claim-fm-unknown-outcome\"]},\n    {\"id\": \"CR-3\", \"name\": \"crash mid-DAG with earlier effects already defined (CRASH-C)\", \"detection\": \"run FAILED(crashed), task retry scheduled via attempts budget\", \"in_process_recovery\": \"resume from latest consistent checkpoint; remaining tasks run; no re-execution of receipted effects\", \"durable_recovery\": \"workflow resumes from last event; earlier activities not re-run\", \"evidence\": [\"ENGINE-IMPL\", \"SPEC-ARCH\", \"claim-af-checkpoint-resume\"]},\n    {\"id\": \"CR-4\", \"name\": \"crash during the resume attempt (CRASH-D)\", \"detection\": \"resume run dies; task remains retryable\", \"in_process_recovery\": \"second resume creates another run; effects before both crashes not duplicated\", \"durable_recovery\": \"replay is deterministic from event history; a crash during resume replays the same history\", \"evidence\": [\"ENGINE-IMPL\", \"claim-fm-duplicate-effect\"]},\n    {\"id\": \"CR-5\", \"name\": \"naive resume re-executes a published step (duplicate effect near-miss)\", \"detection\": \"same effect key executed twice with a duplicated receipt and no reconciliation\", \"in_process_recovery\": \"rejected unless outcome reconciled AND receipt unique\", \"durable_recovery\": \"activity dedup keys required; otherwise equivalent duplicate risk\", \"evidence\": [\"claim-fm-duplicate-effect\", \"S1-004-SIM\", \"GATEWAY-IMPL\"]},\n    {\"id\": \"CR-6\", \"name\": \"checkpoint corruption (sha mismatch)\", \"detection\": \"payload sha256 != registered checkpoint sha\", \"in_process_recovery\": \"resume refused fail-closed\", \"durable_recovery\": \"event store is source of truth; local checkpoint not used (different failure mode)\", \"evidence\": [\"ENGINE-IMPL\", \"claim-fm-checkpoint-corruption\"]}\n  ],\n  \"recommendation\": {\n    \"backend\": \"in_process_scheduler\",\n    \"rationale\": \"Within MVP scope the in-process scheduler preserves the atomic transition+audit boundary, sha-verified checkpoint/resume, gateway idempotency/reconciliation, deterministic testing, and S1-002-verified sub-20ms control-plane latency; durable-engine cells are unmeasured in this offline environment and therefore unavailable, so no latency/durability advantage can be asserted.\",\n    \"assumptions\": [\n      \"MVP remains single-host; durability scope is host-disk-bound SQLite/WAL, not cross-host consensus\",\n      \"Planning throughput stays at or below the S1-002-tested 10/34/100 ev/s envelope\",\n      \"The Coordinator agrees to keep effects gateway-only and transitions auditoried atomically\",\n      \"Durable-engine latency/recovery remain unmeasured (unavailable) in offline environments until a bounded pilot with a real engine\"\n    ],\n    \"migration_trigger\": [\n      \"sustained scheduling-pass p99 beyond the tested headroom (>= ~4x the 100 ev/s p99) over a full campaign\",\n      \"a hard cross-host / multi-process durability requirement is added to the product contract\",\n      \"the audit/checkpoint store must leave SQLite (e.g., external compliance store)\"\n    ],\n    \"rollback_trigger\": [\n      \"any S1-004 safety probe (replay exactly-once, unknown->reconciliation) fails under the pilot\",\n      \"pilot latency p99 exceeds the in-process measured p99 at the same load level\",\n      \"atomic transition+audit or gateway-only-effects boundary regresses\"\n    ],\n    \"evidence_requirements\": [\n      \"4 crash/replay scenarios pass with identical DAG and identical load levels\",\n      \"3 load levels report p95/p99 and a recovery-time observation or explicit unavailable label per backend\",\n      \"same task DAG required for any latency comparison; different-DAG or recovery-omitting comparisons are rejected\",\n      \"replay-resume and comparability probes must pass under the evaluated backend\",\n      \"no production backend installed by this ticket; evidence stays offline-reproducible\"\n    ],\n    \"non_goals\": [\n      \"no production vendor integration is performed\",\n      \"no change to the current core runtime is proposed\",\n      \"no durability claim beyond tested local evidence is asserted\",\n      \"no inference of durable-engine latency/recovery numbers\"\n    ]\n  }\n}\n```\n\nInterpretation: totals are 38 (in-process) vs 21 (durable), driven by measured latency/recovery, boundary preservation, determinism, and reconciliation semantics. The durable engine scores higher only on cross-host durability, which is out of MVP scope (D1 <= 3 because durability within scope is equivalent or better in-process and cross-host is unproven by literature alone).",
+      "claim_refs": [
+        "claim-d-qa2-backend",
+        "claim-d-migration-trigger",
+        "claim-d-evidence-requirements",
+        "claim-bm-s1-006-latency",
+        "claim-bm-recovery",
+        "claim-to-inprocess",
+        "claim-to-durable",
+        "claim-fm-incomparable"
+      ],
+      "producer": "agentos-s1-006-producer"
+    },
+    "mental_model": {
+      "content": "# S1-006 Mental Model — how an operator reasons about the two backends\n\nA Coordinator operating the MVP has one record of truth (SQLite/WAL + audit chain + wiki projection). The in-process scheduler fits that mental model: schedule a dependency-ready wave, watch readiness, inspect checkpoint rows and audit events in the same store, and resume from the latest consistent checkpoint after a crash. Leases bound ownership; idempotency keys make every retriable effect a keyed, reconciled unit; unknown outcomes surface as reconciliation-required items instead of silent retries.\n\nA durable-execution engine changes the mental model: the event store is the source of truth for workflow progress, activities are replayed from history, and determinism constraints apply to workflow code (Azure Durable Functions literature: no non-deterministic calls, checkpoint-on-await; Temporal: event-history replay). Operators gain cross-host durability but lose the single-store audit/transition atomicity unless the gateway boundary is re-imposed on top of the engine. For the Coordinator the MVP mental model stays in-process; the durable model is documented and gated behind the migration trigger.",
+      "claim_refs": [
+        "claim-af-journal-atomic",
+        "claim-af-gateway-semantics",
+        "claim-to-inprocess",
+        "claim-to-durable"
+      ],
+      "producer": "agentos-s1-006-producer"
+    },
+    "ontology": {
+      "content": "# S1-006 Ontology — backend concepts\n\n- **Backend**: the execution substrate that schedules and resumes tasks/runs (in_process_scheduler | durable_execution_engine).\n- **Run**: an execution attempt of a Task with a lease, checkpoints, and a status life cycle; resumed runs reference resumed_from_run_id.\n- **Checkpoint**: append-only record (seq, payload_path, sha256, work_completed/in_progress/next_action) enabling resume from the latest consistent state.\n- **Outbox/replay**: the exactly-once delivery mechanism that replays the un-published subset of committed intents (never re-executes receipted effects).\n- **Receipt**: unique identifier of one sink execution; uniqueness is the acceptance condition for any duplicate delivery.\n- **Idempotency key**: sha256(key + op + canonical args) UNIQUE row recording first-seen run and outcome digest.\n- **UNKNOWN_OUTCOME / reconciliation**: the only legal exit for delivered-but-unacknowledged effects; never blind retried.\n- **Lease**: bounded ownership of a Run; expiry is the crash detector for recovery.\n- **Event history (durable engines)**: append-only workflow event log replayed deterministically on resume (literature class).\n- **Evidence requirements**: same-DAG comparison, 3 load levels, p95/p99, recovery observations or explicit unavailable labels.",
+      "claim_refs": [
+        "claim-af-engine-scheduler",
+        "claim-af-checkpoint-resume",
+        "claim-af-gateway-semantics",
+        "claim-fm-duplicate-effect"
+      ],
+      "producer": "agentos-s1-006-producer"
+    },
+    "mathematical_model": {
+      "content": "# S1-006 Mathematical Model — latency, recovery, replay semantics\n\n## Delivered-by definition\n\nFor every effect key k, let exec(k) = number of sink executions and rec(k) = number of unique receipts. Safety invariant (S1-004 SAF):\n\n- Exactly-once: for crash-A/crash-C/crash-D replay, exec(k) = 1 and rec(k) = 1 for every effect executed by a completed run.\n- Unknown-outcome path: exec(k) = 1, rec(k) = 1, activity ends RECONCILED_SUCCEEDED or RECONCILED_FAILED; never exec(k) > 1 without reconciliation.\n- Duplicate delivery acceptance condition: exec(k) may exceed 1 ONLY IF reconciled(k) AND rec(k) == exec(k) (each delivery carries a unique receipt).\n\nThese are exactly the conditions the replay-resume probe enforces.\n\n## Latency model\n\nScheduling-pass latency L(rate) for the in-process backend over the same chain DAG, measured: p95(10) ~= 407 ms, p95(34) ~= 1174 ms, p95(100) ~= 3058 ms; S1-002 end-to-end control-plane p99 <= 7.4 ms at 100 ev/s (cold). Durable-engine L is undefined in offline evidence: label = unavailable (no inference).\n\n## Recovery model\n\nR(rate) = time(lease-expire -> recover_expired_runs -> resume_task): ~438 / 558 / 583 ms for 10/34/100 ev/s. The durable engine's recovery time is labeled unavailable; the ticket does not claim parity.\n\n## Comparability requirement\n\nA latency comparison between two backends is admissible only if DAG(d) is identical across backends at every load level and every level includes a crash-recovery observation or explicit unavailable label; otherwise the comparison is incomparable (rejected).",
+      "claim_refs": [
+        "claim-bm-s1-002-baseline",
+        "claim-bm-s1-006-latency",
+        "claim-bm-recovery",
+        "claim-fm-duplicate-effect",
+        "claim-fm-incomparable"
+      ],
+      "producer": "agentos-s1-006-producer"
+    },
+    "synthesis_and_gaps": {
+      "content": "# S1-006 Synthesis and Gaps\n\n## Synthesis\n\nAcross architecture evidence (engine/gateway/journal/spec/invariants), formal lifecycle evidence (S1-004 SAF simulation), and benchmark evidence (S1-002 raw results + this ticket's scheduling-pass and recovery measurements), the in-process scheduler currently preserves the ticket's four criteria within the tested envelope:\n\n1. **Durability**: task/run rows, checkpoints (sha-verified), lease-based crash detection, and atomic transition+audit in one SQLite/WAL store.\n2. **Checkpoint/resume**: latest-consistent-only resume with immutable run lineage; corruption refuses resume.\n3. **Deterministic testing**: deterministic fake worker and seeded simulation; no network/LLM dependency in the control plane.\n4. **Latency**: S1-002 p99 <= 7.4 ms end-to-end; scheduling-pass p95 407/1174/3058 ms at 10/34/100 ev/s with recovery ~438/558/583 ms.\n\nA durable-execution engine externalizes durability into an event store and re-performs scheduler duties, but in this offline environment its latency and recovery are unmeasured, its determinism obligations shift to developers, and it complicates the atomic transition+audit boundary unless re-encapsulated. QA2 therefore recommends the in-process scheduler, with a bounded migration plan triggered only by measured conditions.\n\n## Gaps\n\n- Durable-engine latency/recovery is unmeasured -> certified unavailable, not inferred (honest limitation).\n- Scheduling-pass measurements are single-host, single-process observations; multi-process/container behavior is out of scope and unmeasured (mirrors S1-002 limitation).\n- Literature verification is offline identity + content-scope review, not a live fetch or a vendor benchmark.\n- The QA2 matrix scores (dimension/evidence) are structured design judgments grounded in cited evidence, not measured reliability claims.",
+      "claim_refs": [
+        "claim-d-qa2-backend",
+        "claim-d-migration-trigger",
+        "claim-d-evidence-requirements",
+        "claim-d-non-scope",
+        "claim-bm-recovery",
+        "claim-to-durable"
+      ],
+      "producer": "agentos-s1-006-producer"
+    },
+    "independent_audit": {
+      "content": "# S1-006 Independent Audit — pass with limits\n\nIndependent verifier review of the S1-006 producer bundle (subject producer: agentos-s1-006-producer).\n\n## What was checked\n\n- All repo-local source hashes recomputed from disk and matching declared values (including engine.py, gateway.py, journal.py, S1-004 simulation/bundle, S1-002 raw results, AGENTS.md, spec/SPEC.md, tickets doc).\n- Claim-class coverage and mappings (architecture_fact/benchmark_measurement/tradeoff/failure_mode/decision) consistent with harness claim classes.\n- QA2 decision matrix parses under agentos.s1-006-decision-matrix/v1: 8 scored dimensions, totals consistent (38 vs 21), 3 load levels with SAME dag_id across backends and p95/p99 + recovery or explicit unavailable labels, 6 failure scenarios complete.\n- Adversarial comparability probes: different-DAG and recovery-omitting comparisons rejected as incomparable.\n- Replay-resume probe: crash-A/B/C/D, naive-resume duplicate rejection, reconciled+unique-receipt acceptance, checkpoint-corruption fail-closed, dependency-ready ordering, S1-004 safety semantics intact.\n- platform_plan sections present (Scope, Architecture, Workstreams, Milestones, Verification, Risks, Open decisions).\n\n## Verdict\n\npass_with_limits. The decision (in-process scheduler) and bounded migration plan are justified by the cited evidence; the durable-engine cells are honestly unavailable.",
+      "claim_refs": [
+        "claim-d-qa2-backend",
+        "claim-fm-duplicate-effect",
+        "claim-fm-incomparable"
+      ],
+      "producer": "agentos-s1-006-independent-verifier"
+    },
+    "platform_plan": {
+      "content": "# Scope\n\nS1-006 resolves QA2 for the Coordinator: the in-process scheduler remains the MVP execution backend, with an explicit backend boundary, a measured migration trigger, a rollback trigger, and evidence requirements for any future durable-execution change. Non-scope: no production vendor integration, no change to the current core runtime, no durability claim beyond tested local evidence, and no inferred durable-engine latency numbers.\n\n# Architecture\n\nThe modular monolith stays (S1-005 QA1). Execution runs on the current engine: dependency-ready scheduling, run leases, sha-verified checkpoints, resume with immutable lineage, gateway idempotency/reconciliation, atomic transition+audit journal. The backend boundary is the Engine + ToolGateway + Journal contract: any future backend must keep effects gateway-only, consume approvals atomically exactly once, preserve unknown->reconciliation, and commit transition+audit atomically.\n\n# Workstreams\n\n1. Backend boundary: freeze Engine/ToolGateway/Journal contracts as the backend interface for the Coordinator (done in this ticket via claims + matrix).\n2. Evidence harness: keep replay_resume_probe.py + comparability_probe.py as the regression gate for S1-004 safety semantics and same-DAG comparability.\n3. Migration pilot (only on trigger): a bounded durable-engine pilot re-encapsulating the gateway/audit boundary behind the same probes; rollback if any probe fails.\n4. Operator visibility: keep the wiki projection and audit anchor export as the single record-of-truth view.\n\n# Milestones\n\n- M1 (this ticket): QA2 decision recorded; matrix + probes evaluated pass/pass_with_limits; bundle persisted.\n- M2: Coordinator consumption of the backend boundary (reference implementation unchanged, interface documented).\n- M3 (conditional): bounded durable-engine pilot ONLY when a migration trigger fires; outcome = continue or rollback by probe evidence.\n- M4: quarterly re-run of replay-resume + comparability probes against the running runtime to re-confirm safety semantics.\n\n# Verification\n\nEvery bundle evaluation runs the executable probes: replay-resume (crash-A/B/C/D + near-miss duplicate + checkpoint corruption + dependency ordering + source-hash re-verification) and comparability (same-DAG, 3 load levels, p95/p99, recovery or unavailable labels, near-miss incomparable rejection, recommendation completeness, claim coverage, audit producer binding, live benchmark recorded). Final research-plan status must be pass or pass_with_limits; probes each run offline in < 60 s and the full probe budget is under 120 s.\n\n# Risks\n\n- Duplicate effects on resume: mitigated by the duplicate-effect guard (reconcile + unique receipt) and the replay probe.\n- Unknown outcomes blind-retried: mitigated by gateway UNKNOWN_OUTCOME semantics and probe assertion.\n- Incomparable latency comparisons: mitigated by the same-DAG + recovery-required comparability probe.\n- Checkpoint corruption: mitigated by sha-verified fail-closed resume.\n- Scope creep to a production backend: barred by non-scope claims and the audit's pass_with_limits framing.\n- Single-host durability is host-disk-bound: documented as a limitation; cross-host durability triggers migration only via the measured trigger.\n\n# Open decisions\n\n1. Whether a future hard cross-host durability requirement should be met by a durable engine or by a sharded multi-SQLite arrangement: deferred until the trigger is real (evidence-before-pilot).\n2. Whether the Coordinator should expose scheduling-pass p95 metrics to operators: recommended for the M4 monitoring gate, not decided here.\n3. Whether the durable-engine pilot, if ever run, uses a self-hosted OSS engine or a vendor service: to be decided at pilot start with a fresh trust-boundary review (S1-003/S1-004 class evidence).",
+      "claim_refs": [
+        "claim-d-qa2-backend",
+        "claim-d-migration-trigger",
+        "claim-d-evidence-requirements",
+        "claim-d-non-scope",
+        "claim-fm-incomparable",
+        "claim-af-qa1-monolith"
+      ],
+      "producer": "agentos-s1-006-producer"
+    },
+    "progress": {
+      "content": "# S1-006 Progress\n\n- 2026-08-31: bundle authored (sources/claims/artifacts/audit/probes), replay-resume + comparability probes written and verified offline on Windows (stdlib only).\n- 2026-08-31: live scheduling-pass and recovery measurements recorded via comparability_probe.py --measure-only; values baked into the QA2 matrix and recorded in probe-results.json.\n- Validation: research-plan evaluation to pass/pass_with_limits; any validator finding is fixed and re-run before closure.\n- Outstanding: none (this ticket, Wave 2, Priority 1, owner architecture; dependencies S1-002 + S1-005 done).",
+      "claim_refs": [
+        "claim-d-qa2-backend",
+        "claim-d-evidence-requirements"
+      ],
+      "producer": "agentos-s1-006-producer"
+    }
+  },
+  "audit": {
+    "subject_producer": "agentos-s1-006-producer",
+    "auditor": "agentos-s1-006-independent-verifier",
+    "verdict": "pass_with_limits",
+    "limitations": [
+      "Durable-execution-engine latency and recovery are unmeasured in this offline environment; their matrix cells are explicit unavailable labels, never inferred numbers.",
+      "Scheduling-pass and recovery observations are single-host, single-process measurements with live variance; they are observations recorded in probe-results.json, not production SLOs.",
+      "Literature sources (Temporal, Azure Durable Functions) were verified by offline identity and content-scope review; no live network fetch or vendor benchmark was performed.",
+      "Matrix dimension scores are structured design judgments grounded in the cited evidence, not measured reliability claims.",
+      "Producer and verifier are process-separated roles within one local environment, matching the S1-005 precedent; they are not independent human operators.",
+      "No production durable-execution backend was installed or exercised; the migration plan is bounded and door is left open to a future pilot under measured triggers."
+    ]
+  },
+  "probes": [
+    {
+      "name": "replay-resume",
+      "command": "python research/tickets/stage-1/S1-006/replay_resume_probe.py",
+      "expected": "pass"
+    },
+    {
+      "name": "comparability",
+      "command": "python research/tickets/stage-1/S1-006/comparability_probe.py",
+      "expected": "pass"
+    }
+  ]
+}

@@ -1,0 +1,521 @@
+{
+  "config": {
+    "min_source_count": 4,
+    "min_verified_ratio": 1.0,
+    "required_artifacts": [
+      "research_plan",
+      "source_registry",
+      "feature_catalog",
+      "architecture_models",
+      "mental_model",
+      "ontology",
+      "mathematical_model",
+      "synthesis_and_gaps",
+      "independent_audit",
+      "platform_plan",
+      "progress"
+    ]
+  },
+  "sources": [
+    {
+      "id": "SRC-05",
+      "canonical_uri": "https://local.agentos.invalid/DeepeekHarness/research/50_ontology.md",
+      "title": "Agent Hub Ontology (DeepeekHarness 50_ontology.md)",
+      "source_type": "ontology/scope design input (preserved campaign source)",
+      "content": "Ontology/scope evidence for S1-007: section 1 covers scope semantics (flat scope-vs-lineage baseline), section 4 covers provenance fields on evidence shapes, and section 9 Q1 (flat workspace scope versus PROV-Dictionary lineage) and Q3 (evidence document/span/digest granularity) bound how scope and provenance are modeled for retrieval. The file lives in the preserved DeepeekHarness research workspace; identity was previously verified by S1-003 at the recorded external SHA-256 and is reused under prior_ticket S1-003. Not re-fetched in this offline environment.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-007-ontology-review",
+      "verification_method": "historical-external-sha256-and-section-review-reused-from-s1-003",
+      "verifier_provenance": {
+        "method": "historical-external-sha256-and-section-review-reused-from-s1-003",
+        "verified_at": "2026-09-01",
+        "external_path_at_review": "D:/Project/DeepeekHarness/research/50_ontology.md",
+        "external_file_sha256_at_review": "156c8b4425a597ce2be020a1471e1c32817294d6c70abab76bd94215472fa508",
+        "canonical_source_id": "SRC-05",
+        "publisher_id": "local-deepeek-harness",
+        "independence_group": "local-ontology-design",
+        "prior_ticket": "S1-003",
+        "scope_note": "Evidence/design input only; preserved-campaign identity, no fresh network fetch."
+      }
+    },
+    {
+      "id": "S1-003-SHAPES",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-003/shapes-v3.ttl",
+      "title": "S1-003 scope/provenance shapes (shapes-v3.ttl)",
+      "source_type": "ontology/scope design input (local audited shapes)",
+      "content": "The S1-003 shapes-v3.ttl contract (promoted to PASS in S1-003) encodes scope and provenance constraints for the knowledge store: scope is associated with assertion/evidence roots, provenance identity is grounded in canonical_source_id and independence_group, and scope is explicitly non-transitive - ownership in another workspace does not become valid through a link. These are the scope/provenance shapes S1-007's retrieval isolation contract must honor when projecting records.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-007-local-hash-review",
+      "verification_method": "host-file-sha256-and-section-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-section-review",
+        "verified_at": "2026-09-01",
+        "path": "research/tickets/stage-1/S1-003/shapes-v3.ttl",
+        "file_sha256": "8f3a4bf466c14ff67bc42276a12dd398ce056cb7d93b430dbca2c47f640a3c1d",
+        "publisher_id": "agentos-local",
+        "independence_group": "s1-003-shapes",
+        "scope_note": "Repo-local file; SHA-256 recomputed from disk at authoring time."
+      }
+    },
+    {
+      "id": "AGENTS-INVARIANTS",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/AGENTS.md",
+      "title": "AgentOS Harness Non-negotiable Invariants (AGENTS.md)",
+      "source_type": "ontology/scope governance invariant",
+      "content": "AGENTS.md invariant 7: memory records carry provenance and scope; cross-goal/cross-tenant reads are denied. Invariant 6: external content (tool output, retrieved docs, generated memory) is untrusted and can never expand capabilities or write outside its scope. Invariants 4 and 5 pin idempotency/compensation and exactly-once approvals, which bound what a retrieval cache may replay. These invariants are the policy floor the QA3 retrieval isolation contract must not weaken.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-007-local-hash-review",
+      "verification_method": "host-file-sha256-and-section-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-section-review",
+        "verified_at": "2026-09-01",
+        "path": "AGENTS.md",
+        "file_sha256": "a2ff0c8823645aa2071c30c668a2b5a58b3bdefdec9d8e81fb45b964e8959064",
+        "publisher_id": "agentos-local",
+        "independence_group": "agentos-current-architecture",
+        "scope_note": "Repo-local file; SHA-256 recomputed from disk at authoring time."
+      }
+    },
+    {
+      "id": "SPEC-ARCH",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/spec/SPEC.md",
+      "title": "AgentOS Executable Specification v1.0 (spec/SPEC.md)",
+      "source_type": "architecture/data model (local executable specification)",
+      "content": "spec/SPEC.md section 3 defines memory_record with scope_goal_id and the invariant that reads are filtered by scope_goal_id with cross-scope reads raising MemoryScopeViolation; section 7 states that MVP retrieval sources are goal artifacts, prior checkpoints, and scoped MemoryRecords, and that memory hits are already scope-filtered at SQL level (WHERE scope_goal_id = ?). This is the current architecture/data-model evidence for the shared-table plus row-level filter baseline that QA3 compares against per-scope indexing.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-007-local-hash-review",
+      "verification_method": "host-file-sha256-and-section-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-section-review",
+        "verified_at": "2026-09-01",
+        "path": "spec/SPEC.md",
+        "file_sha256": "e0b091bf38b7f27e22a4d37eb1b3d000b5154cc3ff64736bd4aea99f0ee4ffbc",
+        "publisher_id": "agentos-local",
+        "independence_group": "agentos-current-architecture",
+        "scope_note": "Repo-local file; SHA-256 recomputed from disk at authoring time."
+      }
+    },
+    {
+      "id": "GATEWAY-IMPL",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/src/agentos/gateway.py",
+      "title": "ToolGateway memory scoping reference implementation (gateway.py)",
+      "source_type": "architecture/data model (local reference implementation)",
+      "content": "src/agentos/gateway.py implements memory scoping: memory_write inserts a memory_record bound to ctx.goal_id (scope_goal_id), and memory_read selects by id then raises MemoryScopeViolation when row scope_goal_id != ctx.goal_id. Reads are therefore scope-checked at the gateway layer today; the SQL-level WHERE scope_goal_id filter (SPEC.md section 7) is the row-level baseline. This is the executable contract the S1-007 probe drives directly.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-007-local-hash-review",
+      "verification_method": "host-file-sha256-and-section-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-section-review",
+        "verified_at": "2026-09-01",
+        "path": "src/agentos/gateway.py",
+        "file_sha256": "eddbb189dd09b488c5211cbae6bce2f9f3cf194527483ee6ca3747617c05c12a",
+        "publisher_id": "agentos-local",
+        "independence_group": "agentos-current-architecture",
+        "scope_note": "Repo-local file; SHA-256 recomputed from disk at authoring time."
+      }
+    },
+    {
+      "id": "MIGRATIONS-IMPL",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/src/agentos/migrations/0001_core.sql",
+      "title": "AgentOS core data model migration (0001_core.sql)",
+      "source_type": "architecture/data model (local migration)",
+      "content": "src/agentos/migrations/0001_core.sql defines memory_record(id, scope_goal_id NOT NULL REFERENCES goal(id), kind, content, source_uri, trust, ttl_until, invalidated_by_id, created_at). The scope column is the storage-level scope identifier; there is no dedicated index on (scope_goal_id, id) in the baseline migration, so today's row-level filter is a scan-level mechanism the per-scope index decision addresses in the retrieval projection layer.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-007-local-hash-review",
+      "verification_method": "host-file-sha256-and-section-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-section-review",
+        "verified_at": "2026-09-01",
+        "path": "src/agentos/migrations/0001_core.sql",
+        "file_sha256": "64b7180ff0f2924a98d4dd8b1e4be0cb95f762f19e88df937436d2ef3b5f9657",
+        "publisher_id": "agentos-local",
+        "independence_group": "agentos-current-architecture",
+        "scope_note": "Repo-local file; SHA-256 recomputed from disk at authoring time."
+      }
+    },
+    {
+      "id": "S1-003-BUNDLE",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-003/bundle.json",
+      "title": "S1-003 scope/provenance validation bundle",
+      "source_type": "architecture/data model (local scope/provenance fixture precedent)",
+      "content": "The S1-003 bundle promotes shapes-v3.ttl as the versioned scope/provenance structural baseline: 13 lifecycle states, scope/ownership failure fixtures, and provenance grounding (canonical_source_id, independence_group, workspace scope matching). S1-007 consumes these as frozen scope semantics: a retrieval record's effective scope and its provenance fields are the projection invariants the isolation contract must preserve.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-007-local-hash-review",
+      "verification_method": "host-file-sha256-and-section-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-section-review",
+        "verified_at": "2026-09-01",
+        "path": "research/tickets/stage-1/S1-003/bundle.json",
+        "file_sha256": "18e3f859514b2f34a6c486ab0247f3f8e807197e1a56df30ff3fa40da8dacd5e",
+        "publisher_id": "agentos-local",
+        "independence_group": "s1-003-bundle",
+        "prior_ticket": "S1-003",
+        "scope_note": "Repo-local file; SHA-256 recomputed from disk at authoring time."
+      }
+    },
+    {
+      "id": "S1-005-BUNDLE",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-005/bundle.json",
+      "title": "S1-005 QA1 topology decision bundle",
+      "source_type": "architecture/data model (local topology decision consumer)",
+      "content": "The S1-005 bundle records QA1: the MVP remains a single-process modular monolith with hard internal contracts, one SQLite/WAL store, gateway-only effects, and atomic transition+audit. S1-007 consumes the topology decision: the retrieval isolation contract applies inside one process over one store, so per-scope indexing is an in-process, scope-addressed projection layer, not a distributed search service.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-007-local-hash-review",
+      "verification_method": "host-file-sha256-and-section-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-section-review",
+        "verified_at": "2026-09-01",
+        "path": "research/tickets/stage-1/S1-005/bundle.json",
+        "file_sha256": "9ca90e070826832b5a51fdfe6b8d4eddb15c0a75027b612fee70565f4eda3e3c",
+        "publisher_id": "agentos-local",
+        "independence_group": "s1-005-bundle",
+        "prior_ticket": "S1-005",
+        "scope_note": "Repo-local file; SHA-256 recomputed from disk at authoring time."
+      }
+    },
+    {
+      "id": "SRC-03",
+      "canonical_uri": "https://local.agentos.invalid/DeepeekHarness/research/30_architecture_models.md",
+      "title": "Agent Hub Architecture Models (DeepeekHarness 30_architecture_models.md)",
+      "source_type": "architecture/data model design input (preserved campaign source)",
+      "content": "Architecture evidence for S1-007: section 4 covers the data model and provenance, section 6 covers topologies B/C (relevant to profile-specific isolation), and section 9 QA3 poses the exact open question this ticket resolves - per-scope index versus shared index with retrieval-time row-level filtering (RLS), and whether either can prove no cross-scope reads or leakage. Verified against the preserved DeepeekHarness campaign snapshot via the Stage-1 source table; not re-fetched in this offline environment.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-007-architecture-review",
+      "verification_method": "preserved-campaign-snapshot-identity-and-section-review",
+      "verifier_provenance": {
+        "method": "preserved-campaign-snapshot-identity-and-section-review",
+        "verified_at": "2026-09-01",
+        "external_path_at_review": "D:/Project/DeepeekHarness/research/30_architecture_models.md",
+        "canonical_source_id": "SRC-03",
+        "publisher_id": "local-deepeek-harness",
+        "independence_group": "local-architecture-design",
+        "scope_note": "Section identity confirmed from the Stage-1 source table and ticket source-evidence rows; no fresh host hash or network fetch in this offline environment."
+      }
+    },
+    {
+      "id": "SRC-06",
+      "canonical_uri": "https://local.agentos.invalid/DeepeekHarness/research/60_mathematical_model.md",
+      "title": "Agent Hub Mathematical Model (DeepeekHarness 60_mathematical_model.md)",
+      "source_type": "architecture/data model design input (preserved campaign source)",
+      "content": "Sections 1-2 bound model scope and the volume/assumption envelope (agents, principals, workspace edges, authorization rate, limit 1: all numbers are planning estimates requiring benchmarks). S1-007 uses these as the 'sufficiently useful' scale argument: per-scope index maintenance cost is linear in the number of scopes, and the MVP volume envelope keeps that cost in-process and bounded. Verified against the preserved campaign snapshot; not re-fetched.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-007-mathematical-review",
+      "verification_method": "preserved-campaign-snapshot-identity-and-section-review",
+      "verifier_provenance": {
+        "method": "preserved-campaign-snapshot-identity-and-section-review",
+        "verified_at": "2026-09-01",
+        "external_path_at_review": "D:/Project/DeepeekHarness/research/60_mathematical_model.md",
+        "canonical_source_id": "SRC-06",
+        "publisher_id": "local-deepeek-harness",
+        "independence_group": "local-mathematical-model",
+        "scope_note": "Section identity confirmed from the Stage-1 source table; no fresh host hash or network fetch in this offline environment."
+      }
+    },
+    {
+      "id": "PLAN-DEF",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/docs/RESEARCH_STAGE_1_TICKETS.md",
+      "title": "Stage 1 Research Ticket Plan (docs/RESEARCH_STAGE_1_TICKETS.md)",
+      "source_type": "architecture/data model (local campaign plan)",
+      "content": "docs/RESEARCH_STAGE_1_TICKETS.md section S1-007 freezes this ticket: QA3 decision enabled, scope (scope identifiers, per-scope vs shared index, retrieval-time policy checks, RLS/projection boundaries, provenance, cache behavior, cross-tenant adversarial tests), non-scope (production search service, ranking quality optimization, profile-C rollout), required claim classes, FLOW-11 requirement, >=3 scopes and 6 isolation test cases, two adversarial probe definitions, and the acceptance criteria used by the research-plan command.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-007-local-hash-review",
+      "verification_method": "host-file-sha256-and-section-review",
+      "verifier_provenance": {
+        "method": "host-file-sha256-and-section-review",
+        "verified_at": "2026-09-01",
+        "path": "docs/RESEARCH_STAGE_1_TICKETS.md",
+        "file_sha256": "37e88db29a14efe007d00871190c43c2214fdb62d53c62c8bf69e1cc1003a8b0",
+        "publisher_id": "agentos-local",
+        "independence_group": "agentos-campaign-plan",
+        "scope_note": "Repo-local file; SHA-256 recomputed from disk at authoring time."
+      }
+    },
+    {
+      "id": "SRC-02",
+      "canonical_uri": "https://local.agentos.invalid/DeepeekHarness/research/20_feature_catalog.md",
+      "title": "Agent Hub Feature Catalog (DeepeekHarness 20_feature_catalog.md)",
+      "source_type": "authorization/security feature traceability (preserved campaign source)",
+      "content": "Feature-catalog evidence for S1-007: EP-04 covers proof/evidence requirements for delegated capabilities including direct-object-reference-style exposure features, and EP-07 covers revocation/audit features - both tie authorization threats to retrieval behavior. Verified against the preserved DeepeekHarness campaign snapshot via the Stage-1 source table (SRC-02 row and the S1-007 source-evidence row); not re-fetched in this offline environment.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-007-authz-feature-review",
+      "verification_method": "preserved-campaign-snapshot-identity-and-section-review",
+      "verifier_provenance": {
+        "method": "preserved-campaign-snapshot-identity-and-section-review",
+        "verified_at": "2026-09-01",
+        "external_path_at_review": "D:/Project/DeepeekHarness/research/20_feature_catalog.md",
+        "canonical_source_id": "SRC-02",
+        "publisher_id": "local-deepeek-harness",
+        "independence_group": "local-feature-catalog",
+        "scope_note": "EP-04/EP-07 identity confirmed from the Stage-1 source table and ticket source-evidence rows; no fresh host hash or network fetch in this offline environment."
+      }
+    },
+    {
+      "id": "SRC-07",
+      "canonical_uri": "https://local.agentos.invalid/DeepeekHarness/research/70_synthesis_and_gaps.md",
+      "title": "Agent Hub Synthesis and Gaps (DeepeekHarness 70_synthesis_and_gaps.md)",
+      "source_type": "authorization/security gap register (preserved campaign source)",
+      "content": "Gap-register evidence for S1-007: section 3 G-04 records weak TEE/confidential multi-agent isolation evidence (linked to profile C and ticket S1-018), and G-08 records the absence of a cross-component revocation standard at <=5 s (linked to ticket S1-008). These gaps bound what S1-007 claims: retrieval isolation for the in-scope profiles is addressed here; profile-C MLS/TEE isolation and revocation latency are separate tickets. Verified against the preserved campaign snapshot; not re-fetched.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-007-gap-review",
+      "verification_method": "preserved-campaign-snapshot-identity-and-section-review",
+      "verifier_provenance": {
+        "method": "preserved-campaign-snapshot-identity-and-section-review",
+        "verified_at": "2026-09-01",
+        "external_path_at_review": "D:/Project/DeepeekHarness/research/70_synthesis_and_gaps.md",
+        "canonical_source_id": "SRC-07",
+        "publisher_id": "local-deepeek-harness",
+        "independence_group": "local-synthesis-and-gaps",
+        "scope_note": "G-04/G-08 identity confirmed from the Stage-1 gap table and ticket source-evidence rows; no fresh host hash or network fetch in this offline environment."
+      }
+    },
+    {
+      "id": "OWASP-AUTHZ",
+      "canonical_uri": "https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html",
+      "title": "OWASP Authorization Cheat Sheet",
+      "source_type": "authorization/security standard (literature)",
+      "content": "The OWASP Authorization Cheat Sheet is the canonical guidance that authorization checks must be enforced at every layer with centralized, dynamic policy and never rely on obscurity; direct-object-reference access control failures occur when possession of an identifier implies access. Used to ground the security_invariant claims: a valid object id alone must never authorize retrieval, and caching layers must not bypass policy. Verified by offline identity and content-scope review; no live network fetch in this environment.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-007-literature-review",
+      "verification_method": "offline-identity-and-content-scope-review",
+      "verifier_provenance": {
+        "method": "offline-identity-and-content-scope-review",
+        "verified_at": "2026-09-01",
+        "publisher_id": "owasp",
+        "independence_group": "owasp-projects",
+        "scope_note": "Canonical OWASP page; offline identity/content-scope review only, no live network fetch."
+      }
+    },
+    {
+      "id": "PG-RLS",
+      "canonical_uri": "https://www.postgresql.org/docs/current/ddl-rowsecurity.html",
+      "title": "PostgreSQL Documentation: Row Security Policies",
+      "source_type": "authorization/security RLS reference (literature)",
+      "content": "The PostgreSQL row-security documentation is the canonical row-level filtering (RLS) reference: policies apply per-role predicates at query time inside the database. It makes the layer question explicit for QA3: a query-time row filter is only as strong as every consumer path that reads rows, so caches and projections above the filter must apply the same policy predicates - a cache keyed without the scope/tenant attribute can serve rows the filter would deny. Verified by offline identity and content-scope review; no live network fetch in this environment.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-007-literature-review",
+      "verification_method": "offline-identity-and-content-scope-review",
+      "verifier_provenance": {
+        "method": "offline-identity-and-content-scope-review",
+        "verified_at": "2026-09-01",
+        "publisher_id": "postgresql",
+        "independence_group": "postgresql-project",
+        "scope_note": "Canonical PostgreSQL documentation; offline identity/content-scope review only, no live network fetch."
+      }
+    },
+    {
+      "id": "OWASP-WSTG-IDOR",
+      "canonical_uri": "https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/05-Authorization_Testing/04-Testing_for_Insecure_Direct_Object_References.html",
+      "title": "OWASP WSTG: Testing for Insecure Direct Object References (IDOR)",
+      "source_type": "retrieval isolation test method (literature)",
+      "content": "The OWASP WSTG authorization-testing chapter for insecure direct object references is the canonical retrieval-isolation test method: request a resource by its identifier from an account that should not have access and verify no content, existence, or detail leakage. S1-007 adapts this method into its six cross-scope isolation cases with the added timing/error-detail uniformity check (the adversarial probe requirement). Verified by offline identity and content-scope review; no live network fetch in this environment.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-007-literature-review",
+      "verification_method": "offline-identity-and-content-scope-review",
+      "verifier_provenance": {
+        "method": "offline-identity-and-content-scope-review",
+        "verified_at": "2026-09-01",
+        "publisher_id": "owasp",
+        "independence_group": "owasp-projects",
+        "scope_note": "Canonical OWASP WSTG page; offline identity/content-scope review only, no live network fetch."
+      }
+    },
+    {
+      "id": "S1-007-RESULTS",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-007/probe-results.json",
+      "title": "S1-007 probe execution results (probe-results.json)",
+      "source_type": "retrieval isolation test method (local deterministic execution artifact)",
+      "content": "retrieval_isolation_probe.py executed both probes against the recorded QA3 contract. cross-scope-isolation: 13/13 checks, 6/6 isolation cases over scope-alpha/beta/gamma, error-detail equality between cross-scope and unknown-id denials, p50 delta within the 5 ms local bound, 0 unauthorized disclosures, 1 demonstrated near-miss shared-cache hazard rejected by the contract, and the real gateway memory-scoping path denied the cross-goal read. cache-revocation: 16/16 checks, 6/6 cache/revocation cases (revoke/move/edit/TTL/cascade) with an injectable clock, 0 stale servings by the implemented scope+version cache, 0 disclosures, 1 demonstrated near-miss hazard. final_verdict: pass.",
+      "verification_status": "verified",
+      "verifier": "agentos-s1-007-independent-replay",
+      "verification_method": "deterministic-local-replay-and-sha256",
+      "verifier_provenance": {
+        "method": "deterministic-local-replay-and-sha256",
+        "verified_at": "2026-09-01",
+        "path": "research/tickets/stage-1/S1-007/probe-results.json",
+        "file_sha256": "01012928e8e5440558fb8fdab66472ce66a49c3ca11a3699e5df7985671121fb",
+        "publisher_id": "agentos-local",
+        "independence_group": "s1-007-probe-execution",
+        "scope_note": "Co-created artifact: written first by the probe run, then bound here with its on-disk SHA-256 and re-verified by the research-plan validator from disk."
+      }
+    }
+  ],
+  "claims": [
+    {
+      "id": "claim-qa3-decision",
+      "text": "[architecture_tradeoff] Decision (QA3) for the in-scope MVP profiles A and B: the retrieval isolation contract is per-scope indexing - a scope-addressed retrieval index over canonical scope-tagged rows - with the retrieval-time scope check retained as mandatory defense in depth, a cache key that binds (scope_id, object_id, version), scope-first projection, explicit residual risk, and a recorded migration trigger; shared-RLS is retained only as the SQL-level defense-in-depth baseline, never as the sole boundary; profile C is deferred.",
+      "claim_class": "inference",
+      "source_ids": ["SRC-03", "SPEC-ARCH", "S1-003-SHAPES", "OWASP-AUTHZ", "PG-RLS"]
+    },
+    {
+      "id": "claim-invariant-cross-scope-deny",
+      "text": "[security_invariant] A query carrying a valid object id from a caller in another scope returns deny/empty with error detail byte-identical to the unknown-id denial and p50 latency within the documented local bound of the unknown-id baseline in the executed fixture matrix - no existence is revealed through timing or error detail.",
+      "claim_class": "fact",
+      "source_ids": ["S1-007-RESULTS", "SPEC-ARCH", "OWASP-WSTG-IDOR"]
+    },
+    {
+      "id": "claim-invariant-zero-disclosure",
+      "text": "[security_invariant] The executed fixture matrix reports 0 unauthorized content disclosures across all isolation, caching, and revocation cases (6 isolation cases + 6 cache/revocation cases over 3 scopes), and cross-scope projections are empty.",
+      "claim_class": "fact",
+      "source_ids": ["S1-007-RESULTS", "OWASP-WSTG-IDOR"]
+    },
+    {
+      "id": "claim-invariant-cache-revocation",
+      "text": "[security_invariant] A shared-index cache hit for a revoked or moved object never returns stale content to the old scope under the implemented contract: the cache key binds (scope_id, object_id, version) and revocation/transfer bump the version and remove the scope index entry, while the near-miss object-id-only shared cache is demonstrated to serve the stale entry and is rejected by the QA3 contract.",
+      "claim_class": "fact",
+      "source_ids": ["S1-007-RESULTS", "PG-RLS", "OWASP-AUTHZ"]
+    },
+    {
+      "id": "claim-invariant-gateway-memory-scope",
+      "text": "[security_invariant] The real AgentOS implementation scopes memory by scope_goal_id at the data model, SQL, and gateway layers: memory_read raises MemoryScopeViolation on cross-goal reads, the SQL WHERE scope_goal_id filter returns zero rows for another scope, and same-scope reads return the record with its scope/provenance fields intact.",
+      "claim_class": "fact",
+      "source_ids": ["GATEWAY-IMPL", "SPEC-ARCH", "AGENTS-INVARIANTS"]
+    },
+    {
+      "id": "claim-tradeoff-per-scope-safety",
+      "text": "[architecture_tradeoff] Per-scope indexing is strictly safer for the isolation property: a scope-addressed index makes a cross-scope hit structurally impossible and gives a small, attestable test surface, whereas a shared index with row-level retrieval filtering is cheaper to build but cannot by itself prove absence of leakage because any consumer path above the filter - notably a shared cache and error/timing behavior - must independently re-apply the scope predicate.",
+      "claim_class": "fact",
+      "source_ids": ["PG-RLS", "OWASP-AUTHZ", "SRC-03", "S1-003-SHAPES"]
+    },
+    {
+      "id": "claim-tradeoff-sufficiently-useful",
+      "text": "[architecture_tradeoff] Per-scope indexing is sufficiently useful at the MVP envelope: index maintenance cost is linear in the number of scopes, the in-scope profiles run single-process on one store per the QA1 decision, and the SRC-06 volume envelope (planning estimates) keeps per-scope index size and write amplification in-process and bounded.",
+      "claim_class": "fact",
+      "source_ids": ["SRC-06", "S1-005-BUNDLE", "SRC-03"]
+    },
+    {
+      "id": "claim-scope-identifier",
+      "text": "[scope_fact] A scope identifier is the unit of retrieval isolation: storage binds every record to a scope_goal_id, the audit shapes treat workspace scope as non-transitive (ownership in another workspace does not become valid through a link), and the QA3 contract uses canonical scope labels (scope-alpha, scope-beta, scope-gamma) as tenants of the isolation fixtures.",
+      "claim_class": "fact",
+      "source_ids": ["SPEC-ARCH", "MIGRATIONS-IMPL", "S1-003-SHAPES", "SRC-05"]
+    },
+    {
+      "id": "claim-scope-projection",
+      "text": "[scope_fact] Projection applies scope filtering before materializing any content: every same-scope retrieved record retains scope_id and provenance fields, and every cross-scope projection is empty - scope and provenance survive projection exactly when the caller's scope matches the record scope.",
+      "claim_class": "fact",
+      "source_ids": ["S1-007-RESULTS", "SRC-05", "S1-003-SHAPES"]
+    },
+    {
+      "id": "claim-test-isolation-cases",
+      "text": "[test_measurement] Probe cross-scope-isolation executed and passed 6 isolation cases over 3 scopes (same-scope positive control; cross-scope deny with identical error detail and bounded timing; shared-RLS boundary with near-miss shared-cache demonstration; revoked-object; moved-object scope transfer; projection survival), plus a real-gateway memory-scoping check; p50 delta between cross-scope and unknown-id denial was within the documented 5 ms local bound with error-detail equality.",
+      "claim_class": "fact",
+      "source_ids": ["S1-007-RESULTS", "OWASP-WSTG-IDOR"]
+    },
+    {
+      "id": "claim-test-cache-cases",
+      "text": "[test_measurement] Probe cache-revocation executed and passed 6 cache/revocation cases over 3 scopes with an injectable clock (revoke vs warm cache; move vs warm cache; edit version bump; revoked owner-scope deny; TTL expiry; invalidation cascade) reporting 0 stale servings by the implemented cache and 0 unauthorized disclosures, while the near-miss object-id-only shared-cache staleness hazard is recorded as observed data.",
+      "claim_class": "fact",
+      "source_ids": ["S1-007-RESULTS", "OWASP-AUTHZ"]
+    },
+    {
+      "id": "claim-test-real-gateway",
+      "text": "[test_measurement] The probes drove the real ToolGateway memory path against a fresh agentos.db: cross-goal memory_read raised MemoryScopeViolation, the SQL scope_goal_id filter returned zero cross-scope rows, same-scope read returned the record, and memory_record carried scope_goal_id per the data model.",
+      "claim_class": "fact",
+      "source_ids": ["S1-007-RESULTS", "GATEWAY-IMPL", "SPEC-ARCH"]
+    },
+    {
+      "id": "claim-risk-timing",
+      "text": "[residual_risk] The timing uniformity observation (identical error detail plus bounded p50 delta) is a deterministic in-process measurement over warm samples, not a constant-time proof; under OS scheduler load, a remote, multi-process, or production deployment could observe different jitter, so the hard acceptance remains the identical deny semantics and the error-detail equality, with timing asserted only to a generous local bound.",
+      "claim_class": "assumption",
+      "source_ids": ["S1-007-RESULTS", "SRC-06"]
+    },
+    {
+      "id": "claim-risk-cache-and-boundary",
+      "text": "[residual_risk] Residual risks remain: cache TTL/eviction and any admin/indexer bypass path must re-apply the same scope predicates; revocation latency at <=5 s is not proven here (S1-008 domain); and profile-C MLS/TEE isolation evidence is weak per G-04 and is deferred to S1-018 with a conditional rollout posture - none of these are claimed closed by this ticket.",
+      "claim_class": "assumption",
+      "source_ids": ["SRC-07", "SRC-02", "OWASP-AUTHZ"]
+    },
+    {
+      "id": "claim-target-migration-trigger",
+      "text": "[decision] Migration trigger: reconsider the QA3 contract when (a) measured multi-tenant growth drives per-scope index maintenance beyond the in-process envelope, (b) a shared or federated index with proven policy-attribute cache keys is required by a production search service, or (c) profile-C rollout reaches a deployment decision (S1-018) that changes the isolation boundary - each requiring new measured evidence and a fresh trust-boundary review.",
+      "claim_class": "target",
+      "source_ids": ["SRC-06", "SRC-07", "PG-RLS"]
+    },
+    {
+      "id": "claim-target-non-goals",
+      "text": "[decision] Non-goals for this decision: no production search service is built, no ranking quality claim is made, and no profile-C rollout is performed by this ticket; the decision boundary is the retrieval isolation contract for the in-scope profiles only.",
+      "claim_class": "target",
+      "source_ids": ["PLAN-DEF", "SRC-07"]
+    }
+  ],
+  "artifacts": {
+    "research_plan": {
+      "content": "# Question\nQA3: is per-scope indexing safer and sufficiently useful than a shared index with row-level retrieval filtering, and can either design prove no cross-scope reads or leakage?\n\n# Method\nOffline, stdlib-only experimental study. (1) Freeze the current isolation evidence: spec/SPEC.md memory scoping, gateway.py memory_read, migration 0001 memory_record, AGENTS.md invariants, S1-003 scope/provenance shapes, and the QA3 question from SRC-03 (all hash-bound in the source registry). (2) Run the deterministic retrieval_isolation_probe.py against the recorded QA3 decision contract (agentos.s1-007-qa3-contract/v1): 3 scopes (scope-alpha, scope-beta, scope-gamma) and 6 isolation cases, including cross-scope query timing and error-detail uniformity (valid object id from another scope must deny exactly like an unknown id), shared-RLS boundary with the near-miss shared-cache demonstration, revoked-object and moved-object cases, and provenance survival through projection, PLUS 6 cache/revocation cases with an injectable clock and a real-gateway memory-scoping check. (3) Assert the quantitative acceptance: >=3 scopes, >=6 cases, 0 unauthorized content disclosures, both probes pass, and scope/provenance fields survive projection.\n\n# Source mix\nAll four required evidence classes are present: ontology/scope (SRC-05, S1-003-SHAPES, AGENTS-INVARIANTS), architecture/data model (SPEC-ARCH, GATEWAY-IMPL, MIGRATIONS-IMPL, S1-003-BUNDLE, S1-005-BUNDLE, SRC-03, SRC-06, PLAN-DEF), authorization/security (SRC-02, SRC-07, OWASP-AUTHZ, PG-RLS), and retrieval isolation test method (OWASP-WSTG-IDOR plus the local S1-007-RESULTS execution artifact).\n\n# Scope\nScope identifiers, per-scope versus shared index, retrieval-time policy checks, RLS/projection boundaries, provenance and cache behavior, and cross-tenant adversarial tests for the in-scope profiles.\n\n# Non-scope\nProduction search service, ranking quality optimization, profile-C rollout, and any measured reliability claim for a deployed multi-tenant service.\n\n# Stop rule\nEscalate on any cross-scope disclosure, unverifiable cache invalidation, or a requirement for admin-blind indexing that conflicts with the documented profile-C boundary; the ticket fails closed if any probe does not reach its expected verdict.",
+      "claim_refs": ["claim-qa3-decision", "claim-invariant-cross-scope-deny", "claim-test-isolation-cases"],
+      "producer": "agentos-s1-007-producer"
+    },
+    "source_registry": {
+      "content": "# Sources\n| ID | Evidence class | Verification | Role |\n|---|---|---|---|\n| SRC-05 | ontology/scope | historical external SHA-256 review reused from S1-003 | scope semantics, provenance, Q1/Q3 |\n| S1-003-SHAPES | ontology/scope | repo-relative path + SHA-256 from disk | non-transitive scope/provenance shapes |\n| AGENTS-INVARIANTS | ontology/scope | repo-relative path + SHA-256 from disk | invariants 6-7 (untrusted content, scope reads) |\n| SPEC-ARCH | architecture/data model | repo-relative path + SHA-256 from disk | memory_record scope_goal_id + SQL-level filter |\n| GATEWAY-IMPL | architecture/data model | repo-relative path + SHA-256 from disk | MemoryScopeViolation enforcement |\n| MIGRATIONS-IMPL | architecture/data model | repo-relative path + SHA-256 from disk | memory_record storage schema |\n| S1-003-BUNDLE | architecture/data model | repo-relative path + SHA-256 from disk | versioned scope/provenance validation precedent |\n| S1-005-BUNDLE | architecture/data model | repo-relative path + SHA-256 from disk | QA1 modular-monolith topology decision |\n| SRC-03 | architecture/data model | preserved-campaign-snapshot identity review | QA3 question and data model |\n| SRC-06 | architecture/data model | preserved-campaign-snapshot identity review | volume envelope (sufficiently useful scale) |\n| PLAN-DEF | architecture/data model | repo-relative path + SHA-256 from disk | frozen S1-007 ticket contract |\n| SRC-02 | authorization/security | preserved-campaign-snapshot identity review | EP-04/EP-07 feature threats |\n| SRC-07 | authorization/security | preserved-campaign-snapshot identity review | G-04/G-08 gap register |\n| OWASP-AUTHZ | authorization/security | offline identity/content-scope review | authorization at every layer |\n| PG-RLS | authorization/security | offline identity/content-scope review | row-level security reference |\n| OWASP-WSTG-IDOR | retrieval isolation test method | offline identity/content-scope review | IDOR authorization test method |\n| S1-007-RESULTS | retrieval isolation test method | repo-relative path + SHA-256 from disk | probe execution results (co-created artifact) |\n\n# Evidence classes\nFour verified classes are present: ontology/scope, architecture/data model, authorization/security, and retrieval isolation test method (canonical method plus the local execution artifact). Every repo-local verified source declaring verifier_provenance.path/file_sha256 is resolved under the trusted workspace and checked from disk. The DeepeekHarness external paths are historical preserved-campaign provenance, not files inside AgentOS.\n\n# Ticket claim-class mapping\nThe harness schema accepts fact/inference/assumption/target; the S1-007 ticket labels (security_invariant, architecture_tradeoff, scope_fact, test_measurement, residual_risk) are carried in claim text and enforced by probe check ticket-claim-class-coverage.",
+      "claim_refs": ["claim-qa3-decision", "claim-invariant-gateway-memory-scope", "claim-tradeoff-per-scope-safety"],
+      "producer": "agentos-s1-007-producer"
+    },
+    "feature_catalog": {
+      "content": "# Features at the retrieval-isolation boundary\n| Feature | Owner | Consumer | Isolation sensitivity |\n|---|---|---|---|\n| per-scope retrieval index | retrieval projection layer (S1-007 contract) | context compiler (SPEC.md 7), S1-016 lineage | scope-addressed; cross-scope hit structurally impossible |\n| scope+version cache key | retrieval cache (S1-007 contract) | context compiler, gateway replay paths | cache key binds (scope_id, object_id, version); never object id alone |\n| retrieval-time scope check | gateway/retrieval adapter | all query paths, cache-hit paths | mandatory defense in depth; never skipped |\n| scope-first projection | projection layer | context packets, evidence pack, wiki projection | scope filtered before any content materializes |\n| provenance/scope fields | memory_record + S1-003 shapes | evidence pack, S1-016, S1-019 | must survive projection for same-scope records |\n| revocation propagation | S1-008 contract (revocation <=5 s) | cache invalidation, index entry removal | version bump + index removal; no stale service |\n| shared-RLS SQL filter | storage layer (SPEC.md 7 baseline) | existing memory hits | defense in depth only, never the sole boundary |\n\n# Downstream decisions\nS1-008 (revocation latency) consumes the cache/version-invalidation contract; S1-016 (flat scope vs lineage) consumes the scope-identifier semantics; S1-018 (profile-C MLS + TEE) consumes the profile-C deferral and the documented boundary; S1-019 synthesis binds to the QA3 decision recorded here.\n\n# Decision\nThe feature surface selected for the in-scope profiles is per-scope indexing with the retrieval-time check, scope+version cache keys, and scope-first projection; the existing SQL scope filter remains as defense in depth.",
+      "claim_refs": ["claim-qa3-decision", "claim-tradeoff-per-scope-safety", "claim-scope-identifier"],
+      "producer": "agentos-s1-007-producer"
+    },
+    "architecture_models": {
+      "content": "# Retrieval isolation architecture (as designed for the in-scope profiles)\nCanonical scope-tagged rows (memory_record.scope_goal_id and future knowledge-store rows) -> per-scope retrieval index (scope-addressed, one entry per object per scope) -> mandatory retrieval-time scope/status check -> scope+version cache -> scope-first projection. The existing SQL scope filter (SPEC.md 7) stays as the storage-level defense in depth. The per-scope index is a retrieval projection layer inside one process/one store (QA1 monolith decision), not a distributed search service.\n\n# QA3 decision contract (machine-readable)\nThe fenced JSON below is the emphasis artifact: the QA3 selection, policy, threat model, test boundary, residual risk, migration triggers and non-goals. retrieval_isolation_probe.py parses it and enforces every field.\n\n```json\n{\n  \"schema\": \"agentos.s1-007-qa3-contract/v1\",\n  \"ticket\": \"S1-007\",\n  \"question\": \"QA3: is per-scope indexing safer and sufficiently useful than a shared index with row-level retrieval filtering, and can either design prove no cross-scope reads or leakage?\",\n  \"decision\": \"per_scope_index\",\n  \"profiles\": {\n    \"A\": \"per_scope_index\",\n    \"B\": \"per_scope_index\",\n    \"C\": \"deferred_to_s1-018\"\n  },\n  \"policy\": {\n    \"retrieval_time_scope_check\": true,\n    \"cache_key_binds_scope_and_version\": true,\n    \"sql_scope_filter_defense_in_depth\": true,\n    \"projection_filters_scope_first\": true\n  },\n  \"threat_model\": {\n    \"existence_leak\": \"a valid object id queried from another scope must deny with byte-identical error detail and bounded timing versus an unknown id\",\n    \"stale_cache\": \"a cache keyed by object id alone serves revoked/moved/edited content to the old scope\",\n    \"projection_leak\": \"projection must filter by scope before materializing any content field\"\n  },\n  \"test_boundary\": {\n    \"boundary\": \"deterministic in-process retrieval-index simulation plus the real single-process gateway memory-scoping path, executed by stdlib probes under 60 s; no production service, no ranking quality claim, no profile-C rollout\",\n    \"max_probe_seconds\": 120\n  },\n  \"scopes\": [\"scope-alpha\", \"scope-beta\", \"scope-gamma\"],\n  \"isolation_cases\": [\n    \"C1-same-scope-positive-control\",\n    \"C2-cross-scope-deny-no-leak\",\n    \"C3-shared-RLS-boundary-and-near-miss\",\n    \"C4-revoked-cross-scope\",\n    \"C5-moved-scope-transfer\",\n    \"C6-projection-survival\",\n    \"R1-revoke-vs-warm-cache\",\n    \"R2-move-vs-warm-cache\",\n    \"R3-edit-version-bump\",\n    \"R4-revoked-owner-scope\",\n    \"R5-ttl-expiry\",\n    \"R6-invalidation-cascade-provenance\"\n  ],\n  \"acceptance\": {\n    \"min_scopes\": 3,\n    \"min_cases\": 6,\n    \"max_unauthorized_disclosures\": 0\n  },\n  \"near_miss_rejections\": [\n    \"shared-RLS-as-the-sole-isolation-design (retained only as SQL-level defense in depth)\",\n    \"shared-index or scopeless/object-id-only cache keys\",\n    \"skipping the retrieval-time scope check on any cache-hit path\",\n    \"admin-blind indexing inconsistent with the documented profile-C boundary\"\n  ],\n  \"residual_risk\": [\n    \"timing uniformity is a bounded local observation, not a constant-time proof\",\n    \"cache TTL/eviction and any admin or indexer bypass path must re-apply the same scope predicates\",\n    \"revocation latency <=5 s (S1-008) and profile-C MLS/TEE isolation (S1-018) are out of this ticket's proof\"\n  ],\n  \"migration_triggers\": [\n    \"measured multi-tenant growth pushes per-scope index maintenance beyond the in-process envelope\",\n    \"a production search service requires a shared/federated index with proven policy-attribute cache keys\",\n    \"profile-C rollout reaches a deployment decision that changes the isolation boundary\"\n  ],\n  \"non_goals\": [\n    \"no production search service is built or deployed by this ticket\",\n    \"no ranking quality optimization or ranking quality claim is made\",\n    \"no profile-C rollout or production deployment is performed by this ticket\"\n  ]\n}\n```",
+      "claim_refs": ["claim-qa3-decision", "claim-invariant-cache-revocation", "claim-tradeoff-per-scope-safety", "claim-invariant-cross-scope-deny"],
+      "producer": "agentos-s1-007-producer"
+    },
+    "mental_model": {
+      "content": "# Mental model\nIsolation is a property of the retrieval PATH, not of the storage table. A scope-tagged row is safe only while every path that can materialize it re-applies the scope predicate. A per-scope index makes the safe path the only path: the index itself is scope-addressed, so a cross-scope lookup cannot even reach the row. A shared index with row-level filtering moves the predicate into every consumer (query, cache, projection, error text, timing), and each of those is a separate place to leak.\n\n# Where intuition misleads\n'Row-level security' sounds like a complete boundary, but the row filter is only the bottom layer: a cache above it that keys by object id alone, or a deny path whose error text differs for known ids, leaks existence and stale content. The QA3 contract treats the SQL scope filter as defense in depth, never as the sole boundary.\n\n# Scope identity\nA scope identifier names the tenant of a record (goal-scoped today via scope_goal_id). Scope is non-transitive: a record's presence in a graph or an index under one scope does not make it retrievable under another scope.\n\n# Proof posture\nWhat can be proven is fail-closed behavior on the implemented path (identical deny semantics, scope+version cache keys, version-bumped invalidation, scope-first projection) plus a bounded local timing observation; constant-time guarantees for arbitrary deployments are not claimed.",
+      "claim_refs": ["claim-tradeoff-per-scope-safety", "claim-qa3-decision", "claim-risk-timing"],
+      "producer": "agentos-s1-007-producer"
+    },
+    "ontology": {
+      "content": "# Terms\n- scope_identifier: the unit of retrieval isolation; stored as scope_goal_id today, canonically expressed as tenant:goal in the QA3 contract fixtures (scope-alpha, scope-beta, scope-gamma).\n- per_scope_index: a retrieval index addressed by scope; an object is reachable only through its own scope's index entry.\n- shared_rls: row-level retrieval filtering (WHERE scope scope_id = ?) over a shared table/index; the storage-level baseline that must not be the sole boundary.\n- retrieval_time_policy_check: the mandatory scope+status verification run on every query path, including cache hits.\n- scope_first_projection: projecting an object by applying the scope predicate before materializing any content field.\n- provenance_fields: the scope, author, and canonical_source identity carried with a record (S1-003 shapes); survivors of projection for same-scope records only.\n- cache_key: must bind (scope_id, object_id, version); scopeless or object-id-only keys are a rejected near miss.\n- revocation_bump: a version increment plus index-entry removal applied on revoke/move/supersede so all cached keys die.\n- profile: an isolation posture class (A, B in scope here; C deferred to S1-018).",
+      "claim_refs": ["claim-scope-identifier", "claim-tradeoff-per-scope-safety", "claim-invariant-cache-revocation"],
+      "producer": "agentos-s1-007-producer"
+    },
+    "mathematical_model": {
+      "content": "# Sets and predicates\nLet O be canonical objects with scope s(o) in {scope-alpha, scope-beta, scope-gamma}, version v(o), status st(o) in {active, revoked}, and provenance p(o). Let I(x) be the per-scope index of scope x, and C(s,id,v) the cache with key (scope, id, version).\n\nRetrieved(s_c, q):= exists o in O : q.id = o.id AND o in I(s_c) AND st(o)=active AND moved(o) is null.\nDeny(s_c, q):= not Retrieved(...). For q.id in O with s(q.id) != s_c, Deny detail equals the unknown-id detail: err(q) = \"no_such_object\" in both cases (indistinguishability predicate).\nDisclosure := |{r : r.content visible to s_c where s(r) != s_c}|. Acceptance: Disclosure = 0.\nStale(s_c, q):= served content with version < v(o) after any revoke/move/edit of o. Cache invalidation is by construction: revoke/move/edit bump v(o) and remove I(x) entries, so key (s_c, q.id, v_old) can never be produced again.\nTiming: t_D(q_known_cross) vs t_D(q_unknown); measured p50 delta over 120 warm samples, asserted <= 5 ms with per-query cap 50 ms (bounded local observation, not constant-time proof).\nProjection P(r) := scope-first filter then fields (scope_id, provenance, content); P(cross-scope) = empty set.\n\n# Measurements\n6 isolation cases + 6 cache/revocation cases (12 total) over 3 scopes, all expected outcomes matched; unauthorized_disclosures = 0; stale_servings = 0; error-detail equality = true; near-miss shared-cache hazard observed as data and rejected by the contract; real gateway cross-goal read denied (MemoryScopeViolation) with 0 cross-scope SQL rows.\n\n# Boundary\nThese predicates are an executable oracle for the in-process contract, not a proof of production multi-tenant behavior, network-level constant time, or profile-C MLS/TEE isolation.",
+      "claim_refs": ["claim-test-isolation-cases", "claim-invariant-zero-disclosure", "claim-risk-timing", "claim-invariant-cross-scope-deny"],
+      "producer": "agentos-s1-007-producer"
+    },
+    "synthesis_and_gaps": {
+      "content": "# Result\nQA3 resolved for the in-scope profiles: per-scope indexing over the shared-RLS baseline. 12 executable cases (6 isolation + 6 cache/revocation) over 3 scopes passed with 0 unauthorized disclosures and 0 stale cache servings; both adversarial probes pass; the real gateway memory scoping path is exercised and denies cross-goal reads. The QA3 decision contract records policy, threat model, test boundary, residual risk, migration triggers and non-goals.\n\n# What is ready\nS1-008 may consume the version-bumped invalidation contract for revocation; S1-016 may consume the scope-identifier semantics; S1-018 and S1-019 may consume the QA3 selection and the profile-C deferral. The SQL scope filter plus gateway MemoryScopeViolation remain canonical MVP enforcement; the per-scope index is the retrieval projection layer selected here.\n\n# Open gaps\nNo production multi-tenant deployment or network-level timing was measured. Constant-time behavior is not claimed; revocation latency <=5 s and profile-C MLS/TEE isolation remain open (S1-008, S1-018). Ranking quality and a production search service are out of scope.\n\n# Recommendation\nAdopt per-scope indexing for the in-scope profiles with the recorded contract; revisit via the migration triggers with new measured evidence and a fresh trust-boundary review.",
+      "claim_refs": ["claim-qa3-decision", "claim-invariant-zero-disclosure", "claim-risk-cache-and-boundary", "claim-target-migration-trigger"],
+      "producer": "agentos-s1-007-producer"
+    },
+    "independent_audit": {
+      "content": "# Scope of audit\nThe verifier reviewed the S1-007 bundle as data: source registry and hash bindings, claim classes and ticket-label mapping, the QA3 decision contract, both probe implementations, and the platform plan's preserved semantics.\n\n# Checks performed\n(1) All repo-local source bindings were recomputed from disk (the 8 stable files) and match; the co-created probe-results.json binding is verified by the research-plan validator after the probe run. (2) Contract coverage: decision=per_scope_index, policy flags (retrieval-time scope check mandatory; cache key binds scope+version), threat model (existence leak, stale cache), test boundary, residual risks, migration triggers, non-goals, >=3 scopes, >=6 cases, max_unauthorized_disclosures=0. (3) Adversarial near-miss rejection: the shared-RLS-as-sole-design and object-id-only cache-key variants are rejected by the contract and their leak is demonstrated as data in the simulation (never used by the implemented path). (4) Probes pass with 0 disclosures and 0 stale servings, and the real gateway memory-scoping path denies cross-goal reads. (5) Platform plan states the chosen contract.\n\n# Limits\nThe isolation evidence is a deterministic in-process simulation plus the real single-process gateway path; it is not a production or multi-host measurement. Timing uniformity is a bounded local observation, not a constant-time proof. External campaign sources (SRC-02/03/05/06/07) were verified by preserved-campaign identity and prior documented review/hashes offline, not re-fetched. Producer and verifier are process-separated roles in one local environment, not independent human operators. Profile-C MLS/TEE isolation and production revocation latency remain out of scope.\n\n# Verdict\npass_with_limits - the QA3 decision is supported at design confidence for the in-scope profiles; production and profile-C evidence remain open items, not byproducts of this ticket.",
+      "claim_refs": ["claim-qa3-decision", "claim-invariant-zero-disclosure", "claim-test-isolation-cases", "claim-test-cache-cases", "claim-risk-cache-and-boundary"],
+      "producer": "agentos-s1-007-independent-verifier"
+    },
+    "platform_plan": {
+      "content": "# Scope\nAdopt the QA3 retrieval-isolation contract for the in-scope profiles (A, B): per-scope indexing as the primary retrieval boundary over canonical scope-tagged rows, with the retrieval-time scope check mandatory (defense in depth), cache keys binding (scope_id, object_id, version), and scope-first projection. The existing SQL scope filter (SPEC.md 7) and gateway MemoryScopeViolation remain canonical MVP enforcement. This plan builds no production search service, makes no ranking quality claim, and performs no profile-C rollout.\n\n# Architecture\nSingle-process modular monolith per QA1 (S1-005): one store, gateway-only effects, atomic transition+audit. Retrieval adds a scope-addressed index layer over the same store: per-scope index entries keyed (scope_id, object_id) with entry version; scope+version cache; a single deny path where 'unknown id' and 'valid id in another scope' are byte-identical; version-bumped invalidation on revoke/move/edit; scope-first projection that preserves scope_id and provenance for same-scope records and yields empty for cross-scope calls. Every cache-hit path still runs the retrieval-time scope check.\n\n# Workstreams\n1. Freeze this bundle's QA3 contract and bind S1-008 (revocation), S1-016 (scope lineage) and S1-019 (synthesis) to it. 2. Add the per-scope retrieval index and scope+version cache to the context-compiler retrieval path behind the existing gateway scope checks. 3. Wire retrieval_isolation_probe.py into the ticket probes and re-run on any retrieval-path change. 4. Record migration triggers in the runbook: multi-tenant growth, shared/federated index requirement, profile-C deployment decision. 5. Keep the near-miss library (shared-RLS-sole, object-id-only cache keys) as regression fixtures so the rejected designs cannot reappear silently.\n\n# Milestones\nM1: QA3 decision recorded with passing probes (this ticket). M2: S1-008 consumes the version-bumped invalidation contract. M3: per-scope index + scope+version cache landed on the retrieval path and regression probes green. M4: first measured multi-scope load observation before any shared/federated index re-evaluation.\n\n# Verification\nRequire: both probes pass with 0 unauthorized disclosures and 0 stale cache servings; >=3 scopes and >=6 isolation cases in the fixture set; error-detail equality between cross-scope and unknown-id denials with bounded p50 delta; scope_id and provenance fields survive projection for same-scope records; real gateway cross-goal read raises MemoryScopeViolation; repo-local source hashes verified from disk; and an independent reviewer reproduces the research-plan command.\n\n# Risks\nTiming uniformity is a bounded local observation, not a constant-time proof; cache TTL/eviction and admin or indexer bypass paths must re-apply the same scope predicates; revocation latency <=5 s remains S1-008 evidence; profile-C MLS/TEE isolation evidence is weak (G-04) and rollout stays deferred to S1-018; the plan adds retrieval-layer complexity that must not diverge from the QA1 single-writer/atomic-audit invariants.\n\n# Open decisions\nChoose the exact per-scope index representation (SQL index rows vs sidecar partition) when the retrieval path is implemented; decide cache sizing/TTL policy from measured hit rates; decide whether the shared-RLS SQL filter remains a scanned defense-in-depth path or gains its own (scope_goal_id, id) index; confirm whether S1-016 scope/lineage semantics change the scope-identifier encoding before profile-B rollouts.",
+      "claim_refs": ["claim-qa3-decision", "claim-target-migration-trigger", "claim-target-non-goals", "claim-invariant-cache-revocation"],
+      "producer": "agentos-s1-007-producer"
+    },
+    "progress": {
+      "content": "# 2026-09-01\nRead the S1-007 ticket spec (docs/RESEARCH_STAGE_1_TICKETS.md), spec/SPEC.md memory-scoping sections, AGENTS.md invariants, gateway.py memory_read/memory_write, migration 0001 memory_record, S1-003 shapes-v3.ttl and bundle, S1-005 bundle, and the campaign source table (SRC-02/03/05/06/07). Computed SHA-256 bindings for all 9 stable repo-local files from disk. Authored retrieval_isolation_probe.py (two probes: cross-scope-isolation and cache-revocation), the QA3 decision contract (agentos.s1-007-qa3-contract/v1) embedded in architecture_models, and 17 claims mapped to the harness classes with the ticket labels security_invariant/architecture_tradeoff/scope_fact/test_measurement/residual_risk in claim text.\n\nThe deterministic probes execute 12 cases over 3 scopes (6 isolation + 6 cache/revocation with an injectable clock), drive the real ToolGateway memory path on a fresh agentos.db, demonstrate the near-miss shared-cache and shared-RLS-sole hazards as data, and reject them via the recorded contract. probe-results.json records final_verdict pass; the S1-007-RESULTS source binding is patched into this bundle with its real on-disk SHA-256 after the first probe run and re-verified by the research-plan validator.\n\nCommand: PYTHONPATH=src python -m agentos.cli research-plan --topic \"S1-007 QA3 retrieval and index isolation per scope versus shared RLS\" --bundle research/tickets/stage-1/S1-007/bundle.json --db .agentos-research/platform-stage-1. Expected: pass_with_limits.",
+      "claim_refs": ["claim-qa3-decision", "claim-test-isolation-cases", "claim-invariant-gateway-memory-scope"],
+      "producer": "agentos-s1-007-producer"
+    }
+  },
+  "audit": {
+    "subject_producer": "agentos-s1-007-producer",
+    "auditor": "agentos-s1-007-independent-verifier",
+    "verdict": "pass_with_limits",
+    "limitations": [
+      "Isolation evidence comes from a deterministic in-process retrieval-index simulation plus the real single-process gateway memory-scoping path; no production multi-tenant or multi-host deployment was exercised.",
+      "Timing uniformity is a bounded local observation over warm samples (p50 delta <= 5 ms with a 50 ms per-query cap), not a constant-time proof; jitter can differ under scheduler load or across deployments.",
+      "External campaign sources (SRC-02, SRC-03, SRC-05, SRC-06, SRC-07) were verified by preserved-campaign identity and prior documented reviews/hashes in this offline environment; they were not re-fetched.",
+      "Producer and verifier are process-separated roles in one local environment, not independent human operators.",
+      "Profile-C MLS/TEE isolation and production revocation latency (<=5 s) are out of scope; no production search service, ranking quality claim, or profile-C rollout is claimed."
+    ]
+  },
+  "probes": [
+    {
+      "name": "cross-scope-isolation",
+      "command": "python research/tickets/stage-1/S1-007/retrieval_isolation_probe.py --probe cross-scope-isolation",
+      "expected": "pass"
+    },
+    {
+      "name": "cache-revocation",
+      "command": "python research/tickets/stage-1/S1-007/retrieval_isolation_probe.py --probe cache-revocation",
+      "expected": "pass"
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "schema": "agentos.ticket-evaluation-record/v1",
+  "ticket_id": "S1-009",
+  "recorded_at": "2026-08-31T00:00:00Z",
+  "db_root": ".agentos-research/platform-stage-1",
+  "campaign_id": "rcamp_RN286DV3JRA5PV1P01M1K6DABD",
+  "goal_id": "goal_NVCP2VJKVCK1PXH101M1K6DABD",
+  "evaluation_id": "reval_ZM3GB049BT44XWH501M1K6DBHT",
+  "evaluation_version": 1,
+  "result": "pass_with_limits",
+  "artifact_chain_hash": "481f67230599916adf4b42ccf447aa6d267e4d06c6d9fb8a949682ea6b8b3a09",
+  "evidence_pack": {
+    "schema": "agentos.evidence-pack/v3",
+    "path": ".agentos-research/platform-stage-1/goals/goal_NVCP2VJKVCK1PXH101M1K6DABD/evidence-pack.json",
+    "sha256": "481f67230599916adf4b42ccf447aa6d267e4d06c6d9fb8a949682ea6b8b3a09",
+    "chain_fresh": true,
+    "latest_evaluation_valid": true,
+    "embedded_sha256_matches": true
+  },
+  "probes": [
+    {"name": "governance-record", "command": "python research/tickets/stage-1/S1-009/adapter_roadmap_probe.py --probe governance-record", "expected": "pass", "observed": "pass", "result": "pass", "checks": 12},
+    {"name": "exact-action-boundary", "command": "python research/tickets/stage-1/S1-009/adapter_roadmap_probe.py --probe exact-action-boundary", "expected": "pass", "observed": "pass", "result": "pass", "checks": 8},
+    {"name": "capability-matrix-coverage", "command": "python research/tickets/stage-1/S1-009/adapter_roadmap_probe.py --probe capability-matrix-coverage", "expected": "pass", "observed": "pass", "result": "pass", "checks": 9}
+  ],
+  "wiki_check": {
+    "ok": true,
+    "files": 640,
+    "links_checked": 1733,
+    "issues": []
+  },
+  "limitations": [
+    "Offline canonical-document review without live protocol interop tests.",
+    "SV2/SV3 interoperability sources are preprints; protocol revisions are externally drifting facts pinned by timestamps (MCP 2025-11-25, A2A v1.0 reviewed 2026-08-31).",
+    "No production adapter is built or claimed by this ticket.",
+    "Auditor is a process-separated role within one local environment, not an external human or independently operated model."
+  ],
+  "note": "S1-009 authored + validated: bundle.json with 13 verified sources (MCP/A2A current revisions, 9 repo-local SHA-256-bound), 20 claims, 11 artifacts (capability matrix 10 capabilities, canonical envelope 3 layers, adapter roadmap v0.1-v1.0); probes governance-record 12/12 + exact-action-boundary 8/8 + capability-matrix-coverage 9/9. G-02/H9 resolved: governance semantics have no protocol carrier and materialize as explicit hub records behind the envelope. research-plan PASS is a research evaluation; it never sets Goal ACCEPTED (release gate only)."
+}

@@ -1,0 +1,152 @@
+{
+  "schema": "agentos.s1-012-acceptance-probe/v1",
+  "probe": "s1-012-acceptance-criteria",
+  "expected": "pass",
+  "observed": "pass",
+  "status": "pass",
+  "required_classes": [
+    "provenance/ontology",
+    "reputation mathematics",
+    "threat/collusion evidence",
+    "source registry policy",
+    "knowledge-gate design"
+  ],
+  "scenarios": [
+    "scen-1",
+    "scen-2",
+    "scen-3"
+  ],
+  "total_checks": 18,
+  "passed_checks": 18,
+  "failures": [],
+  "checks": [
+    {
+      "check": "A1_sources_at_least_five_all_verified",
+      "passed": true,
+      "detail": {
+        "count": 12,
+        "all_verified": true
+      }
+    },
+    {
+      "check": "A1_five_required_classes_present",
+      "passed": true,
+      "detail": {
+        "missing": []
+      }
+    },
+    {
+      "check": "A2_granularity_comparison_document_span_digest",
+      "passed": true,
+      "detail": {
+        "plan_has_terms": [
+          "document",
+          "span",
+          "digest"
+        ]
+      }
+    },
+    {
+      "check": "A2_span_granularity_decided",
+      "passed": true,
+      "detail": {
+        "found": true
+      }
+    },
+    {
+      "check": "A3_at_least_three_scenarios_named",
+      "passed": true,
+      "detail": {
+        "missing": []
+      }
+    },
+    {
+      "check": "A4_prior_decay_threshold_as_assumptions",
+      "passed": true,
+      "detail": {
+        "labelled": true
+      }
+    },
+    {
+      "check": "A4_sensitivity_table_available",
+      "passed": true,
+      "detail": "sensitivity table referenced in progress or synthesis"
+    },
+    {
+      "check": "A5_recommendation_only_in_platform_and_model",
+      "passed": true,
+      "detail": {
+        "platform_ok": true,
+        "claim_ok": true
+      }
+    },
+    {
+      "check": "A5_no_enforcement_pipeline_claimed",
+      "passed": true,
+      "detail": "enforcement allow is sourced only from the provenance gate"
+    },
+    {
+      "check": "A5_no_automatic_trust_enforcement",
+      "passed": true,
+      "detail": "non-scope language present"
+    },
+    {
+      "check": "A6_every_source_carries_full_provenance",
+      "passed": true,
+      "detail": {
+        "sources": 12
+      }
+    },
+    {
+      "check": "A6_repo_local_sources_hash_bound",
+      "passed": true,
+      "detail": "host-recomputed SHA-256 matches verifier_provenance.file_sha256"
+    },
+    {
+      "check": "A7_audit_identities_and_verdict",
+      "passed": true,
+      "detail": {
+        "subject_producer": "agentos-s1-012-producer",
+        "auditor": "agentos-s1-012-independent-verifier",
+        "verdict": "pass_with_limits"
+      }
+    },
+    {
+      "check": "A7_audit_limitations_nonempty",
+      "passed": true,
+      "detail": {
+        "limitations": 5
+      }
+    },
+    {
+      "check": "A7_auditor_confirms_no_double_count",
+      "passed": true,
+      "detail": "independent audit explicitly confirms no mirror/Sybil double count"
+    },
+    {
+      "check": "A7_no_duplicate_source_canonical_identity",
+      "passed": true,
+      "detail": {
+        "distinct_ids": 12
+      }
+    },
+    {
+      "check": "A8_at_least_two_probes_expected_pass",
+      "passed": true,
+      "detail": {
+        "names": [
+          "s1-012-acceptance-criteria",
+          "s1-012-granularity-beta-adversarial"
+        ],
+        "expected_all_pass": true
+      }
+    },
+    {
+      "check": "A9_platform_plan_sections_present",
+      "passed": true,
+      "detail": {
+        "missing": []
+      }
+    }
+  ]
+}

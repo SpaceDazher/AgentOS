@@ -1,0 +1,38 @@
+{
+  "schema": "agentos.ticket-evaluation-record/v1",
+  "ticket_id": "S1-012",
+  "recorded_at": "2026-08-31T00:00:00Z",
+  "db_root": ".agentos-research/platform-stage-1",
+  "campaign_id": "rcamp_WEHYCM2QRHFYPKKE01M1K782C8",
+  "goal_id": "goal_0D0F3SSHQ6GRH28S01M1K782C8",
+  "evaluation_id": "reval_YGECT48NY3R5MZPT01M1K783CZ",
+  "evaluation_version": 1,
+  "result": "pass_with_limits",
+  "artifact_chain_hash": "00b6dd6a1e4a47f8febf0ce507247ff3fa7160377f9a5a487a5459429cf3325b",
+  "evidence_pack": {
+    "schema": "agentos.evidence-pack/v3",
+    "path": ".agentos-research/platform-stage-1/goals/goal_0D0F3SSHQ6GRH28S01M1K782C8/evidence-pack.json",
+    "sha256": "00b6dd6a1e4a47f8febf0ce507247ff3fa7160377f9a5a487a5459429cf3325b",
+    "chain_fresh": true,
+    "latest_evaluation_valid": true,
+    "embedded_sha256_matches": true
+  },
+  "probes": [
+    {"name": "s1-012-granularity-beta-adversarial", "command": "python research/tickets/stage-1/S1-012/granularity_beta_probe.py", "expected": "pass", "observed": "pass", "result": "pass", "checks": 25, "cases": "mirror-collapse (n_independent==1,never 2); granularity invariance; SCEN-1/2/3 Sybil/collusion; Beta sensitivity table"},
+    {"name": "s1-012-acceptance-criteria", "command": "python research/tickets/stage-1/S1-012/acceptance_probe.py", "expected": "pass", "observed": "pass", "result": "pass", "checks": 18}
+  ],
+  "wiki_check": {
+    "ok": true,
+    "files": 753,
+    "links_checked": 2057,
+    "issues": []
+  },
+  "limitations": [
+    "Beta/EigenTrust is recommendation only, never enforcement; no automatic trust enforcement is claimed.",
+    "Numeric thresholds (P[theta>0.9] >= 0.95; r_min 28/41 at lambda 0/0.02) are modeling assumptions, not corpus-validated calibrations.",
+    "Decay and the planning threshold must be calibrated together against an incident corpus (at lambda=0.05 the threshold is unreachable).",
+    "Literature (reputation systems, EigenTrust) verified by offline bibliographic/official-documentation review; no live network fetch.",
+    "Auditor is a process-separated role within one local environment, not an external human or independently operated model."
+  ],
+  "note": "S1-012 authored + validated: bundle.json with 12 verified sources (5 classes), ̨18 claims, ̨11 artifacts; probes granularity-beta-adversarial 25/25 + acceptance-criteria 18/18. Mirror-collapse: two mirrors of the same publisher = ONE independent unit (n_independent==1), document/span/digest granularity invariant; colluding cluster without pretrusted anchor only a flagged recommendation (enforcement=false). Beta sensitivity (a0=b0=1): P[theta>0.9]>=0.95 at r=28 (lambda=0)and r=41 (lambda=0.02); unreachable at lambda=0.05 — decay+threshold calibrated together. research-plan PASS is a research evaluation;it never sets Goal ACCEPTED (release gate only."
+}

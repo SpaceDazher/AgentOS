@@ -1,0 +1,68 @@
+{
+    "goal_id":  "goal_0Y5RC32BDZ4P42J801M1K83GR7",
+    "ticket_id":  "S1-006",
+    "artifact_chain_hash":  "2b8142f0824b415ca1c7964c7835f04ac7f77e87940830b01f2e5bfc9fc067c5",
+    "campaign_id":  "rcamp_2QHJZNQ5C1PTTC1701M1K83GR7",
+    "evidence_pack":  {
+                          "sha256":  "2b8142f0824b415ca1c7964c7835f04ac7f77e87940830b01f2e5bfc9fc067c5",
+                          "schema":  "agentos.evidence-pack/v3",
+                          "path":  ".agentos-research/platform-stage-1/goals/goal_0Y5RC32BDZ4P42J801M1K83GR7/evidence-pack.json",
+                          "chain_fresh":  true,
+                          "embedded_sha256_matches":  true,
+                          "latest_evaluation_valid":  true
+                      },
+    "result":  "pass_with_limits",
+    "schema":  "agentos.ticket-evaluation-record/v1",
+    "probes":  [
+                   {
+                       "name":  "replay-resume",
+                       "checks":  11,
+                       "command":  "python research/tickets/stage-1/S1-006/replay_resume_probe.py",
+                       "result":  "pass",
+                       "expected":  "pass",
+                       "observed":  "pass"
+                   },
+                   {
+                       "name":  "comparability",
+                       "checks":  11,
+                       "command":  "python research/tickets/stage-1/S1-006/comparability_probe.py",
+                       "result":  "pass",
+                       "expected":  "pass",
+                       "observed":  "pass"
+                   }
+               ],
+    "benchmark":  {
+                      "scheduling_p95_ms":  [
+                                                407,
+                                                1174,
+                                                3058
+                                            ],
+                      "method":  "real in-process engine, temp SQLite under ticket dir, same dag_id across 3 load levels (10/34/100 ev/s",
+                      "recovery_ms":  [
+                                          438,
+                                          558,
+                                          583
+                                      ],
+                      "note":  "Durable-engine latency/recovery are explicit unavailable labels, not inferred numbers; no production backend installed or claimed."
+                  },
+    "wiki_check":  {
+                       "ok":  true,
+                       "issues":  [
+
+                                  ],
+                       "links_checked":  2684,
+                       "files":  974
+                   },
+    "db_root":  ".agentos-research/platform-stage-1",
+    "evaluation_version":  1,
+    "limitations":  [
+                        "Benchmark is a single-host real-engine run(in-process path only; durable-engine latency/recovery are explicit unavailable labels).",
+                        "QA2 matrix scores are structured design judgments grounded in cited evidence, not measurements.",
+                        "Literaturedurable-execution engines)verified offline by publisher/official-documentation review;no live network fetch.",
+                        "Subject to the same bounded-trace limits as S1-004:safety semantics asserted on probe runs,not a proof of arbitrary production behavior.",
+                        "Auditor is a process-separated role within one local environment,not an external human or independently operated model."
+                    ],
+    "recorded_at":  "2026-08-31T00:00:00Z",
+    "note":  "S1-006 authored + validated:bundle.json with 14 verified sources,18 claims,11 artifacts(QA2 decision matrix:8 dims, in-process vs durable),3 load levels same DAG + p95/p99 + recovery-or-unavailable,6 crash/replay scenarios,recommendation with assumptions/migration trigger/rollback/evidence requirements/non-goals;probes replay-resume 11/11 + comparability 11/11(both near-misses rejected,real-engine benchmark recordedinto probe-results.json;research-plan PASS is a research evaluation;it never sets Goal ACCEPTED(release gate only).",
+    "evaluation_id":  "reval_ZNEFXTF5EZCGVKDW01M1K84BWS"
+}

@@ -1,0 +1,107 @@
+{
+  "schema": "agentos.s1-007-probe-results/v1",
+  "ticket": "S1-007",
+  "probes": [
+    {
+      "probe": "cross-scope-isolation",
+      "schema": "agentos.s1-007-probe-verdict/v1",
+      "status": "pass",
+      "observed": "pass",
+      "scopes": [
+        "scope-alpha",
+        "scope-beta",
+        "scope-gamma"
+      ],
+      "cases": [
+        {
+          "case": "C1-same-scope-positive-control",
+          "ok": true,
+          "detail": "content='alpha secret one' scope=scope-alpha provenance_scope=scope-alpha"
+        },
+        {
+          "case": "C2-cross-scope-deny-no-leak",
+          "ok": true,
+          "detail": "identical_error=True p50_delta_within_5.0ms_bound=True hard_cap_50.0ms_respected=True"
+        },
+        {
+          "case": "C3-shared-RLS-boundary-and-near-miss",
+          "ok": true,
+          "detail": "near_miss_shared_cache_leaked=True implemented_contract_denied=True contract_rejections=['shared-RLS-as-the-sole-isolation-design (retained only as SQL-level defense in depth)', 'shared-index or scopeless/object-id-only cache keys', 'skipping the retrieval-time scope check on any cache-hit path', 'admin-blind indexing inconsistent with the documented profile-C boundary']"
+        },
+        {
+          "case": "C4-revoked-cross-scope",
+          "ok": true,
+          "detail": "old_scope={'status': 'deny', 'error': 'object_not_retrievable', 'reason': 'revoked'} other_scope={'status': 'deny', 'error': 'no_such_object'} owner_deny_reason=revoked"
+        },
+        {
+          "case": "C5-moved-scope-transfer",
+          "ok": true,
+          "detail": "old_scope_denied=True new_scope_content='alpha secret three' scope_id=scope-beta provenance_scope=scope-alpha"
+        },
+        {
+          "case": "C6-projection-survival",
+          "ok": true,
+          "detail": "same-scope projections retain scope_id+provenance; cross-scope projection is deny/empty"
+        }
+      ],
+      "identity_error_detail_identical": true,
+      "p50_delta_within_bound_ms5": true,
+      "hard_cap_50ms_respected": true,
+      "unauthorized_disclosures": 0,
+      "near_miss_hazards": 1,
+      "checks_total": 13,
+      "checks_failed": 0,
+      "failed_checks": []
+    },
+    {
+      "probe": "cache-revocation",
+      "schema": "agentos.s1-007-probe-verdict/v1",
+      "status": "pass",
+      "observed": "pass",
+      "scopes": [
+        "scope-alpha",
+        "scope-beta",
+        "scope-gamma"
+      ],
+      "cases": [
+        {
+          "case": "R1-revoke-vs-warm-cache",
+          "ok": true,
+          "detail": "implemented_cache_miss=True near_miss_shared_cache_served_stale=True"
+        },
+        {
+          "case": "R2-move-vs-warm-cache",
+          "ok": true,
+          "detail": "old_scope_miss=True new_scope_fresh='r2 content'"
+        },
+        {
+          "case": "R3-edit-version-bump",
+          "ok": true,
+          "detail": "version=2 content='r3 version-2'"
+        },
+        {
+          "case": "R4-revoked-owner-scope",
+          "ok": true,
+          "detail": "detail={'status': 'deny', 'error': 'object_not_retrievable', 'reason': 'revoked'}"
+        },
+        {
+          "case": "R5-ttl-expiry",
+          "ok": true,
+          "detail": "before_source=cache after_source=index"
+        },
+        {
+          "case": "R6-invalidation-cascade-provenance",
+          "ok": true,
+          "detail": "denied_in_all_scopes=True provenance_preserved=True"
+        }
+      ],
+      "stale_servings": 0,
+      "unauthorized_disclosures": 0,
+      "near_miss_hazards": 1,
+      "checks_total": 16,
+      "checks_failed": 0,
+      "failed_checks": []
+    }
+  ],
+  "final_verdict": "pass"
+}
