@@ -20,7 +20,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+import importlib.util
+import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -105,7 +108,7 @@ CLAIMS = [
 ARTIFACT_TEXTS = {
     "research_plan": (
         "Compare minimal promote/challenge gate vs argumentation vs TMS "
-        "for the first AgentOS knowledge layer. Frozen contract v1.0.1, "
+        "for the first AgentOS knowledge layer. Frozen contract v1.0.2, "
         "72-case corpus x 3 designs x 3 seeds, two process-separated runs "
         "on one clean commit/tree, fail-closed evaluator with 11 exact-zero "
         "hard gates plus transition-consistency and ledger checks, probes "
@@ -150,8 +153,8 @@ ARTIFACT_TEXTS = {
         "Metrics: PROMOTED-positive confusion, per-class precision/recall "
         "with Wilson intervals, transition exactness, view correctness, "
         "operator model as simulation. Scores from measured safety plus "
-        "frozen utility estimates with UNKNOWN abstention: minimal 0.936 "
-        "range against 0.489 class alternatives; 220 sensitivity "
+        "frozen utility estimates with UNKNOWN bounds; numeric scores "
+        "are bound in results/comparison.json; 220 sensitivity "
         "compositions with zero flips and explicit UNKNOWN disclosure."),
     "synthesis_and_gaps": (
         "Minimal gate passes every gate and probe; naive argumentation "
@@ -178,7 +181,7 @@ ARTIFACT_TEXTS = {
 }
 
 PLATFORM_PLAN = {
-    "Scope": "Adopt the frozen minimal knowledge gate (contract v1.0.1) "
+    "Scope": "Adopt the frozen minimal knowledge gate (contract v1.0.2) "
              "as the MVP knowledge-layer boundary for the first AgentOS "
              "knowledge layer; richer argumentation and TMS stay deferred "
              "until S1-012 and S1-013 harden them.",
@@ -283,6 +286,21 @@ def derive_verdict() -> tuple:
     doc = metrics["designs"].get(chosen)
     if doc is None or doc.get("verdict") != "PASS":
         blockers.append(f"chosen design {chosen} not PASS")
+    hard_names = {"false_promotion_count", "false_retention_count",
+                  "resurrection_count", "missed_invalidation_count",
+                  "history_loss_or_rewrite_count", "stale_replay_acceptance_count",
+                  "cross_scope_visibility_count", "authority_expansion_count",
+                  "duplicate_active_decision_count",
+                  "transition_audit_atomicity_violation_count",
+                  "derived_without_evidence_promotion_count"}
+    counters = (doc or {}).get("hard_counters", {})
+    if (doc or {}).get("admissible") is not True or \
+            (doc or {}).get("hard_fail") is not False or \
+            type((doc or {}).get("invalid_transition_count")) is not int or \
+            (doc or {}).get("invalid_transition_count") != 0 or \
+            not isinstance(counters, dict) or set(counters) != hard_names or \
+            any(type(v) is not int or v != 0 for v in counters.values()):
+        blockers.append("chosen metrics inadmissible or hard counters invalid")
     probe_doc = probes["designs"].get(chosen, {})
     if not probe_doc.get("all_pass"):
         blockers.append(f"probes not all-pass for {chosen}")
@@ -296,6 +314,33 @@ def derive_verdict() -> tuple:
         blockers.append("sensitivity artifact disagrees")
     if sens.get("unknown_dependent"):
         blockers.append("sensitivity UNKNOWN-dependent")
+    if not blockers:
+        # Never publish solely from a cached PASS summary. Re-evaluate both
+        # complete raw series, frozen bytes and provenance in a separate process.
+        with tempfile.TemporaryDirectory(prefix="s1011-publish-") as td:
+            paths = {name: Path(td) / name for name in
+                     ("comparison.json", "metrics.json", "probes.json", "sensitivity.json")}
+            proc = subprocess.run([
+                sys.executable, str(HERE / "compare_runs.py"),
+                "--a", str(RESULTS / "run-a"), "--b", str(RESULTS / "run-b"),
+                "--out", str(paths["comparison.json"]),
+                "--metrics", str(paths["metrics.json"]),
+                "--probes", str(paths["probes.json"]),
+                "--sensitivity", str(paths["sensitivity.json"])],
+                capture_output=True, text=True, timeout=120)
+            if proc.returncode:
+                blockers.append("raw re-evaluation failed: " + proc.stderr[:300])
+            else:
+                for name, recorded in (("comparison.json", comparison),
+                                       ("metrics.json", metrics), ("probes.json", probes),
+                                       ("sensitivity.json", sens)):
+                    if json.loads(paths[name].read_text(encoding="utf-8")) != recorded:
+                        blockers.append(f"cached {name} differs from raw-derived output")
+        spec = importlib.util.spec_from_file_location("s1011_publish_dependency", HERE / "dependency_gate.py")
+        dependency = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(dependency)
+        if any(dependency.check(t)["status"] != "PROVEN" for t in dependency.DEPS):
+            blockers.append("live tracked dependency recheck failed")
     facts = {"gate": gate.get("all_proven"),
              "minimal_verdict": (doc or {}).get("verdict"),
              "probes": probe_doc.get("all_pass"),

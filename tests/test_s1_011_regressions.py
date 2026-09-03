@@ -70,6 +70,26 @@ def mutated_rows(base_rows, case_id, **changes):
     return out
 
 
+def rechain_ledger(row):
+    """Recompute a tampered ledger and enclosing row hash.
+
+    These adversarial tests deliberately preserve hash validity so they prove
+    that evaluator completeness checks, rather than hash mismatch detection,
+    reject record loss.
+    """
+    previous = "0" * 64
+    for record in row["ledger"]:
+        record["prev"] = previous
+        record["hash"] = sha(evaluator.canonical({
+            key: record[key] for key in ("kind", "id", "prev", "payload")
+        }))
+        previous = record["hash"]
+    row["output_sha256"] = sha(evaluator.canonical(
+        {key: value for key, value in row.items()
+         if key != "output_sha256"}))
+    return row
+
+
 def evaluate_in_memory(rows, design="minimal-gate", seed=11011):
     import tempfile
     run_dir = Path(tempfile.mkdtemp())
@@ -425,6 +445,33 @@ class TestAuthorityBindings(unittest.TestCase):
         row = runner.DECIDE["minimal-gate"](runner.Case(raw), 11011)
         self.assertNotEqual(row["decision"], "RETRACTED")
 
+    def test_missing_evidence_bindings_never_default_to_trusted(self):
+        corpus = load("cases.json")
+        source = next(c for c in corpus["cases"]
+                      if c["case_id"] == "S1-011-V01")
+        for field in ("source_status", "scope", "claim_version"):
+            raw = copy.deepcopy(source)
+            for evidence in raw["evidence"]:
+                evidence.pop(field, None)
+            row = runner.DECIDE["minimal-gate"](
+                runner.Case(raw), 11011)
+            self.assertNotEqual(row["decision"], "PROMOTED", field)
+            self.assertFalse(row["view_visible"], field)
+
+    def test_null_and_wrong_type_evidence_bindings_fail_closed(self):
+        corpus = load("cases.json")
+        source = next(c for c in corpus["cases"]
+                      if c["case_id"] == "S1-011-V01")
+        for field, value in (("source_status", None),
+                             ("scope", 17),
+                             ("claim_version", True)):
+            raw = copy.deepcopy(source)
+            raw["evidence"][0][field] = value
+            row = runner.DECIDE["minimal-gate"](
+                runner.Case(raw), 11011)
+            self.assertNotEqual(row["decision"], "PROMOTED", field)
+            self.assertFalse(row["view_visible"], field)
+
 
 class TestCurrentPredicate(unittest.TestCase):
     """Finding F2: unresolved challenge, policy and revocation are live."""
@@ -468,6 +515,32 @@ class TestCurrentPredicate(unittest.TestCase):
         self.assertEqual(row["decision"], "HIDDEN")
         self.assertFalse(row["view_visible"])
 
+    def test_derived_promotion_cannot_bypass_open_challenge(self):
+        corpus = load("cases.json")
+        raw = copy.deepcopy(next(
+            c for c in corpus["cases"] if c["case_id"] == "S1-011-V01"))
+        raw["action"] = "derive_claim"
+        raw["derive"] = {"parent": "A-V01", "own_evidence": True}
+        raw["challenge"] = {"challenge_id": "CH-X", "state": "open",
+                             "in_scope": True, "fresh_evidence": False}
+        row = runner.DECIDE["minimal-gate"](
+            runner.Case(raw), 11011)
+        self.assertNotEqual(row["decision"], "PROMOTED")
+        self.assertFalse(row["view_visible"])
+
+    def test_view_revalidates_evidence_source_status_and_supersession(self):
+        corpus = load("cases.json")
+        source = next(c for c in corpus["cases"]
+                      if c["case_id"] == "S1-011-R06")
+        for field, value in (("source_status", "REVOKED"),
+                             ("superseded_by", "new-claim")):
+            raw = copy.deepcopy(source)
+            raw["evidence"][0][field] = value
+            row = runner.DECIDE["minimal-gate"](
+                runner.Case(raw), 11011)
+            self.assertEqual(row["decision"], "HIDDEN", field)
+            self.assertFalse(row["view_visible"], field)
+
 
 class TestTransitionConsistency(unittest.TestCase):
     """Finding F3: state-table, authority and ledger reality."""
@@ -500,6 +573,19 @@ class TestTransitionConsistency(unittest.TestCase):
         metrics = evaluate_in_memory(bad)
         self.assertEqual(metrics["verdict"], "FAIL")
         self.assertGreater(metrics["invalid_transition_count"], 0)
+
+    def test_hash_valid_ledger_cannot_drop_required_record_kinds(self):
+        rows = run_design("minimal-gate")
+        for kind in ("assertion", "evidence", "audit"):
+            bad = copy.deepcopy(rows)
+            target = next(row for row in bad
+                          if row["case_id"] == "S1-011-V01")
+            target["ledger"] = [record for record in target["ledger"]
+                                if record["kind"] != kind]
+            rechain_ledger(target)
+            metrics = evaluate_in_memory(bad)
+            self.assertEqual(metrics["verdict"], "FAIL", kind)
+            self.assertGreater(metrics["invalid_transition_count"], 0, kind)
 
 
 class TestHonestConfusion(unittest.TestCase):

@@ -192,12 +192,49 @@ def check_rows(rows: list, oracle: dict) -> tuple:
     return problems, by_id
 
 
-def verify_ledger(row: dict) -> list:
+def verify_ledger(row: dict, case: dict | None = None) -> list:
     """Re-verify the hash-chained record model. Returns violations."""
     violations = []
     ledger = row.get("ledger")
     if not isinstance(ledger, list) or not ledger:
         return ["ledger missing or empty"]
+    if case is not None:
+        suffix = sha(f"{case['case_id']}:{row['design']}".encode())[:12]
+        decision_id = f"decision-{suffix}"
+        expected = [("assertion", "a", {
+            "assertion": case.get("assertion"),
+            "status": case.get("prior_status", "PROPOSED"),
+            "scope": {k: case.get(k) for k in
+                      ("tenant", "workspace", "goal", "scope")}})]
+        expected.extend(("evidence", str(ev.get("evidence_id", "?")), ev)
+                        for ev in case.get("evidence", []))
+        if case.get("challenge") is not None:
+            expected.append(("challenge", "c", case["challenge"]))
+        expected.extend(("prior_decision", str(i), rec) for i, rec in
+                        enumerate(case.get("prior_decisions", [])))
+        expected.append(("decision", "d", {
+            "decision_id": decision_id, **{k: row.get(k) for k in
+                ("decision", "transition", "actor", "reason_code", "policy_version")}}))
+        audit = row.get("audit_events", [])
+        if any(not isinstance(e, str) for e in audit) or len(audit) != len(set(audit)):
+            return ["audit events must be unique strings"]
+        expected.extend(("audit", event.lower(), {
+            "event": event, "decision_id": decision_id,
+            "actor": row.get("actor"), "reason_code": row.get("reason_code")})
+                        for event in audit)
+        if len(ledger) != len(expected):
+            violations.append("ledger record set differs from frozen input and decision")
+        for rec, (kind, name, payload) in zip(ledger, expected):
+            if not isinstance(rec, dict) or rec.get("kind") != kind or \
+                    rec.get("id") != f"{kind}-{name}-{suffix}" or \
+                    rec.get("payload") != payload:
+                violations.append("ledger identity/payload differs from frozen input")
+        for field, value in (("action", case["action"]),
+                             ("prior_status", case.get("prior_status", "PROPOSED")),
+                             ("policy_version", case.get("policy_version")),
+                             ("idempotency_key", case.get("idempotency_key"))):
+            if row.get(field) != value:
+                violations.append(f"row {field} differs from frozen input")
     prev = "0" * 64
     decision_ids = []
     for pos, rec in enumerate(ledger):
@@ -215,7 +252,10 @@ def verify_ledger(row: dict) -> list:
         if rec["hash"] != want:
             violations.append(f"ledger[{pos}] hash mismatch")
         prev = rec.get("hash", prev)
-        payload = rec.get("payload") or {}
+        payload = rec.get("payload")
+        if not isinstance(payload, dict):
+            violations.append("ledger payload not object")
+            return violations
         if rec.get("kind") == "decision":
             decision_ids.append(payload.get("decision_id"))
             for field in ("decision", "transition", "actor",
@@ -348,7 +388,7 @@ def evaluate(run_dir: Path) -> dict:
             cell["fn"] += 1
         # transition consistency + ledger reality (F3)
         violations = check_consistency(row, edges, authority)
-        violations += verify_ledger(row)
+        violations += verify_ledger(row, case)
         if violations:
             invalid_transitions += 1
         # hard counters

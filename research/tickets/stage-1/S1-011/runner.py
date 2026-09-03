@@ -134,6 +134,12 @@ class Case:
     def evidence_wellformed(self, ev: dict) -> bool:
         """Structural binding: 64-hex digest equal to the corpus digest
         rule, verified a real boolean, non-empty lineage and group."""
+        if not isinstance(ev, dict):
+            return False
+        if ev.get("source_status") not in ("ACTIVE", "REVOKED") or \
+                not isinstance(ev.get("scope"), str) or not ev["scope"] or \
+                type(ev.get("claim_version")) is not int or ev["claim_version"] < 1:
+            return False
         if not isinstance(ev.get("digest"), str) or \
                 len(ev.get("digest", "")) != 64:
             return False
@@ -153,9 +159,9 @@ class Case:
 
     def evidence_trusted(self, ev: dict) -> bool:
         """Semantic trust: verified true, source ACTIVE and lineage live."""
-        if ev.get("verified") is not True:
+        if ev.get("verified") is not True or ev.get("superseded_by"):
             return False
-        if ev.get("source_status", "ACTIVE") != "ACTIVE":
+        if ev.get("source_status") != "ACTIVE":
             return False
         return self.lineage_active(ev.get("lineage", ""))
 
@@ -163,10 +169,10 @@ class Case:
         return self.evidence_wellformed(ev) and self.evidence_trusted(ev)
 
     def ev_scope(self, ev: dict) -> str:
-        return ev.get("scope", self.scope)
+        return ev.get("scope")
 
     def ev_version(self, ev: dict) -> int:
-        return ev.get("claim_version", self.claim_version)
+        return ev.get("claim_version")
 
     def lineage_active(self, lineage: str) -> bool:
         return bool(lineage) and lineage not in self.revoked
@@ -217,16 +223,17 @@ def ledger_for(case: Case, design: str, seed: int, decision: str,
         prev = record["hash"]
         chain.append(record)
 
-    append("assertion", "a", {"assertion_id": case.assertion_id,
-                              "claim_version": case.claim_version,
-                              "status": case.prior})
+    append("assertion", "a", {"assertion": case.raw.get("assertion"),
+                              "status": case.prior,
+                              "scope": {k: case.raw.get(k) for k in
+                                        ("tenant", "workspace", "goal", "scope")}})
     for ev in case.evidence:
         append("evidence", str(ev.get("evidence_id", "?")),
-               {"evidence_id": ev.get("evidence_id"),
-                "digest": ev.get("digest"),
-                "verified": ev.get("verified"),
-                "lineage": ev.get("lineage"),
-                "group": ev.get("group")})
+               dict(ev))
+    if case.challenge is not None:
+        append("challenge", "c", case.challenge)
+    for index, prior in enumerate(case.raw.get("prior_decisions", [])):
+        append("prior_decision", str(index), prior)
     decision_id = f"decision-{sha(base.encode())[:12]}"
     append("decision", "d", {"decision_id": decision_id,
                              "decision": decision,
@@ -285,6 +292,10 @@ def current_view(case: Case) -> bool:
         return False
     if case.open_challenge():
         return False
+    if not case.evidence or case.raw.get("superseded_by") or binding_broken(case):
+        return False
+    if any(not case.eligible(ev) for ev in case.evidence):
+        return False
     if case.revoked:
         bound = {ev.get("lineage", "") for ev in case.evidence}
         if case.revoked & bound:
@@ -304,6 +315,18 @@ def binding_broken(case: Case) -> bool:
     lineage/group). Trust failures (unverified, revoked) are not
     malformed: they make items ineligible, not invalid."""
     return any(not case.evidence_wellformed(ev) for ev in case.evidence)
+
+
+def promotion_valid(case: Case) -> bool:
+    """Shared minimal gate preconditions, independent of entry point."""
+    items = case.eligible_items()
+    return (case.policy_ok() and not case.open_challenge()
+            and not case.raw.get("superseded_by")
+            and not binding_broken(case) and case.scope_clean()
+            and not any(ev.get("source_status") == "REVOKED" or
+                        not case.lineage_active(ev.get("lineage", ""))
+                        for ev in case.evidence)
+            and len(items) >= 2 and not case.correlated(items))
 
 
 def decide_minimal(case: Case, seed: int) -> dict:
@@ -347,7 +370,7 @@ def decide_minimal(case: Case, seed: int) -> dict:
             return out_row(case, d, seed, "REJECTED", "gate_fail",
                            "SCOPE_MISMATCH", False, ["REJECT"], case.actor)
         items = case.eligible_items()
-        if len(items) < 2 or case.correlated(items):
+        if not promotion_valid(case):
             if binding_broken(case):
                 reason = "INVALID_EVIDENCE_BINDING"
             else:
@@ -370,9 +393,9 @@ def decide_minimal(case: Case, seed: int) -> dict:
         if case.prior == "PROMOTED" and case.challenge and \
                 not case.challenge.get("in_scope", True):
             return out_row(case, d, seed, "NO_TRANSITION", None,
-                           "SCOPE_MISMATCH", True, [], case.actor)
+                           "SCOPE_MISMATCH", current_view(case), [], case.actor)
         return out_row(case, d, seed, "NO_TRANSITION", None,
-                       "DUPLICATE_IDEMPOTENT", case.prior == "PROMOTED",
+                       "DUPLICATE_IDEMPOTENT", current_view(case),
                        [], case.actor)
     if act == "uphold":
         if case.actor not in GOVERNANCE_ACTORS:
@@ -382,8 +405,7 @@ def decide_minimal(case: Case, seed: int) -> dict:
                 case.challenge.get("state") == "resolved" and \
                 case.challenge.get("fresh_evidence"):
             items = case.eligible_items()
-            if len(items) >= 2 and not case.correlated(items) and \
-                    case.policy_ok() and not binding_broken(case):
+            if promotion_valid(case):
                 return out_row(case, d, seed, "PROMOTED",
                                "upheld_with_evidence", "CHALLENGE_UPHELD",
                                True, ["UPHOLD"], case.actor)
@@ -446,11 +468,9 @@ def decide_minimal(case: Case, seed: int) -> dict:
             return out_row(case, d, seed, "NO_TRANSITION", None,
                            "AUTHORITY_DENIED", False, [], case.actor)
         derive = case.raw.get("derive") or {}
-        if derive.get("own_evidence"):
+        if derive.get("own_evidence") is True and case.prior == "PROPOSED":
             items = case.eligible_items()
-            if case.policy_ok() and len(items) >= 2 and \
-                    not case.correlated(items) and \
-                    not binding_broken(case):
+            if promotion_valid(case):
                 return out_row(case, d, seed, "PROMOTED", "gate_pass",
                                "THRESHOLD_MET", True, ["DERIVE", "PROMOTE"],
                                case.actor)
@@ -471,9 +491,7 @@ def decide_minimal(case: Case, seed: int) -> dict:
                 return out_row(case, d, seed, "NO_TRANSITION", None,
                                "AUTHORITY_DENIED", False, [], case.actor)
             items = case.eligible_items()
-            if case.policy_ok() and len(items) >= 2 and \
-                    not case.correlated(items) and \
-                    not binding_broken(case) and not case.open_challenge():
+            if case.prior == "PROPOSED" and promotion_valid(case):
                 return out_row(case, d, seed, "PROMOTED", "gate_pass",
                                "CONCURRENT_RESOLVED", True, ["PROMOTE"],
                                case.actor)
@@ -485,7 +503,7 @@ def decide_minimal(case: Case, seed: int) -> dict:
     if act == "external_inject":
         return out_row(case, d, seed, "QUARANTINED", None,
                        "EXTERNAL_CONTENT_QUARANTINED",
-                       case.prior == "PROMOTED", [], case.actor)
+                        current_view(case), [], case.actor)
     return out_row(case, d, seed, "NO_TRANSITION", None,
                    "UNKNOWN_TRANSITION", False, [], case.actor)
 

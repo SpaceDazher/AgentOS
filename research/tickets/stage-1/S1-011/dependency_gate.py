@@ -141,6 +141,26 @@ def check(ticket: str, rec_override: dict | None = None,
                 problems.append("pack payload sha field mismatch")
             if payload_sha(pack) != evidence.get("payload_sha256"):
                 problems.append("pack payload bytes mismatch")
+            research = pack.get("research", {})
+            campaign = research.get("campaign", {})
+            evaluations = research.get("evaluations", [])
+            latest = max(evaluations, key=lambda e: (e.get("evaluation_version", 0),
+                                                     e.get("id", "")), default={})
+            bindings = {"ticket_id": ticket,
+                        "goal_id": pack.get("goal", {}).get("id"),
+                        "campaign_id": campaign.get("id"),
+                        "evaluation_id": latest.get("id"),
+                        "result": latest.get("result"),
+                        "artifact_chain_hash": latest.get("artifact_chain_hash")}
+            for key, value in bindings.items():
+                if not value or rec.get(key) != value:
+                    problems.append(f"record {key} does not bind to ticket/pack")
+            if campaign.get("goal_id") != rec.get("goal_id") or \
+                    research.get("current_chain_hash") != rec.get("artifact_chain_hash") or \
+                    research.get("latest_chain_hash") != rec.get("artifact_chain_hash") or \
+                    research.get("chain_fresh") is not True or \
+                    research.get("latest_evaluation_valid") is not True:
+                problems.append("pack research chain/campaign not coherent")
         try:
             archived = archive_bytes(pack_rel)
             if sha(archived) != file_sha:

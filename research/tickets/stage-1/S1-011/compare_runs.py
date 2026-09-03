@@ -20,8 +20,11 @@ CLI:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import random
+import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -216,6 +219,19 @@ def sensitivity(scores: dict, weights: dict | None = None,
             disclosures.append({"design": design, "forced": forced,
                                 "winner": winner, "changed": changed,
                                 "abstained": abstained})
+    # Simultaneous worst-winner/best-challenger bounds cover combinations
+    # missed by changing only one design at a time (positive linear weights).
+    for challenger in sorted(scores):
+        if challenger == base_winner:
+            continue
+        bounded = {d: {dim: (v.get(dim) if v.get(dim) is not None else
+                              (1.0 if d == challenger else 0.0))
+                       for dim in dims} for d, v in scores.items()}
+        winner, _ = pick_winner(bounded, weights)
+        changed = winner != base_winner
+        unknown_dependent |= changed
+        disclosures.append({"challenger": challenger, "winner": winner,
+                            "changed": changed, "simultaneous_bounds": True})
     flips = [s for s in sweeps if s["flip"]] + \
         [c for c in compositions if c["flip"]]
     return {"schema": "agentos.s1-011.sensitivity/v1",
@@ -254,6 +270,19 @@ def check_series(cells_a: dict, cells_b: dict, manifest: dict) -> list:
         problems.append(f"run cells != frozen matrix {expected_cells}: "
                         f"a={sorted(cells_a)} b={sorted(cells_b)}")
         return problems
+    case_ids = {c["case_id"] for c in load_json(HERE / "cases.json")["cases"]}
+    for tag, cells in (("A", cells_a), ("B", cells_b)):
+        for design in manifest["matrix"]["designs"]:
+            for seed in manifest["seeds"]:
+                cell = cells[f"{design}-{seed}"]
+                expected = {(cid, design, seed) for cid in case_ids}
+                actual = [(r.get("case_id"), r.get("design"), r.get("seed"))
+                          for r in cell.get("rows", []) if isinstance(r, dict)]
+                m = cell["manifest"]
+                if len(actual) != len(expected) or set(actual) != expected or \
+                        m.get("design") != design or m.get("seed") != seed or \
+                        type(m.get("rows")) is not int or m["rows"] != len(expected):
+                    problems.append(f"{tag} {design}-{seed} incomplete/misbound rows")
     all_manifests = [cells_a[n]["manifest"] for n in cells_a] + \
         [cells_b[n]["manifest"] for n in cells_b]
     commits = {m.get("commit") for m in all_manifests}
@@ -261,9 +290,31 @@ def check_series(cells_a: dict, cells_b: dict, manifest: dict) -> list:
     if len(commits) != 1 or len(trees) != 1:
         problems.append(f"series spans commits {sorted(commits)} / "
                         f"trees {sorted(trees)}")
-    if any(not m.get("clean_tree") for m in all_manifests):
+    if any(m.get("clean_tree") is not True for m in all_manifests):
         problems.append("dirty tree in series")
     frozen_hashes = manifest["hashes"]
+    commit = next(iter(commits)) if len(commits) == 1 else None
+    tree = next(iter(trees)) if len(trees) == 1 else None
+    if not isinstance(commit, str) or not re.fullmatch(r"[0-9a-f]{40}", commit) or \
+            not isinstance(tree, str) or not re.fullmatch(r"[0-9a-f]{40}", tree):
+        problems.append("invalid Git object identity")
+    else:
+        resolved = subprocess.run(["git", "rev-parse", f"{commit}^{{tree}}"],
+                                  cwd=HERE, capture_output=True, text=True)
+        if resolved.returncode or resolved.stdout.strip() != tree:
+            problems.append("Git commit does not resolve to recorded tree")
+        else:
+            for name, pinned in frozen_hashes.items():
+                path = (HERE / name).resolve()
+                if not path.is_relative_to(HERE.resolve()) or not path.is_file():
+                    problems.append(f"invalid frozen path: {name}")
+                    continue
+                rel = path.relative_to(HERE.parents[3]).as_posix()
+                obj = subprocess.run(["git", "show", f"{commit}:{rel}"],
+                                     cwd=HERE, capture_output=True)
+                if obj.returncode or hashlib.sha256(obj.stdout).hexdigest() != pinned or \
+                        hashlib.sha256(path.read_bytes()).hexdigest() != pinned:
+                    problems.append(f"frozen bytes not bound to Git tree: {name}")
     for m in all_manifests:
         recorded = m.get("input_hashes", {}) or {}
         for name, pinned in frozen_hashes.items():
