@@ -63,7 +63,9 @@ SOURCES = [
         "verifier": "S1-009-research-agent",
         "verification_method": "archived-byte-read",
         "snapshot_path": "research/tickets/stage-1/S1-009/snapshots/a2a-1.0.0-spec.html",
-        "tag_commit_release": "1.0.0",
+        "tag_commit_release": "v1.0.0",
+        "release_date": "2026-03-12",
+        "release_commit": "173695755607e884aa9acf8ce4feed90e32727a1",
     },
     {
         "id": "src_agentos_gateway",

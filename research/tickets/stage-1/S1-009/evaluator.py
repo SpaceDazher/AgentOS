@@ -1084,6 +1084,11 @@ def _validate_corpus(corpus: dict, corpus_path: Path) -> dict[str, Any]:
             rel = source.get("snapshot_path", "")
             path = REPO_ROOT / Path(*str(rel).replace("\\", "/").split("/"))
             expected = source.get("snapshot_sha256", "")
+            canonical_uri = str(source.get("canonical_uri", ""))
+            if source.get("version") and "normative" in source_type and re.search(
+                r"(?i)(?:^|/)(?:main|master)(?:/|$)", canonical_uri
+            ):
+                errors.append(f"{source.get('id', '?')} uses mutable main/master URI")
             if source.get("snapshot_sha256_method") != "sha256(snapshot_file_bytes)":
                 errors.append(f"{source.get('id', '?')} lacks byte-hash method")
             if not source.get("tag_commit_release"):
