@@ -449,6 +449,32 @@ class TestProtocolSnapshotManifest(unittest.TestCase):
                 self.assertNotIn("content-derived", str(source.get("snapshot_sha256_method", "")))
                 self.assertNotIn("retrieval_timestamp)", str(source.get("snapshot_sha256_method", "")))
                 self.assertTrue(source.get("tag_commit_release"), "release/tag provenance is required")
+                if source.get("version") and "normative" in source_type:
+                    self.assertIsNone(
+                        re.search(r"(?i)(?:^|/)(?:main|master)(?:/|$)", source.get("canonical_uri", "")),
+                        "versioned normative source must use an immutable URI, not main/master",
+                    )
+
+    def test_a2a_v1_metadata_matches_immutable_tag_snapshot(self):
+        sources = {
+            source.get("id"): source
+            for source in self.manifest.get("sources", [])
+            if source.get("protocol") == "A2A"
+        }
+        spec = sources["A2A-1.0.0-SPEC"]
+        proto = sources["A2A-1.0.0-PROTO"]
+        for source in (spec, proto):
+            with self.subTest(source=source["id"]):
+                self.assertEqual(source.get("version"), "1.0.0")
+                self.assertEqual(source.get("specifier"), "v1.0.0")
+                self.assertEqual(source.get("release_date"), "2026-03-12")
+                self.assertEqual(source.get("tag_commit_release"), "v1.0.0")
+                self.assertEqual(source.get("release_commit"), "173695755607e884aa9acf8ce4feed90e32727a1")
+                if source["id"].endswith("PROTO"):
+                    self.assertRegex(source.get("canonical_uri", ""), r"173695755607e884aa9acf8ce4feed90e32727a1")
+        proto_path = REPO_ROOT / Path(*proto["snapshot_path"].replace("\\", "/").split("/"))
+        self.assertEqual(proto.get("snapshot_sha256"), sha256_file(proto_path))
+        self.assertNotRegex(proto.get("canonical_uri", ""), r"(?i)(?:^|/)(?:main|master)(?:/|$)")
 
     def test_independent_source_is_archived_too(self):
         independent = [
