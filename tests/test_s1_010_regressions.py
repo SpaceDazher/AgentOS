@@ -188,7 +188,8 @@ class S1010ProductionPath(unittest.TestCase):
                 "S1-010 production-path tests require the clean tree "
                 "guaranteed by the contract verification block")
         cls.tmp = Path(tempfile.mkdtemp(prefix="s1-010-tests-"))
-        rc, summary = run_evaluator(cls.tmp / "out", "verifier-test", "nonce-test")
+        rc, summary, _stderr = run_evaluator(cls.tmp / "out", "verifier-test",
+                                             "nonce-test")
         cls.rc = rc
         cls.summary = summary
         cls.decisions = load_decisions(cls.tmp / "out")
@@ -381,9 +382,12 @@ class S1010TamperRejection(unittest.TestCase):
             root, sandbox_repo = copy_ticket(Path(tmp))
             mutate(root)
             out = Path(tmp) / "out"
+            # The evaluator must read the SANDBOX corpus — the mutated bytes
+            # are the actual input, not the pristine repository file.
             rc, _, stderr = run_evaluator(
                 out, "verifier-tamper", "nonce-tamper",
-                ticket_root=root, snapshots_root=sandbox_repo)
+                ticket_root=root, corpus=root / "cases.json",
+                snapshots_root=sandbox_repo)
             return rc, stderr
 
     def positive_control(self) -> None:
@@ -393,7 +397,8 @@ class S1010TamperRejection(unittest.TestCase):
             out = Path(tmp) / "out"
             rc, payload, stderr = run_evaluator(
                 out, "verifier-control", "nonce-control",
-                ticket_root=root, snapshots_root=sandbox_repo)
+                ticket_root=root, corpus=root / "cases.json",
+                snapshots_root=sandbox_repo)
         self.assertEqual(rc, 0, stderr or payload)
         self.assertEqual(payload.get("verdict"), "PASS", payload)
 
