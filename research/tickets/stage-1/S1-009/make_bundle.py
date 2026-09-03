@@ -19,6 +19,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).parent
+REPO_ROOT = ROOT.parents[3]
 
 
 def sha256_text(text: str) -> str:
@@ -46,41 +47,44 @@ SOURCES = [
         "id": "src_mcp_2026_07_28",
         "canonical_uri": "https://modelcontextprotocol.io/specification/2026-07-28",
         "title": "MCP Specification 2026-07-28",
-        "source_type": "normative_spec",
+        "source_type": "normative protocol specification",
         "verification_status": "verified",
         "verifier": "S1-009-research-agent",
-        "verification_method": "direct-read",
-        "content": "MCP 2026-07-28: JSON-RPC 2.0 over stdio/HTTP+SSE/WebSocket; capabilities: tools, resources, prompts, tasks."
+        "verification_method": "archived-byte-read",
+        "snapshot_path": "research/tickets/stage-1/S1-009/snapshots/mcp-2026-07-28-spec.html",
+        "tag_commit_release": "release 2026-07-28",
     },
     {
         "id": "src_a2a_1_0_0",
         "canonical_uri": "https://a2a-protocol.org/v1.0.0/specification",
         "title": "A2A Protocol 1.0.0 Specification",
-        "source_type": "normative_spec",
+        "source_type": "normative protocol specification",
         "verification_status": "verified",
         "verifier": "S1-009-research-agent",
-        "verification_method": "direct-read",
-        "content": "A2A 1.0.0: Agent Card, Task/TaskState, sendTask/sendTaskStreaming/cancelTask/getTask, JSON-RPC over HTTP/WS."
+        "verification_method": "archived-byte-read",
+        "snapshot_path": "research/tickets/stage-1/S1-009/snapshots/a2a-1.0.0-spec.html",
+        "tag_commit_release": "1.0.0",
     },
     {
         "id": "src_agentos_gateway",
         "canonical_uri": "https://agentos.local/src/agentos/gateway.py",
         "title": "AgentOS Gateway (local architecture consumer)",
-        "source_type": "local_architecture",
+        "source_type": "local architecture/specification source",
         "verification_status": "verified",
         "verifier": "S1-009-research-agent",
-        "verification_method": "direct-read",
-        "content": "AgentOS hub gateway: tool registry, capability checks, idempotency, fencing, reconciliation, exact-action approvals."
+        "verification_method": "host-file-sha256-binding",
+        "snapshot_path": "src/agentos/gateway.py",
     },
     {
         "id": "src_sv2_survey",
-        "canonical_uri": "https://arxiv.org/abs/2506.05725",
-        "title": "SV2 Survey: Agent-to-Agent Protocols",
-        "source_type": "interoperability_survey",
+        "canonical_uri": "https://arxiv.org/abs/2504.16736",
+        "title": "A Survey of AI Agent Protocols (arXiv:2504.16736)",
+        "source_type": "independent interoperability survey (preprint)",
         "verification_status": "verified",
         "verifier": "S1-009-research-agent",
-        "verification_method": "direct-read",
-        "content": "Independent survey: security and verification gaps in agent-to-agent delegation/knowledge/budget semantics."
+        "verification_method": "archived-byte-read",
+        "snapshot_path": "research/tickets/stage-1/S1-009/snapshots/sv2-2504.16736.html",
+        "tag_commit_release": "arXiv:2504.16736v3",
     },
 ]
 
@@ -163,8 +167,8 @@ ARTIFACT_CONTENT = {
         "1. **MCP 2026-07-28** (verified) — https://modelcontextprotocol.io/specification/2026-07-28\n"
         "2. **A2A 1.0.0** (verified) — https://a2a-protocol.org/v1.0.0/specification\n"
         "3. **AgentOS gateway.py** (verified) — src/agentos/gateway.py\n"
-        "4. **SV2 arXiv survey** (verified) — https://arxiv.org/abs/2506.05725\n\n"
-        "All sources are verified; the ratio is 1.0 (4/4).\n"
+        "4. **Independent arXiv survey v3** (verified) — https://arxiv.org/abs/2504.16736\n\n"
+        "All sources are verified and byte-bound; the ratio is 1.0 (4/4).\n"
     ),
     "feature_catalog": (
         "# S1-009 Feature Catalog (Canonical Envelope v1.0)\n\n"
@@ -247,8 +251,8 @@ ARTIFACT_CONTENT = {
         "12 of 15 capability rows have lossless or lossy-safe mappings. The adapter "
         "preserves the canonical AgentOS hub envelope provider-neutral.\n\n"
         "## Gaps (ABSENT/UNDERSPECIFIED in both MCP and A2A)\n"
-        "- **SM6** (exact-action delegation grants) → unsupported, follow-up S1-010.\n"
-        "- **SM8** (budget reservation/consumption) → unsupported, no follow-up.\n"
+        "- **SM6** (exact-action delegation grants) → unsupported, S1-009-FU-01 (Delegation Grant Contract).\n"
+        "- **SM8** (budget reservation/consumption) → unsupported, S1-009-FU-02 (Budget Conservation Contract).\n"
         "- **SM11** (knowledge promotion governance) → unsupported, follow-up S1-011.\n\n"
         "## Residual Risks\n"
         "- Protocol drift (MCP/A2A new versions require new source-freeze).\n"
@@ -272,7 +276,7 @@ ARTIFACT_CONTENT = {
         "1. Same-host, process-separated (not external human auditor).\n"
         "2. No full third-party content archiving.\n"
         "3. No streaming/push binding coverage.\n"
-        "4. SM6/SM8/SM11 unsupported (deferred to S1-010, S1-011).\n"
+        "4. SM6/SM8/SM11 unsupported (S1-009-FU-01, S1-009-FU-02, S1-011). S1-010 remains tool-poisoning only.\n"
     ),
     "platform_plan": (
         "# S1-009 Platform Plan (Adapter Roadmap)\n\n"
@@ -367,13 +371,28 @@ def main() -> None:
 
     print(f"[make_bundle] Replaced {rules_updated} placeholder rule_sha256 values")
 
-    # --- 2. Compute content SHA-256 for sources (if content provided) ---
+    # --- 2. Bind every verified source to real local bytes ---
     for src in SOURCES:
-        content = src.pop("content", None)
-        if content:
-            src["content_sha256"] = sha256_text(content)
-        else:
-            src["content_sha256"] = "0" * 64
+        rel = src.get("snapshot_path", "")
+        if not rel or Path(rel).is_absolute():
+            raise RuntimeError(f"source {src.get('id')} has no safe snapshot_path")
+        snapshot = (REPO_ROOT / Path(*rel.replace("\\", "/").split("/"))).resolve()
+        try:
+            snapshot.relative_to(REPO_ROOT.resolve())
+        except ValueError as exc:
+            raise RuntimeError(f"source {src.get('id')} snapshot escapes repository") from exc
+        if not snapshot.is_file():
+            raise RuntimeError(f"source {src.get('id')} snapshot is missing: {rel}")
+        digest = sha256_file(snapshot)
+        src["content_sha256"] = digest
+        src["snapshot_bytes"] = snapshot.stat().st_size
+        src["snapshot_sha256"] = digest
+        src["snapshot_sha256_method"] = "sha256(snapshot_file_bytes)"
+        src["verifier_provenance"] = {
+            "method": src["verification_method"],
+            "path": rel,
+            "file_sha256": digest,
+        }
 
     # --- 3. Build artifacts with producer and claim_refs ---
     claim_refs_feature = ["claim_fact_mcp_version", "claim_fact_a2a_version"]
@@ -452,10 +471,7 @@ def main() -> None:
         "semantic-model.json",
         "protocol-snapshot-manifest.json",
         "corpus-manifest.json",
-        "evaluation-record.json",
         "dependency-gate.json",
-        "results/comparison.json",
-        "tests/test_s1_009_regressions.py",
         "results/adapter-roadmap.md",
         "results/ENVIRONMENT.md",
         "results/probes.json",
@@ -479,7 +495,7 @@ def main() -> None:
             "Same-host, process-separated (not external human auditor).",
             "No full third-party content archiving.",
             "No streaming/push binding coverage for MCP/A2A.",
-            "SM6 (delegation), SM8 (budget), SM11 (knowledge promotion) unsupported; deferred to S1-010/S1-011.",
+            "SM6/SM8/SM11 remain unsupported under S1-009-FU-01/FU-02 and S1-011; S1-010 remains tool-poisoning only.",
         ],
     }
 

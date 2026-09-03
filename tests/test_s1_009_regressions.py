@@ -440,7 +440,6 @@ class TestProtocolSnapshotManifest(unittest.TestCase):
                 self.assertTrue(rel and not Path(rel).is_absolute())
                 path = (REPO_ROOT / Path(*rel.replace("\\", "/").split("/"))).resolve()
                 self.assertTrue(path.is_file(), f"missing archived snapshot {rel}")
-                self.assertEqual(path.read_bytes(), path.read_bytes())
                 self.assertEqual(source.get("snapshot_sha256"), sha256_file(path))
                 self.assertEqual(source.get("snapshot_sha256_method"), "sha256(snapshot_file_bytes)")
                 self.assertNotIn("content-derived", str(source.get("snapshot_sha256_method", "")))
@@ -475,10 +474,16 @@ class TestLatestCanonicalBinding(unittest.TestCase):
                 "ORDER BY revision DESC, id DESC LIMIT 1", ("S1-009",)
             ).fetchone()
             self.assertIsNotNone(series)
+            top_level_series_fields = {
+                "id": "research_series_id",
+                "revision": "research_revision",
+                "campaign_id": "campaign_id",
+                "goal_id": "goal_id",
+                "manifest_sha256": "manifest_sha256",
+            }
             for field in ("id", "revision", "campaign_id", "goal_id", "manifest_sha256"):
                 with self.subTest(field=field):
-                    self.assertEqual(self.record.get({"id": "research_series_id"}.get(field, field)), series[field])
-            self.assertEqual(self.record.get("research_revision"), series["revision"])
+                    self.assertEqual(self.record.get(top_level_series_fields[field]), series[field])
             evaluation = conn.execute(
                 "SELECT * FROM research_evaluation WHERE goal_id=? "
                 "ORDER BY evaluation_version DESC, id DESC LIMIT 1", (series["goal_id"],)

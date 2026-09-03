@@ -772,7 +772,38 @@ python -m agentos.cli research-plan --topic "S1-008 revocation latency validatio
 
 ### S1-009 — MCP/A2A delegation and knowledge semantics roadmap
 
-- **Status:** `PASS_WITH_LIMITS` (revision 5; see `evaluation-record.json`)
+- **Status:** `PASS_WITH_LIMITS` — canonical DB revision 8; series
+  `rseries_QFVRXNRK0HKQ4AE101M1JGACH4`, goal
+  `goal_434ZK1M3X9F4ZKP301M1JGACES`, evaluation
+  `reval_SVYWTVH2TJ6JZDJB01M1JGACKW`, artifact chain
+  `4184ca09e4648fa11cd9ca303baebf50bacdbfd58758e6783a8b0f385b811ff4`,
+  manifest `564f3063228eb34d0637aecdf6f647e242bfcfcd197a520a3fdfef865780af02`;
+  `chain_fresh=true`, `latest_evaluation_valid=true`.
+- **Reproducible measurement:** clean commit
+  `79ababfab74228b10d6d8d503f38968b394e4a70`, tree
+  `34a713bb7affda94a212c10f520b2954c5f054c9`, input manifest
+  `a574defb9314eed7112696ce012a100785499ea19b16db24c6248fd28a8e135c`;
+  top-level A/B invocations are separate processes with distinct PIDs,
+  invocation digests, executors, and output roots, and compare `PASS` with
+  40/40 cases. Evaluator hash
+  `8b8baf4e15a235f2784a452c8f8937b26b9a2ce7d2f072c9667a5f29277390f6`;
+  capability path executed 13/13 mappings across 12 distinct rows.
+- **Tracked evidence:** ticket pack
+  `research/tickets/stage-1/S1-009/tracked-packs/ticket/421e5e1d0a6a3aba12bb6778dda6e52daa5a36222f8ba8cd65ed504bafe30fc0.json`
+  (file `421e5e1d0a6a3aba12bb6778dda6e52daa5a36222f8ba8cd65ed504bafe30fc0`,
+  payload `376ffc1dc58136bb60ef4b5db768f0f4ad935e7852c50fe341a28a19e1ce8b0f`,
+  pack `0be951415e6e8b89b2fca0fd8e4ee8cbc6d324aeb1137a37553b44fca6bd8795`);
+  canonical pack
+  `research/tickets/stage-1/S1-009/tracked-packs/canonical/09b6be08594f268f117d7bc85629fdca44089ddad563b736ed23dc29a90952ff.json`
+  (file `09b6be08594f268f117d7bc85629fdca44089ddad563b736ed23dc29a90952ff`,
+  payload `18cd58ad5f859fd4e49b407dac83c5d4705959e6835c1a681cc51bf62b16a794`,
+  pack `6dccf67199917fccd6a5f7fcedf9d3d5a9e0092daca4b982bbde48d9f22c294b`).
+- **Source limits:** byte-bound official MCP `2026-07-28` and A2A `1.0.0`
+  snapshots plus independent arXiv `2504.16736v3` are tracked; exact bytes
+  and provenance are in `protocol-snapshot-manifest.json`. Same-host rather
+  than external human auditor, no full third-party archiving, no streaming/
+  push binding coverage, and SM6/SM8/SM11 remain unsupported under the named
+  follow-ups and S1-011; S1-010 remains tool-poisoning only.
 - **Priority:** `P1`
 - **Wave:** `W2`
 - **Owner:** `architecture`
