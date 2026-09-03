@@ -301,9 +301,9 @@ def main() -> int:
     canonical_pack = write_pack("canonical", canonical_payload)
     record = build_record(series, evaluation, runtime_pack, runtime_path,
                           ticket_pack, canonical_pack)
-    (ROOT / "evaluation-record.json").write_text(
-        json.dumps(record, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
-        encoding="utf-8",
+    (ROOT / "evaluation-record.json").write_bytes(
+        (json.dumps(record, indent=2, sort_keys=True, ensure_ascii=False) + "\n")
+        .encode("utf-8")
     )
     print(json.dumps({
         "research_series_id": series["id"],

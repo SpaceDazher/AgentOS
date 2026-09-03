@@ -374,15 +374,15 @@ def main() -> int:
             final_dir.mkdir(parents=True, exist_ok=True)
             shutil.copy2(temp_root / label / "results.json", final_dir / "results.json")
             summary["results_path"] = str((final_dir / "results.json").resolve())
-            (final_dir / "summary.json").write_text(
-                json.dumps(summary, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
-                encoding="utf-8",
+            (final_dir / "summary.json").write_bytes(
+                (json.dumps(summary, indent=2, sort_keys=True, ensure_ascii=False) + "\n")
+                .encode("utf-8")
             )
         comparison = compare_runs(summary_a, summary_b)
         workdir.mkdir(parents=True, exist_ok=True)
-        (workdir / "comparison.json").write_text(
-            json.dumps(comparison, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
-            encoding="utf-8",
+        (workdir / "comparison.json").write_bytes(
+            (json.dumps(comparison, indent=2, sort_keys=True, ensure_ascii=False) + "\n")
+            .encode("utf-8")
         )
     print(json.dumps({
         "verdict": comparison["verdict"],

@@ -366,7 +366,7 @@ def main() -> None:
                     rule["rule_sha256"] = sha256_text(canonical_rule_json(rule))
                     rules_updated += 1
 
-    with open(contract_path, "w", encoding="utf-8") as f:
+    with open(contract_path, "w", encoding="utf-8", newline="\n") as f:
         json.dump(contract, f, indent=2, ensure_ascii=False)
 
     print(f"[make_bundle] Replaced {rules_updated} placeholder rule_sha256 values")
@@ -530,7 +530,7 @@ def main() -> None:
     }
 
     bundle_path = ROOT / "bundle.json"
-    with open(bundle_path, "w", encoding="utf-8") as f:
+    with open(bundle_path, "w", encoding="utf-8", newline="\n") as f:
         json.dump(bundle, f, indent=2, ensure_ascii=False)
 
     print(f"[make_bundle] Wrote {bundle_path}")

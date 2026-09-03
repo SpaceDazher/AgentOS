@@ -60,7 +60,7 @@ def main() -> int:
     data["corpus"]["passing_capability_rows"] = len(supported)
     data["corpus"]["unsupported_capability_rows"] = [row["surface_id"] for row in matrix["matrix"]
                                                         if row.get("loss_class") == "unsupported"]
-    path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    path.write_bytes((json.dumps(data, indent=2, ensure_ascii=False) + "\n").encode("utf-8"))
     return 0
 
 

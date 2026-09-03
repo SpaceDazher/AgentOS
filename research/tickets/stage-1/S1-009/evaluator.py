@@ -1244,10 +1244,10 @@ def run_corpus(corpus_path: str | Path, output_dir: str | Path,
         output["verdict"] = "FAIL"
 
     # Write per-case results
-    with open(output_dir / "results.json", "w") as f:
+    with open(output_dir / "results.json", "w", newline="\n") as f:
         json.dump(results, f, indent=2, sort_keys=True)
     # Write summary
-    with open(output_dir / "summary.json", "w") as f:
+    with open(output_dir / "summary.json", "w", newline="\n") as f:
         summary = {k: v for k, v in output.items() if k != "results"}
         json.dump(summary, f, indent=2, sort_keys=True)
 
