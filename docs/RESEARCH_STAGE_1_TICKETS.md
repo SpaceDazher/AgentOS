@@ -9,7 +9,7 @@ tags:
   - agentos/stage-1
   - agentos/tickets
 created_at: 2026-08-24
-updated_at: 2026-08-30
+updated_at: 2026-09-02
 stage: 1
 status: PLANNING_ONLY
 owner: research-planning
@@ -772,35 +772,37 @@ python -m agentos.cli research-plan --topic "S1-008 revocation latency validatio
 
 ### S1-009 — MCP/A2A delegation and knowledge semantics roadmap
 
-- **Status:** `PASS_WITH_LIMITS` — canonical DB revision 10; series
-  `rseries_Z0G74XT911RG3B2W01M1JHJV7S`, goal
-  `goal_DM3Y3PCXA145RE0A01M1JHJV76`, evaluation
-  `reval_CK8HFEH7GHKT1Q7V01M1JHJV84`, artifact chain
-  `0545aca33233e3f7ab7f88373b231a815f931a385248094c5b4119e42d285083`,
-  manifest `72135d4f75944e46a687fb34b8ad8472f38a23d205e5e9e9d563ce3884772851`;
+- **Status:** `PASS_WITH_LIMITS` — canonical DB revision 11; series
+  `rseries_DETFQ8GK1X6QV3AE01M1JJGE2F`, goal
+  `goal_B87S5W4AVDSXN04J01M1JJGE20`, evaluation
+  `reval_KJWPMSJE08BGDVNP01M1JJGE2W`, artifact chain
+  `1d1b2debbbb2ac9ff76a65ffe352152c207d7a3ea71073af56a37679b464192b`,
+  manifest `51ce9ca098e5ef6275faa92fc0dbf48cb1ccb46b15368e59827763162077a375`;
   `chain_fresh=true`, `latest_evaluation_valid=true`.
 - **Reproducible measurement:** clean commit
-  `ffc501ec9c7852b0686941a1b88261d1153af4af`, tree
-  `97ddcc3a5acfe3860655397aa0777d00bd525165`, input manifest
-  `41cea881ab3851e24b9a29640d8073ef9da95bfd188c6627828c2a82edb83371`;
+  `dc87b554f8399b525b8e85c268b842f97e51f1f0`, tree
+  `b20b77cd00a49300e32c225812be80d5147c7466`, input manifest
+  `69cddbe5d7d9127d96a4e9e74cde617b93e944cbb3a6ce209a40862a1cc1345f`;
   top-level A/B invocations are separate processes with distinct PIDs,
   invocation digests, executors, and output roots, and compare `PASS` with
   40/40 cases. Evaluator hash
-  `e677965bec1bd9b1d0edf7abda4d536771b8961e586a0b2e703b2a738e47bf86`;
+  `7be02d7553cb0fe74edde241b013e7d3a4e5c4f3824192c6028569d59174186a`;
   capability path executed 13/13 mappings across 12 distinct rows.
 - **Tracked evidence:** ticket pack
-  `research/tickets/stage-1/S1-009/tracked-packs/ticket/725b570415facdbfcdf11c31bf1688181087ad18eaf4f9ad8842ae2366ced379.json`
-  (file `725b570415facdbfcdf11c31bf1688181087ad18eaf4f9ad8842ae2366ced379`,
-  payload `b3118ca0b3f177dfbe90cc9a654f0f53c1c07bf4740bcebf999d45083052e9f7`,
-  pack `afbd76d4c0e2942aad9f2965e3f7a81d066cfcfbf6b2eca6971b5a4c3e142221`);
+  `research/tickets/stage-1/S1-009/tracked-packs/ticket/53a3917c03af32c636116d8326ebf46cc71c897d1e4a6953fa4158c9063173e2.json`
+  (file `53a3917c03af32c636116d8326ebf46cc71c897d1e4a6953fa4158c9063173e2`,
+  payload `a7f71ce118a3313b00314bef70dff6c763bf17470f3e46840bfc7c2c68319a73`,
+  pack `52c0aacd11d11960a647c3ee4b1e74c8987126633c8da6b62e0d9e0068ef0fa6`);
   canonical pack
-  `research/tickets/stage-1/S1-009/tracked-packs/canonical/ab268c47faaf842a86e5cea54288c7542fc1a0fc2156424f4bb58902a3e618de.json`
-  (file `ab268c47faaf842a86e5cea54288c7542fc1a0fc2156424f4bb58902a3e618de`,
-  payload `a96e4475a039016b8d9eb11fe6dddd11647b78f3620fa77988732bb3be046713`,
-  pack `d363c7d085eb06fb77792117bed5c7a17deaca8bddd6db7926ec2f0ba99f1f68`).
+  `research/tickets/stage-1/S1-009/tracked-packs/canonical/53b29ff64626367dff2232047dc075c50b0f0158d5a336112cfb9c69e052b314.json`
+  (file `53b29ff64626367dff2232047dc075c50b0f0158d5a336112cfb9c69e052b314`,
+  payload `1fa1b9389dd7084adf1305267534f83ae022951b14f2cda73724b6e048bfd15e`,
+  pack `d1b286219906b51b40dad06037c0e08396006a5a148013be46641f7f92786998`).
 - **Source limits:** byte-bound official MCP `2026-07-28` and A2A `1.0.0`
-  snapshots plus independent arXiv `2504.16736v3` are tracked; exact bytes
-  and provenance are in `protocol-snapshot-manifest.json`. Same-host rather
+  snapshots plus independent arXiv `2504.16736v3` are tracked; the A2A
+  `v1.0.0` proto is bound to immutable commit
+  `173695755607e884aa9acf8ce4feed90e32727a1` and release date `2026-03-12`.
+  Exact bytes and provenance are in `protocol-snapshot-manifest.json`. Same-host rather
   than external human auditor, no full third-party archiving, no streaming/
   push binding coverage, and SM6/SM8/SM11 remain unsupported under the named
   follow-ups and S1-011; S1-010 remains tool-poisoning only.
