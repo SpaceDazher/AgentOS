@@ -1,17 +1,38 @@
 # S1-010 Implementation & Rollback Roadmap
 
-## Phase A (this branch, cloud) — COMPLETE
+## Phase A (this branch, cloud) — COMPLETE (incl. round-2 review fixes)
 
 1. Dependency gate over S1-001/S1-009 tracked packs (`dependency_gate.py`,
-   `dependency-gate.json`; `canonical_db_recheck_required: true`).
+   `dependency-gate.json`; `canonical_db_recheck_required: true`).  Round 2:
+   strict pack-integrity formulas (embedded-sha256 / payload+pack_sha256),
+   unknown schemas fail closed; archive parsed in memory for portability.
 2. Six official sources byte-snapshotted and SHA-256-bound
    (`source-registry.json`, `snapshots/`).
 3. Frozen control contract, rubric (pre-run thresholds), threat model.
-4. Frozen 56-case corpus with per-case SHA-256 and probes A–F.
-5. TDD regression suite (`tests/test_s1_010_regressions.py`, 21+ tests).
-6. Deterministic stdlib evaluator + process-separated runner; Run A/B on one
-   clean commit; comparison, metrics, probes, environment evidence.
-7. FLOW-11 bundle and candidate record (`READY_FOR_CANONICALIZATION`).
+4. Frozen 56-case corpus with per-case SHA-256 and probes A–F; manifest
+   re-frozen to the round-2 dependency gate (cases.json byte-identical).
+5. TDD regression suite (`tests/test_s1_010_regressions.py`, 56 tests) with
+   positive-control tamper sandboxes bound to the real --repo-root and
+   redirected --snapshots-root, and specific rejection-reason assertions.
+6. Deterministic stdlib evaluator + two independent runner child processes
+   (distinct runner PIDs, evaluator PIDs, executors, nonces, output roots)
+   with full binding schemas (incl. runner_sha256), staged-digest
+   re-verification, and fail-closed final verdicts; Run A/B on one clean
+   commit; comparison, metrics, probes, environment evidence.
+7. Native FLOW-11 bundle validated by the real platform normalizer before
+   writing, and a candidate record published only after every evidence gate
+   passed (`READY_FOR_CANONICALIZATION`).
+
+## Review round 2 (independent REVISE) — RESOLVED
+
+All ten findings addressed: fail-open aggregation/records/provenance and the
+decision contract made fail-closed (context/output schema validation,
+revocation routing, closed detector-status set, strict record/corpus
+validation, FAIL propagation through evaluator CLI, runner and both
+generators); negative tests fixed with positive controls; portable
+dependency gate; bundle rebuilt in the native FLOW-11 schema and accepted
+by the real normalizer.  New A/B runs executed with independent runner
+processes and full bindings.
 
 ## Phase B (trusted local host) — PENDING
 

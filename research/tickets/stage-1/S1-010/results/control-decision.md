@@ -2,9 +2,19 @@
 
 ## Decision
 
-**PASS** (proposed; cloud Phase A evidence only) — recorded as
-`READY_FOR_CANONICALIZATION` in `candidate-record.json`. The branch stays
-`IN_REVIEW`; local canonical Phase B is required before any ticket closure.
+**PASS** (proposed; cloud Phase A evidence only, round 2 after an
+independent REVISE review) — recorded as `READY_FOR_CANONICALIZATION` in
+`candidate-record.json`.  The branch stays `IN_REVIEW`; local canonical
+Phase B is required before any ticket closure.  Round 2 closed all ten
+review findings (fail-open aggregation/records/provenance, decision-contract
+gaps, wrong tamper-sandbox repo-root, fail-open dependency-gate pack
+verification, Windows path/arcchive portability, and the non-native FLOW-11
+bundle); two fresh process-separated A/B runs with full binding schemas
+reproduced identical decisions with zero critical escapes and zero authority
+expansions.  Registered-context revocation now routes to QUARANTINE before
+any permissive branch, and the approval model limitation (boolean
+pre_approved; exact-action/expiry binding is a production-gateway duty) is
+recorded explicitly.
 
 ## Answer to the research question
 
