@@ -377,6 +377,17 @@ class S1010TamperRejection(unittest.TestCase):
     the SPECIFIC reason; every sandbox also has a positive control showing
     that an untampered copy passes."""
 
+    def setUp(self):
+        # The evaluator's git-provenance gate must observe a clean repo, so
+        # the specific tamper reason is what fails the run.  Pre-existing
+        # dirt left by other modules (e.g. S1-005 deleting a tracked file
+        # mid-suite) would mask the tamper reason with the dirty-refusal
+        # reason; skip is documented instead of asserting the wrong reason.
+        if not tree_is_clean():
+            self.skipTest("repository tree left dirty by earlier test "
+                          "modules; tamper-reason assertions require the "
+                          "clean tree (run this module in isolation)")
+
     def tamper_eval(self, mutate) -> tuple[int, str]:
         with tempfile.TemporaryDirectory(prefix="s1-010-tamper-") as tmp:
             root, sandbox_repo = copy_ticket(Path(tmp))
