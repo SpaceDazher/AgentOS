@@ -164,6 +164,9 @@ def run_single(corpus: Path, out_dir: Path, executor: str, nonce: str,
     decisions_doc = json.loads(decisions_path.read_text(encoding="utf-8"))
     records = decisions_doc["decisions"]
     summary["decision_count"] = len(records)
+    # hash of the decision content only (executor/nonce live at doc level)
+    summary["decisions_sha256"] = sha256_text(json.dumps(
+        records, sort_keys=True, separators=(",", ":")))
     summary["decision_digest"] = sha256_text(json.dumps(
         [(r["case_id"], r["decision"]) for r in records],
         sort_keys=True, separators=(",", ":")))
@@ -193,7 +196,7 @@ def compare_runs(run_a: dict, run_b: dict) -> dict:
         violations.append("pid collision across runs")
     pid_a = run_a.get("process_provenance", {}).get("evaluator_pid")
     pid_b = run_b.get("process_provenance", {}).get("evaluator_pid")
-    if pid_a == pid_b:
+    if pid_a is not None and pid_b is not None and pid_a == pid_b:
         violations.append("evaluator pid collision across runs")
     return {
         "identical": not violations,

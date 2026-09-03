@@ -247,7 +247,8 @@ class S1010ProductionPath(unittest.TestCase):
         self.assertEqual(cm["tp"] + cm["fn"] + cm["fp"] + cm["tn"], 56)
         for cls, mm in m["per_class"].items():
             self.assertIn("precision", mm)
-            self.assertIn("wilson", mm)
+            self.assertIn("wilson_precision", mm)
+            self.assertIn("wilson_recall", mm)
         self.assertGreaterEqual(m["per_class"]["malicious_manifest"]["recall"],
                                 0.9)
         self.assertGreaterEqual(m["per_class"]["malicious_output"]["recall"],
