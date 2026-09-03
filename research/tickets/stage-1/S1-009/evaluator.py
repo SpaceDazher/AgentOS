@@ -29,7 +29,8 @@ from pathlib import Path
 from typing import Any
 
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
+# evaluator.py -> S1-009 -> stage-1 -> tickets -> research -> repo root
+REPO_ROOT = Path(__file__).resolve().parents[4]
 _REQUIRED_HASH_KEYS = (
     "evaluator_sha256",
     "adapter_contract_sha256",
