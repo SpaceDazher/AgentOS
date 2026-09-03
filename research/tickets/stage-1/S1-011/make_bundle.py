@@ -213,7 +213,10 @@ def main() -> int:
     }
     bundle_text = json.dumps(bundle, indent=2, sort_keys=True) + "\n"
     (HERE / "bundle.json").write_text(bundle_text, encoding="utf-8")
-    bundle_sha = sha(bundle_text.encode("utf-8"))
+    # Hash the file bytes as written (on Windows, text mode translates
+    # LF->CRLF; the frozen hash must match the committed bytes, so read
+    # back instead of hashing the in-memory string).
+    bundle_sha = sha((HERE / "bundle.json").read_bytes())
     candidate = {
         "schema": "agentos.s1-011.candidate-record/v1",
         "ticket": "S1-011",
