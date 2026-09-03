@@ -460,7 +460,10 @@ class S1010TamperRejection(unittest.TestCase):
             (root / "cases.json").write_text(json.dumps(cases), encoding="utf-8")
         rc, stderr = self.tamper_eval(mutate)
         self.assertNotEqual(rc, 0)
-        self.assertIn("case count mismatch", stderr)
+        # The manifest cases_sha256 binding is the first fail-closed gate on
+        # any corpus-content tamper; the structural checks behind it fire on
+        # the manifest-binding route (test_51).
+        self.assertIn("cases.json hash does not match", stderr)
 
     def test_56_extra_case_rejected(self):
         def mutate(root: Path):
@@ -471,7 +474,7 @@ class S1010TamperRejection(unittest.TestCase):
             (root / "cases.json").write_text(json.dumps(cases), encoding="utf-8")
         rc, stderr = self.tamper_eval(mutate)
         self.assertNotEqual(rc, 0)
-        self.assertIn("case id set mismatch", stderr)
+        self.assertIn("cases.json hash does not match", stderr)
 
     def test_57_duplicate_case_rejected(self):
         def mutate(root: Path):
@@ -480,7 +483,7 @@ class S1010TamperRejection(unittest.TestCase):
             (root / "cases.json").write_text(json.dumps(cases), encoding="utf-8")
         rc, stderr = self.tamper_eval(mutate)
         self.assertNotEqual(rc, 0)
-        self.assertIn("duplicate case ids", stderr)
+        self.assertIn("cases.json hash does not match", stderr)
 
     def test_58_producer_supplied_expectations_rejected(self):
         """A case that carries a producer-decided outcome cannot self-certify."""
