@@ -178,7 +178,7 @@ from a lower wave to a higher wave, and S1-020 is the sole closure sink.
 | S1-006 | W2 | P1 | architecture | PASS_WITH_LIMITS | S1-002, S1-005 | QA2 in-process versus durable execution backend |
 | S1-007 | W2 | P0 | security | PASS_WITH_LIMITS | S1-003, S1-005 | QA3 retrieval/index scope isolation |
 | S1-008 | W2 | P0 | security | PASS_WITH_LIMITS | S1-002, S1-004 | revocation propagation bound of ≤5 seconds |
-| S1-009 | W2 | P1 | architecture | READY | S1-001, S1-005 | MCP/A2A delegation and knowledge adapter roadmap |
+| S1-009 | W2 | P1 | architecture | PASS_WITH_LIMITS | S1-001, S1-005 | MCP/A2A delegation and knowledge adapter roadmap |
 | S1-010 | W3 | P0 | security | READY | S1-001, S1-009 | tool-poisoning detection and quarantine evidence |
 | S1-011 | W1 | P0 | knowledge | READY | S1-001, S1-003 | minimal promote/challenge knowledge gate |
 | S1-012 | W2 | P0 | knowledge | READY | S1-001, S1-003, S1-011 | evidence independence and Beta/Sybil calibration |
@@ -772,7 +772,7 @@ python -m agentos.cli research-plan --topic "S1-008 revocation latency validatio
 
 ### S1-009 — MCP/A2A delegation and knowledge semantics roadmap
 
-- **Status:** `READY`
+- **Status:** `PASS_WITH_LIMITS` (revision 5; see `evaluation-record.json`)
 - **Priority:** `P1`
 - **Wave:** `W2`
 - **Owner:** `architecture`
