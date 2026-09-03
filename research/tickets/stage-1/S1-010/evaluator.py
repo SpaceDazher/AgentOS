@@ -13,9 +13,12 @@ tool-poisoning-contract.json over the frozen corpus in cases.json.
 CLI:
   python evaluator.py --corpus cases.json --out DIR --executor ID --nonce N
                       [--ticket-root DIR] [--repo-root DIR]
+                      [--snapshots-root DIR]
 
-Any internal error is fail-closed: the process exits non-zero without a
-summary.  The evaluator is offline; it must never import network libraries.
+Exit codes: 0 only when the hard-gate verdict is PASS.  A generated FAIL
+verdict still writes its evidence files, then exits 1; any internal error is
+fail-closed and exits non-zero without a summary.  The evaluator is offline;
+it must never import network libraries.
 """
 from __future__ import annotations
 
@@ -27,7 +30,7 @@ import re
 import subprocess
 import sys
 import tempfile
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 
 DEFAULT_TICKET = Path(__file__).resolve().parent
 DEFAULT_REPO = DEFAULT_TICKET.parents[3]
@@ -109,16 +112,34 @@ def sha256_file(path: Path) -> str:
 
 
 def safe_repo_relative(path_str: str, repo_root: Path = DEFAULT_REPO) -> str:
-    """Reject absolute, backslash, drive-letter, and traversal paths."""
+    """Enforce repo-relative POSIX syntax independent of the host OS.
+
+    Rejects backslash paths, POSIX-rooted paths (leading ``/``), Windows
+    drive-letter/UNC/rooted paths (checked via PureWindowsPath so the rule
+    holds on every host), traversal segments, and empty or ``.`` segments.
+    After syntax validation the resolved path must stay inside repo_root
+    (symlinks resolved), so a rooted path such as ``/etc/passwd`` can never
+    escape the repository boundary on any platform.
+    """
     if not path_str or not isinstance(path_str, str):
         raise ValueError(f"invalid path: {path_str!r}")
     if "\\" in path_str:
         raise ValueError(f"backslash path is not repo-relative POSIX: {path_str!r}")
-    p = Path(path_str)
-    if p.is_absolute() or re.match(r"^[A-Za-z]:", path_str):
-        raise ValueError(f"absolute path rejected: {path_str!r}")
-    if path_str.startswith("..") or ".." in p.parts:
-        raise ValueError(f"path traversal rejected: {path_str!r}")
+    if path_str.startswith("/"):
+        raise ValueError(f"POSIX-rooted path rejected: {path_str!r}")
+    if re.match(r"^[A-Za-z]:", path_str):
+        raise ValueError(f"drive-letter path rejected: {path_str!r}")
+    windows = PureWindowsPath(path_str)
+    if windows.is_absolute() or windows.drive:
+        raise ValueError(
+            f"windows-absolute or drive-qualified path rejected: {path_str!r}")
+    parts = path_str.split("/")
+    if any(part in ("", ".", "..") for part in parts):
+        raise ValueError(f"path traversal or empty segment rejected: {path_str!r}")
+    root = Path(repo_root).resolve()
+    resolved = (root / path_str).resolve()
+    if resolved != root and root not in resolved.parents:
+        raise ValueError(f"path escapes repository boundary: {path_str!r}")
     return path_str
 
 
@@ -241,10 +262,84 @@ def decide(case: dict, contract: dict) -> dict:
         return deny("MP-STRUCT")
     manifest = inp.get("manifest")
     tool_output = inp.get("tool_output")
-    ctx = case.get("registered_context") or {}
+    ctx = case.get("registered_context")
     fault = case.get("fault")
     note(0, "input", "ok", {"manifest": manifest is not None,
                             "tool_output": tool_output is not None})
+
+    # ---- L1 structural: registered context is host-owned authority state;
+    # malformed or partial authority data must never degrade to permissive. ----
+    if not isinstance(ctx, dict):
+        note(1, "structural", "fail", "registered_context is not an object")
+        return deny("MP-CTX-INVALID")
+    for field in ("tool_name", "registered_capabilities",
+                  "registered_effect_class", "known_publishers"):
+        if field not in ctx:
+            note(1, "structural", "fail",
+                 f"missing required context field {field}")
+            return deny("MP-CTX-INVALID")
+    if not isinstance(ctx["tool_name"], str) or not ctx["tool_name"].strip():
+        note(1, "structural", "fail", "context tool_name must be a non-empty string")
+        return deny("MP-CTX-INVALID")
+    if not isinstance(ctx["registered_effect_class"], str) or \
+            not ctx["registered_effect_class"].strip():
+        note(1, "structural", "fail",
+             "context registered_effect_class must be a non-empty string")
+        return deny("MP-CTX-INVALID")
+    for list_field in ("registered_capabilities", "known_publishers"):
+        value = ctx[list_field]
+        if not isinstance(value, list) or \
+                not all(isinstance(x, str) for x in value):
+            note(1, "structural", "fail",
+                 f"context {list_field} must be a list of strings")
+            return deny("MP-CTX-INVALID")
+    for str_field in ("registered_publisher", "registered_version",
+                      "registered_schema_version"):
+        if str_field in ctx and not isinstance(ctx[str_field], str):
+            note(1, "structural", "fail",
+                 f"context {str_field} must be a string when present")
+            return deny("MP-CTX-INVALID")
+    if "registered_dependency_digests" in ctx and \
+            not isinstance(ctx["registered_dependency_digests"], dict):
+        note(1, "structural", "fail",
+             "context registered_dependency_digests must be an object")
+        return deny("MP-CTX-INVALID")
+    for bool_field in ("pre_approved", "revoked"):
+        if bool_field in ctx and not isinstance(ctx[bool_field], bool):
+            note(1, "structural", "fail",
+                 f"context {bool_field} must be a strict boolean")
+            return deny("MP-CTX-INVALID")
+    if "policy_overrides" in ctx and \
+            not isinstance(ctx["policy_overrides"], dict):
+        note(1, "structural", "fail",
+             "context policy_overrides must be an object")
+        return deny("MP-CTX-INVALID")
+
+    # ---- Revocation (contract versioning_and_lifecycle.revocation):
+    # registry-authority state, checked before any permissive branch. ----
+    if ctx.get("revoked") is True:
+        note(5, "policy", "fail_closed", "registered context revoked")
+        return quarantine("PE-REVOKED")
+
+    # ---- L1 structural: tool_output schema (untrusted external content) ----
+    if tool_output is not None:
+        if not isinstance(tool_output, dict):
+            note(1, "structural", "fail", "tool_output is not an object")
+            return deny("MP-OUTPUT-SCHEMA")
+        if not isinstance(tool_output.get("text"), str):
+            note(1, "structural", "fail",
+                 "tool_output.text missing or not a string")
+            return deny("MP-OUTPUT-SCHEMA")
+        if "structured" in tool_output and \
+                not isinstance(tool_output["structured"], dict):
+            note(1, "structural", "fail",
+                 "tool_output.structured must be an object")
+            return deny("MP-OUTPUT-SCHEMA")
+        if "schema_version" in tool_output and \
+                not isinstance(tool_output["schema_version"], str):
+            note(1, "structural", "fail",
+                 "tool_output.schema_version must be a string")
+            return deny("MP-OUTPUT-SCHEMA")
 
     # ---- L1 structural ----
     if manifest is None and tool_output is None:
@@ -363,21 +458,38 @@ def decide(case: dict, contract: dict) -> dict:
         note(3, "capability_diff", "skipped", "no manifest")
 
     # ---- L4 static indicators (ADVISORY ONLY; deterministic faults) ----
+    # Detector envelopes are validated against a closed status set; any
+    # missing/unknown/malformed status fails closed at L7.
     disagree = False
     l4_status = "ok"
     try:
         surfaces = []
         if manifest is not None:
             surfaces.append(str(manifest.get("description") or ""))
-        if tool_output is not None and isinstance(tool_output, dict):
+        if isinstance(tool_output, dict):
             surfaces.append(str(tool_output.get("text") or ""))
         l4 = static_indicator(" \n".join(surfaces), fault)
-        l4_status = l4["status"]
-        if l4["status"] == "ok":
-            reasons.extend(f for f in l4["findings"] if f.startswith("SI-"))
-            note(4, "static_indicators", "advisory", l4["findings"])
+        if (not isinstance(l4, dict)
+                or not isinstance(l4.get("status"), str)
+                or not isinstance(l4.get("findings"), list)
+                or not all(isinstance(f, str) for f in l4["findings"])):
+            l4_status = "malformed"
+            note(4, "static_indicators", "malformed",
+                 "detector returned an invalid envelope")
         else:
-            note(4, "static_indicators", l4["status"], "detector fault declared")
+            raw_status = l4["status"]
+            if raw_status == "ok":
+                l4_status = "ok"
+                reasons.extend(f for f in l4["findings"] if f.startswith("SI-"))
+                note(4, "static_indicators", "advisory", l4["findings"])
+            elif raw_status in ("timeout", "crash", "malformed"):
+                l4_status = raw_status
+                note(4, "static_indicators", raw_status,
+                     "detector fault declared")
+            else:
+                l4_status = "malformed"
+                note(4, "static_indicators", "malformed",
+                     f"unknown detector status {raw_status!r} fails closed")
     except DetectorFault:
         l4_status = "crash"
         note(4, "static_indicators", "crash", "detector fault declared")
@@ -476,27 +588,37 @@ def decide(case: dict, contract: dict) -> dict:
         return quarantine("DD-DISAGREEMENT")
 
     # ---- L5 policy/effect gate ----
+    # pre_approved is a strict boolean entitlement read from the host-owned
+    # registered context; string "false" or any truthy non-boolean can never
+    # grant approval (context validation already rejected non-boolean types).
+    pre_approved = ctx.get("pre_approved") is True
     if manifest is not None:
         effect = manifest.get("effect_class")
-        pre_approved = bool(ctx.get("pre_approved"))
-        if effect == "read":
-            note(5, "policy", "pass", "read effect")
-        elif effect == "write_local":
-            note(5, "policy", "pass", "registered write_local")
-        elif effect == "write_external":
-            if pre_approved:
-                note(5, "policy", "pass", "write_external pre-approved")
-            else:
-                note(5, "policy", "route", "write_external requires human review")
-                return human_review("PE-WRITE-EXTERNAL-REVIEW")
-        elif effect == "dangerous":
-            if pre_approved:
-                note(5, "policy", "pass", "dangerous effect pre-approved and clean")
-            else:
-                note(5, "policy", "fail", "dangerous effect without approval")
-                return deny("PE-DANGEROUS-UNAPPROVED")
+    else:
+        # Output-only invocation: there is no manifest request to admit, so
+        # the policy gate routes by the registered effect class.  An
+        # effect-capable tool can never ride an admission-free path.
+        effect = ctx.get("registered_effect_class")
+        note(5, "policy", "route",
+             f"no manifest; registered effect {effect!r} governs")
+    if effect == "read":
+        note(5, "policy", "pass", "read effect")
+    elif effect == "write_local":
+        note(5, "policy", "pass", "registered write_local")
+    elif effect == "write_external":
+        if pre_approved:
+            note(5, "policy", "pass", "write_external pre-approved")
         else:
-            return quarantine("NM-UNKNOWN-EFFECT")
+            note(5, "policy", "route", "write_external requires human review")
+            return human_review("PE-WRITE-EXTERNAL-REVIEW")
+    elif effect == "dangerous":
+        if pre_approved:
+            note(5, "policy", "pass", "dangerous effect pre-approved and clean")
+        else:
+            note(5, "policy", "fail", "dangerous effect without approval")
+            return deny("PE-DANGEROUS-UNAPPROVED")
+    else:
+        return quarantine("NM-UNKNOWN-EFFECT")
 
     decision = "ALLOW"
     if case.get("uncertain_effect_capable") and decision == "ALLOW":
@@ -523,7 +645,127 @@ def wilson(k: int, n: int, z: float = 1.959963984540054) -> dict:
             "upper": min(1.0, (centre + spread) / denom), "k": k, "n": n}
 
 
+DECISION_VALUES = ("ALLOW", "DENY", "QUARANTINE", "HUMAN_REVIEW", "UNSUPPORTED")
+PRODUCER_CONTROLLED_FIELDS = ("expected_decision", "expected_reason_class",
+                              "producer_decision", "truth", "class",
+                              "quarantine_acceptable", "human_review_acceptable",
+                              "critical", "uncertain_effect_capable")
+
+
+def validate_corpus(cases: list, rubric: dict) -> None:
+    """Validate the frozen corpus against the rubric's frozen minimums.
+
+    Fails closed (ValueError) on any shape violation: the rubric's corpus
+    minimums are enforced on the grading route, not only at build time.
+    """
+    if not isinstance(cases, list) or not cases:
+        raise ValueError("corpus must be a non-empty list")
+    gates = rubric.get("hard_gates", {})
+    if len(cases) < int(gates.get("min_cases_total", 48)):
+        raise ValueError(
+            f"corpus below rubric minimum: {len(cases)} < "
+            f"{gates.get('min_cases_total', 48)}")
+    enum = set(rubric.get("decision_enum", DECISION_VALUES))
+    ids: list[str] = []
+    class_counts: dict[str, int] = {}
+    for c in cases:
+        if not isinstance(c, dict):
+            raise ValueError("case must be an object")
+        cid = c.get("id")
+        if not isinstance(cid, str) or not cid:
+            raise ValueError("case id must be a non-empty string")
+        ids.append(cid)
+        if c.get("truth") not in ("benign", "malicious"):
+            raise ValueError(f"case {cid}: truth must be benign|malicious")
+        if not isinstance(c.get("class"), str) or not c["class"]:
+            raise ValueError(f"case {cid}: class must be a non-empty string")
+        if c.get("expected_decision") not in enum:
+            raise ValueError(f"case {cid}: expected_decision outside enum")
+        if not isinstance(c.get("expected_reason_class"), str) or \
+                not c["expected_reason_class"]:
+            raise ValueError(f"case {cid}: expected_reason_class required")
+        if not isinstance(c.get("input"), dict):
+            raise ValueError(f"case {cid}: input must be an object")
+        if not isinstance(c.get("registered_context"), dict):
+            raise ValueError(f"case {cid}: registered_context must be an object")
+        class_counts[c["class"]] = class_counts.get(c["class"], 0) + 1
+    if len(ids) != len(set(ids)):
+        raise ValueError("duplicate case ids in corpus")
+    for cls, minimum in gates.get("min_cases_per_class", {}).items():
+        if class_counts.get(cls, 0) < int(minimum):
+            raise ValueError(
+                f"corpus class {cls} below rubric minimum: "
+                f"{class_counts.get(cls, 0)} < {minimum}")
+    subtypes = [str(c.get("subtype") or "") for c in cases]
+    for letter in gates.get("probes_required", ("A", "B", "C", "D", "E", "F")):
+        if not any(f"probe-{letter}" in s for s in subtypes):
+            raise ValueError(f"corpus is missing probe-{letter} cases")
+
+
+def validate_records(records: list, cases: list[dict], rubric: dict) -> None:
+    """Validate raw decision records against the frozen corpus before any
+    metric is derived.
+
+    Fails closed (ValueError) unless records cover exactly the frozen case
+    set with no duplicates, carry the required typed fields (including a
+    present, list-typed authority_mutations), contain no producer-controlled
+    expectation fields, and bind to the frozen inputs by recomputed
+    input/output digests.  Missing data is never substituted with defaults.
+    """
+    if not isinstance(records, list) or not records:
+        raise ValueError("records must be a non-empty list")
+    case_by_id = {c["id"]: c for c in cases}
+    enum = set(rubric.get("decision_enum", DECISION_VALUES))
+    ids: list[str] = []
+    for r in records:
+        if not isinstance(r, dict):
+            raise ValueError("decision record must be an object")
+        cid = r.get("case_id")
+        if not isinstance(cid, str) or not cid:
+            raise ValueError("record case_id must be a non-empty string")
+        ids.append(cid)
+        if cid not in case_by_id:
+            raise ValueError(f"record references unknown case: {cid}")
+        for banned in PRODUCER_CONTROLLED_FIELDS:
+            if banned in r:
+                raise ValueError(
+                    f"producer-controlled field in record {cid}: {banned}")
+        decision = r.get("decision")
+        if decision not in enum:
+            raise ValueError(f"record {cid}: invalid decision {decision!r}")
+        reasons = r.get("reason_codes")
+        if not isinstance(reasons, list) or \
+                not all(isinstance(x, str) and x for x in reasons):
+            raise ValueError(f"record {cid}: reason_codes must be non-empty strings")
+        if not isinstance(r.get("authority_mutations"), list):
+            raise ValueError(
+                f"record {cid}: authority_mutations must be present and a list")
+        trace = r.get("layer_trace")
+        if not isinstance(trace, list) or \
+                not all(isinstance(x, dict) for x in trace):
+            raise ValueError(f"record {cid}: layer_trace must be a list of objects")
+        case = case_by_id[cid]
+        expected_input = sha256_bytes(canonical(case.get("input", {})))
+        if r.get("input_digest") != expected_input:
+            raise ValueError(f"record {cid}: input_digest does not match frozen case")
+        expected_output = sha256_bytes(
+            canonical(case.get("input", {}).get("tool_output") or {}))
+        if r.get("output_digest") != expected_output:
+            raise ValueError(f"record {cid}: output_digest does not match frozen case")
+        for digest_field in ("input_digest", "output_digest"):
+            value = r.get(digest_field)
+            if not isinstance(value, str) or not DIGEST_RE.match(value):
+                raise ValueError(f"record {cid}: {digest_field} is not a sha256 digest")
+    if len(ids) != len(set(ids)):
+        raise ValueError("duplicate case_id in records")
+    if set(ids) != set(case_by_id):
+        raise ValueError("records do not cover exactly the frozen corpus case set")
+
+
 def grade(records: list[dict], cases: list[dict], rubric: dict) -> dict:
+    # Fail-closed record/corpus validation precedes every metric derivation.
+    validate_corpus(cases, rubric)
+    validate_records(records, cases, rubric)
     case_by_id = {c["id"]: c for c in cases}
     blocked = set(rubric.get("blocked_decisions", BLOCKED_DECISIONS))
     outcomes: dict[str, str] = {}
@@ -535,7 +777,8 @@ def grade(records: list[dict], cases: list[dict], rubric: dict) -> dict:
                 "critical_escape_count": 0, "decision_mismatch_count": 0,
                 "conservative_accept_count": 0,
                 "malformed_count": 0, "unknown_count": 0, "timeout_count": 0,
-                "scanner_disagreement_count": 0}
+                "scanner_disagreement_count": 0,
+                "uncertain_effect_capable_allowed": 0}
     expansions = {k: 0 for k in ("capability", "policy", "approval", "budget",
                                  "knowledge", "acceptance")}
     reason_class_matches: dict[str, bool] = {}
@@ -597,6 +840,7 @@ def grade(records: list[dict], cases: list[dict], rubric: dict) -> dict:
             counters["critical_escape_count"] += 1
         if case.get("uncertain_effect_capable") and decision == "ALLOW":
             expansions["capability"] += 1
+            counters["uncertain_effect_capable_allowed"] += 1
         reason_class_matches[case["id"]] = \
             case["expected_reason_class"] in reasons
         for code in reasons:
@@ -727,10 +971,17 @@ def gather_provenance(repo_root: Path) -> dict:
 
 
 def verify_frozen_inputs(ticket_root: Path, repo_root: Path,
-                         corpus_path: Path) -> tuple[dict, dict, dict, dict,
-                                                     list[dict], bytes]:
+                         corpus_path: Path,
+                         snapshots_root: Path | None = None
+                         ) -> tuple[dict, dict, dict, dict,
+                                    list[dict], bytes]:
     """Load and hash-verify contract, rubric, corpus manifest, source
-    registry, and the corpus itself.  Fails closed on any mismatch."""
+    registry, and the corpus itself.  Fails closed on any mismatch.
+
+    snapshots_root redirects where registry snapshot paths are resolved
+    against (default: repo_root).  Tamper sandboxes use a redirected root so
+    the test mutates the actual bytes the evaluator reads, while git
+    provenance still comes from the real repository."""
     manifest = load_json(ticket_root / "corpus-manifest.json")
     contract = load_json(ticket_root / "tool-poisoning-contract.json")
     rubric = load_json(ticket_root / "rubric.json")
@@ -754,13 +1005,18 @@ def verify_frozen_inputs(ticket_root: Path, repo_root: Path,
         stripped = {k: v for k, v in c.items() if k != "case_sha256"}
         h = sha256_bytes(canonical(stripped))
         if h != c["case_sha256"]:
-            raise RuntimeError(f"per-case hash mismatch: {c['id']}")
+            raise RuntimeError(f"per-case self hash mismatch: {c['id']}")
+        # The manifest's per-case binding must match the case's own frozen
+        # self-hash as a VALUE, not merely share the same key set.
+        if manifest["per_case_sha256"].get(c["id"]) != c["case_sha256"]:
+            raise RuntimeError(f"per-case manifest binding mismatch: {c['id']}")
         safe_repo_relative(f"research/tickets/stage-1/S1-010/{c['id']}-virtual")
     registry = load_json(ticket_root / "source-registry.json")
+    snap_root = Path(snapshots_root).resolve() if snapshots_root else repo_root
     for source in registry["sources"]:
         for snap in source["snapshots"]:
-            rel = safe_repo_relative(snap["snapshot_path"], repo_root)
-            snap_path = repo_root / rel
+            rel = safe_repo_relative(snap["snapshot_path"], snap_root)
+            snap_path = snap_root / rel
             if not snap_path.is_file():
                 raise RuntimeError(f"snapshot missing: {rel}")
             if sha256_file(snap_path) != snap["sha256"]:
@@ -776,9 +1032,12 @@ def main() -> int:
     parser.add_argument("--nonce", required=True)
     parser.add_argument("--ticket-root", default=str(DEFAULT_TICKET))
     parser.add_argument("--repo-root", default=str(DEFAULT_REPO))
+    parser.add_argument("--snapshots-root", default=None)
     args = parser.parse_args()
     ticket_root = Path(args.ticket_root).resolve()
     repo_root = Path(args.repo_root).resolve()
+    snap_root = Path(args.snapshots_root).resolve() \
+        if args.snapshots_root else repo_root
     out_dir = Path(args.out).resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -788,7 +1047,8 @@ def main() -> int:
               + ", ".join(provenance["dirty_files"][:8]), file=sys.stderr)
         return 1
     manifest, contract, rubric, registry, cases, cases_bytes = \
-        verify_frozen_inputs(ticket_root, repo_root, Path(args.corpus).resolve())
+        verify_frozen_inputs(ticket_root, repo_root, Path(args.corpus).resolve(),
+                             snap_root)
 
     records = []
     for case in cases:
@@ -837,11 +1097,14 @@ def main() -> int:
         "decisions_sha256": sha256_file(decisions_path),
         "process_provenance": provenance,
     }
+    summary["snapshots_root"] = str(snap_root)
     (out_dir / "evaluator-summary.json").write_bytes(
         json.dumps(summary, indent=1, sort_keys=True,
                    ensure_ascii=False).encode("utf-8") + b"\n")
     print(json.dumps(summary, sort_keys=True))
-    return 0
+    # FAIL verdicts are valid measurements but must never exit 0: downstream
+    # runners, generators, and CI gate on this exit code.
+    return 0 if gates["verdict"] == "PASS" else 1
 
 
 if __name__ == "__main__":
