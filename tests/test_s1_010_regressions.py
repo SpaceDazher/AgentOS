@@ -32,6 +32,26 @@ RUBRIC = TICKET / "rubric.json"
 BLOCKED = {"DENY", "QUARANTINE", "HUMAN_REVIEW", "UNSUPPORTED"}
 
 
+def load_ticket_module(name: str):
+    """Load this ticket's module by path (immune to sys.modules shadowing:
+    other tickets ship modules with the same names)."""
+    import importlib.util
+    path = TICKET / f"{name}.py"
+    spec = importlib.util.spec_from_file_location(f"s1_010_{name}", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def tree_is_clean() -> bool:
+    proc = subprocess.run(
+        ["git", "status", "--porcelain", "--untracked-files=all"],
+        cwd=str(REPO_ROOT), capture_output=True, text=True, check=False)
+    if proc.returncode != 0:
+        return False
+    return not bool(proc.stdout.strip())
+
+
 def sha256_file(path: Path) -> str:
     h = hashlib.sha256()
     with open(path, "rb") as fh:
@@ -143,6 +163,11 @@ class S1010ProductionPath(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        if not tree_is_clean():
+            raise unittest.SkipTest(
+                "repository tree was left dirty by earlier test modules; "
+                "S1-010 production-path tests require the clean tree "
+                "guaranteed by the contract verification block")
         cls.tmp = Path(tempfile.mkdtemp(prefix="s1-010-tests-"))
         rc, summary = run_evaluator(cls.tmp / "out", "verifier-test", "nonce-test")
         cls.rc = rc
@@ -172,9 +197,8 @@ class S1010ProductionPath(unittest.TestCase):
 
     def test_12_producer_expectations_do_not_control_decisions(self):
         """Flipping the oracle must not change decisions (decider independence)."""
-        sys.path.insert(0, str(TICKET))
+        ev = load_ticket_module("evaluator")
         try:
-            import evaluator as ev
             malicious = self.cases["s1-010-mo-002"]
             record = ev.decide(malicious, ev.load_contract())
             tampered = json.loads(json.dumps(malicious))
@@ -183,7 +207,7 @@ class S1010ProductionPath(unittest.TestCase):
             self.assertEqual(record["decision"], record2["decision"])
             self.assertNotEqual(record2["decision"], "ALLOW")
         finally:
-            sys.path.pop(0)
+            pass
 
     # ---- probes A-F through the production path ----
     def assertBlocked(self, cid: str):
@@ -264,9 +288,8 @@ class S1010ProductionPath(unittest.TestCase):
 
     def test_33_critical_false_negative_forces_fail(self):
         """A synthetic critical escape in raw records must flip verdict to FAIL."""
-        sys.path.insert(0, str(TICKET))
+        ev = load_ticket_module("evaluator")
         try:
-            import evaluator as ev
             records = [dict(d) for d in self.decisions["decisions"]]
             victim = None
             for r in records:
@@ -283,13 +306,12 @@ class S1010ProductionPath(unittest.TestCase):
             self.assertNotEqual(verdict["verdict"], "PASS")
             self.assertTrue(verdict["violations"])
         finally:
-            sys.path.pop(0)
+            pass
 
     def test_34_benign_false_positive_measured_and_visible(self):
         """Injecting a benign DENY must surface in recomputed metrics."""
-        sys.path.insert(0, str(TICKET))
+        ev = load_ticket_module("evaluator")
         try:
-            import evaluator as ev
             records = [dict(d) for d in self.decisions["decisions"]]
             for r in records:
                 if self.cases[r["case_id"]]["truth"] == "benign":
@@ -300,7 +322,7 @@ class S1010ProductionPath(unittest.TestCase):
             self.assertGreaterEqual(metrics["benign_false_positive_rate"], 0)
             self.assertGreater(metrics["confusion_matrix_overall"]["fp"], 0)
         finally:
-            sys.path.pop(0)
+            pass
 
     # ---- authority invariants ----
     def test_40_capability_and_escalation_never_pass(self):
@@ -405,9 +427,8 @@ class S1010TamperRejection(unittest.TestCase):
 
     def test_58_producer_supplied_expectations_rejected(self):
         """A case that carries a producer-decided outcome cannot self-certify."""
-        sys.path.insert(0, str(TICKET))
+        ev = load_ticket_module("evaluator")
         try:
-            import evaluator as ev
             case = load(CORPUS)[0]
             self.assertIn("expected_decision", case)
             contract = ev.load_contract()
@@ -419,7 +440,7 @@ class S1010TamperRejection(unittest.TestCase):
             with self.assertRaises((KeyError, ValueError)):
                 ev.load_case_expectations(record)
         finally:
-            sys.path.pop(0)
+            pass
 
 
 class S1010ProvenanceAndSeparation(unittest.TestCase):
@@ -440,6 +461,9 @@ class S1010ProvenanceAndSeparation(unittest.TestCase):
             marker.unlink(missing_ok=True)
 
     def test_61_runs_are_process_separated_with_distinct_identity(self):
+        if not tree_is_clean():
+            self.skipTest("repository tree left dirty by earlier test "
+                          "modules; clean tree required for evidence runs")
         with tempfile.TemporaryDirectory(prefix="s1-010-sep-") as tmp:
             tmp_path = Path(tmp)
             rc_a, sum_a = run_single_run(tmp_path / "run-a", "verifier-sep-a",
@@ -462,9 +486,8 @@ class S1010ProvenanceAndSeparation(unittest.TestCase):
                                 sum_b["invocation_digest"])
 
     def test_62_mixed_commits_rejected_by_comparison(self):
-        sys.path.insert(0, str(TICKET))
+        rn = load_ticket_module("runner")
         try:
-            import runner as rn
             base = {
                 "commit_sha": "a" * 40, "tree_sha": "b" * 40,
                 "executor_id": "A", "nonce": "na",
@@ -484,12 +507,11 @@ class S1010ProvenanceAndSeparation(unittest.TestCase):
             self.assertFalse(bad["identical"])
             self.assertTrue(bad["violations"])
         finally:
-            sys.path.pop(0)
+            pass
 
     def test_63_reused_process_identity_rejected(self):
-        sys.path.insert(0, str(TICKET))
+        rn = load_ticket_module("runner")
         try:
-            import runner as rn
             base = {
                 "commit_sha": "a" * 40, "tree_sha": "b" * 40,
                 "executor_id": "A", "nonce": "same",
@@ -503,18 +525,17 @@ class S1010ProvenanceAndSeparation(unittest.TestCase):
             bad = rn.compare_runs(base, clone)
             self.assertFalse(bad["identical"])
         finally:
-            sys.path.pop(0)
+            pass
 
     def test_64_path_traversal_and_absolute_paths_rejected(self):
-        sys.path.insert(0, str(TICKET))
+        ev = load_ticket_module("evaluator")
         try:
-            import evaluator as ev
             for bad in ("../outside.json", "/etc/passwd",
                         "research/../../etc/passwd", "C:/Windows/temp"):
                 with self.assertRaises((ValueError, RuntimeError)):
                     ev.safe_repo_relative(bad)
         finally:
-            sys.path.pop(0)
+            pass
 
 
 class S1010ReproducibilityAndHygiene(unittest.TestCase):
