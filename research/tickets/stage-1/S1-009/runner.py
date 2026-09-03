@@ -21,6 +21,7 @@ from typing import Any
 
 
 TICKET_ROOT = Path(__file__).resolve().parent
+# S1-009 -> stage-1 -> tickets -> research -> repo root
 REPO_ROOT = TICKET_ROOT.parents[3]
 REQUIRED_HASH_KEYS = {
     "evaluator_sha256",
