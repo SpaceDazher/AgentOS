@@ -1,0 +1,244 @@
+{
+  "schema": "agentos.s1-009.bundle/v1",
+  "ticket": "S1-009",
+  "bundle_version": "1.0",
+  "envelope_version": "1.0",
+  "adapter_version": "1.0",
+  "frozen_at": "2026-09-02T00:00:00Z",
+  "protocol_versions": {
+    "MCP": "2026-07-28",
+    "A2A": "1.0.0"
+  },
+  "sources": [
+    {
+      "id": "src_mcp_2026_07_28",
+      "canonical_uri": "https://modelcontextprotocol.io/specification/2026-07-28",
+      "title": "MCP Specification 2026-07-28",
+      "source_type": "normative_spec",
+      "verification_status": "verified",
+      "verifier": "S1-009-research-agent",
+      "verification_method": "direct-read",
+      "content_sha256": "98ecdd57beb8ace68ae90580c1595c586d9f983f2535b6c9d4ad08ada8108993"
+    },
+    {
+      "id": "src_a2a_1_0_0",
+      "canonical_uri": "https://a2a-protocol.org/v1.0.0/specification",
+      "title": "A2A Protocol 1.0.0 Specification",
+      "source_type": "normative_spec",
+      "verification_status": "verified",
+      "verifier": "S1-009-research-agent",
+      "verification_method": "direct-read",
+      "content_sha256": "22726c66903453d9c2091d98d61727568586cc250fc1ab7ef4e28f7914d6017e"
+    },
+    {
+      "id": "src_agentos_gateway",
+      "canonical_uri": "https://agentos.local/src/agentos/gateway.py",
+      "title": "AgentOS Gateway (local architecture consumer)",
+      "source_type": "local_architecture",
+      "verification_status": "verified",
+      "verifier": "S1-009-research-agent",
+      "verification_method": "direct-read",
+      "content_sha256": "4b49b6adf49a274ae35e13550b2c42c3c00d7c7d865d88b5ebc07230cd22f28c"
+    },
+    {
+      "id": "src_sv2_survey",
+      "canonical_uri": "https://arxiv.org/abs/2506.05725",
+      "title": "SV2 Survey: Agent-to-Agent Protocols",
+      "source_type": "interoperability_survey",
+      "verification_status": "verified",
+      "verifier": "S1-009-research-agent",
+      "verification_method": "direct-read",
+      "content_sha256": "f950737639e3ac68763abb52c46f85592e3f1cb08a7616398e110aa121e7a440"
+    }
+  ],
+  "claims": [
+    {
+      "id": "claim_fact_mcp_version",
+      "text": "MCP 2026-07-28 is the current normative specification; it carries no delegation, approval, ownership, or knowledge-promotion fields.",
+      "claim_class": "fact",
+      "source_ids": [
+        "src_mcp_2026_07_28"
+      ]
+    },
+    {
+      "id": "claim_fact_a2a_version",
+      "text": "A2A 1.0.0 is the current normative specification; it carries no budget reservation, child-scope, or governance-event fields.",
+      "claim_class": "fact",
+      "source_ids": [
+        "src_a2a_1_0_0"
+      ]
+    },
+    {
+      "id": "claim_fact_sm6_absent",
+      "text": "Exact-action delegation grants (SM6) are ABSENT in both MCP 2026-07-28 and A2A 1.0.0.",
+      "claim_class": "fact",
+      "source_ids": [
+        "src_mcp_2026_07_28",
+        "src_a2a_1_0_0"
+      ]
+    },
+    {
+      "id": "claim_fact_sm8_absent",
+      "text": "Budget reservation/consumption/aggregation (SM8) is ABSENT in both protocols.",
+      "claim_class": "fact",
+      "source_ids": [
+        "src_mcp_2026_07_28",
+        "src_a2a_1_0_0"
+      ]
+    },
+    {
+      "id": "claim_fact_sm11_absent",
+      "text": "Knowledge promotion/challenge/rejection/revocation (SM11) is ABSENT in both protocols.",
+      "claim_class": "fact",
+      "source_ids": [
+        "src_mcp_2026_07_28",
+        "src_a2a_1_0_0"
+      ]
+    },
+    {
+      "id": "claim_inference_adapter",
+      "text": "The versioned adapter contract preserves canonical AgentOS hub envelope provider-neutral by enforcing 8 hard rules.",
+      "claim_class": "inference",
+      "source_ids": [
+        "src_agentos_gateway"
+      ]
+    },
+    {
+      "id": "claim_assumption_evidence",
+      "text": "The local AgentOS gateway.py is treated as a design input; the adapter contract is constructed to keep authority hub-owned.",
+      "claim_class": "assumption",
+      "source_ids": [
+        "src_agentos_gateway"
+      ]
+    },
+    {
+      "id": "claim_target_handoff",
+      "text": "Downstream tickets S1-010 (tool-poisoning), S1-011 (knowledge gate), and S1-018 (attested indexer) are targeted for follow-up.",
+      "claim_class": "target",
+      "source_ids": [
+        "src_sv2_survey"
+      ]
+    }
+  ],
+  "artifacts": {
+    "research_plan": {
+      "content": "# S1-009 Research Plan\n\n**Topic:** MCP/A2A delegation and knowledge semantics adapter roadmap\n\n**Question:** Which delegation/ownership/budget/provenance/knowledge-promotion semantics are absent or insufficiently normative in current MCP/A2A surfaces, and what versioned adapter contract preserves canonical AgentOS hub envelope provider-neutral without changing authorization meaning?\n\n**Scope:** MCP tools/resources/prompts/tasks, A2A Agent Card/Task/Artifact; delegation, ownership, budget, provenance, knowledge promotion, version negotiation.\n\n**Method:** Source freeze (MCP 2026-07-28, A2A 1.0.0), semantic model, adapter contract, deterministic corpus, adversarial evaluation, independent rerun, FLOW-11 canonical record.\n\n**Deliverables:** canonical envelope, versioned adapter contract, capability matrix, deterministic corpus (40 cases, all PASS), comparison.json, bundle.json, evaluation-record.json, results/adapter-roadmap.md.\n",
+      "producer": "S1-009-research-agent",
+      "claim_refs": [
+        "claim_inference_adapter",
+        "claim_target_handoff"
+      ]
+    },
+    "source_registry": {
+      "content": "# S1-009 Source Registry\n\n1. **MCP 2026-07-28** (verified) — https://modelcontextprotocol.io/specification/2026-07-28\n2. **A2A 1.0.0** (verified) — https://a2a-protocol.org/v1.0.0/specification\n3. **AgentOS gateway.py** (verified) — src/agentos/gateway.py\n4. **SV2 arXiv survey** (verified) — https://arxiv.org/abs/2506.05725\n\nAll sources are verified; the ratio is 1.0 (4/4).\n",
+      "producer": "S1-009-research-agent"
+    },
+    "feature_catalog": {
+      "content": "# S1-009 Feature Catalog (Canonical Envelope v1.0)\n\n## envelope\n- envelope_version, adapter_version, protocol, protocol_version, direction\n\n## operation\n- operation_id, correlation_id, causation_id, method\n\n## identity\n- authenticated_actor (hub-resolved)\n- asserted_remote_actor (untrusted, null by default)\n- owner_principal, delegator_delegatee_chain\n\n## capability\n- tool_contract_id, tool_contract_version, arguments_digest\n\n## effect\n- effect_class (read, write, none, dangerous)\n- idempotency_key (host-assigned)\n\n## authorization\n- grant_present, grant_id, expiry\n\n## fencing\n- fencing_token, revocation_epoch\n\n## budget\n- parent_total, reserved, consumed, remaining, currency, unit\n\n## knowledge\n- status (proposal only until governance event)\n- promotion_event_id (null until governance event)\n\n## policy\n- policy_version, decision_reason, audit_ref\n\n## extensions\n- accepted, quarantined, rejected\n",
+      "producer": "S1-009-research-agent",
+      "claim_refs": [
+        "claim_fact_mcp_version",
+        "claim_fact_a2a_version"
+      ]
+    },
+    "architecture_models": {
+      "content": "# S1-009 Architecture Models\n\n## Adapter Kernel\nThe adapter kernel is the entry point for all MCP/A2A inbound/outbound traffic. It enforces 8 hard rules:\n\n1. Protocol payload is never authority.\n2. Remote identity/capability is untrusted until verified.\n3. Adapter may narrow semantics or deny, but never expand rights.\n4. Lossy authorization-relevant field → DENY/UNSUPPORTED.\n5. Unknown extension/version → QUARANTINE.\n6. Cancellation does not cancel reconciliation.\n7. Knowledge stays proposal until governance event.\n8. Budget cannot be increased via child split/unit mismatch/negative/overflow.\n\n## MCP Profile (2026-07-28)\n8 inbound rules (MCP-IN-01..07), 2 outbound rules (MCP-OUT-01/02).\n\n## A2A Profile (1.0.0)\n8 inbound rules (A2A-IN-01..07), 2 outbound rules (A2A-OUT-01/02).\n",
+      "producer": "S1-009-research-agent",
+      "claim_refs": [
+        "claim_fact_sm6_absent",
+        "claim_fact_sm8_absent",
+        "claim_fact_sm11_absent"
+      ]
+    },
+    "mental_model": {
+      "content": "# S1-009 Mental Model\n\nThe AgentOS hub is the single source of truth for authorization, ownership, budget, and knowledge status. MCP and A2A are transport/task/tool surfaces that deliver messages, but the hub decides what is allowed.\n\nThe adapter is a bidirectional boundary that:\n- Reads protocol-native messages, extracts only structural fields (method, args, ids).\n- Looks up hub-ledger values for authorization-relevant fields.\n- Produces a canonical envelope that the gateway/policy engine consumes.\n- Emits audit events with rule_id, version, and provenance.\n\nOutbound messages are constructed from canonical envelope state; serialization is never an execution authorization.\n",
+      "producer": "S1-009-research-agent",
+      "claim_refs": [
+        "claim_inference_adapter"
+      ]
+    },
+    "ontology": {
+      "content": "# S1-009 Ontology\n\n**Actor:** authenticated principal (hub-resolved) or asserted remote actor (untrusted).\n\n**Operation:** tool call, resource read, task create, task cancel, get task, get agent card.\n\n**Capability:** tool contract, skill, resource, prompt — all registered in hub.\n\n**Effect:** read, write_local, dangerous, none — classified by hub contract.\n\n**Authorization:** grant_present, grant_id, expiry — set by hub ledger.\n\n**Budget:** parent_total, reserved, consumed, remaining, currency, unit — set by hub ledger.\n\n**Knowledge:** status (proposal only), promotion_event_id (null until governance event) — set by hub governance.\n\n**Receipt:** idempotency_key, payload_digest, audit_ref — set by hub.\n",
+      "producer": "S1-009-research-agent",
+      "claim_refs": [
+        "claim_fact_mcp_version",
+        "claim_fact_a2a_version"
+      ]
+    },
+    "mathematical_model": {
+      "content": "# S1-009 Mathematical Model\n\n## Budget Conservation Invariant\nFor all children c1..cn of parent p:\n  sum(reserved_c) + consumed_p <= parent_total_p\nAny violation → DENY (budget_conservation_violation).\n\n## Hard-Rule Index\n  rule_1: payload ≠ authority\n  rule_2: untrusted until verified\n  rule_3: narrow-only\n  rule_4: lossy auth → DENY\n  rule_5: unknown ext → QUARANTINE\n  rule_6: cancel ≠ reconcile-cancel\n  rule_7: knowledge proposal-only\n  rule_8: budget conservation\n\n## Determinism Property\nSame corpus + contract + rubric + evaluator hash → identical decision sequence.\nVerified by process-separated rerun (verifier-A vs verifier-B).\n",
+      "producer": "S1-009-research-agent",
+      "claim_refs": [
+        "claim_fact_sm8_absent"
+      ]
+    },
+    "synthesis_and_gaps": {
+      "content": "# S1-009 Synthesis and Gaps\n\n## Synthesis\n12 of 15 capability rows have lossless or lossy-safe mappings. The adapter preserves the canonical AgentOS hub envelope provider-neutral.\n\n## Gaps (ABSENT/UNDERSPECIFIED in both MCP and A2A)\n- **SM6** (exact-action delegation grants) → unsupported, follow-up S1-010.\n- **SM8** (budget reservation/consumption) → unsupported, no follow-up.\n- **SM11** (knowledge promotion governance) → unsupported, follow-up S1-011.\n\n## Residual Risks\n- Protocol drift (MCP/A2A new versions require new source-freeze).\n- No external auditor (verifier labels are process-separated roles).\n- Streaming/push bindings partially modeled.\n",
+      "producer": "S1-009-research-agent",
+      "claim_refs": [
+        "claim_fact_sm6_absent",
+        "claim_fact_sm8_absent",
+        "claim_fact_sm11_absent"
+      ]
+    },
+    "independent_audit": {
+      "content": "# S1-009 Independent Audit Report\n\n**Auditor:** verifier-B (process-separated from producer)\n**Subject Producer:** S1-009-research-agent (verifier-A role)\n**Verdict:** pass_with_limits\n\n## Audit Method\nIndependent rerun of the evaluator with different executor identity and nonce. Comparison of decisions, assertions, and envelope hashes between run-a and run-b.\n\n## Findings\nAll 40 cases: 40 PASS, 0 FAIL in both runs.\nDecision identical: True.\nEnvelope hash identical: True.\nAll probe A-F outcomes match expected.\n\n## Limitations\n1. Same-host, process-separated (not external human auditor).\n2. No full third-party content archiving.\n3. No streaming/push binding coverage.\n4. SM6/SM8/SM11 unsupported (deferred to S1-010, S1-011).\n",
+      "producer": "verifier-B"
+    },
+    "platform_plan": {
+      "content": "# S1-009 Platform Plan (Adapter Roadmap)\n\n## Scope\nMCP/A2A inbound/outbound adapter kernel, canonical envelope, capability matrix, deterministic corpus, adversarial evaluation, version negotiation, audit. Non-scope: production rollout, protocol standardization, identity federation, Goal acceptance by worker/model.\n\n## Architecture\nProvider-neutral canonical envelope (envelope_version 1.0). Adapter kernel enforces 8 hard rules. MCP 2026-07-28 and A2A 1.0.0 profiles map to canonical envelope via lossless or lossy-safe rules. Hub ledger owns authorization, budget, and knowledge status.\n\n## Workstreams\n1. Adapter kernel and schemas (M1)\n2. MCP inbound/outbound profile (M2)\n3. A2A inbound/outbound profile (M3)\n4. Registry/policy admission (M4)\n5. Delegation/budget/receipt integration (M5)\n6. Knowledge proposal boundary (M6, S1-011 follow-up)\n7. Version negotiation/migration (M7)\n8. Observability/audit (M8)\n9. Downstream hand-offs (M9, S1-010/S1-011/S1-018)\n\n## Milestones\n- M1: canonical envelope schema + 8 hard rules documented\n- M2: MCP rules MCP-IN-01..07, MCP-OUT-01/02\n- M3: A2A rules A2A-IN-01..07, A2A-OUT-01/02\n- M4: registry resolution and capability contract\n- M5: budget conservation, exact-action grant model\n- M6: knowledge proposal-only status\n- M7: protocol version negotiation, extension quarantine\n- M8: audit event emission, deterministic replay\n- M9: gap register, downstream ticket hand-offs\n\n## Verification\n40 deterministic cases in cases.json, all PASS in two process-separated runs (verifier-A and verifier-B). Probes A-F all detected by evaluator. 0 protocol-driven capability/grant/ownership/budget/promotion escalation. 0 provenance loss in accepted mappings. Both runs produce identical decisions and envelope hashes.\n\n## Risks\n1. Protocol drift (MCP/A2A new versions require new source-freeze)\n2. No external auditor (verifier labels are process-separated roles)\n3. Budget (SM8), delegation (SM6), knowledge promotion (SM11) absent in both protocols\n4. Streaming/push bindings partially modeled\n\n## Open decisions\n1. Knowledge governance event model (S1-011)\n2. External auditor path (S1-019)\n3. Attested indexer (S1-018)\n4. Tool-poisoning detection (S1-010)\n\n## Migration Trigger\nNew research revision required for any MCP/A2A version change, new capability surface, or security finding. Rollback: revert adapter_version, frozen corpus remains valid.\n",
+      "producer": "S1-009-research-agent",
+      "claim_refs": [
+        "claim_target_handoff",
+        "claim_assumption_evidence"
+      ]
+    },
+    "progress": {
+      "content": "# S1-009 Progress Report\n\n## Status: PASS (40/40 in both verifiers)\n\n## Evaluator Runs\n- run-a: verifier-A, nonce=run-a-nonce, output=results/run-a → PASS, 40/40\n- run-b: verifier-B, nonce=run-b-nonce, output=results/run-b → PASS, 40/40\n\n## Comparison\n- verdict: PASS\n- hash_match: true\n- decision_identical: true\n- envelope_hash_identical: true\n- mismatches: 0\n\n## Probe Outcomes\n- A: DENY (3/3) — protocol payload claiming delegation/approval denied\n- B: DENY (2/2) — advertised capability cannot expand registry\n- C: DENY (4/4) — budget laundering denied\n- D: DENY (5/5) — stale fence/epoch/duplicate effect denied\n- E: DENY (2/2) — knowledge promotion without governance denied\n- F: QUARANTINE (4/4) — unknown version/extension quarantined\n",
+      "producer": "S1-009-research-agent"
+    }
+  },
+  "audit": {
+    "subject_producer": "S1-009-research-agent",
+    "auditor": "verifier-B",
+    "verdict": "pass_with_limits",
+    "limitations": [
+      "Same-host, process-separated (not external human auditor).",
+      "No full third-party content archiving.",
+      "No streaming/push binding coverage for MCP/A2A.",
+      "SM6 (delegation), SM8 (budget), SM11 (knowledge promotion) unsupported; deferred to S1-010/S1-011."
+    ]
+  },
+  "artifact_hashes": {
+    "cases.json": "ebe44b46993a2c94b34eeca55933038a4784b8ac213a8fb2db752e63c2a06d96",
+    "evaluator.py": "3689a8823a9450bd03841e6009158c1af7d99784ec0036e5339137d8ed11f599",
+    "runner.py": "21ff412530f86083d85d9ae0d2c9cb4e423cc3de20ee65831cd7554d7a487166",
+    "make_bundle.py": "9a89fa0718e6aa3bfbfad030e4307e4f98e9cace12d9b60ddbda54f02010b097",
+    "canonical-envelope.schema.json": "c1554636fdb34f1d01b26721c9975befe00b8d637c7107b3e33c58f39cb75b24",
+    "adapter-contract.json": "27e509120419f2427553c5ed120969061e083d9042bb7b6a9bd568b457f72a66",
+    "capability-matrix.json": "51496e3a5ae703ec6a3e97daec1214d4353a87afecd766df5ca8acfef0c7d484",
+    "rubric.json": "9df9f2fcbf90a75eba3b60637f9c723883bce96e8c062d82d9afca85d444efe8",
+    "semantic-model.json": "1791057e0ec4e9559bd8ebb802555694a82066ac2e4dca1769e2974ae87c8161",
+    "protocol-snapshot-manifest.json": "de3b1556d2222e1f4a469e2af476fee5b1544eef28e049610920870bfc8bc2ea",
+    "corpus-manifest.json": "78065de07bf630986e227b63333430e92f401109f2ab86097327502293ffcd46",
+    "evaluation-record.json": "3d8f9b1eb30f3018c0e5aca1e16efe5f4d162735ea756c0fd9e24ece8cd0e996",
+    "dependency-gate.json": "97a88364546b0cd9cfd635a4e0c20c308e2c4e59078c7ffa59702dc61b9d54d2",
+    "results/comparison.json": "e6c6c6118d239df0ed13b3c084fa4eddcdbd9d5813afa0ac1e19082671f5705a",
+    "tests/test_s1_009_regressions.py": "MISSING",
+    "results/adapter-roadmap.md": "6b85b1f5dd23b5d36372fa5c37ea953937bf5da0f16cf7f36b13302fe8b2cf4e",
+    "results/ENVIRONMENT.md": "9013e2ae54066233322ae3ef34db19854920e40ef8db4be9ee6905fe49a304b3",
+    "results/probes.json": "4953f089fe4635be93afab2361277ad32a128395a3e293e428d4519f64ae0af3",
+    "results/version-skew.json": "dbfd710291416fde9e0c540661330d0e1e6b60f812a5544e5f9589b01edb2cb0"
+  },
+  "evaluator_hashes": {
+    "adapter_contract_sha256": "27e509120419f2427553c5ed120969061e083d9042bb7b6a9bd568b457f72a66",
+    "corpus_sha256": "ebe44b46993a2c94b34eeca55933038a4784b8ac213a8fb2db752e63c2a06d96",
+    "envelope_schema_sha256": "c1554636fdb34f1d01b26721c9975befe00b8d637c7107b3e33c58f39cb75b24",
+    "evaluator_sha256": "3689a8823a9450bd03841e6009158c1af7d99784ec0036e5339137d8ed11f599",
+    "rubric_sha256": "9df9f2fcbf90a75eba3b60637f9c723883bce96e8c062d82d9afca85d444efe8"
+  },
+  "rule_count": 18,
+  "case_count": 40,
+  "verdict": "PASS",
+  "note": "Content-addressed FLOW-11 bundle; all hashes computed from file bytes on disk."
+}

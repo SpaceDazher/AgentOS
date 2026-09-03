@@ -1,0 +1,1051 @@
+[
+  {
+    "assertion_results": {
+      "authorization.grant_present": {
+        "actual": true,
+        "expected": true,
+        "matched": true
+      },
+      "capability.tool_contract_id": {
+        "actual": "fs.read",
+        "expected": "fs.read",
+        "matched": true
+      },
+      "identity.authenticated_actor": {
+        "actual": "principal_alice",
+        "expected": "principal_alice",
+        "matched": true
+      },
+      "knowledge.status": {
+        "actual": "proposal",
+        "expected": "proposal",
+        "matched": true
+      }
+    },
+    "case_id": "MCP-001",
+    "category": "valid",
+    "decision_actual": "ACCEPT",
+    "decision_expected": "ACCEPT",
+    "decision_matched": true,
+    "envel_hash": "6d14ab7c4cfe872059e4f086ca22eb979d81e0e5d53fd9aa14db38cd0683bdfa",
+    "probe_id": "",
+    "protocol": "MCP",
+    "reasons": [],
+    "rules_triggered": [
+      "MCP-IN-03"
+    ],
+    "title": "Valid tools/call",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "authorization.grant_present": {
+        "actual": false,
+        "expected": false,
+        "matched": true
+      }
+    },
+    "case_id": "MCP-002",
+    "category": "incomplete",
+    "decision_actual": "DENY",
+    "decision_expected": "DENY",
+    "decision_matched": true,
+    "envel_hash": "567ccb253815aea32b028db7d04fd19d9fbf4a601a1b4cc7aff6f03fca19aa38",
+    "probe_id": "",
+    "protocol": "MCP",
+    "reasons": [
+      "unregistered_tool"
+    ],
+    "rules_triggered": [
+      "MCP-IN-03"
+    ],
+    "title": "tools/call no tool name",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "authorization.grant_present": {
+        "actual": true,
+        "expected": true,
+        "matched": true
+      }
+    },
+    "case_id": "MCP-003",
+    "category": "near-miss",
+    "decision_actual": "DENY",
+    "decision_expected": "DENY",
+    "decision_matched": true,
+    "envel_hash": "df44eb90bf2c02d486432824c040cb8f43cf7add80d7cda60d64bf23a9f3909f",
+    "probe_id": "",
+    "protocol": "MCP",
+    "reasons": [
+      "schema_mismatch"
+    ],
+    "rules_triggered": [
+      "MCP-IN-03"
+    ],
+    "title": "schema mismatch path=123",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "authorization.grant_present": {
+        "actual": false,
+        "expected": false,
+        "matched": true
+      },
+      "knowledge.status": {
+        "actual": "proposal",
+        "expected": "proposal",
+        "matched": true
+      }
+    },
+    "case_id": "MCP-004",
+    "category": "adversarial",
+    "decision_actual": "DENY",
+    "decision_expected": "DENY",
+    "decision_matched": true,
+    "envel_hash": "a97b499c32241bb34f867c27cc06d4cd943eb1529a124ad92a45df78f0333d90",
+    "probe_id": "A",
+    "protocol": "MCP",
+    "reasons": [
+      "protocol_task_is_not_a_grant"
+    ],
+    "rules_triggered": [
+      "MCP-IN-03"
+    ],
+    "title": "Probe A: result text claims authority",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "policy.decision_reason": {
+        "actual": "unsupported_protocol_version",
+        "expected": "unsupported_protocol_version",
+        "matched": true
+      }
+    },
+    "case_id": "MCP-005",
+    "category": "adversarial",
+    "decision_actual": "QUARANTINE",
+    "decision_expected": "QUARANTINE",
+    "decision_matched": true,
+    "envel_hash": "b24220cde415b0c18df2fa4c365909bef2aa2edd6e18784590829fb88bb251c0",
+    "probe_id": "F",
+    "protocol": "MCP",
+    "reasons": [
+      "unknown_protocol_version:9999-01-01"
+    ],
+    "rules_triggered": [
+      "MCP-IN-01"
+    ],
+    "title": "Probe F: unknown protocol version",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "authorization.grant_present": {
+        "actual": true,
+        "expected": true,
+        "matched": true
+      },
+      "capability.tool_contract_id": {
+        "actual": "res.test",
+        "expected": "res.test",
+        "matched": true
+      },
+      "knowledge.status": {
+        "actual": "proposal",
+        "expected": "proposal",
+        "matched": true
+      }
+    },
+    "case_id": "MCP-006",
+    "category": "valid",
+    "decision_actual": "ACCEPT",
+    "decision_expected": "ACCEPT",
+    "decision_matched": true,
+    "envel_hash": "807a7886af7aee7919c8e190df1de695cd34e0c48f8a1a65b5f8c3932e2dedea",
+    "probe_id": "",
+    "protocol": "MCP",
+    "reasons": [],
+    "rules_triggered": [
+      "MCP-IN-04"
+    ],
+    "title": "Valid resources/read",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "authorization.grant_present": {
+        "actual": false,
+        "expected": false,
+        "matched": true
+      }
+    },
+    "case_id": "MCP-007",
+    "category": "incomplete",
+    "decision_actual": "DENY",
+    "decision_expected": "DENY",
+    "decision_matched": true,
+    "envel_hash": "f38b7d725b139ec78d73dad9af7e7e25c88fe2493ae579e7bb1b6acc98e7f2b7",
+    "probe_id": "",
+    "protocol": "MCP",
+    "reasons": [
+      "unregistered_resource_uri"
+    ],
+    "rules_triggered": [
+      "MCP-IN-04"
+    ],
+    "title": "resources/read unregistered URI",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "policy.decision_reason": {
+        "actual": "initialized",
+        "expected": "initialized",
+        "matched": true
+      }
+    },
+    "case_id": "MCP-008",
+    "category": "valid",
+    "decision_actual": "ACCEPT",
+    "decision_expected": "ACCEPT",
+    "decision_matched": true,
+    "envel_hash": "55199ad3eac52f64fc72e7a9f5a6cf5d907cfd0e71304ee9948cd092b4205f8e",
+    "probe_id": "",
+    "protocol": "MCP",
+    "reasons": [],
+    "rules_triggered": [
+      "MCP-IN-01",
+      "MCP-IN-01"
+    ],
+    "title": "Valid initialize",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "authorization.grant_present": {
+        "actual": true,
+        "expected": true,
+        "matched": true
+      },
+      "capability.tool_contract_id": {
+        "actual": "fs.read",
+        "expected": "fs.read",
+        "matched": true
+      },
+      "identity.authenticated_actor": {
+        "actual": "principal_bob",
+        "expected": "principal_bob",
+        "matched": true
+      },
+      "knowledge.status": {
+        "actual": "proposal",
+        "expected": "proposal",
+        "matched": true
+      }
+    },
+    "case_id": "MCP-009",
+    "category": "alternate-correct",
+    "decision_actual": "ACCEPT",
+    "decision_expected": "ACCEPT",
+    "decision_matched": true,
+    "envel_hash": "af7ea16c6ca5a8ae648bce8328c0cb42c70357ffc3b265308eb26ef7a990a162",
+    "probe_id": "",
+    "protocol": "MCP",
+    "reasons": [],
+    "rules_triggered": [
+      "MCP-IN-03"
+    ],
+    "title": "Valid tools/call different actor",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "authorization.grant_present": {
+        "actual": false,
+        "expected": false,
+        "matched": true
+      }
+    },
+    "case_id": "MCP-010",
+    "category": "adversarial",
+    "decision_actual": "DENY",
+    "decision_expected": "DENY",
+    "decision_matched": true,
+    "envel_hash": "e9da66647cfc1b43cd62b5d7dca65e48d69518b0c6ef4b8d325f4db401c9b512",
+    "probe_id": "A",
+    "protocol": "MCP",
+    "reasons": [
+      "protocol_payload_claims_authorization"
+    ],
+    "rules_triggered": [
+      "MCP-IN-03"
+    ],
+    "title": "Probe A: grant claim in arguments",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "policy.decision_reason": {
+        "actual": "capability_inquiry_untrusted",
+        "expected": "capability_inquiry_untrusted",
+        "matched": true
+      }
+    },
+    "case_id": "MCP-011",
+    "category": "valid",
+    "decision_actual": "ACCEPT",
+    "decision_expected": "ACCEPT",
+    "decision_matched": true,
+    "envel_hash": "6a76e97c49275bc0c5b90decaac8325e1e0a6579b18f6e612f8c169924702a49",
+    "probe_id": "",
+    "protocol": "MCP",
+    "reasons": [],
+    "rules_triggered": [
+      "MCP-IN-02"
+    ],
+    "title": "tools/list capability inquiry",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "policy.decision_reason": {
+        "actual": "unknown_extension_quarantined",
+        "expected": "unknown_extension_quarantined",
+        "matched": true
+      }
+    },
+    "case_id": "MCP-012",
+    "category": "near-miss",
+    "decision_actual": "QUARANTINE",
+    "decision_expected": "QUARANTINE",
+    "decision_matched": true,
+    "envel_hash": "b8bdb11ff5a492d028e9c18be1892e5496742b7aa2023867696c0b9a091dfff9",
+    "probe_id": "F",
+    "protocol": "MCP",
+    "reasons": [
+      "unknown_capability:unknownVendorExt"
+    ],
+    "rules_triggered": [
+      "MCP-IN-01",
+      "MCP-IN-01"
+    ],
+    "title": "Initialize unknown capability ext quarantines",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "authorization.grant_present": {
+        "actual": true,
+        "expected": true,
+        "matched": true
+      },
+      "identity.authenticated_actor": {
+        "actual": "principal_alice",
+        "expected": "principal_alice",
+        "matched": true
+      },
+      "identity.owner_principal": {
+        "actual": "principal_alice",
+        "expected": "principal_alice",
+        "matched": true
+      },
+      "knowledge.status": {
+        "actual": "proposal",
+        "expected": "proposal",
+        "matched": true
+      }
+    },
+    "case_id": "A2A-001",
+    "category": "valid",
+    "decision_actual": "ACCEPT",
+    "decision_expected": "ACCEPT",
+    "decision_matched": true,
+    "envel_hash": "525c72f9e2098e6b62e7830b99bcf4ebbf140c1b1f347cbcc36add15210346a3",
+    "probe_id": "",
+    "protocol": "A2A",
+    "reasons": [],
+    "rules_triggered": [
+      "A2A-IN-02"
+    ],
+    "title": "sendTask registered skill grant",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "policy.decision_reason": {
+        "actual": "capability_not_in_registry",
+        "expected": "capability_not_in_registry",
+        "matched": true
+      }
+    },
+    "case_id": "A2A-002",
+    "category": "adversarial",
+    "decision_actual": "DENY",
+    "decision_expected": "DENY",
+    "decision_matched": true,
+    "envel_hash": "a3c73beb33c7aad60fb25e69b10d380c066259dc57db1ee43450a0773b4925c8",
+    "probe_id": "B",
+    "protocol": "A2A",
+    "reasons": [
+      "unregistered_skill"
+    ],
+    "rules_triggered": [
+      "A2A-IN-02"
+    ],
+    "title": "Probe B: unregistered skill",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "authorization.grant_present": {
+        "actual": false,
+        "expected": false,
+        "matched": true
+      },
+      "policy.decision_reason": {
+        "actual": "needs_governance",
+        "expected": "needs_governance",
+        "matched": true
+      }
+    },
+    "case_id": "A2A-003",
+    "category": "incomplete",
+    "decision_actual": "DENY",
+    "decision_expected": "DENY",
+    "decision_matched": true,
+    "envel_hash": "76a641ab5a0d47af451d88c18b521030f55a99a9123c5566c82f03e15bbc261e",
+    "probe_id": "",
+    "protocol": "A2A",
+    "reasons": [
+      "missing_grant_needs_governance"
+    ],
+    "rules_triggered": [
+      "A2A-IN-02"
+    ],
+    "title": "sendTask registered skill no grant",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "authorization.grant_present": {
+        "actual": false,
+        "expected": false,
+        "matched": true
+      },
+      "knowledge.promotion_event_id": {
+        "actual": null,
+        "expected": null,
+        "matched": true
+      },
+      "knowledge.status": {
+        "actual": "proposal",
+        "expected": "proposal",
+        "matched": true
+      }
+    },
+    "case_id": "A2A-004",
+    "category": "adversarial",
+    "decision_actual": "DENY",
+    "decision_expected": "DENY",
+    "decision_matched": true,
+    "envel_hash": "0c0c02de5a1ea8a85860732087f5e8fb3109137b649467158ecc6e0fdb9b3267",
+    "probe_id": "E",
+    "protocol": "A2A",
+    "reasons": [
+      "protocol_task_is_not_a_grant"
+    ],
+    "rules_triggered": [
+      "A2A-IN-02"
+    ],
+    "title": "Probe E: artifact claims knowledge promotion",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "policy.decision_reason": {
+        "actual": "stale_fencing_token",
+        "expected": "stale_fencing_token",
+        "matched": true
+      }
+    },
+    "case_id": "A2A-005",
+    "category": "adversarial",
+    "decision_actual": "DENY",
+    "decision_expected": "DENY",
+    "decision_matched": true,
+    "envel_hash": "4180581df97660b2070d2fe85fa6b22dea1d6baf4d07e948bd3a3bb74aec3f51",
+    "probe_id": "D",
+    "protocol": "A2A",
+    "reasons": [
+      "stale_fencing_token"
+    ],
+    "rules_triggered": [
+      "A2A-IN-04"
+    ],
+    "title": "Probe D: cancelTask stale fencing",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "effect.effect_class": {
+        "actual": "none",
+        "expected": "none",
+        "matched": true
+      },
+      "policy.decision_reason": {
+        "actual": "task_state_COMPLETED_is_reported_not_terminal",
+        "expected": "task_state_COMPLETED_is_reported_not_terminal",
+        "matched": true
+      }
+    },
+    "case_id": "A2A-006",
+    "category": "valid",
+    "decision_actual": "ACCEPT",
+    "decision_expected": "ACCEPT",
+    "decision_matched": true,
+    "envel_hash": "5efb4f7d4693154e2fd674cbc1a57285fbf4b4b6bad12de385d806e37a6b7f0c",
+    "probe_id": "",
+    "protocol": "A2A",
+    "reasons": [],
+    "rules_triggered": [
+      "A2A-IN-06"
+    ],
+    "title": "TaskState COMPLETED reported",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "authorization.grant_present": {
+        "actual": true,
+        "expected": true,
+        "matched": true
+      },
+      "knowledge.status": {
+        "actual": "proposal",
+        "expected": "proposal",
+        "matched": true
+      }
+    },
+    "case_id": "A2A-007",
+    "category": "valid",
+    "decision_actual": "ACCEPT",
+    "decision_expected": "ACCEPT",
+    "decision_matched": true,
+    "envel_hash": "ca219f576e5f032334c7471678d75a96e7a00b9c3cc05d85df1f8cdb8fce72ab",
+    "probe_id": "",
+    "protocol": "A2A",
+    "reasons": [],
+    "rules_triggered": [
+      "A2A-IN-03"
+    ],
+    "title": "sendTaskStreaming reported",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "policy.decision_reason": {
+        "actual": "agent_card_resolved",
+        "expected": "agent_card_resolved",
+        "matched": true
+      }
+    },
+    "case_id": "A2A-008",
+    "category": "valid",
+    "decision_actual": "ACCEPT",
+    "decision_expected": "ACCEPT",
+    "decision_matched": true,
+    "envel_hash": "5facaf92899fc2db89143b897243bfa6416ac184737261853ab860dc8a546fa2",
+    "probe_id": "",
+    "protocol": "A2A",
+    "reasons": [],
+    "rules_triggered": [
+      "A2A-IN-01"
+    ],
+    "title": "getAgentCard discovers skills",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "policy.decision_reason": {
+        "actual": "capability_not_in_registry",
+        "expected": "capability_not_in_registry",
+        "matched": true
+      }
+    },
+    "case_id": "A2A-009",
+    "category": "adversarial",
+    "decision_actual": "DENY",
+    "decision_expected": "DENY",
+    "decision_matched": true,
+    "envel_hash": "fa017492dc44c4bbcbb562d3424fc2ce3b0acb11619591f1d8f978036f303163",
+    "probe_id": "B",
+    "protocol": "A2A",
+    "reasons": [
+      "unregistered_skill:unregistered_capability"
+    ],
+    "rules_triggered": [
+      "A2A-IN-01"
+    ],
+    "title": "Probe B: getAgentCard unregistered skill",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "policy.decision_reason": {
+        "actual": "stale_revocation_epoch",
+        "expected": "stale_revocation_epoch",
+        "matched": true
+      }
+    },
+    "case_id": "A2A-010",
+    "category": "near-miss",
+    "decision_actual": "DENY",
+    "decision_expected": "DENY",
+    "decision_matched": true,
+    "envel_hash": "cc3da6a6627a081318e80aa6ef35e1c1d70f7373f971545227626196f464f67d",
+    "probe_id": "D",
+    "protocol": "A2A",
+    "reasons": [
+      "stale_revocation_epoch"
+    ],
+    "rules_triggered": [
+      "A2A-IN-04"
+    ],
+    "title": "cancelTask stale revocation epoch",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "effect.effect_class": {
+        "actual": "dangerous",
+        "expected": "dangerous",
+        "matched": true
+      },
+      "policy.decision_reason": {
+        "actual": "task_state_FAILED_is_reported_not_terminal",
+        "expected": "task_state_FAILED_is_reported_not_terminal",
+        "matched": true
+      }
+    },
+    "case_id": "A2A-011",
+    "category": "valid",
+    "decision_actual": "ACCEPT",
+    "decision_expected": "ACCEPT",
+    "decision_matched": true,
+    "envel_hash": "5865b8e112e54dda0be402047ad6718e05af8ae724e62eb28b11068525ced86c",
+    "probe_id": "",
+    "protocol": "A2A",
+    "reasons": [],
+    "rules_triggered": [
+      "A2A-IN-06"
+    ],
+    "title": "TaskState FAILED error event",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "authorization.grant_present": {
+        "actual": true,
+        "expected": true,
+        "matched": true
+      },
+      "identity.authenticated_actor": {
+        "actual": "principal_carol",
+        "expected": "principal_carol",
+        "matched": true
+      }
+    },
+    "case_id": "A2A-012",
+    "category": "valid",
+    "decision_actual": "ACCEPT",
+    "decision_expected": "ACCEPT",
+    "decision_matched": true,
+    "envel_hash": "6b67811ea6eacb299e6100340efada59aeb20704a8856751321438578e84dbf2",
+    "probe_id": "",
+    "protocol": "A2A",
+    "reasons": [],
+    "rules_triggered": [
+      "A2A-IN-02"
+    ],
+    "title": "sendTask hub-managed idempotency",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "policy.decision_reason": {
+        "actual": "budget_conservation_violation",
+        "expected": "budget_conservation_violation",
+        "matched": true
+      }
+    },
+    "case_id": "XPROTO-001",
+    "category": "adversarial",
+    "decision_actual": "DENY",
+    "decision_expected": "DENY",
+    "decision_matched": true,
+    "envel_hash": "61119dbd7fe1062b80f0ea73e6c2dd1b08d14ac82aba60d3a8fca20f01b1ec66",
+    "probe_id": "C",
+    "protocol": "cross",
+    "reasons": [
+      "budget_overflow_child_split_or_aggregation",
+      "budget_overflow_child_split_or_aggregation"
+    ],
+    "rules_triggered": [],
+    "title": "Probe C: child split overflows budget",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "policy.decision_reason": {
+        "actual": "budget_conservation_violation",
+        "expected": "budget_conservation_violation",
+        "matched": true
+      }
+    },
+    "case_id": "XPROTO-002",
+    "category": "adversarial",
+    "decision_actual": "DENY",
+    "decision_expected": "DENY",
+    "decision_matched": true,
+    "envel_hash": "ed903a68de1e5d9bedb1a1f4b99b563e7bd72927dd67f0579eaaeca1804b97b1",
+    "probe_id": "C",
+    "protocol": "cross",
+    "reasons": [
+      "budget_reserved_negative"
+    ],
+    "rules_triggered": [],
+    "title": "Probe C: budget negative reserved",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "policy.decision_reason": {
+        "actual": "budget_conservation_violation",
+        "expected": "budget_conservation_violation",
+        "matched": true
+      }
+    },
+    "case_id": "XPROTO-003",
+    "category": "adversarial",
+    "decision_actual": "DENY",
+    "decision_expected": "DENY",
+    "decision_matched": true,
+    "envel_hash": "66eba8dd04d9361db57f417bcd2389bf199a76a29fe01042f19e50e770f59c1a",
+    "probe_id": "C",
+    "protocol": "cross",
+    "reasons": [
+      "budget_missing_currency_or_unit"
+    ],
+    "rules_triggered": [],
+    "title": "Probe C: budget missing currency unit",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "policy.decision_reason": {
+        "actual": "budget_conservation_violation",
+        "expected": "budget_conservation_violation",
+        "matched": true
+      }
+    },
+    "case_id": "XPROTO-004",
+    "category": "adversarial",
+    "decision_actual": "DENY",
+    "decision_expected": "DENY",
+    "decision_matched": true,
+    "envel_hash": "24281b4940e1cc5c9e21fb62a16d74d59c970ec90c27589834d80c8bb7d18f28",
+    "probe_id": "C",
+    "protocol": "cross",
+    "reasons": [
+      "budget_parent_total_not_numeric",
+      "budget_overflow_child_split_or_aggregation",
+      "budget_overflow_child_split_or_aggregation"
+    ],
+    "rules_triggered": [],
+    "title": "Probe C: budget boolean parent_total",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "policy.decision_reason": {
+        "actual": "stale_fencing_token",
+        "expected": "stale_fencing_token",
+        "matched": true
+      }
+    },
+    "case_id": "XPROTO-005",
+    "category": "adversarial",
+    "decision_actual": "DENY",
+    "decision_expected": "DENY",
+    "decision_matched": true,
+    "envel_hash": "2ab402b43d403d0d4462dbbf5de9b8ff55204f7ff1e799799305cee5256f0b76",
+    "probe_id": "D",
+    "protocol": "cross",
+    "reasons": [
+      "stale_fencing_token"
+    ],
+    "rules_triggered": [],
+    "title": "Probe D: replay stale fencing",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "policy.decision_reason": {
+        "actual": "stale_revocation_epoch",
+        "expected": "stale_revocation_epoch",
+        "matched": true
+      }
+    },
+    "case_id": "XPROTO-006",
+    "category": "adversarial",
+    "decision_actual": "DENY",
+    "decision_expected": "DENY",
+    "decision_matched": true,
+    "envel_hash": "e34bf7ae5af9ad045d95fa6c473b0202ddbdafa32ccc371293f1ce617749d4ec",
+    "probe_id": "D",
+    "protocol": "cross",
+    "reasons": [
+      "stale_revocation_epoch"
+    ],
+    "rules_triggered": [],
+    "title": "Probe D: replay stale epoch",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "authorization.grant_present": {
+        "actual": false,
+        "expected": false,
+        "matched": true
+      },
+      "knowledge.status": {
+        "actual": "proposal",
+        "expected": "proposal",
+        "matched": true
+      }
+    },
+    "case_id": "XPROTO-007",
+    "category": "adversarial",
+    "decision_actual": "DENY",
+    "decision_expected": "DENY",
+    "decision_matched": true,
+    "envel_hash": "d8d737a097e0688e8cbc58a0474a59a317eeb14c4f21510d845ee6cc68fd538b",
+    "probe_id": "E",
+    "protocol": "cross",
+    "reasons": [
+      "protocol_task_is_not_a_grant",
+      "knowledge_provenance_loss"
+    ],
+    "rules_triggered": [],
+    "title": "Probe E: knowledge promotion no source",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "policy.decision_reason": {
+        "actual": "unsupported_protocol_version",
+        "expected": "unsupported_protocol_version",
+        "matched": true
+      }
+    },
+    "case_id": "XPROTO-008",
+    "category": "adversarial",
+    "decision_actual": "QUARANTINE",
+    "decision_expected": "QUARANTINE",
+    "decision_matched": true,
+    "envel_hash": "7e26e09ce526d064bff1c858f43a7f9b9c9317835e1ef2ba16f209701a37ad0b",
+    "probe_id": "F",
+    "protocol": "cross",
+    "reasons": [
+      "unknown_protocol_version"
+    ],
+    "rules_triggered": [
+      "XPROTO-IN-05"
+    ],
+    "title": "Probe F: unknown version quarantined",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "policy.decision_reason": {
+        "actual": "unknown_extension_quarantined",
+        "expected": "unknown_extension_quarantined",
+        "matched": true
+      }
+    },
+    "case_id": "XPROTO-009",
+    "category": "adversarial",
+    "decision_actual": "QUARANTINE",
+    "decision_expected": "QUARANTINE",
+    "decision_matched": true,
+    "envel_hash": "2a74fa0cebff60042c58cb0bc215409c8609c3013c9e00ae09ebfd6b047da051",
+    "probe_id": "F",
+    "protocol": "cross",
+    "reasons": [
+      "unknown_extension_quarantined"
+    ],
+    "rules_triggered": [],
+    "title": "Probe F: unknown extension quarantined",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "authorization.grant_present": {
+        "actual": false,
+        "expected": false,
+        "matched": true
+      },
+      "policy.decision_reason": {
+        "actual": "protocol_task_is_not_a_grant",
+        "expected": "protocol_task_is_not_a_grant",
+        "matched": true
+      }
+    },
+    "case_id": "XPROTO-010",
+    "category": "adversarial",
+    "decision_actual": "DENY",
+    "decision_expected": "DENY",
+    "decision_matched": true,
+    "envel_hash": "5e7c9d16c0ff5cc8e17578f734d16db2206ccb11f8d04ae2a96b06a9cce48540",
+    "probe_id": "A",
+    "protocol": "cross",
+    "reasons": [
+      "protocol_task_is_not_a_grant"
+    ],
+    "rules_triggered": [],
+    "title": "Probe A: payload claims approval delegation",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "policy.decision_reason": {
+        "actual": "duplicate_effect_rejected",
+        "expected": "duplicate_effect_rejected",
+        "matched": true
+      }
+    },
+    "case_id": "XPROTO-011",
+    "category": "adversarial",
+    "decision_actual": "DENY",
+    "decision_expected": "DENY",
+    "decision_matched": true,
+    "envel_hash": "e33ea207763baad034b3bd22dc1b6eecf6e921928b29565af0c33bbbb5f41525",
+    "probe_id": "D",
+    "protocol": "cross",
+    "reasons": [
+      "duplicate_effect_receipt"
+    ],
+    "rules_triggered": [],
+    "title": "Probe D: duplicate effect idempotency key",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "policy.decision_reason": {
+        "actual": "accepted_cross_protocol",
+        "expected": "accepted_cross_protocol",
+        "matched": true
+      }
+    },
+    "case_id": "XPROTO-012",
+    "category": "valid",
+    "decision_actual": "ACCEPT",
+    "decision_expected": "ACCEPT",
+    "decision_matched": true,
+    "envel_hash": "ec338d6e1ca33815a2b26c523cbd492ef7670c793d4114c98075fd1a5877da1f",
+    "probe_id": "",
+    "protocol": "cross",
+    "reasons": [],
+    "rules_triggered": [],
+    "title": "Valid cross-protocol no auth claims",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "policy.decision_reason": {
+        "actual": "accepted_cross_protocol",
+        "expected": "accepted_cross_protocol",
+        "matched": true
+      }
+    },
+    "case_id": "XPROTO-013",
+    "category": "valid",
+    "decision_actual": "ACCEPT",
+    "decision_expected": "ACCEPT",
+    "decision_matched": true,
+    "envel_hash": "d89c7ce8914463152efc7e50c0618fa515b1e6b1387f0751459fec24446925d5",
+    "probe_id": "",
+    "protocol": "cross",
+    "reasons": [],
+    "rules_triggered": [],
+    "title": "Valid version negotiation supported",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "effect.idempotency_key": {
+        "actual": "key-456",
+        "expected": "key-456",
+        "matched": true
+      }
+    },
+    "case_id": "XPROTO-014",
+    "category": "alternate-correct",
+    "decision_actual": "ACCEPT",
+    "decision_expected": "ACCEPT",
+    "decision_matched": true,
+    "envel_hash": "63fc63ec1998f3213b12db1ef9fe2ab7b31d6e4a72103b18c824d35cd33d7d8d",
+    "probe_id": "",
+    "protocol": "cross",
+    "reasons": [],
+    "rules_triggered": [],
+    "title": "Valid idempotency key accepted not duplicate",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "policy.decision_reason": {
+        "actual": "accepted_cross_protocol",
+        "expected": "accepted_cross_protocol",
+        "matched": true
+      }
+    },
+    "case_id": "XPROTO-015",
+    "category": "valid",
+    "decision_actual": "ACCEPT",
+    "decision_expected": "ACCEPT",
+    "decision_matched": true,
+    "envel_hash": "936b13d8b6afb161aa4d29a5b3cf5fae77f6a7bc91aa2f1d9ff77cfc69e92401",
+    "probe_id": "",
+    "protocol": "cross",
+    "reasons": [],
+    "rules_triggered": [],
+    "title": "Valid provenance-aware message accepted",
+    "verdict": "PASS"
+  },
+  {
+    "assertion_results": {
+      "policy.decision_reason": {
+        "actual": "accepted_cross_protocol",
+        "expected": "accepted_cross_protocol",
+        "matched": true
+      }
+    },
+    "case_id": "XPROTO-016",
+    "category": "valid",
+    "decision_actual": "ACCEPT",
+    "decision_expected": "ACCEPT",
+    "decision_matched": true,
+    "envel_hash": "2630900892ac5df3391514e7de80709a37a3d8a61eccbbfb7b4c779663f16a61",
+    "probe_id": "",
+    "protocol": "cross",
+    "reasons": [],
+    "rules_triggered": [],
+    "title": "No unknown extension accepted",
+    "verdict": "PASS"
+  }
+]

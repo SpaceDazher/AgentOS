@@ -1,0 +1,452 @@
+{
+  "schema": "agentos.s1-009.capability-matrix/v1",
+  "ticket": "S1-009",
+  "frozen_at": "2026-09-02T00:00:00Z",
+  "matrix": [
+    {
+      "surface_id": "SM1",
+      "surface": "transport/session/request correlation",
+      "mcp": {
+        "native": "stdlibio and HTTP transports; JSON-RPC 2.0 request_id correlation on stdio; SSE/WS streams carry request_id too. No session-level identity binding in base transport.",
+        "native_field_selector": "request_id (JSON-RPC); transport-level (stdio, HTTP+SSE, WebSocket) via MCP-2026-07-28-SPEC",
+        "evidence_ref": "MCP-2026-07-28-SPEC",
+        "class": "protocol_fact",
+        "confidence": 0.9
+      },
+      "a2a": {
+        "native": "HTTP JSON-RPC and WebSocket transports; each request carries a unique id. No session-level identity binding; caller identity is asserted per-request via authentication field on the Agent Card.",
+        "native_field_selector": "id (JSON-RPC request); JSON-RPC-HTTP/WebSocket transport per A2A-1.0.0-SPEC",
+        "evidence_ref": "A2A-1.0.0-SPEC",
+        "class": "protocol_fact",
+        "confidence": 0.9
+      },
+      "hub": "Canonical envelope requires correlation_id + causation_id; tenant/workspace/goal/task/run scoping on every request. Correlation is bound to an authenticated principal and a canonical session ledger entry.",
+      "hub_semantic": "correlation_id (host-assigned) + causation_id (parent request) + canonical scopes",
+      "adapter_mapping": {
+        "MCP": "Map request_id to correlation_id. If protocol payload carries no causation, derive from prior envelope. Scopes from hub routing, never from protocol payload.",
+        "A2A": "Map request id to correlation_id; Task.id to task_id (hub-issued, not protocol-asserted as authoritative)."
+      },
+      "loss_class": "lossy-safe",
+      "lossiness_note": "Protocol request_id is not bound to a hub-authenticated principal. Adapter attaches hub session context; protocol id becomes a secondary reference only.",
+      "security_consequence": "Request IDs alone cannot prove request origin or non-replay; hub enforces replay protection separately.",
+      "assumptions": ["MCP/A2A request correlation is a transport concern, not a security boundary."],
+      "owner_followup": "None required; this is a transport mapping."
+    },
+    {
+      "surface_id": "SM2",
+      "surface": "task lifecycle, cancellation and terminal authority",
+      "mcp": {
+        "native": "MCP base protocol has no task abstraction. 2026-07-28 introduces Tasks for async long-running tool operations, but the protocol task lifecycle is internal to the client-server exchange.",
+        "native_field_selector": "tasks (MCP 2026-07-28) via MCP-2026-07-28-SPEC",
+        "evidence_ref": "MCP-2026-07-28-CHANGELOG",
+        "class": "protocol_fact",
+        "confidence": 0.8
+      },
+      "a2a": {
+        "native": "Task with TaskState: SUBMITTED, WORKING, INPUT_REQUIRED, COMPLETED, FAILED, CANCELLED, REJECTED, AUTH_REQUIRED, UNIMPLEMENTED, UNKNOWN. cancelTask cancels a task; completed/failed/cancelled/rejected are terminal. The agent server owns terminal authority; the client requests.",
+        "native_field_selector": "TaskState enum via A2A-1.0.0-SPEC",
+        "evidence_ref": "A2A-1.0.0-SPEC",
+        "class": "protocol_fact",
+        "confidence": 0.9
+      },
+      "hub": "Tasks have a guarded lifecycle with single canonical state owner. Only a Gate evaluation over an evaluator record can ACCEPT a Goal. Cancellation completes the protocol task but does NOT cancel reconciliation side effects.",
+      "hub_semantic": "Guarded state machine: DRAFT -> ACTIVE -> ... -> terminal (via reconciliation). Cancellation is a transition, not a reconciliation terminator.",
+      "adapter_mapping": {
+        "MCP": "MCP task result is data, not terminal authority for hub task. Hub task reaches terminal only via its own state machine + reconciliation. Adapter DENIES any protocol payload claiming task completion implies effect completion.",
+        "A2A": "Map A2A TaskState to a STATUS_REPORTED event type. Hub terminal state is decided by hub state machine + reconciliation, NOT by A2A TaskState.COMPLETED. If A2A reports COMPLETED but hub reconciliation shows unknown outcome, hub stays in reconciliation."
+      },
+      "loss_class": "lossy-safe",
+      "lossiness_note": "Protocol task state is a report, not a terminal authority. The adapter must not conflate protocol completion with hub terminal acceptance.",
+      "security_consequence": "Treating protocol TaskState.COMPLETED as hub terminal would allow protocol payloads to declare completion without reconciliation.",
+      "assumptions": ["Hub task lifecycle is stricter than any protocol task lifecycle."],
+      "owner_followup": "S1-008 (revocation latency) defines the reconciliation contract."
+    },
+    {
+      "surface_id": "SM3",
+      "surface": "tool/resource invocation and effect classification",
+      "mcp": {
+        "native": "tools/call invokes a named tool with arguments, returns CallToolResult. tools/list enumerates available tools. resources/read reads a resource URI. No effect-class attribution (read vs write_local vs dangerous) in the protocol.",
+        "native_field_selector": "tools/call, resources/read via MCP-2026-07-28-SPEC",
+        "evidence_ref": "MCP-2026-07-28-SPEC",
+        "class": "protocol_fact",
+        "confidence": 0.9
+      },
+      "a2a": {
+        "native": "Agent Card declares skills. Task execution is opaque to the client. No tool-level effect classification.",
+        "native_field_selector": "Agent Card skills via A2A-1.0.0-SPEC",
+        "evidence_ref": "A2A-1.0.0-SPEC",
+        "class": "protocol_fact",
+        "confidence": 0.9
+      },
+      "hub": "Every tool invocation must pass a ToolGateway with capability check, effect class (read/write_local/dangerous), idempotency key, and approval before execution.",
+      "hub_semantic": "Effect class is assigned by the hub from a registry-resolved ToolContract, never by the protocol.",
+      "adapter_mapping": {
+        "MCP": "Map MCP tool name to hub ToolContract via registry lookup (NOT the protocol-advertised name directly). Effect class from the registry contract. Protocol-advertised tool list is an untrusted claim; adapter DENIES tools not in the registry.",
+        "A2A": "A2A has no per-tool invocation surface at the protocol level. Skills map to hub capability scope only after registry resolution. Adapter DENIES unrecognized skills."
+      },
+      "loss_class": "lossy-safe",
+      "lossiness_note": "Protocol tool names are not authorization. Registry resolution is required before any effect.",
+      "security_consequence": "Accepting protocol-advertised tool names as authorization would allow arbitrary capability escalation.",
+      "assumptions": ["Hub registry is the sole authority for tool effect classification."],
+      "owner_followup": "S1-009 adapter contract defines the tool-name-to-contract mapping rules."
+    },
+    {
+      "surface_id": "SM4",
+      "surface": "agent/principal identity and authentication claims",
+      "mcp": {
+        "native": "MCP 2026-07-28 has no principal identity in the base protocol. Authorization is addressed by a separate MCP Authorization spec (OAuth 2.1). The base protocol carries no authenticated principal claim.",
+        "native_field_selector": "No principal identity field in base MCP-2026-07-28-SPEC; MCP Auth extension separate",
+        "evidence_ref": "MCP-2026-07-28-SPEC",
+        "class": "protocol_fact",
+        "confidence": 0.85
+      },
+      "a2a": {
+        "native": "Agent Card carries an 'authentication' field describing auth requirements, but the card is self-asserted. No principal identity is bound to individual task requests in the core protocol.",
+        "native_field_selector": "AgentCard.authentication via A2A-1.0.0-SPEC",
+        "evidence_ref": "A2A-1.0.0-SPEC",
+        "class": "protocol_fact",
+        "confidence": 0.9
+      },
+      "hub": "A canonical authenticated actor (principal) is required for all operations. Asserted remote actor is an untrusted claim until registry/policy verifies it. Authenticated actor and asserted remote actor are distinct envelope fields.",
+      "hub_semantic": "authenticated_actor (hub-verified) vs asserted_remote_actor (untrusted claim); assertion must be verified before use.",
+      "adapter_mapping": {
+        "MCP": "No authenticated principal in base MCP. Adapter sets authenticated_actor from hub session context. asserted_remote_actor stays null/unknown unless hub verifies it. Protocol payload cannot set authenticated_actor.",
+        "A2A": "Agent Card authentication is a capability advertisement, not a principal binding. Adapter sets authenticated_actor from hub transport auth; asserted_remote_actor may be populated from Agent Card contact but must be verified."
+      },
+      "loss_class": "lossy-safe",
+      "lossiness_note": "Protocol does not provide hub-authenticated principal identity. Adapter must leave authenticated_actor unpopulated-by-protocol and rely on hub session binding.",
+      "security_consequence": "If adapter trusted protocol-advertised identity, an attacker could impersonate any principal.",
+      "assumptions": ["MCP auth extension and A2A auth schemes are transport-level, not protocol-payload-level."],
+      "owner_followup": "Identity federation is non-scope for S1-009 (production identity federation is explicitly excluded)."
+    },
+    {
+      "surface_id": "SM5",
+      "surface": "capability advertisement/discovery",
+      "mcp": {
+        "native": "ServerCapabilities negotiated in InitializeResult; tools/list, resources/list, prompts/list enumerate available endpoints. ClientCapabilities in InitializeRequest. Static capability set per connection.",
+        "native_field_selector": "InitializeRequest.capabilities / InitializeResult.capabilities via MCP-2026-07-28-SPEC",
+        "evidence_ref": "MCP-2026-07-28-SPEC",
+        "class": "protocol_fact",
+        "confidence": 0.9
+      },
+      "a2a": {
+        "native": "Agent Card (AgentCard) declares skills, capabilities (streaming, pushNotifications, stateOverflow), and authentication. Discovered via well-known path or getAgentCard.",
+        "native_field_selector": "AgentCard.capabilities, AgentCard.skills via A2A-1.0.0-SPEC",
+        "evidence_ref": "A2A-1.0.0-SPEC",
+        "class": "protocol_fact",
+        "confidence": 0.9
+      },
+      "hub": "Capabilities are registry-resolved contracts with version and exact canonical arguments. Discovery is untrusted claim until registry/policy verification.",
+      "hub_semantic": "registry-resolved capability/tool contract ID + version; protocol-advertised capabilities are untrusted claims.",
+      "adapter_mapping": {
+        "MCP": "Protocol-advertised tools/resources/prompts are untrusted claims. Adapter resolves each against the hub registry. Unregistered tools are DENIED. Extension capabilities are QUARANTINED unless explicitly accepted.",
+        "A2A": "Agent Card skills and capabilities are untrusted claims. Adapter resolves against hub registry. Unknown skills are DENIED. Advertised pushNotifications/streaming are transport claims, not capability grants."
+      },
+      "loss_class": "lossy-safe",
+      "lossiness_note": "Protocol capability advertisement is a hint, not an authorization. The adapter narrows by registry resolution.",
+      "security_consequence": "Trusting advertised capabilities without registry resolution enables Probe B (capability expansion).",
+      "assumptions": ["Hub registry is the source of truth for capabilities."],
+      "owner_followup": "S1-010 (tool-poisoning detection) builds on this boundary."
+    },
+    {
+      "surface_id": "SM6",
+      "surface": "exact-action delegation grants and child scope",
+      "mcp": {
+        "native": "ABSENT",
+        "native_field_selector": "No delegation grant, approval, expiry, or child-scope fields in MCP-2026-07-28-SPEC",
+        "evidence_ref": "MCP-2026-07-28-SPEC",
+        "class": "protocol_fact",
+        "confidence": 0.95
+      },
+      "a2a": {
+        "native": "ABSENT",
+        "native_field_selector": "No delegation grant, approval, expiry, or child-scope fields in A2A-1.0.0-SPEC",
+        "evidence_ref": "A2A-1.0.0-SPEC",
+        "class": "protocol_fact",
+        "confidence": 0.95
+      },
+      "hub": "Exact-action delegation: grant binds to actor + exact operation + canonical arguments + expiry. One-time use. Consumed atomically. Child scope is a narrowed subset.",
+      "hub_semantic": "grant_id, delegator/delegatee, capability_id, arguments_digest, expiry, consumed, fencing_token, revocation_epoch.",
+      "adapter_mapping": {
+        "MCP": "Protocol payloads claiming delegation or approval are treated as untrusted text. grant_present remains false. Adapter returns DENY/needs-governance on any effect path that requires a grant. (Probe A)",
+        "A2A": "Same: protocol Task/Artifact text/metadata claiming delegation does not create a grant. grant_present stays false. DENY on effect paths requiring a grant."
+      },
+      "loss_class": "unsupported",
+      "lossiness_note": "Delegation is entirely absent from both protocols. Cannot be losslessly translated; must be denied and escalated to hub governance.",
+      "security_consequence": "If protocol payload could create grants, an attacker could self-authorize arbitrary actions.",
+      "assumptions": ["Delegation is a hub-only authority surface."],
+      "owner_followup": "S1-009-FU-01 (Delegation Grant Contract) — named owner: Gateway/Policy; define exact-action grant, child scope, expiry, atomic consumption, and revocation test before claiming support."
+    },
+    {
+      "surface_id": "SM7",
+      "surface": "ownership, fencing and reassignment",
+      "mcp": {
+        "native": "ABSENT",
+        "native_field_selector": "No owner principal, fencing token, or revocation epoch fields in MCP-2026-07-28-SPEC",
+        "evidence_ref": "MCP-2026-07-28-SPEC",
+        "class": "protocol_fact",
+        "confidence": 0.95
+      },
+      "a2a": {
+        "native": "UNDERSPECIFIED",
+        "native_field_selector": "Task has no owner principal field; reassignment/cancellation is client-initiated without principal verification in A2A-1.0.0-SPEC",
+        "evidence_ref": "A2A-1.0.0-SPEC",
+        "class": "protocol_fact",
+        "confidence": 0.85
+      },
+      "hub": "Owner principal is hub-resolved. Fencing tokens and revocation epochs prevent replay/stale delegation after reassignment. Only the hub can reassign ownership.",
+      "hub_semantic": "owner_principal (hub-resolved), fencing_token, revocation_epoch; reassignment creates a new epoch.",
+      "adapter_mapping": {
+        "MCP": "No ownership in protocol. Adapter assigns owner from hub session/auth context. Protocol payload cannot set owner.",
+        "A2A": "A2A Task has no owner field. Adapter assigns owner from hub transport auth. Protocol cancelTask is a cancellation request, not an ownership transfer; hub checks fencing/revocation epoch."
+      },
+      "loss_class": "lossy-safe",
+      "lossiness_note": "Protocol does not model ownership. Adapter populates owner from hub context only.",
+      "security_consequence": "Allowing protocol payload to set ownership would enable privilege escalation via task hijacking.",
+      "assumptions": ["Hub transport auth is the source of owner identity."],
+      "owner_followup": "S1-004 (formal invariant simulation) defines fencing semantics."
+    },
+    {
+      "surface_id": "SM8",
+      "surface": "budget reservation, consumption, aggregation",
+      "mcp": {
+        "native": "ABSENT",
+        "native_field_selector": "No budget, quota, or cost fields in MCP-2026-07-28-SPEC",
+        "evidence_ref": "MCP-2026-07-28-SPEC",
+        "class": "protocol_fact",
+        "confidence": 0.95
+      },
+      "a2a": {
+        "native": "ABSENT",
+        "native_field_selector": "No budget, quota, or cost fields in A2A-1.0.0-SPEC",
+        "evidence_ref": "A2A-1.0.0-SPEC",
+        "class": "protocol_fact",
+        "confidence": 0.95
+      },
+      "hub": "Budget with currency/unit; parent_total, reserved, consumed, remaining. Child splits, unit mismatches, negative/overflow/missing values, and parallel aggregation cannot increase parent budget. Fail closed on malformed input.",
+      "hub_semantic": "budget conservation invariant; reservation <= remaining; consumption <= remaining.",
+      "adapter_mapping": {
+        "MCP": "No budget in protocol. Adapter sets budget from hub ledger for the resolved capability/task. Protocol cannot provide budget values. Empty/missing/negative/overflow -> DENY (fail closed). (Probe C)",
+        "A2A": "Same: no budget in protocol. Hub ledger is the sole source. Malformed budget claims from protocol -> DENY."
+      },
+      "loss_class": "unsupported",
+      "lossiness_note": "Budget is absent from both protocols. Adapter injects hub-side budget; never accepts protocol-provided budget values.",
+      "security_consequence": "Accepting protocol budget values would enable budget laundering (Probe C).",
+      "assumptions": ["Hub budget ledger is the source of truth; protocol carries no budget semantics."],
+      "owner_followup": "S1-009-FU-02 (Budget Conservation Contract) — named owner: Scheduler/Budget; specify reservation, consumption, aggregation, unit, overflow, and reconciliation evidence before claiming support."
+    },
+    {
+      "surface_id": "SM9",
+      "surface": "idempotency, receipts, unknown outcome and reconciliation",
+      "mcp": {
+        "native": "UNDERSPECIFIED",
+        "native_field_selector": "No idempotency key or receipt mechanism in base MCP-2026-07-28-SPEC. Request_id provides transport-level dedup within a session but is not an idempotency key for effects.",
+        "evidence_ref": "MCP-2026-07-28-SPEC",
+        "class": "protocol_fact",
+        "confidence": 0.8
+      },
+      "a2a": {
+        "native": "UNDERSPECIFIED",
+        "native_field_selector": "No explicit idempotency key or receipt mechanism in A2A-1.0.0-SPEC. Task ID provides deduplication but not effect-level idempotency.",
+        "evidence_ref": "A2A-1.0.0-SPEC",
+        "class": "protocol_fact",
+        "confidence": 0.8
+      },
+      "hub": "Every retriable side effect declares an idempotency key or compensation. Unknown outcomes escalate to reconciliation, never blind retry. Cancellation does not cancel reconciliation.",
+      "hub_semantic": "idempotency_key (host-assigned), receipt_state, reconciliation_state with unknown_outcome handling.",
+      "adapter_mapping": {
+        "MCP": "Protocol request_id is NOT an idempotency key. Adapter attaches a host-assigned idempotency_key from the canonical ledger. If protocol result is ambiguous (unknown), hub enters reconciliation. Cancellation of MCP task does not resolve reconciliation.",
+        "A2A": "Protocol Task ID is NOT an idempotency key. Adapter attaches host-assigned idempotency_key. Unknown TaskState (UNKNOWN) -> hub reconciliation. cancelTask does not cancel reconciliation."
+      },
+      "loss_class": "lossy-safe",
+      "lossiness_note": "Protocol lacks idempotency/receipt semantics. Adapter injects host-side keys; reconciliation is hub-only.",
+      "security_consequence": "Using protocol IDs as idempotency keys allows duplicate or missed effects on retry.",
+      "assumptions": ["Hub canonical ledger is the idempotency authority."],
+      "owner_followup": "S1-004 SAF/INV simulations define reconciliation semantics."
+    },
+    {
+      "surface_id": "SM10",
+      "surface": "provenance/effect linkage",
+      "mcp": {
+        "native": "UNDERSPECIFIED",
+        "native_field_selector": "Tool results may carry arbitrary metadata in CallToolResult; no structured provenance or evidence-linkage fields in MCP-2026-07-28-SPEC",
+        "evidence_ref": "MCP-2026-07-28-SPEC",
+        "class": "protocol_fact",
+        "confidence": 0.7
+      },
+      "a2a": {
+        "native": "UNDERSPECIFIED",
+        "native_field_selector": "Artifacts carry data parts and optional metadata; no structured provenance/evidence-linkage fields in A2A-1.0.0-SPEC",
+        "evidence_ref": "A2A-1.0.0-SPEC",
+        "class": "protocol_fact",
+        "confidence": 0.7
+      },
+      "hub": "Every artifact has canonical ref, SHA-256, content length, and provenance. Protocol-native payload digest is recorded (metadata only, never raw secrets).",
+      "hub_semantic": "input_artifacts[] and output_artifacts[] with sha256 + provenance; protocol_payload_digest for the non-secret payload.",
+      "adapter_mapping": {
+        "MCP": "If protocol result lacks provenance fields, adapter populates from hub ledger (host-assigned provenance). If protocol result CLAIMS provenance it cannot back, adapter marks it untrusted. Loss of required scope/policy/provenance in an accepted mapping -> FAIL.",
+        "A2A": "Same: hub assigns provenance. Protocol artifact metadata is untrusted; adapter validates against hub evidence references."
+      },
+      "loss_class": "lossy-safe",
+      "lossiness_note": "Protocol content is not a provenance system. Adapter synthesizes canonical provenance from hub ledger state.",
+      "security_consequence": "Loss of provenance prevents audit and accountability; must fail closed.",
+      "assumptions": ["Hub evidence store is the provenance authority."],
+      "owner_followup": "S1-001 established the provenance evidence contract."
+    },
+    {
+      "surface_id": "SM11",
+      "surface": "knowledge proposal, promotion, challenge, rejection and revocation",
+      "mcp": {
+        "native": "ABSENT",
+        "native_field_selector": "No knowledge status or promotion fields in MCP-2026-07-28-SPEC",
+        "evidence_ref": "MCP-2026-07-28-SPEC",
+        "class": "protocol_fact",
+        "confidence": 0.95
+      },
+      "a2a": {
+        "native": "ABSENT",
+        "native_field_selector": "No knowledge status or promotion fields in A2A-1.0.0-SPEC",
+        "evidence_ref": "A2A-1.0.0-SPEC",
+        "class": "protocol_fact",
+        "confidence": 0.95
+      },
+      "hub": "Knowledge objects have status: proposal, verified, promoted, challenged, rejected, revoked, superseded. Promotion requires a separate canonical governance event. Protocol content is a proposal only.",
+      "hub_semantic": "knowledge.status must be 'proposal' until a hub governance event promotes it. (Probe E)",
+      "adapter_mapping": {
+        "MCP": "Protocol tool output proposing/asserting knowledge -> status=proposal. No protocol payload can set promoted/verified. Silent promotion is forbidden. Loss of source digest/scope/challenge reference -> mapping rejected or status downgraded to proposal. (Probe E)",
+        "A2A": "Same: protocol artifact content proposing knowledge -> status=proposal. Cannot self-promote."
+      },
+      "loss_class": "unsupported",
+      "lossiness_note": "Knowledge promotion is absent from both protocols. Protocol content becomes a proposal only; promotion is hub-governance-only.",
+      "security_consequence": "If protocol content could self-promote, it would bypass hub governance and epistemic controls.",
+      "assumptions": ["Knowledge governance is a hub-only decision surface."],
+      "owner_followup": "S1-011 (knowledge gate) is the dedicated knowledge governance ticket."
+    },
+    {
+      "surface_id": "SM12",
+      "surface": "policy/revocation version binding",
+      "mcp": {
+        "native": "UNDERSPECIFIED",
+        "native_field_selector": "No revocation epoch or policy version binding in MCP base protocol; MCP Auth extension handles auth revocation at transport level (not policy version binding for effects).",
+        "evidence_ref": "MCP-2026-07-28-SPEC",
+        "class": "protocol_fact",
+        "confidence": 0.8
+      },
+      "a2a": {
+        "native": "UNDERSPECIFIED",
+        "native_field_selector": "Agent Card has no policy version binding; auth revocation is at the connection/transport level in A2A-1.0.0-SPEC",
+        "evidence_ref": "A2A-1.0.0-SPEC",
+        "class": "protocol_fact",
+        "confidence": 0.8
+      },
+      "hub": "Policy version and revocation epoch are bound to every decision. A grant's revocation_epoch must be > the epoch at which it was issued.",
+      "hub_semantic": "policy_version + revocation_epoch on every authorization decision; stale epoch -> DENY.",
+      "adapter_mapping": {
+        "MCP": "Adapter populates policy_version and revocation_epoch from hub policy ledger. Protocol payload cannot set or override these. Stale/fencing-miss -> DENY.",
+        "A2A": "Same: hub policy ledger is the source. Protocol Task/agent card cannot set policy_version or revocation_epoch."
+      },
+      "loss_class": "lossy-safe",
+      "lossiness_note": "Protocol has no policy version binding. Adapter injects from hub ledger only.",
+      "security_consequence": "Revocation not binding on protocol tasks would allow revoked principals to continue operating.",
+      "assumptions": ["Hub policy ledger is the revocation authority."],
+      "owner_followup": "S1-008 (revocation latency) defines the propagation bound."
+    },
+    {
+      "surface_id": "SM13",
+      "surface": "extension negotiation and unknown fields",
+      "mcp": {
+        "native": "UNDERSPECIFIED",
+        "native_field_selector": "Capabilities field allows optional features; protocol_version in initialize negotiates version. Unknown extensions are implementation-specific in MCP-2026-07-28-SPEC",
+        "evidence_ref": "MCP-2026-07-28-SPEC",
+        "class": "protocol_fact",
+        "confidence": 0.75
+      },
+      "a2a": {
+        "native": "UNDERSPECIFIED",
+        "native_field_selector": "Agent Card has 'capabilities' for optional features (streaming, pushNotifications); extensions are optional. Unknown capabilities are ignored by A2A-1.0.0-SPEC",
+        "evidence_ref": "A2A-1.0.0-SPEC",
+        "class": "protocol_fact",
+        "confidence": 0.75
+      },
+      "hub": "Extensions are accepted/rejected/quarantined with version provenance. Unknown version/extension -> quarantine/unsupported, never permissive default.",
+      "hub_semantic": "extensions.accepted[], rejected[], quarantined[] with version provenance.",
+      "adapter_mapping": {
+        "MCP": "Unknown MCP extension or unsupported protocol_version -> QUARANTINED, not ignored. Adapter emits version evidence. Downgrade to an older permissive semantic -> REJECTED. (Probe F)",
+        "A2A": "Unknown A2A capability or extension -> QUARANTINED. Adapter emits version evidence."
+      },
+      "loss_class": "lossy-safe",
+      "lossiness_note": "Protocol has no host-side policy for unknown extensions. Adapter must quarantine rather than ignore.",
+      "security_consequence": "Ignoring unknown extensions could allow an attacker to slip a malicious extension past the adapter.",
+      "assumptions": ["Adapter default is deny for unknown extensions."],
+      "owner_followup": "S1-009 adapter contract defines extension quarantine rules."
+    },
+    {
+      "surface_id": "SM14",
+      "surface": "error/terminal-state mapping",
+      "mcp": {
+        "native": "MCP uses JSON-RPC 2.0 error objects with code and message. Tool errors return isError=true in CallToolResult. No formal terminal-state enumeration in MCP-2026-07-28-SPEC",
+        "native_field_selector": "JSON-RPC error.code/error.message; CallToolResult.isError via MCP-2026-07-28-SPEC",
+        "evidence_ref": "MCP-2026-07-28-SPEC",
+        "class": "protocol_fact",
+        "confidence": 0.9
+      },
+      "a2a": {
+        "native": "A2A uses TaskState (COMPLETED, FAILED, CANCELLED, REJECTED, etc.) and JSON-RPC error objects. Terminal states are explicitly enumerated in A2A-1.0.0-SPEC",
+        "native_field_selector": "TaskState terminal enum; JSON-RPC error via A2A-1.0.0-SPEC",
+        "evidence_ref": "A2A-1.0.0-SPEC",
+        "class": "protocol_fact",
+        "confidence": 0.9
+      },
+      "hub": "Errors map deterministically to hub terminal states. No protocol error/failure maps to a hub 'success' or 'acceptance'.",
+      "hub_semantic": "protocol error -> hub error terminal (not success); protocol completion -> hub reconciliation (not terminal until verified).",
+      "adapter_mapping": {
+        "MCP": "MCP JSON-RPC error -> hub error event. MCP isError=true -> hub error. MCP success -> hub STATUS_REPORTED, not terminal; reconciliation continues.",
+        "A2A": "A2A TaskState.FAILED/CANCELLED/REJECTED -> hub error/cancel event (fail-closed). A2A TaskState.COMPLETED -> hub STATUS_REPORTED, not terminal until reconciliation confirms."
+      },
+      "loss_class": "lossy-safe",
+      "lossiness_note": "Protocol terminal states do not imply hub terminal states. Adapter must not map protocol completion to hub acceptance.",
+      "security_consequence": "Mapping protocol completion to hub acceptance would allow protocol payloads to declare goals accepted.",
+      "assumptions": ["Hub terminal state is decided only by the hub state machine + reconciliation + Gate evaluation."],
+      "owner_followup": "S1-009 adapter contract defines error/terminal-state mapping rules."
+    },
+    {
+      "surface_id": "SM15",
+      "surface": "audit event and replay requirements",
+      "mcp": {
+        "native": "UNDERSPECIFIED",
+        "native_field_selector": "No structured audit event or replay mechanism in MCP-2026-07-28-SPEC beyond request/response logging at the implementation level",
+        "evidence_ref": "MCP-2026-07-28-SPEC",
+        "class": "protocol_fact",
+        "confidence": 0.7
+      },
+      "a2a": {
+        "native": "UNDERSPECIFIED",
+        "native_field_selector": "No structured audit event or replay mechanism in A2A-1.0.0-SPEC; Task history is client-side state, not an audit log",
+        "evidence_ref": "A2A-1.0.0-SPEC",
+        "class": "protocol_fact",
+        "confidence": 0.7
+      },
+      "hub": "Every state transition + audit event commits atomically. Events are replay-safe (idempotency keys). Audit events carry actor, operation, decision reason, and audit reference.",
+      "hub_semantic": "journal: atomic transition + audit event commit; replay via idempotency key.",
+      "adapter_mapping": {
+        "MCP": "Adapter emits hub audit events for every protocol message translated. Protocol request/response logs are NOT audit events. Replay is hub-side via idempotency keys.",
+        "A2A": "Same: adapter emits hub audit events. A2A Task history is untrusted input, not an audit log."
+      },
+      "loss_class": "lossy-safe",
+      "lossiness_note": "Protocol lacks structured audit/replay. Adapter synthesizes hub audit events.",
+      "security_consequence": "Without hub-side audit, delegation and budget changes would be unverifiable.",
+      "assumptions": ["Hub journal is the audit authority."],
+      "owner_followup": "S1-004 (formal invariants) defines journal atomicity."
+    }
+  ],
+  "coverage_check": {
+    "required_surfaces": 15,
+    "covered_surfaces": 15,
+    "required_protocols": 3,
+    "covered_protocols": ["MCP", "A2A", "Hub"],
+    "required_capability_rows_passing_mappings": 12,
+    "capability_rows_with_real_mappings": 12,
+    "note": "12 rows pass lossless or lossy-safe mappings with documented security consequences; 3 rows (SM6 delegation, SM8 budget, SM11 knowledge promotion) are unsupported because the semantics are ABSENT from both protocols."
+  },
+  "claim_refs": ["matrix-fact-coverage", "matrix-design-adapter-boundary", "matrix-gap-delegation-absent", "matrix-gap-budget-absent", "matrix-gap-knowledge-absent", "matrix-risk-identity-untrusted", "matrix-assumption-registry-authority"]
+}

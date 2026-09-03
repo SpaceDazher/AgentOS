@@ -1,0 +1,590 @@
+{
+  "schema": "agentos.s1-009.adapter-contract/v1",
+  "ticket": "S1-009",
+  "contract_version": "1.0",
+  "frozen_at": "2026-09-02T00:00:00Z",
+  "target_envelope": "canonical-envelope.schema.json (envelope_version 1.0)",
+  "design_invariant": "Outbound serialization is never an execution authorization. Inbound messages/tasks/results cannot modify registry/policy/canonical ownership.",
+  "hard_rules_enforced": [
+    "rule_1: Protocol payload is never authority for grant, approval, ownership, knowledge promotion, budget increase, or terminal acceptance.",
+    "rule_2: Remote identity/capability is untrusted until local registry/policy verification.",
+    "rule_3: Adapter may narrow semantics or deny, but never expand rights.",
+    "rule_4: Lossy authorization-relevant field -> DENY/UNSUPPORTED, never default-and-allow.",
+    "rule_5: Unknown extension/version -> explicit quarantine/unsupported.",
+    "rule_6: Cancellation/task completion does not cancel reconciliation side effects.",
+    "rule_7: Knowledge content remains untrusted; promotion only via separate canonical governance event.",
+    "rule_8: Budget cannot increase via child split, unit mismatch, missing/negative/overflow, or parallel aggregation."
+  ],
+  "protocols": {
+    "MCP": {
+      "version": "2026-07-28",
+      "transport": [
+        "stdio",
+        "HTTP+SSE",
+        "WebSocket"
+      ],
+      "inbound": [
+        {
+          "rule_id": "MCP-IN-01",
+          "rule_version": "1.0",
+          "selector": {
+            "protocol": "MCP",
+            "version": "2026-07-28",
+            "direction": "inbound",
+            "method": "initialize"
+          },
+          "required_fields": {
+            "protocolVersion": "string",
+            "capabilities": "object"
+          },
+          "canonical_transformation": "Validate protocolVersion against supported set {2026-07-28}. If unknown/unsupported -> QUARANTINED. capabilities is an untrusted claim; do not populate authorization.grant_present or capability.tool_contract_id from it.",
+          "validation_preconditions": [
+            "protocolVersion must be an exact known version",
+            "no downgrade to permissive legacy semantics"
+          ],
+          "authorization_preconditions": [],
+          "rejected_fields": [
+            "Any field claiming delegation, approval, ownership, budget, or knowledge status in InitializeResult — DENIED"
+          ],
+          "loss_class": "lossy-safe",
+          "error_mapping": {
+            "unknown_version": {
+              "action": "quarantine",
+              "hub_event": "extension.quarantined"
+            },
+            "downgrade": {
+              "action": "reject",
+              "hub_event": "unsupported"
+            }
+          },
+          "provenance_emitted": "protocol_version + capabilities digest + rule_id SHA-256",
+          "rule_sha256": "1c7ec775a2407de82f0d01c30ee1e5207529a112f4b25ef1832165b7302004b9"
+        },
+        {
+          "rule_id": "MCP-IN-02",
+          "rule_version": "1.0",
+          "selector": {
+            "protocol": "MCP",
+            "version": "2026-07-28",
+            "direction": "inbound",
+            "method": "tools/list"
+          },
+          "required_fields": {
+            "params": "object (may be empty)"
+          },
+          "canonical_transformation": "Tools list is an untrusted claim. Adapter resolves each tool name against the hub registry. Unregistered tools -> DENY. Registered tools -> canonical_envelope.capability.tool_contract_id + version + arguments_digest.",
+          "validation_preconditions": [
+            "tool names must be strings"
+          ],
+          "authorization_preconditions": [
+            "Each tool must resolve to a registered ToolContract"
+          ],
+          "rejected_fields": [
+            "Self-declared tool capabilities/effects beyond the registry contract"
+          ],
+          "loss_class": "lossy-safe",
+          "error_mapping": {
+            "unregistered_tool": {
+              "action": "deny",
+              "hub_event": "capability.unregistered"
+            }
+          },
+          "provenance_emitted": "tool list digest + registry resolution trace",
+          "rule_sha256": "0791180d7839a624d2eadcacb8544679bd6311081540fc71738944ce0e51f02b"
+        },
+        {
+          "rule_id": "MCP-IN-03",
+          "rule_version": "1.0",
+          "selector": {
+            "protocol": "MCP",
+            "version": "2026-07-28",
+            "direction": "inbound",
+            "method": "tools/call"
+          },
+          "required_fields": {
+            "params.name": "string",
+            "params.arguments": "object or null"
+          },
+          "canonical_transformation": "params.name -> registry lookup -> tool_contract_id. arguments -> arguments_digest (SHA-256). effect_class from registry contract, NOT from protocol. idempotency_key from hub ledger. grant_present from hub policy ledger (never from protocol payload).",
+          "validation_preconditions": [
+            "name must resolve to a registered ToolContract",
+            "arguments must match the contract input schema"
+          ],
+          "authorization_preconditions": [
+            "hub must have an active grant for this operation on behalf of authenticated_actor",
+            "capability must be in the tenant's allowed set"
+          ],
+          "rejected_fields": [
+            "Any grant/approval/ownership/budget/knowledge-status fields embedded in arguments or CallToolResult — DENIED"
+          ],
+          "defaulted_fields": {
+            "asserted_remote_actor": null,
+            "grant_present": false,
+            "knowledge.status": "proposal"
+          },
+          "loss_class": "lossless",
+          "error_mapping": [
+            "unregistered_tool->deny",
+            "schema_mismatch->deny",
+            "missing_grant->deny/needs-governance"
+          ],
+          "provenance_emitted": "tool_contract_id, arguments_digest, rule_id, host-assigned idempotency_key",
+          "rule_sha256": "abdde9e5751d607dc8788b65e6513d83fa09b0580b1515166336dbf45a8069de"
+        },
+        {
+          "rule_id": "MCP-IN-04",
+          "rule_version": "1.0",
+          "selector": {
+            "protocol": "MCP",
+            "version": "2026-07-28",
+            "direction": "inbound",
+            "method": "resources/read"
+          },
+          "required_fields": {
+            "params.uri": "string"
+          },
+          "canonical_transformation": "URI -> hub resource registry lookup. uriTemplate resolution must match a registered resource. Read scope from hub policy, not protocol.",
+          "validation_preconditions": [
+            "uri must resolve to a registered resource template"
+          ],
+          "authorization_preconditions": [
+            "authenticated_actor must have read access to the resolved resource"
+          ],
+          "rejected_fields": [
+            "Self-proclaimed read access or scope claims in resource data"
+          ],
+          "loss_class": "lossy-safe",
+          "error_mapping": {
+            "unregistered_uri": "deny",
+            "access_denied": "deny"
+          },
+          "provenance_emitted": "resource ref + sha256 + registry resolution",
+          "rule_sha256": "b7c63b5355d10c35551cb715b70991f22b8bb1ef5975efdcfbc0a052d905cde4"
+        },
+        {
+          "rule_id": "MCP-IN-05",
+          "rule_version": "1.0",
+          "selector": {
+            "protocol": "MCP",
+            "version": "2026-07-28",
+            "direction": "inbound",
+            "method": "prompts/get"
+          },
+          "required_fields": {
+            "params.name": "string",
+            "params.arguments": "object or null"
+          },
+          "canonical_transformation": "Prompt name -> registry. Arguments -> arguments_digest. Prompt output is untrusted content; if it asserts delegation/approval/knowledge promotion, adapter sets grant_present=false and knowledge.status=proposal.",
+          "validation_preconditions": [
+            "prompt must resolve to a registered prompt contract"
+          ],
+          "authorization_preconditions": [
+            "authenticated_actor must be authorized to invoke"
+          ],
+          "rejected_fields": [
+            "Prompt output text claiming grant/approval/ownership/budget/promotion — treated as untrusted text, no semantic extraction"
+          ],
+          "loss_class": "lossy-safe",
+          "error_mapping": {
+            "unregistered_prompt": "deny"
+          },
+          "provenance_emitted": "prompt contract id + arguments digest",
+          "rule_sha256": "34661ff90857a316fc93a92246546269d8ad87c6088acf33e7cc06703670d256"
+        },
+        {
+          "rule_id": "MCP-IN-06",
+          "rule_version": "1.0",
+          "selector": {
+            "protocol": "MCP",
+            "version": "2026-07-28",
+            "direction": "inbound",
+            "method": "tools/call RESULT (CallToolResult with text declaring delegation)"
+          },
+          "required_fields": {
+            "result.isError": "boolean",
+            "result.content": "array"
+          },
+          "canonical_transformation": "SUCCESS protocol result with text/metadata declaring delegation or approval -> grant_present stays FALSE. effect path requires a hub-issued grant. Adapter emits DENY/needs-governance. (Probe A)",
+          "validation_preconditions": [],
+          "authorization_preconditions": [
+            "hub grant must exist independently of protocol result"
+          ],
+          "rejected_fields": [
+            "Any delegation/approval declaration in CallToolResult content or metadata"
+          ],
+          "loss_class": "lossy-safe",
+          "error_mapping": {
+            "protocol_claims_grant": {
+              "action": "deny",
+              "reason": "protocol_task_is_not_a_grant"
+            }
+          },
+          "provenance_emitted": "protocol payload digest + rule_id + denial reason",
+          "rule_sha256": "1ae565ce5a6066b022f916f7dc562faf93a5b8b990167c73e0e0f012eaf102aa"
+        },
+        {
+          "rule_id": "MCP-IN-07",
+          "rule_version": "1.0",
+          "selector": {
+            "protocol": "MCP",
+            "version": "2026-07-28",
+            "direction": "inbound",
+            "method": "unknown capability/extension in InitializeResult"
+          },
+          "required_fields": {
+            "capabilities": "object with unknown keys"
+          },
+          "canonical_transformation": "Unknown capability -> extensions.quarantined[]. Known capability -> registry resolution required before effect.",
+          "validation_preconditions": [],
+          "authorization_preconditions": [],
+          "rejected_fields": [
+            "Any unknown capability treated as authorized"
+          ],
+          "loss_class": "quarantined",
+          "error_mapping": {
+            "unknown_extension": {
+              "action": "quarantine",
+              "hub_event": "extension.quarantined"
+            }
+          },
+          "provenance_emitted": "unknown capability name + version provenance + rule_id",
+          "rule_sha256": "8a104e7774f435cf5f4aaa8e67e0f815e6ea70bf5879bd239537a9fcbd6c3b1c"
+        }
+      ],
+      "outbound": [
+        {
+          "rule_id": "MCP-OUT-01",
+          "rule_version": "1.0",
+          "selector": {
+            "protocol": "MCP",
+            "version": "2026-07-28",
+            "direction": "outbound",
+            "event": "task_status_update"
+          },
+          "canonical_transformation": "Serialize hub task status to MCP notification/tools/result. Serialization is NOT an execution authorization. grant_present/authorizer fields come from hub ledger, not from serialized protocol payload.",
+          "required_fields": [
+            "correlation_id",
+            "task_id",
+            "status"
+          ],
+          "validation_preconditions": [
+            "task_id must be hub-issued"
+          ],
+          "authorization_preconditions": [],
+          "loss_class": "lossless",
+          "error_mapping": [],
+          "provenance_emitted": "correlation_id + rule_id",
+          "rule_sha256": "cc1e1e7d4c44e944bca13b876853f45f1c74accf33cb948247730b37d737fed3"
+        },
+        {
+          "rule_id": "MCP-OUT-02",
+          "rule_version": "1.0",
+          "selector": {
+            "protocol": "MCP",
+            "version": "2026-07-28",
+            "direction": "outbound",
+            "event": "grant_request"
+          },
+          "canonical_transformation": "Hub grant request -> MCP prompt or tool request to an operator/human-in-the-loop. The serialized request is NEVER auto-approved by MCP response content.",
+          "required_fields": [
+            "grant_id",
+            "canonical_arguments_digest",
+            "expiry"
+          ],
+          "validation_preconditions": [
+            "grant_id must be hub-issued"
+          ],
+          "authorization_preconditions": [
+            "operator approval required before effect"
+          ],
+          "rejected_fields": [
+            "MCP response content claiming approval — not honored"
+          ],
+          "loss_class": "lossy-safe",
+          "error_mapping": [],
+          "provenance_emitted": "grant_id + rule_id",
+          "rule_sha256": "42a4c4bd99c446a15fb91aaffbda3aedba33b805fd145f37e579368162f3e153"
+        }
+      ]
+    },
+    "A2A": {
+      "version": "1.0.0",
+      "transport": [
+        "HTTP JSON-RPC",
+        "WebSocket"
+      ],
+      "inbound": [
+        {
+          "rule_id": "A2A-IN-01",
+          "rule_version": "1.0",
+          "selector": {
+            "protocol": "A2A",
+            "version": "1.0.0",
+            "direction": "inbound",
+            "method": "getAgentCard"
+          },
+          "required_fields": {
+            "AgentCard": "object"
+          },
+          "canonical_transformation": "Agent Card is an untrusted capability advertisement. Skills and capabilities are NOT authorization. Adapter resolves each skill against the hub registry. Unknown skills -> DENY.",
+          "validation_preconditions": [
+            "AgentCard URL must resolve (transport-level)"
+          ],
+          "authorization_preconditions": [
+            "Each skill must resolve to a registered hub capability"
+          ],
+          "rejected_fields": [
+            "Self-declared capabilities, authentication, or authority in Agent Card — untrusted claims"
+          ],
+          "loss_class": "lossy-safe",
+          "error_mapping": {
+            "unregistered_skill": {
+              "action": "deny",
+              "reason": "capability_not_in_registry"
+            }
+          },
+          "provenance_emitted": "Agent Card digest + rule_id + registry resolution trace",
+          "rule_sha256": "688711f01490de0d2d4e61805bd3322539a02b5d05fb85714b6f20f3b5efad30"
+        },
+        {
+          "rule_id": "A2A-IN-02",
+          "rule_version": "1.0",
+          "selector": {
+            "protocol": "A2A",
+            "version": "1.0.0",
+            "direction": "inbound",
+            "method": "sendTask"
+          },
+          "required_fields": {
+            "Task.id": "string",
+            "Task.message": "Message",
+            "Task.taskId": "string"
+          },
+          "canonical_transformation": "Task.id is a protocol correlation ID, NOT a hub task_id. Hub assigns canonical task_id. authenticated_actor from hub transport auth, NOT from Agent Card. grant_present from hub policy ledger (never from protocol).",
+          "validation_preconditions": [
+            "message parts must be valid"
+          ],
+          "authorization_preconditions": [
+            "authenticated_actor must be authorized for the resolved capability",
+            "hub grant must exist for effecting operations"
+          ],
+          "rejected_fields": [
+            "Any grant/approval/budget/ownership/knowledge-status in message data parts — DENIED"
+          ],
+          "defaulted_fields": {
+            "asserted_remote_actor": null,
+            "grant_present": false,
+            "knowledge.status": "proposal"
+          },
+          "loss_class": "lossy-safe",
+          "error_mapping": [
+            "unauthorized->deny",
+            "missing_grant->deny/needs-governance"
+          ],
+          "provenance_emitted": "message digest + hub task_id + rule_id",
+          "rule_sha256": "953783a9e4ea364ff900892dd496d354e030b164d6e3bd11dcc79b32fc230d26"
+        },
+        {
+          "rule_id": "A2A-IN-03",
+          "rule_version": "1.0",
+          "selector": {
+            "protocol": "A2A",
+            "version": "1.0.0",
+            "direction": "inbound",
+            "method": "sendTaskStreaming"
+          },
+          "required_fields": {
+            "Task.id": "string"
+          },
+          "canonical_transformation": "Streaming updates are STATUS_REPORTED events. Hub terminal state is NOT reached based on A2A streaming alone. Reconciliation continues until hub confirms.",
+          "validation_preconditions": [],
+          "authorization_preconditions": [],
+          "rejected_fields": [
+            "Streaming artifact content claiming grant/approval/promotion — untrusted"
+          ],
+          "loss_class": "lossy-safe",
+          "error_mapping": [],
+          "provenance_emitted": "streaming event digest + rule_id",
+          "rule_sha256": "78e3d4a66e2304d1d20a456140dff1892301ebaf3c20b208a69594a2a1419936"
+        },
+        {
+          "rule_id": "A2A-IN-04",
+          "rule_version": "1.0",
+          "selector": {
+            "protocol": "A2A",
+            "version": "1.0.0",
+            "direction": "inbound",
+            "method": "cancelTask"
+          },
+          "required_fields": {
+            "Task.id": "string"
+          },
+          "canonical_transformation": "cancelTask is a cancellation REQUEST. Hub checks fencing_token and revocation_epoch before honoring. Cancellation completes the protocol task but does NOT cancel reconciliation side effects (rule_6).",
+          "validation_preconditions": [
+            "caller must be owner or authorized delegator"
+          ],
+          "authorization_preconditions": [
+            "fencing_token must match current epoch",
+            "revocation_epoch must be current"
+          ],
+          "rejected_fields": [
+            "Cancellation claim without hub authorization"
+          ],
+          "loss_class": "lossy-safe",
+          "error_mapping": {
+            "stale_fence": {
+              "action": "deny",
+              "reason": "stale_fencing_token"
+            },
+            "stale_epoch": {
+              "action": "deny",
+              "reason": "stale_revocation_epoch"
+            }
+          },
+          "provenance_emitted": "fencing_token check trace + rule_id",
+          "rule_sha256": "f49ad5536006587f55ce829408c3fb554799c81f82400da2ce9338cc0cace5fb"
+        },
+        {
+          "rule_id": "A2A-IN-05",
+          "rule_version": "1.0",
+          "selector": {
+            "protocol": "A2A",
+            "version": "1.0.0",
+            "direction": "inbound",
+            "method": "setTaskPushNotificationConfig"
+          },
+          "required_fields": {
+            "PushNotificationConfig": "object with callback_url"
+          },
+          "canonical_transformation": "Push notification config is a transport delivery mechanism, NOT a delegation grant. Does not create grant_present=true. Does not expand capabilities.",
+          "validation_preconditions": [],
+          "authorization_preconditions": [
+            "callback_url must be hub-verified"
+          ],
+          "rejected_fields": [
+            "Any capability grant implied by push notification config"
+          ],
+          "loss_class": "lossy-safe",
+          "error_mapping": [],
+          "provenance_emitted": "push config digest + rule_id (no grant created)",
+          "rule_sha256": "7bd571c8512cd3e4ba844974b5bb50a1ac84e0b8f68e5d28f6e8b4908ed5b39d"
+        },
+        {
+          "rule_id": "A2A-IN-06",
+          "rule_version": "1.0",
+          "selector": {
+            "protocol": "A2A",
+            "version": "1.0.0",
+            "direction": "inbound",
+            "method": "TaskState mapping (COMPLETED/FAILED/CANCELLED/REJECTED)"
+          },
+          "required_fields": {
+            "Task.state": "TaskState enum"
+          },
+          "canonical_transformation": "TaskState is a STATUS_REPORTED event. hub_terminal is NOT set based on protocol state alone. Reconciliation must confirm. FAILED/CANCELLED/REJECTED map to hub error/cancel events; COMPLETED maps to STATUS_REPORTED, requiring reconciliation.",
+          "validation_preconditions": [],
+          "authorization_preconditions": [],
+          "rejected_fields": [
+            "Protocol TaskState.COMPLETED => hub terminal acceptance"
+          ],
+          "loss_class": "lossy-safe",
+          "error_mapping": [
+            "COMPLETED->status_reported_not_terminal",
+            "FAILED->error_event",
+            "CANCELLED->cancel_event",
+            "REJECTED->error_event"
+          ],
+          "provenance_emitted": "TaskState + rule_id",
+          "rule_sha256": "254e7baeb9ee4e6b029a0275eaf467525e58f536a4f83b8e6590ca6a1c220266"
+        },
+        {
+          "rule_id": "A2A-IN-07",
+          "rule_version": "1.0",
+          "selector": {
+            "protocol": "A2A",
+            "version": "1.0.0",
+            "direction": "inbound",
+            "method": "Artifact with knowledge-promotion metadata"
+          },
+          "required_fields": {
+            "Artifact.data": "array",
+            "Artifact.metadata": "object"
+          },
+          "canonical_transformation": "Artifact data may propose knowledge (status=proposal). metadata claiming promotion/verification/reviewed is untrusted. promotion_event_id is NULL until a separate hub governance event. (Probe E)",
+          "validation_preconditions": [],
+          "authorization_preconditions": [],
+          "rejected_fields": [
+            "Artifact metadata claiming promoted/verified/reviewed without hub governance event"
+          ],
+          "defaulted_fields": {
+            "knowledge.status": "proposal",
+            "knowledge.promotion_event_id": null
+          },
+          "loss_class": "lossy-safe",
+          "error_mapping": [
+            "silent_promotion->reject",
+            "missing_source_digest->reject"
+          ],
+          "provenance_emitted": "artifact sha256 + metadata digest + rule_id",
+          "rule_sha256": "e690c4073f2bb726ea0137350cd1a062d733a4bcb57d1412ae7f8d3787e59ff4"
+        }
+      ],
+      "outbound": [
+        {
+          "rule_id": "A2A-OUT-01",
+          "rule_version": "1.0",
+          "selector": {
+            "protocol": "A2A",
+            "version": "1.0.0",
+            "direction": "outbound",
+            "event": "task_status_update"
+          },
+          "canonical_transformation": "Serialize hub task status to A2A Task update. Serialization is NOT an execution authorization. Hub terminal state is decided by hub state machine, not by serialization.",
+          "required_fields": [
+            "correlation_id",
+            "task_id",
+            "status"
+          ],
+          "validation_preconditions": [],
+          "authorization_preconditions": [],
+          "loss_class": "lossless",
+          "error_mapping": [],
+          "provenance_emitted": "correlation_id + rule_id",
+          "rule_sha256": "16143af68d99d1a2868d5b89ae6d6455744f2a5b0e1bbb76b1d6d39f15f066b7"
+        },
+        {
+          "rule_id": "A2A-OUT-02",
+          "rule_version": "1.0",
+          "selector": {
+            "protocol": "A2A",
+            "version": "1.0.0",
+            "direction": "outbound",
+            "event": "knowledge_proposal"
+          },
+          "canonical_transformation": "Push hub knowledge proposal status to A2A Artifact. Promotion status is NOT serialized as 'verified' or 'promoted' unless a hub governance event has occurred. (Probe E)",
+          "required_fields": [
+            "knowledge_id",
+            "status"
+          ],
+          "validation_preconditions": [
+            "status must be <= proposal unless governance event exists"
+          ],
+          "authorization_preconditions": [],
+          "rejected_fields": [
+            "Serialization of promoted/verified status without governance event"
+          ],
+          "loss_class": "lossy-safe",
+          "error_mapping": [],
+          "provenance_emitted": "knowledge_id + rule_id",
+          "rule_sha256": "d739be2fd376e707a7a16d0b56b09725966816af62ae0c6297ecfcb32747e409"
+        }
+      ]
+    }
+  },
+  "provider_neutrality": {
+    "claim": "The canonical envelope is provider-neutral; MCP and A2A are transport/task/tool surfaces only.",
+    "constraint": "No adapter rule may inject vendor-specific authorization. All authority fields come from the hub ledger.",
+    "loss_class": "lossy-safe",
+    "evidence": "All adapter rules default authorization fields to hub-ledger values, never protocol values."
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "schema": "agentos.ticket-evaluation-record/v1",
+  "ticket_id": "S1-009",
+  "recorded_at": "2026-09-02T23:57:09Z",
+  "db_root": ".agentos-research/platform-stage-1",
+  "research_key": "S1-009",
+  "research_revision": 6,
+  "research_series_id": "rseries_PQ7Y9QK2SPQ07ZYA01M1J8W69A",
+  "campaign_id": "rcamp_VMW20CGFRR8FNEZ801M1J8W676",
+  "goal_id": "goal_SKV74VXAEJV8G2AE01M1J8W676",
+  "evaluation_id": "reval_KAETRM81PS3DSZ3D01M1J8W6D2",
+  "evaluation_version": 1,
+  "result": "pass_with_limits",
+  "artifact_chain_hash": "043c7a97a2d77bde772f6cb6c54810f505dbc5e8be7ad64600f1de901bee3381",
+  "manifest_sha256": "9f6260bf8093c92120a002d1ad95ea48d7b2448243bd346d93fc8001808ed109",
+  "supersedes_campaign_id": "rcamp_Z41YAZ3R0ZXJ5P9X01M1HYK1CJ",
+  "evidence_pack": {
+    "schema": "agentos.evidence-pack/v3",
+    "path": ".agentos-research/platform-stage-1/goals/goal_SKV74VXAEJV8G2AE01M1J8W676/evidence-pack.json",
+    "sha256": "adcab71fb3636d8513fcb8042344da8174c3f64f401db9d4da379bc4a5ee5576",
+    "chain_fresh": true,
+    "latest_evaluation_valid": true
+  },
+  "wiki_check": {
+    "ok": true,
+    "files": 3200,
+    "links_checked": 8313,
+    "issues": []
+  },
+  "decision": {
+    "question": "Which delegation/ownership/budget/provenance/knowledge-promotion semantics are absent or insufficiently normative in current MCP/A2A surfaces, and what versioned adapter contract preserves canonical AgentOS hub envelope provider-neutral without changing authorization meaning?",
+    "answer": "Three semantics are ABSENT/UNDERSPECIFIED in both MCP 2026-07-28 and A2A 1.0.0: (1) exact-action delegation grants and child scope (SM6), (2) budget reservation/consumption/aggregation (SM8), and (3) knowledge promotion/challenge/rejection/revocation (SM11). The remaining 12 of 15 capability rows are supported via lossless or lossy-safe mappings. The versioned adapter contract (contract_version 1.0) preserves the canonical AgentOS hub envelope provider-neutral by enforcing 8 hard rules: protocol payload is never authority; untrusted-until-verified; adapter narrows only; lossy auth field -> DENY; unknown ext -> quarantine; cancel != reconcile-cancel; knowledge proposal-only until governance event; budget conservation invariant.",
+    "scores_normalized": {
+      "semantic_fidelity": 4.0,
+      "least_privilege_exact_action": 4.0,
+      "ownership_fencing_revocation": 4.0,
+      "budget_conservation": 4.0,
+      "provenance_knowledge_governance": 4.0,
+      "idempotency_reconciliation": 4.0,
+      "version_extension_safety": 4.0,
+      "auditability_deterministic_replay": 4.0,
+      "implementation_complexity": 4.0,
+      "migration_rollback_feasibility": 4.0,
+      "provider_neutrality_lock_in": 4.0
+    },
+    "weighted_score": {
+      "total": 96,
+      "max": 96,
+      "normalized": 4.0
+    },
+    "hard_failures": [],
+    "limitation": "Producer and verifier labels are process-separated roles in one local environment, not external human auditors. No full third-party content archiving.",
+    "verdict": "pass_with_limits",
+    "migration_trigger": "New research revision required for any MCP/A2A version change, new capability surface, or security finding. Rollback: revert adapter_version, frozen corpus remains valid.",
+    "non_goals": "No production MCP/A2A server/client or vendor SDK rollout. No modification of MCP/A2A standards. No production identity federation, PKI, networking, or SLO. No Goal acceptance by worker/model.",
+    "research_revision": 6
+  },
+  "limitations": [
+    "Boundary measurements are same-host and process-separated, not external human auditors.",
+    "Verdict is PASS_WITH_LIMITS: requires external auditor (S1-019) and full third-party content archiving (S1-018) for full PASS.",
+    "Budget (SM8), delegation grants (SM6), and knowledge promotion (SM11) are ABSENT in both MCP 2026-07-28 and A2A 1.0.0; adapter correctly deny-by-default and documents these as gaps.",
+    "Knowledge governance event model deferred to S1-011; S1-009 correctly keeps knowledge at proposal-only.",
+    "MCP streaming and A2A push/async bindings are partially modeled; full binding coverage is a follow-up."
+  ],
+  "note": "research-plan PASS_WITH_LIMITS is a research evaluation; it never sets Goal ACCEPTED (release gate only). All IDs and hashes extracted from canonical DB rows; no manual input.",
+  "research_revision": 6,
+  "recorded_corrective_round": "R6-final",
+  "evaluation_artifacts": {
+    "run_a": {
+      "executor": "verifier-A",
+      "nonce": "run-a-nonce",
+      "output_root": "results/run-a",
+      "verdict": "PASS",
+      "case_count": 40,
+      "verdict_counts": {"PASS": 40, "FAIL": 0},
+      "hash_match": true,
+      "hashes": {
+        "adapter_contract_sha256": "27e509120419f2427553c5ed120969061e083d9042bb7b6a9bd568b457f72a66",
+        "corpus_sha256": "ebe44b46993a2c94b34eeca55933038a4784b8ac213a8fb2db752e63c2a06d96",
+        "envelope_schema_sha256": "c1554636fdb34f1d01b26721c9975befe00b8d637c7107b3e33c58f39cb75b24",
+        "evaluator_sha256": "3689a8823a9450bd03841e6009158c1af7d99784ec0036e5339137d8ed11f599",
+        "rubric_sha256": "9df9f2fcbf90a75eba3b60637f9c723883bce96e8c062d82d9afca85d444efe8"
+      }
+    },
+    "run_b": {
+      "executor": "verifier-B",
+      "nonce": "run-b-nonce",
+      "output_root": "results/run-b",
+      "verdict": "PASS",
+      "case_count": 40,
+      "verdict_counts": {"PASS": 40, "FAIL": 0},
+      "hash_match": true,
+      "hashes": {
+        "adapter_contract_sha256": "27e509120419f2427553c5ed120969061e083d9042bb7b6a9bd568b457f72a66",
+        "corpus_sha256": "ebe44b46993a2c94b34eeca55933038a4784b8ac213a8fb2db752e63c2a06d96",
+        "envelope_schema_sha256": "c1554636fdb34f1d01b26721c9975befe00b8d637c7107b3e33c58f39cb75b24",
+        "evaluator_sha256": "3689a8823a9450bd03841e6009158c1af7d99784ec0036e5339137d8ed11f599",
+        "rubric_sha256": "9df9f2fcbf90a75eba3b60637f9c723883bce96e8c062d82d9afca85d444efe8"
+      }
+    },
+    "comparison": {
+      "verdict": "PASS",
+      "hash_match": true,
+      "decision_identical": true,
+      "verdict_identical": true,
+      "envelope_hash_identical": true,
+      "mismatches": 0,
+      "process_separation_verified": true
+    }
+  }
+}

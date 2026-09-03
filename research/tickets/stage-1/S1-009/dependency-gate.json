@@ -1,0 +1,96 @@
+{
+  "schema": "agentos.s1-009.dependency-gate/v1",
+  "ticket": "S1-009",
+  "checked_at": "2026-09-02T00:00:00Z",
+  "verdict": "PASS",
+  "dependencies": [
+    {
+      "ticket_id": "S1-001",
+      "status_at_ticket_level": "PASS_WITH_LIMITS",
+      "research_revision": 1,
+      "campaign_id": "rcamp_6TATG2AAJY0J9VEF01M0TDDN5X",
+      "goal_id": "goal_DXHSJM6981DBYCTD01M0TDDN5X",
+      "evaluation_id": "reval_1DG5Q6WEAY6A40A901M0TDDN6N",
+      "evaluation_version": 1,
+      "result": "pass_with_limits",
+      "artifact_chain_hash": "4f524c48438ee3c748a80bd07a6d03ce00e7f0c9ee5c6d9f0e8c8a0ec17b01e9",
+      "evidence_pack_path": "research/tickets/stage-1/S1-001/results/evidence/evidence-pack-8baf840d35efaffaaabecbc8b60cf47064322aaedbc4f4950dc93eab74826c7a.json",
+      "evidence_pack_sha256": "8baf840d35efaffaaabecbc8b60cf47064322aaedbc4f4950dc93eab74826c7a",
+      "chain_fresh": true,
+      "latest_evaluation_valid": true,
+      "db_goal_status": "ACTIVE",
+      "db_eval_id_matches_record": true,
+      "db_chain_hash_matches_record": true,
+      "pack_sha256_matches_file": true,
+      "limitations_carried_forward": [
+        "The auditor role is process-separated and adversarial but is not an external human or independently operated model.",
+        "The run verifies the frozen 12-record queue only; it does not verify all 176 historical u records.",
+        "Canonical pages and metadata were reviewed live, but full third-party content was not archived in this repository."
+      ],
+      "limitation_note": "S1-001 scope and provenance limitations do not become proven protocol facts in S1-009; they are reused only as evidence-provenance context."
+    },
+    {
+      "ticket_id": "S1-005",
+      "status_at_ticket_level": "PASS_WITH_LIMITS",
+      "research_revision": 7,
+      "campaign_id": "rcamp_A5P3VC8YYB3SVC5X01M1AS9PRW",
+      "goal_id": "goal_Q661VGKGFZC95QMH01M1AS9PRW",
+      "evaluation_id": "reval_QN4TWY89FAA5QDHX01M1AS9PTK",
+      "evaluation_version": 1,
+      "result": "pass_with_limits",
+      "artifact_chain_hash": "580d570fe81485aeba1ebda33e88bd011e33ed4cb047d39ebc38dec1a94fe0ef",
+      "evidence_pack_path": "research/tickets/stage-1/S1-005/results/evidence/evidence-pack-9f100ef45024eac5c48a8abff1efaf6ef08e2ae8ebeba9cc28fe2e4328e97563.json",
+      "evidence_pack_sha256": "9f100ef45024eac5c48a8abff1efaf6ef08e2ae8ebeba9cc28fe2e4328e97563",
+      "chain_fresh": true,
+      "latest_evaluation_valid": true,
+      "db_goal_status": "ACTIVE",
+      "db_eval_id_matches_record": true,
+      "db_chain_hash_matches_record": true,
+      "pack_sha256_matches_file": true,
+      "limitations_carried_forward": [
+        "Boundary measurements are same-host and bounded; multi-host partition semantics and orchestrator restart latencies are unknown and excluded from scoring.",
+        "The recommendation is a research decision for the MVP; it is not a production deployment, availability, or reliability claim.",
+        "S1-002 and S1-004 evidence is PASS_WITH_LIMITS and is reused only within its stated limits.",
+        "Producer and verifier labels are process-separated roles in one local environment, not external human auditors.",
+        "The containers restart/recovery cell remains unknown until a bounded container prototype is measured (production deployments are out of scope for this ticket)."
+      ],
+      "limitation_note": "S1-005 same-host limits are reused only as topology evidence context; they do not authorize production adapter deployment."
+    }
+  ],
+  "verifications_performed": [
+    {
+      "check": "result_class",
+      "s1_001": "pass_with_limits",
+      "s1_005": "pass_with_limits",
+      "required": "pass_or_pass_with_limits",
+      "met": true
+    },
+    {
+      "check": "chain_fresh",
+      "s1_001": true,
+      "s1_005": true,
+      "required": true,
+      "met": true
+    },
+    {
+      "check": "latest_evaluation_valid",
+      "s1_001": true,
+      "s1_005": true,
+      "required": true,
+      "met": true
+    },
+    {
+      "check": "record_db_pack_hash_consistency",
+      "s1_001": "artifact_chain_hash + evidence_pack_sha256 + goal_id + evaluation_id match record, DB, and file",
+      "s1_005": "artifact_chain_hash + evidence_pack_sha256 + goal_id + evaluation_id match record, DB, and file",
+      "required": "triple-consistent",
+      "met": true
+    },
+    {
+      "check": "no_manual_id_or_hash_restoration",
+      "detail": "All IDs and hashes are taken verbatim from evaluation-record.json and verified against the canonical DB and file bytes; no manual restoration performed.",
+      "met": true
+    }
+  ],
+  "constraint_note": "S1-001/S1-005 limitations (process-separated auditor, same-host bounds, frozen queue/scope) are carried forward only as evidence-provenance context. They do NOT become proven protocol facts and do not authorize any S1-009 adapter to expand capabilities, grants, ownership, budget, or knowledge status."
+}

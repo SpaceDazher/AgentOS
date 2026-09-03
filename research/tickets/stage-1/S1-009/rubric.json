@@ -1,0 +1,99 @@
+{
+  "schema": "agentos.s1-009.rubric/v1",
+  "ticket": "S1-009",
+  "frozen_before_scoring": true,
+  "frozen_at": "2026-09-02T00:00:00Z",
+  "note": "Weights and scale were fixed before any adapter or capability was scored. This file is hash-locked: the evaluation record must carry rubric_sha256 equal to the SHA-256 of this file's bytes.",
+  "scale": {
+    "range": [0, 4],
+    "0": "hard failure or badly violates the dimension — compensated by no score",
+    "1": "major loss of fidelity, requires significant unsafe workaround",
+    "2": "workable with notable bounded cost or open risk",
+    "3": "good with minor, bounded costs",
+    "4": "directly preserves canonical semantics; lossless or fail-closed lossy-safe"
+  },
+  "hard_failures": [
+    "Any adapter rule that extracts grant/approval/ownership/budget-increase/knowledge-promotion from protocol payload -> FAIL regardless of other scores.",
+    "Any accepted mapping that loses a required scope/policy/provenance/fencing/budget/receipt field -> FAIL.",
+    "Any accepted path that self-promotes knowledge from protocol content -> FAIL.",
+    "Unknown version/extension with permissive default -> FAIL.",
+    "Any accepted path that expands capabilities beyond the hub registry -> FAIL."
+  ],
+  "dimensions": {
+    "semantic_fidelity": {
+      "weight": 12,
+      "description": "How faithfully the adapter preserves canonical semantics (delegation, ownership, budget, provenance, knowledge promotion).",
+      "score_basis": "Count of lossless + lossy-safe mappings with no semantic loss; ABSENT/UNDERSPECIFIED surfaced as unsupported."
+    },
+    "least_privilege_exact_action": {
+      "weight": 12,
+      "description": "Protocol payload can never grant authority beyond what the hub registry/policy allows.",
+      "score_basis": "All 8 hard rules enforced; protocol payload never sets grant_present, owner, budget, or knowledge.status."
+    },
+    "ownership_fencing_revocation": {
+      "weight": 10,
+      "description": "Owner principal, fencing tokens, and revocation epochs are hub-assigned and enforced.",
+      "score_basis": "STALE owner/fence/epoch rejected; duplicate effect rejected; Protocol Task ID is NOT owner."
+    },
+    "budget_conservation": {
+      "weight": 10,
+      "description": "Parent budget cannot be increased via child split, unit mismatch, negative/overflow, or parallel aggregation.",
+      "score_basis": "All malformed budget cases fail closed; budget is absent from both protocols."
+    },
+    "provenance_knowledge_governance": {
+      "weight": 10,
+      "description": "Provenance fields preserved; knowledge stays proposal until hub governance event.",
+      "score_basis": "Probe E passes; no silent promotion; no provenance loss in accepted mappings."
+    },
+    "idempotency_reconciliation": {
+      "weight": 8,
+      "description": "Idempotency keys host-assigned; unknown outcomes enter reconciliation, never blind retry.",
+      "score_basis": "Unknown outcome does not become blind retry; cancellation does not cancel reconciliation."
+    },
+    "version_extension_safety": {
+      "weight": 8,
+      "description": "Unknown version/extension is quarantined, not permissive.",
+      "score_basis": "Probe F passes; unknown version/extension -> UNSUPPORTED/QUARANTINED."
+    },
+    "auditability_deterministic_replay": {
+      "weight": 8,
+      "description": "Every translation emits an audit event with rule_id, version, and provenance; results reproducible from clean tree.",
+      "score_basis": "Same corpus/contract/rubric hash for main and rerun; deterministic outputs."
+    },
+    "implementation_complexity": {
+      "weight": 6,
+      "description": "Adapter kernel complexity; stdlib-only runner.",
+      "score_basis": "Runner is stdlib-only; no network/LLM in tests."
+    },
+    "migration_rollback_feasibility": {
+      "weight": 6,
+      "description": "Adapter evolution, migration trigger, compatibility window, rollback plan documented.",
+      "score_basis": "Roadmap defines migration trigger, rollback, and version negotiation."
+    },
+    "provider_neutrality_lock_in": {
+      "weight": 6,
+      "description": "Provider-neutral adapter boundary; no vendor-specific authority.",
+      "score_basis": "No adapter rule injects vendor-specific authorization; envelope is provider-neutral."
+    }
+  },
+  "weight_sum": 96,
+  "verdict_rules": {
+    "pass": "All hard failures avoided; all 6 probes A-F pass; all capability rows mapped or explicitly non-supported; 0 protocol-driven escalation cases; 0 provenance loss cases; both runs identical.",
+    "pass_with_limits": "All functional criteria pass but measurements are same-host/process-separated (not external) auditor; protocol body not byte-archived in-repo (live review only).",
+    "fail": "Any hard failure; any probe failure; any unmapped capability row without explicit non-support; any provenance loss in accepted mappings; any hash mismatch between runs.",
+    "cap": "Verdict cannot exceed PASS_WITH_LIMITS because no external human auditor participated and no full third-party content archiving."
+  },
+  "scoring_matrix": [
+    {"dimension": "semantic_fidelity", "max": 4, "weight": 12},
+    {"dimension": "least_privilege_exact_action", "max": 4, "weight": 12},
+    {"dimension": "ownership_fencing_revocation", "max": 4, "weight": 10},
+    {"dimension": "budget_conservation", "max": 4, "weight": 10},
+    {"dimension": "provenance_knowledge_governance", "max": 4, "weight": 10},
+    {"dimension": "idempotency_reconciliation", "max": 4, "weight": 8},
+    {"dimension": "version_extension_safety", "max": 4, "weight": 8},
+    {"dimension": "auditability_deterministic_replay", "max": 4, "weight": 8},
+    {"dimension": "implementation_complexity", "max": 4, "weight": 6},
+    {"dimension": "migration_rollback_feasibility", "max": 4, "weight": 6},
+    {"dimension": "provider_neutrality_lock_in", "max": 4, "weight": 6}
+  ]
+}

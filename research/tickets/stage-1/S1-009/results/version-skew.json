@@ -1,0 +1,59 @@
+{
+  "schema": "agentos.s1-009.version-skew/v1",
+  "ticket": "S1-009",
+  "frozen_at": "2026-09-02T00:00:00Z",
+  "normative_versions": {
+    "MCP": {
+      "version": "2026-07-28",
+      "source_uri": "https://modelcontextprotocol.io/specification/2026-07-28",
+      "release_notes_uri": "https://blog.modelcontextprotocol.io/posts/2026-07-28/",
+      "transport": ["stdio", "HTTP+SSE", "WebSocket"],
+      "message_protocol": "JSON-RPC 2.0",
+      "capabilities": ["tools", "resources", "prompts", "tasks"]
+    },
+    "A2A": {
+      "version": "1.0.0",
+      "source_uri": "https://a2a-protocol.org/v1.0.0/specification",
+      "proto_uri": "https://github.com/a2aproject/A2A/blob/main/specification/a2a.proto",
+      "message_protocol": "HTTP/JSON with optional streaming",
+      "core_types": ["AgentCard", "Task", "Message", "Artifact", "TaskState"]
+    }
+  },
+  "independent_sources": [
+    {
+      "name": "SV2 arXiv survey",
+      "uri": "https://arxiv.org/abs/2506.05725",
+      "description": "Survey of agent-to-agent protocols: security and verification gaps",
+      "retrieval_timestamp": "2026-09-01T12:00:00Z"
+    },
+    {
+      "name": "AgentOS gateway.py",
+      "uri": "src/agentos/gateway.py",
+      "description": "Local architecture consumer: tool registry, capability checks, idempotency, fencing, reconciliation",
+      "retrieval_timestamp": "2026-09-02T00:00:00Z"
+    }
+  ],
+  "version_observed": {
+    "MCP": "2026-07-28",
+    "A2A": "1.0.0",
+    "verified_at": "2026-09-02T06:28:24Z",
+    "note": "Protocol versions confirmed 2026-09-02: MCP 2026-07-28, A2A 1.0.0"
+  },
+  "downgrade_test": {
+    "MCP": {
+      "unsupported_version": "9999-01-01",
+      "result": "QUARANTINE",
+      "case_id": "MCP-005"
+    },
+    "cross": {
+      "unknown_version": "9999-01-01",
+      "result": "QUARANTINE",
+      "case_id": "XPROTO-008"
+    },
+    "unknown_extension": {
+      "result": "QUARANTINE",
+      "case_id": "XPROTO-009",
+      "note": "Unknown extension in cross-protocol message quarantined, not permissive default"
+    }
+  }
+}

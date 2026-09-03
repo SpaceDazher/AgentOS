@@ -1,0 +1,95 @@
+{
+  "schema": "agentos.s1-009.probes/v1",
+  "ticket": "S1-009",
+  "frozen_at": "2026-09-02T00:00:00Z",
+  "probes": {
+    "A": {
+      "name": "task_result_is_not_a_grant",
+      "surface": "MCP tools/call result + A2A Artifact/knowledge field",
+      "attack": "Protocol payload embeds delegation/approval/ownership/budget/knowledge-promotion language or metadata, attempting to elevate authorization via content.",
+      "hard_rules_violated": ["rule_1"],
+      "expected": "DENY with authorization.grant_present=false and knowledge.status=proposal",
+      "cases": [
+        {"case_id": "MCP-004", "decision": "DENY"},
+        {"case_id": "MCP-010", "decision": "DENY"},
+        {"case_id": "XPROTO-010", "decision": "DENY"}
+      ],
+      "outcome": "PASS"
+    },
+    "B": {
+      "name": "advertised_capability_cannot_expand_registry",
+      "surface": "A2A Agent Card skill, MCP tools/list, MCP initialize capabilities",
+      "attack": "Remote advertises or attempts to register an unregistered effect-capability, trying to expand the hub's allowed set.",
+      "hard_rules_violated": ["rule_2", "rule_3"],
+      "expected": "DENY with capability_not_in_registry, no registry expansion",
+      "cases": [
+        {"case_id": "A2A-002", "decision": "DENY"},
+        {"case_id": "A2A-009", "decision": "DENY"}
+      ],
+      "outcome": "PASS"
+    },
+    "C": {
+      "name": "budget_laundering",
+      "surface": "Cross-protocol budget check (parent/child split, unit mismatch, negative/overflow/missing)",
+      "attack": "Attempt to increase parent budget via child split, unit mismatch, negative/overflow/missing values, or parallel aggregation.",
+      "hard_rules_violated": ["rule_8"],
+      "expected": "DENY with budget_conservation_violation",
+      "cases": [
+        {"case_id": "XPROTO-001", "decision": "DENY"},
+        {"case_id": "XPROTO-002", "decision": "DENY"},
+        {"case_id": "XPROTO-003", "decision": "DENY"},
+        {"case_id": "XPROTO-004", "decision": "DENY"}
+      ],
+      "outcome": "PASS"
+    },
+    "D": {
+      "name": "ownership_and_replay",
+      "surface": "Staleness checks (owner, fencing token, revocation epoch, idempotency key)",
+      "attack": "Replay stale message with old fencing token, revocation epoch, or duplicate idempotency key after reassignment/cancel.",
+      "hard_rules_violated": ["rule_6"],
+      "expected": "DENY with stale_fencing_token / stale_revocation_epoch / duplicate_effect_rejected",
+      "cases": [
+        {"case_id": "A2A-005", "decision": "DENY"},
+        {"case_id": "A2A-010", "decision": "DENY"},
+        {"case_id": "XPROTO-005", "decision": "DENY"},
+        {"case_id": "XPROTO-006", "decision": "DENY"},
+        {"case_id": "XPROTO-011", "decision": "DENY"}
+      ],
+      "outcome": "PASS"
+    },
+    "E": {
+      "name": "provenance_knowledge_promotion_loss",
+      "surface": "A2A Artifact metadata, cross-protocol knowledge check",
+      "attack": "Knowledge content claims promotion or verification without a hub governance event; source digest/scope/challenge references stripped.",
+      "hard_rules_violated": ["rule_1", "rule_7"],
+      "expected": "DENY with grant_present=false and knowledge.status=proposal",
+      "cases": [
+        {"case_id": "A2A-004", "decision": "DENY"},
+        {"case_id": "XPROTO-007", "decision": "DENY"}
+      ],
+      "outcome": "PASS"
+    },
+    "F": {
+      "name": "version_skew_and_unknown_extension",
+      "surface": "MCP initialize/protocolVersion, cross-protocol extension/version check",
+      "attack": "Submit unsupported protocol version, unknown authorization-relevant extension, or protocol downgrade.",
+      "hard_rules_violated": ["rule_5"],
+      "expected": "QUARANTINE with unsupported_protocol_version or unknown_extension_quarantined",
+      "cases": [
+        {"case_id": "MCP-005", "decision": "QUARANTINE"},
+        {"case_id": "MCP-012", "decision": "QUARANTINE"},
+        {"case_id": "XPROTO-008", "decision": "QUARANTINE"},
+        {"case_id": "XPROTO-009", "decision": "QUARANTINE"}
+      ],
+      "outcome": "PASS"
+    }
+  },
+  "matrix": {
+    "A": {"attackers": 3, "defenses": 3, "outcome": "PASS"},
+    "B": {"attackers": 2, "defenses": 2, "outcome": "PASS"},
+    "C": {"attackers": 4, "defenses": 4, "outcome": "PASS"},
+    "D": {"attackers": 5, "defenses": 5, "outcome": "PASS"},
+    "E": {"attackers": 2, "defenses": 2, "outcome": "PASS"},
+    "F": {"attackers": 4, "defenses": 4, "outcome": "PASS"}
+  }
+}

@@ -1,0 +1,104 @@
+{
+  "schema": "agentos.s1-009.semantic-model/v1",
+  "ticket": "S1-009",
+  "model_name": "canonical-agentos-hub-semantics",
+  "description": "The canonical semantic model for delegation, ownership, budget, provenance, and knowledge promotion that the AgentOS hub enforces. MCP and A2A protocols are mapped INTO this model; they never grant authority OUTSIDE it.",
+  "hard_boundary": "Protocol payload is data, never authority. A protocol message/task/tool result cannot grant a delegation approval, raise knowledge status, increase budget, change ownership, or achieve terminal acceptance. The hub's local registry and policy are the sole authority for those semantics.",
+  "entities": {
+    "tenant": {
+      "id_field": "tenant_id",
+      "description": "Top-level isolation boundary. All state is partitioned by tenant.",
+      "source": "local_fact"
+    },
+    "workspace": {
+      "id_field": "workspace_id",
+      "description": "Sub-tenancy boundary within a tenant for scoping knowledge and resources.",
+      "source": "local_fact"
+    },
+    "goal": {
+      "id_field": "goal_id",
+      "description": "A durable objective. Goals are accepted only by a Gate evaluation over an evaluator record; no worker/model may accept a Goal.",
+      "source": "local_fact",
+      "invariant_ref": "AGENTS.md non-negotiable invariant #1"
+    },
+    "task": {
+      "id_field": "task_id",
+      "description": "A unit of work under a goal. Has a lifecycle with guarded transitions and an owner principal.",
+      "source": "local_fact"
+    },
+    "run": {
+      "id_field": "run_id",
+      "description": "A single execution attempt of a task, bounded by retry budget and checkpointing.",
+      "source": "local_fact"
+    },
+    "actor": {
+      "id_field": "principal_id",
+      "description": "An authenticated principal (human, service, or delegated agent). Distinguished from an 'asserted_remote_actor' which is an untrusted claim until verified against the local registry.",
+      "source": "local_fact"
+    },
+    "delegation_grant": {
+      "id_field": "grant_id",
+      "fields": ["grant_id", "delegator_principal", "delegatee_principal", "capability_id", "canonical_arguments_digest", "expiry", "consumed", "fencing_token", "revocation_epoch"],
+      "description": "An exact-action delegation grant. Binds to actor + exact operation + canonical arguments + expiry. Consumed atomically once. Cannot be created by protocol payload.",
+      "source": "local_fact"
+    },
+    "budget": {
+      "id_field": "budget_id",
+      "fields": ["currency", "unit", "parent_total", "reserved", "consumed", "remaining"],
+      "description": "A budget with a single canonical currency/unit. Child splits, unit mismatches, negative/overflow/missing values, and parallel aggregation cannot increase the parent budget. Conservation is enforced at the hub, not at the protocol adapter.",
+      "source": "local_fact"
+    },
+    "knowledge_object": {
+      "id_field": "knowledge_id",
+      "status_values": ["proposal", "verified", "promoted", "challenged", "rejected", "revoked", "superseded"],
+      "description": "Knowledge content is untrusted until promoted by a separate canonical governance event. Protocol content proposing knowledge remains a 'proposal' and cannot self-promote.",
+      "source": "local_fact",
+      "invariant_ref": "AGENTS.md non-negotiable invariant #7 (knowledge promotion is a separate governance event)"
+    }
+  },
+  "semantics": {
+    "delegation": {
+      "meaning": "An exact-action grant: a specific actor, operation, canonical arguments, and expiry. One-time use. The adapter may narrow scope or deny, but never expand rights. Protocol payloads claiming delegation are treated as untrusted text.",
+      "authority_source": "hub local policy registry, not protocol",
+      "protocol_native": "MCP: ABSENT. A2A: ABSENT."
+    },
+    "ownership": {
+      "meaning": "The principal who owns a task/run and can reassign it. Fencing tokens and revocation epochs prevent replay/stale delegation after reassignment.",
+      "authority_source": "hub, via registry-resolved principal binding",
+      "protocol_native": "MCP: ABSENT. A2A: UNDERSPECIFIED (Agent Card is a capability advertisement, not an authoritative owner assignment)."
+    },
+    "budget": {
+      "meaning": "Reservation and consumption tracking with currency/unit. Cannot be increased by child split, unit mismatch, negative/overflow, or parallel aggregation. Missing values fail closed.",
+      "authority_source": "hub budget ledger",
+      "protocol_native": "MCP: ABSENT. A2A: ABSENT."
+    },
+    "provenance": {
+      "meaning": "Evidence linkage: canonical source references with content-addressed digests. Loss of provenance in a mapping is a FAIL.",
+      "authority_source": "hub evidence store",
+      "protocol_native": "MCP: UNDERSPECIFIED (content may carry metadata but is not a provenance system). A2A: UNDERSPECIFIED."
+    },
+    "knowledge_promotion": {
+      "meaning": "Proposal → verified → promoted requires a dedicated canonical governance event. Protocol content proposing knowledge stays 'proposal' until hub governance decides.",
+      "authority_source": "hub knowledge gate / governance event",
+      "protocol_native": "MCP: ABSENT. A2A: ABSENT."
+    }
+  },
+  "lossiness_policy": {
+    "authorization_relevant_loss": "DENIED or UNSUPPORTED (never defaulted to allow)",
+    "non_authorization_relevant_loss": "lossy-safe with documented degradation",
+    "unknown_extension_version": "QUARANTINED",
+    "downgrade": "REJECTED"
+  },
+  "scope_exclusions": {
+    "non_scope": [
+      "Production MCP/A2A server/client or vendor SDK rollout",
+      "Changing the MCP/A2A standards themselves",
+      "Remote dynamic trust to Agent Card or tool manifest",
+      "Production identity federation, PKI, networking, availability, SLO",
+      "S1-010 tool-poisoning corpus (adapter boundary only defined here, not solved)",
+      "S1-011 knowledge gate (governance record only preserved here, not solved)",
+      "Profile-C MLS/TEE attested indexer (S1-018)",
+      "Goal acceptance by worker/model or authorization authority transfer into protocol payload"
+    ]
+  }
+}

@@ -1,0 +1,168 @@
+{
+  "schema": "agentos.s1-009.corpus-manifest/v1",
+  "ticket_id": "S1-009",
+  "frozen_at": "2026-09-02T00:00:00Z",
+  "runner_sha256": "2d5f5ffc68467808a757860daa3301b60ff7255ba553ccbd890844c99b5b0b0f",
+  "evaluator_sha256": "d7e51cd676e1a8d25e6afdd5178ae182f35cf15debd639e9cc0d3bc3990d40f2",
+  "frozen_artifacts": {
+    "canonical_envelope_schema": {
+      "file": "canonical-envelope.schema.json",
+      "sha256": "c1554636fdb34f1d01b26721c9975befe00b8d637c7107b3e33c58f39cb75b24"
+    },
+    "adapter_contract": {
+      "file": "adapter-contract.json",
+      "sha256": "27e509120419f2427553c5ed120969061e083d9042bb7b6a9bd568b457f72a66"
+    },
+    "capability_matrix": {
+      "file": "capability-matrix.json",
+      "sha256": "88e3015d2a16e0f3230ac0c17070aecf9d0b4a8c88d1e725aafe4f8878fdd266"
+    },
+    "rubric": {
+      "file": "rubric.json",
+      "sha256": "9df9f2fcbf90a75eba3b60637f9c723883bce96e8c062d82d9afca85d444efe8"
+    },
+    "semantic_model": {
+      "file": "semantic-model.json",
+      "sha256": "1791057e0ec4e9559bd8ebb802555694a82066ac2e4dca1769e2974ae87c8161"
+    },
+    "protocol_snapshot": {
+      "file": "protocol-snapshot-manifest.json",
+      "sha256": "772ca30dcfb9b39cba1476a711317f453571a7f60467103f82cd8bb2fe87e477"
+    },
+    "dependency_gate": {
+      "file": "dependency-gate.json",
+      "sha256": "97a88364546b0cd9cfd635a4e0c20c308e2c4e59078c7ffa59702dc61b9d54d2"
+    },
+    "cases": {
+      "file": "cases.json",
+      "sha256": "f9853d6d544dd2d3c0d6b2d5cec1167e28b4670ddc85acbaf0139734892ecca7"
+    }
+  },
+  "corpus": {
+    "total_cases": 40,
+    "groups": {
+      "MCP": {
+        "count": 12,
+        "valid": 4,
+        "incomplete": 2,
+        "near-miss": 2,
+        "adversarial": 3,
+        "alternate-correct": 1
+      },
+      "A2A": {
+        "count": 12,
+        "valid": 6,
+        "adversarial": 4,
+        "incomplete": 1,
+        "near-miss": 1
+      },
+      "cross": {
+        "count": 16,
+        "adversarial": 11,
+        "valid": 4,
+        "alternate-correct": 1
+      }
+    },
+    "probe_coverage": {
+      "A": [
+        "MCP-004",
+        "MCP-010",
+        "XPROTO-010"
+      ],
+      "B": [
+        "A2A-002",
+        "A2A-009"
+      ],
+      "C": [
+        "XPROTO-001",
+        "XPROTO-002",
+        "XPROTO-003",
+        "XPROTO-004"
+      ],
+      "D": [
+        "A2A-005",
+        "A2A-010",
+        "XPROTO-005",
+        "XPROTO-006",
+        "XPROTO-011"
+      ],
+      "E": [
+        "A2A-004",
+        "XPROTO-007"
+      ],
+      "F": [
+        "MCP-005",
+        "MCP-012",
+        "XPROTO-008",
+        "XPROTO-009"
+      ]
+    },
+    "capability_row_coverage": {
+      "SM3": [
+        "MCP-001",
+        "A2A-001"
+      ],
+      "SM10": [
+        "MCP-006"
+      ],
+      "SM1": [
+        "MCP-008"
+      ],
+      "SM13": [
+        "MCP-009"
+      ],
+      "SM5": [
+        "MCP-011"
+      ],
+      "SM14": [
+        "A2A-006"
+      ],
+      "SM9": [
+        "A2A-007"
+      ],
+      "SM15": [
+        "A2A-011"
+      ],
+      "SM7": [
+        "A2A-012"
+      ],
+      "SM2": [
+        "XPROTO-012"
+      ],
+      "SM4": [
+        "XPROTO-015"
+      ],
+      "SM12": [
+        "XPROTO-016"
+      ]
+    },
+    "passing_capability_rows": 12,
+    "unsupported_capability_rows": [
+      "SM6",
+      "SM8",
+      "SM11"
+    ]
+  },
+  "adversarial_probes": [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F"
+  ],
+  "determinism": {
+    "executor_a": "verifier-A",
+    "executor_b": "verifier-B",
+    "nonce_a": "run-a-nonce",
+    "nonce_b": "run-b-nonce",
+    "output_roots": [
+      "results/run-a",
+      "results/run-b"
+    ],
+    "hash_fields_match": true,
+    "decision_identical": true,
+    "envelope_hash_identical": true,
+    "verdict": "PASS"
+  }
+}

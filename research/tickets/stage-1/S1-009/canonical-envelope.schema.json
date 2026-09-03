@@ -1,0 +1,214 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-009/canonical-envelope.schema.json",
+  "title": "AgentOS Canonical Hub Envelope",
+  "description": "Versioned, provider-neutral canonical envelope into which MCP and A2A protocol messages are translated. Protocol payload never carries authority for grant, approval, ownership, knowledge promotion, budget increase, or terminal acceptance. Hard rules are enforced by the hub, not the adapter.",
+  "type": "object",
+  "envelope_version": "1.0",
+  "adapter_version": "1.0",
+  "protocol_version": null,
+  "properties": {
+    "envelope": {
+      "type": "object",
+      "description": "Envelope self-description. Distinguishes envelope version (the hub envelope schema), adapter version (translation rules), and protocol version (the source protocol being translated).",
+      "required": ["envelope_version", "adapter_version", "protocol"],
+      "properties": {
+        "envelope_version": {"type": "string", "const": "1.0"},
+        "adapter_version": {"type": "string", "const": "1.0"},
+        "protocol": {"type": "string", "enum": ["MCP", "A2A"]},
+        "protocol_version": {"type": "string", "description": "Exact source protocol version, e.g. 2026-07-28 or 1.0.0."},
+        "direction": {"type": "string", "enum": ["inbound", "outbound"]}
+      }
+    },
+    "operation": {
+      "type": "object",
+      "description": "Message/task/tool operation identifier.",
+      "required": ["protocol", "operation_id", "correlation_id", "causation_id"],
+      "properties": {
+        "protocol": {"type": "string", "enum": ["MCP", "A2A"]},
+        "operation_id": {"type": "string"},
+        "correlation_id": {"type": "string"},
+        "causation_id": {"type": "string"},
+        "method": {"type": "string", "description": "Native protocol method or A2A task state transition verb."}
+      }
+    },
+    "scopes": {
+      "type": "object",
+      "description": "Canonical tenant/workspace/goal/task/run identity that scopes all effects.",
+      "required": ["tenant_id", "workspace_id", "goal_id", "task_id", "run_id"],
+      "properties": {
+        "tenant_id": {"type": "string"},
+        "workspace_id": {"type": "string"},
+        "goal_id": {"type": "string"},
+        "task_id": {"type": "string"},
+        "run_id": {"type": "string"}
+      }
+    },
+    "identity": {
+      "type": "object",
+      "description": "Authenticated actor (hub-verified principal) is distinct from asserted_remote_actor (untrusted protocol claim until registry-verified).",
+      "required": ["authenticated_actor", "asserted_remote_actor", "owner_principal", "delegator_delegatee_chain"],
+      "properties": {
+        "authenticated_actor": {"type": "string", "description": "Principal authenticated by the hub."},
+        "asserted_remote_actor": {"type": "string", "description": "Actor claimed by the protocol payload; untrusted until registry/policy verification."},
+        "asserted_remote_actor_verified": {"type": "boolean", "description": "Must be true for the asserted actor to be used; false means the actor is treated as unknown/anonymous."},
+        "owner_principal": {"type": "string", "description": "The principal who owns this task/run; must match the authenticated or verified remote actor."},
+        "delegator_delegatee_chain": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Ordered chain from delegator to delegatee."
+        }
+      }
+    },
+    "capability": {
+      "type": "object",
+      "description": "Registry-resolved tool contract, never the protocol-advertised name alone.",
+      "required": ["tool_contract_id", "tool_contract_version", "arguments_digest"],
+      "properties": {
+        "tool_contract_id": {"type": "string"},
+        "tool_contract_version": {"type": "string"},
+        "arguments_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "protocol_native_tool_name": {"type": "string", "description": "The tool name as it appeared in the protocol payload; not used for authorization."}
+      }
+    },
+    "effect": {
+      "type": "object",
+      "description": "Effect classification and idempotency/reconciliation state.",
+      "required": ["effect_class", "idempotency_key"],
+      "properties": {
+        "effect_class": {"type": "string", "enum": ["read", "write_local", "dangerous", "none"]},
+        "idempotency_key": {"type": "string"},
+        "receipt_state": {"type": "string", "enum": ["none", "pending", "acknowledged", "reconciled", "failed"]},
+        "reconciliation_state": {"type": "string", "enum": ["unknown_outcome", "reconciled", "rejected"]},
+        "cancellation_does_not_cancel_reconciliation": {
+          "type": "boolean",
+          "const": true,
+          "description": "Cancellation completes the protocol task; reconciliation side effects must still resolve."
+        }
+      }
+    },
+    "authorization": {
+      "type": "object",
+      "description": "Exact-action delegation grant, approval, and fencing. This block is NEVER populated by protocol payload.",
+      "required": ["grant_present", "fencing_token", "revocation_epoch"],
+      "properties": {
+        "grant_present": {"type": "boolean", "description": "False unless a hub-issued exact-action grant exists. Protocol payloads claiming delegation do not set this to true."},
+        "grant_id": {"type": ["string", "null"], "description": "Present only when grant_present is true and issued by the hub."},
+        "approval_id": {"type": ["string", "null"]},
+        "expiry": {"type": ["string", "null"]},
+        "consumed": {"type": "boolean"},
+        "fencing_token": {"type": ["string", "null"]},
+        "revocation_epoch": {"type": "string", "description": "Monotonic counter; must be greater than the epoch bound in the grant."}
+      }
+    },
+    "budget": {
+      "type": "object",
+      "description": "Budget reservation and consumption. Cannot be increased via child split, unit mismatch, missing value, negative/overflow, or parallel aggregation.",
+      "required": ["currency", "unit", "parent_total", "reserved", "consumed", "remaining"],
+      "properties": {
+        "currency": {"type": "string"},
+        "unit": {"type": "string"},
+        "parent_total": {"type": "number", "minimum": 0},
+        "reserved": {"type": "number", "minimum": 0},
+        "consumed": {"type": "number", "minimum": 0},
+        "remaining": {"type": "number", "minimum": 0, "description": "parent_total - (reserved + consumed); never exceeds parent_total."},
+        "child_reservation_ids": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "description": "Input/output artifact references with SHA-256 and provenance. Protocol-native payload digest only, never raw secret-bearing payload.",
+      "properties": {
+        "input_artifacts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["ref", "sha256", "content_length", "provenance"],
+            "properties": {
+              "ref": {"type": "string"},
+              "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+              "content_length": {"type": "integer", "minimum": 0},
+              "provenance": {"type": "string"}
+            }
+          }
+        },
+        "output_artifacts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["ref", "sha256", "content_length", "provenance"],
+            "properties": {
+              "ref": {"type": "string"},
+              "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+              "content_length": {"type": "integer", "minimum": 0},
+              "provenance": {"type": "string"}
+            }
+          }
+        },
+        "protocol_payload_digest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "Digest of the protocol-native payload (metadata + non-secret content only), never the raw secret-bearing payload."
+        }
+      }
+    },
+    "knowledge": {
+      "type": "object",
+      "description": "Knowledge object status — protocol content is proposal only until a separate hub governance event promotes it.",
+      "required": ["status"],
+      "properties": {
+        "knowledge_id": {"type": ["string", "null"]},
+        "status": {"type": "string", "enum": ["proposal", "verified", "promoted", "challenged", "rejected", "revoked", "superseded"]},
+        "proposal_source": {"type": ["string", "null"], "description": "Where the proposal originated (e.g. protocol payload digest)."},
+        "promotion_event_id": {"type": ["string", "null"], "description": "Only set by a separate canonical governance event, not by the adapter."}
+      }
+    },
+    "policy": {
+      "type": "object",
+      "description": "Policy version, decision reason, and audit reference.",
+      "required": ["policy_version", "decision_reason", "audit_reference"],
+      "properties": {
+        "policy_version": {"type": "string"},
+        "decision_reason": {"type": "string"},
+        "audit_reference": {"type": "string"},
+        "decision_epoch": {"type": "string"}
+      }
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Extensions accepted/rejected/quarantined with version provenance.",
+      "required": ["accepted", "rejected", "quarantined"],
+      "properties": {
+        "accepted": {
+          "type": "array",
+          "items": {"type": "object", "required": ["name", "version", "provenance"], "properties": {
+            "name": {"type": "string"}, "version": {"type": "string"}, "provenance": {"type": "string"}
+          }}
+        },
+        "rejected": {
+          "type": "array",
+          "items": {"type": "object", "required": ["name", "version", "reason", "provenance"], "properties": {
+            "name": {"type": "string"}, "version": {"type": "string"}, "reason": {"type": "string"}, "provenance": {"type": "string"}
+          }}
+        },
+        "quarantined": {
+          "type": "array",
+          "items": {"type": "object", "required": ["name", "reason", "provenance"], "properties": {
+            "name": {"type": "string"}, "reason": {"type": "string"}, "provenance": {"type": "string"}
+          }}
+        }
+      }
+    }
+  },
+  "required": ["envelope", "operation", "scopes", "identity", "capability", "effect", "authorization", "budget", "artifacts", "knowledge", "policy", "extensions"],
+  "hard_rules": {
+    "rule_1": "Protocol payload is never authority for grant, approval, ownership, knowledge promotion, budget increase, or terminal acceptance.",
+    "rule_2": "Remote identity/capability is an untrusted assertion until local registry/policy verification.",
+    "rule_3": "Adapter may narrow semantics or deny, but never expand rights.",
+    "rule_4": "Lossy translation of an authorization-relevant field -> DENY/UNSUPPORTED, never default-and-allow.",
+    "rule_5": "Unknown extension/version -> explicit quarantine/unsupported path.",
+    "rule_6": "Cancellation/task completion does not cancel reconciliation side effects.",
+    "rule_7": "Knowledge content remains untrusted; promotion created only by a separate canonical governance event.",
+    "rule_8": "Budget cannot be increased via child split, unit mismatch, missing value, negative/overflow, or parallel aggregation."
+  }
+}
