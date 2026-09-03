@@ -13,12 +13,12 @@
 
 - Validate the 5-state mental model with 15-20 operators; measure
   challenge resolution cost and approval fatigue.
-- Replace the operator workload model estimate (0.35-0.40
-  actions/case) with measured numbers; revisit operator_load weights.
+- Replace the operator workload model estimate with measured numbers;
+  revisit operator_load utility and weights.
 
 ## To S1-019 (architecture synthesis)
 
-- Carry the frozen contract (v1.0.0), state machine, and MVP
+- Carry the frozen contract (v1.0.1), state machine, and MVP
   recommendation as the knowledge-layer boundary.
 - Carried unknowns: cyclic attack-graph convergence, justification
   completeness, UNDECIDED/backtracking operator procedures.
@@ -42,4 +42,8 @@
   the canonical DB (pre-existing environment failures in
   test_s1_004/005/006/007/008/009, all "unable to open database file"
   or missing-DB assertions); S1-011 adds no new failures
-  (tests/test_s1_011_regressions.py: 46/46).
+  (tests/test_s1_011_regressions.py green).
+- Independent review F1-F12 was addressed in the second evidence
+  revision (contract v1.0.1, 72-case corpus, ledger-backed evaluation,
+  native harness bundle, derived verdict); a fresh independent
+  re-review is still recommended before Phase B.

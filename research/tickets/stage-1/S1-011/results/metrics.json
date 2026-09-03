@@ -5,7 +5,7 @@
       "schema": "agentos.s1-011.metrics/v1",
       "design": "argumentation",
       "seed": "merged",
-      "rows": 180,
+      "rows": 216,
       "admissible": true,
       "transition_coverage": [
         "challenge>challenge_accepted",
@@ -22,8 +22,8 @@
       ],
       "invalid_transition_count": 0,
       "hard_counters": {
-        "false_promotion_count": 36,
-        "false_retention_count": 36,
+        "false_promotion_count": 48,
+        "false_retention_count": 48,
         "resurrection_count": 0,
         "missed_invalidation_count": 0,
         "history_loss_or_rewrite_count": 0,
@@ -36,89 +36,92 @@
       },
       "hard_fail": true,
       "confusion": {
-        "tp": 114,
-        "tn": 60,
-        "fp": 6,
+        "tp": 39,
+        "tn": 129,
+        "fp": 48,
         "fn": 0
       },
+      "confusion_definition": "positive outcome is PROMOTED; rejecting a valid promotion is a false negative",
       "overall": {
-        "n": 180,
-        "precision": 0.95,
+        "n": 216,
+        "precision": 0.448276,
         "recall": 1.0,
-        "fpr": 0.090909,
+        "fpr": 0.271186,
         "fnr": 0.0,
         "abstention": 0,
         "precision_wilson": [
-          0.895196,
-          0.976886
+          0.34817,
+          0.552756
         ],
         "recall_wilson": [
-          0.9674,
+          0.91033,
           1.0
         ]
       },
+      "transition_exactness": 0.777778,
+      "view_correctness": 0.777778,
       "per_class": {
         "adversarial_authority": {
-          "n": 36,
-          "precision": 0.8,
+          "n": 60,
+          "precision": 0.0,
           "recall": 1.0,
-          "fpr": 0.125,
+          "fpr": 0.3,
           "fnr": 0.0,
           "abstention": 0,
           "precision_wilson": [
-            0.548141,
-            0.929526
+            0.0,
+            0.175885
           ],
           "recall_wilson": [
-            0.757499,
-            1.0
+            0.0,
+            0.0
           ]
         },
         "challenge_retraction": {
-          "n": 36,
-          "precision": 1.0,
+          "n": 39,
+          "precision": 0.5,
           "recall": 1.0,
-          "fpr": 0.0,
+          "fpr": 0.083333,
           "fnr": 0.0,
           "abstention": 0,
           "precision_wilson": [
-            0.862019,
-            1.0
+            0.187613,
+            0.812387
           ],
           "recall_wilson": [
-            0.862019,
+            0.438494,
             1.0
           ]
         },
         "insufficient_evidence": {
           "n": 36,
-          "precision": 1.0,
+          "precision": 0.0,
           "recall": 1.0,
-          "fpr": 0.0,
+          "fpr": 0.666667,
           "fnr": 0.0,
           "abstention": 0,
           "precision_wilson": [
-            0.895727,
-            1.0
+            0.0,
+            0.137981
           ],
           "recall_wilson": [
-            0.895727,
-            1.0
+            0.0,
+            0.0
           ]
         },
         "replay_concurrency": {
-          "n": 36,
-          "precision": 0.75,
+          "n": 45,
+          "precision": 0.5,
           "recall": 1.0,
-          "fpr": 0.111111,
+          "fpr": 0.071429,
           "fnr": 0.0,
           "abstention": 0,
           "precision_wilson": [
-            0.46769,
-            0.91106
+            0.187613,
+            0.812387
           ],
           "recall_wilson": [
-            0.700847,
+            0.438494,
             1.0
           ]
         },
@@ -130,19 +133,19 @@
           "fnr": 0.0,
           "abstention": 0,
           "precision_wilson": [
-            0.903578,
+            0.895727,
             1.0
           ],
           "recall_wilson": [
-            0.903578,
+            0.895727,
             1.0
           ]
         }
       },
       "operator_model": {
-        "actions_per_case": 0.35,
+        "actions_per_case": 0.3333,
         "challenge_backlog": 12,
-        "resolution_steps": 63,
+        "resolution_steps": 72,
         "note": "model/simulation estimate, NOT a human study; UX claims deferred to S1-013"
       },
       "verdict": "FAIL"
@@ -151,7 +154,7 @@
       "schema": "agentos.s1-011.metrics/v1",
       "design": "minimal-gate",
       "seed": "merged",
-      "rows": 180,
+      "rows": 216,
       "admissible": true,
       "transition_coverage": [
         "challenge>challenge_accepted",
@@ -182,57 +185,60 @@
       },
       "hard_fail": false,
       "confusion": {
-        "tp": 114,
-        "tn": 66,
+        "tp": 39,
+        "tn": 177,
         "fp": 0,
         "fn": 0
       },
+      "confusion_definition": "positive outcome is PROMOTED; rejecting a valid promotion is a false negative",
       "overall": {
-        "n": 180,
+        "n": 216,
         "precision": 1.0,
         "recall": 1.0,
         "fpr": 0.0,
         "fnr": 0.0,
         "abstention": 0,
         "precision_wilson": [
-          0.9674,
+          0.91033,
           1.0
         ],
         "recall_wilson": [
-          0.9674,
+          0.91033,
           1.0
         ]
       },
+      "transition_exactness": 1.0,
+      "view_correctness": 1.0,
       "per_class": {
         "adversarial_authority": {
-          "n": 36,
+          "n": 60,
           "precision": 1.0,
           "recall": 1.0,
           "fpr": 0.0,
           "fnr": 0.0,
           "abstention": 0,
           "precision_wilson": [
-            0.757499,
-            1.0
+            0.0,
+            0.0
           ],
           "recall_wilson": [
-            0.757499,
-            1.0
+            0.0,
+            0.0
           ]
         },
         "challenge_retraction": {
-          "n": 36,
+          "n": 39,
           "precision": 1.0,
           "recall": 1.0,
           "fpr": 0.0,
           "fnr": 0.0,
           "abstention": 0,
           "precision_wilson": [
-            0.862019,
+            0.438494,
             1.0
           ],
           "recall_wilson": [
-            0.862019,
+            0.438494,
             1.0
           ]
         },
@@ -244,27 +250,27 @@
           "fnr": 0.0,
           "abstention": 0,
           "precision_wilson": [
-            0.895727,
-            1.0
+            0.0,
+            0.0
           ],
           "recall_wilson": [
-            0.895727,
-            1.0
+            0.0,
+            0.0
           ]
         },
         "replay_concurrency": {
-          "n": 36,
+          "n": 45,
           "precision": 1.0,
           "recall": 1.0,
           "fpr": 0.0,
           "fnr": 0.0,
           "abstention": 0,
           "precision_wilson": [
-            0.700847,
+            0.438494,
             1.0
           ],
           "recall_wilson": [
-            0.700847,
+            0.438494,
             1.0
           ]
         },
@@ -276,17 +282,17 @@
           "fnr": 0.0,
           "abstention": 0,
           "precision_wilson": [
-            0.903578,
+            0.895727,
             1.0
           ],
           "recall_wilson": [
-            0.903578,
+            0.895727,
             1.0
           ]
         }
       },
       "operator_model": {
-        "actions_per_case": 0.35,
+        "actions_per_case": 0.2917,
         "challenge_backlog": 12,
         "resolution_steps": 63,
         "note": "model/simulation estimate, NOT a human study; UX claims deferred to S1-013"
@@ -297,7 +303,7 @@
       "schema": "agentos.s1-011.metrics/v1",
       "design": "tms",
       "seed": "merged",
-      "rows": 180,
+      "rows": 216,
       "admissible": true,
       "transition_coverage": [
         "challenge>challenge_accepted",
@@ -312,7 +318,7 @@
         "supersede>superseded",
         "uphold>upheld_with_evidence"
       ],
-      "invalid_transition_count": 0,
+      "invalid_transition_count": 96,
       "hard_counters": {
         "false_promotion_count": 45,
         "false_retention_count": 45,
@@ -321,96 +327,99 @@
         "history_loss_or_rewrite_count": 0,
         "stale_replay_acceptance_count": 0,
         "cross_scope_visibility_count": 0,
-        "authority_expansion_count": 99,
+        "authority_expansion_count": 96,
         "duplicate_active_decision_count": 0,
         "transition_audit_atomicity_violation_count": 0,
         "derived_without_evidence_promotion_count": 6
       },
       "hard_fail": true,
       "confusion": {
-        "tp": 114,
-        "tn": 51,
-        "fp": 15,
+        "tp": 39,
+        "tn": 132,
+        "fp": 45,
         "fn": 0
       },
+      "confusion_definition": "positive outcome is PROMOTED; rejecting a valid promotion is a false negative",
       "overall": {
-        "n": 180,
-        "precision": 0.883721,
+        "n": 216,
+        "precision": 0.464286,
         "recall": 1.0,
-        "fpr": 0.227273,
+        "fpr": 0.254237,
         "fnr": 0.0,
         "abstention": 0,
         "precision_wilson": [
-          0.816994,
-          0.928255
+          0.361541,
+          0.570155
         ],
         "recall_wilson": [
-          0.9674,
+          0.91033,
           1.0
         ]
       },
+      "transition_exactness": 0.791667,
+      "view_correctness": 0.791667,
       "per_class": {
         "adversarial_authority": {
-          "n": 36,
-          "precision": 0.571429,
+          "n": 60,
+          "precision": 0.0,
           "recall": 1.0,
-          "fpr": 0.375,
+          "fpr": 0.3,
           "fnr": 0.0,
           "abstention": 0,
           "precision_wilson": [
-            0.365462,
-            0.755303
+            0.0,
+            0.175885
           ],
           "recall_wilson": [
-            0.757499,
-            1.0
+            0.0,
+            0.0
           ]
         },
         "challenge_retraction": {
-          "n": 36,
+          "n": 39,
           "precision": 1.0,
           "recall": 1.0,
           "fpr": 0.0,
           "fnr": 0.0,
           "abstention": 0,
           "precision_wilson": [
-            0.862019,
+            0.438494,
             1.0
           ],
           "recall_wilson": [
-            0.862019,
+            0.438494,
             1.0
           ]
         },
         "insufficient_evidence": {
           "n": 36,
-          "precision": 0.916667,
+          "precision": 0.0,
           "recall": 1.0,
-          "fpr": 1.0,
+          "fpr": 0.666667,
           "fnr": 0.0,
           "abstention": 0,
           "precision_wilson": [
-            0.78173,
-            0.971252
+            0.0,
+            0.137981
           ],
           "recall_wilson": [
-            0.895727,
-            1.0
+            0.0,
+            0.0
           ]
         },
         "replay_concurrency": {
-          "n": 36,
-          "precision": 0.75,
+          "n": 45,
+          "precision": 0.5,
           "recall": 1.0,
-          "fpr": 0.111111,
+          "fpr": 0.071429,
           "fnr": 0.0,
           "abstention": 0,
           "precision_wilson": [
-            0.46769,
-            0.91106
+            0.187613,
+            0.812387
           ],
           "recall_wilson": [
-            0.700847,
+            0.438494,
             1.0
           ]
         },
@@ -422,19 +431,19 @@
           "fnr": 0.0,
           "abstention": 0,
           "precision_wilson": [
-            0.903578,
+            0.895727,
             1.0
           ],
           "recall_wilson": [
-            0.903578,
+            0.895727,
             1.0
           ]
         }
       },
       "operator_model": {
-        "actions_per_case": 0.4,
+        "actions_per_case": 0.2917,
         "challenge_backlog": 12,
-        "resolution_steps": 72,
+        "resolution_steps": 63,
         "note": "model/simulation estimate, NOT a human study; UX claims deferred to S1-013"
       },
       "verdict": "FAIL"

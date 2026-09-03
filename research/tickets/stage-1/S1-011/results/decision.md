@@ -4,10 +4,23 @@ Verdict: `PASS_WITH_LIMITS` (cap forced by the provisional independence
 threshold and the absence of a human operator study; see limits below).
 Phase A result: `READY_FOR_CANONICALIZATION`. No truth oracle is claimed.
 
+Revision note: this is the second evidence revision. An independent
+review (REVISE, 12 findings F1-F12) rejected the first revision for
+lax authority/binding checks, unenforced predicates, producer-trusting
+evaluation, and a non-native bundle. All findings were fixed: strict
+fail-closed input validation with no defaults, per-transition
+authority, live challenge/revocation/policy predicates, hash-chained
+record ledger verified record-by-record, state-table and authority
+consistency per row, PROMOTED-positive confusion, hard divergence
+rejection, frozen Cartesian enforcement, hard-failed exclusion,
+dependency allowlist plus revision binding, native harness bundle, and
+derived (never constant) verdict. The corpus grew 60 to 72 cases with
+the review's counterexamples; contracts moved to v1.0.1.
+
 ## Recommendation
 
 Adopt the **minimal promote/challenge gate** exactly as frozen in
-`knowledge-gate-contract.json` v1.0.0 / `state-machine.json`:
+`knowledge-gate-contract.json` v1.0.1 / `state-machine.json`:
 
 - States: `PROPOSED -> PROMOTED / REJECTED / RETRACTED`,
   `PROMOTED -> CHALLENGED / RETRACTED`, `CHALLENGED -> PROMOTED (new
@@ -15,45 +28,50 @@ Adopt the **minimal promote/challenge gate** exactly as frozen in
   and preserve immutable history.
 - `PROMOTED` means only "passed the versioned governance gate for the
   stated scope/policy". It is not truth.
-- Provisional evidence threshold: >=2 verified evidence records, >=2
-  declared independence groups (lineage-collapsed: same provenance
-  lineage is one group even under different URLs/labels), same claim
-  version/scope, no unresolved challenge or source revocation,
-  provenance/digest/policy present, final transition by the governance
-  gate only.
-- Authority: worker proposes/opens challenges; governance gate promotes/
-  upholds/retracts; operator resolves/escalates/revokes/rolls back.
-  External content never transitions anything (quarantine).
+- Provisional evidence threshold with strict bindings: >=2 verified
+  evidence records with valid digests, strict boolean verified flags,
+  declared lineages and groups, >=2 distinct lineages AND >=2 groups
+  (lineage-collapsed), same claim version/scope, active sources, no
+  unresolved challenge or revocation, provenance/digest/policy present,
+  governance-only final step. Malformed bindings fail as
+  INVALID_EVIDENCE_BINDING; missing fields fail closed (no defaults).
+- Authority: worker proposes/opens challenges and withdraws own
+  proposals; governance gate promotes/upholds/retracts/revokes/
+  supersedes; operator upholds/resolves/withdraws/revokes. External
+  content never transitions anything (quarantine).
 - Challenge immediately excludes the claim from the eligible derived
-  view; history stays hash-verifiable. Source revocation invalidates the
-  claim and its dependents. Supersession links `SUPERSEDES` and retires
-  the old version. Derived claims need their own evidence and decision.
+  view; history stays hash-verifiable in a hash-chained ledger.
+  Source revocation invalidates the claim and its dependents.
+  Supersession links `SUPERSEDES` and retires the old version. Derived
+  claims need their own evidence and a governance decision. Duplicate
+  keys and replays re-evaluate the live predicate; stale records never
+  restore visibility.
 - Rollback: select a prior contract version and re-run the gate over
   preserved history; nothing is ever rewritten.
 
-## Evidence (540 rows/run, two process-separated runs, one commit/tree)
+## Evidence (648 rows/run, two process-separated runs, one commit/tree)
 
-- minimal-gate: all 11 hard safety counters exactly zero, probes A-H
-  pass on all seeds, confusion P/R 1.0, score 0.936.
+- minimal-gate: all 11 hard safety counters exactly zero,
+  invalid_transition_count zero, transition exactness and view
+  correctness 1.0, probes A-H pass on all seeds, confusion P/R 1.0.
 - argumentation (naive grounded-style, no independence counting,
-  transitive support allowed): 12 false promotions / 12 false
-  retentions; probes A, D, G fail; score 0.489. Failure mode: single or
+  transitive support allowed): false promotions (precision 0.448),
+  probes A, D, G fail; exactness 0.778. Failure mode: single or
   correlated support suffices for IN, and parent support transitively
   promotes derived claims without their own evidence.
-- tms (naive automatic revision by `tms_engine`): 15 false promotions /
-  15 false retentions, 33 authority expansions, 2 derived-without-
-  evidence promotions; probes A, D, G fail; score 0.489. Failure modes:
-  same acceptability weakness plus view-changing transitions with no
-  governance decision.
+- tms (naive automatic revision by `tms_engine`): false promotions
+  (precision 0.464), 96 ledger/authority consistency violations across
+  merged seeds plus authority expansions, probes A, D, G fail. Failure
+  modes: same acceptability weakness plus view-changing transitions
+  with no governance decision.
 - All three: recall 1.0 (no valid promotion missed), probes B/C/E/F/H
-  pass (shared governance plumbing holds).
+  pass (shared strict plumbing holds).
 - Sensitivity: 20 per-weight (+-50%) sweeps + 200 seeded normalized
-  compositions, 0 winner flips. The winner is robust because measured
-  safety dimensions (52% weight) floor minimal-gate above any
-  reweighting the rubric permits. argumentation and tms tie for second
-  on scores but differ in failure mode (acceptability-only vs
-  acceptability-plus-authority); both are hard-excluded regardless of
-  soft weighting.
+  compositions, 0 winner flips, UNKNOWN disclosure clean
+  (unknown_dependent=false). The winner is robust because measured
+  safety dimensions floor minimal-gate above any permitted reweighting.
+  Hard-failed designs are excluded before ranking; an all-fail field
+  would yield BLOCKED, never "best of the unsafe".
 
 ## Why not the richer models now
 
@@ -73,9 +91,9 @@ because their naive forms are unsafe under the frozen invariants.
    correlation/Sybil resistance and evidence-unit calibration are
    S1-012. Any production use before S1-012 stays blocked; this task
    caps at `PASS_WITH_LIMITS`.
-2. Operator workload (0.35-0.40 actions/case) is a model/simulation
-   estimate, not a human study. Comprehension and approval fatigue are
-   S1-013; explainability cells stay low-confidence until then.
+2. Operator workload is a model/simulation estimate, not a human study.
+   Comprehension and approval fatigue are S1-013; explainability stays
+   utility-estimated until then.
 3. No SHACL mapping exists yet for attack/support/justification
    relations (ontology_shacl_fit abstains for both alternatives); S1-003
    alignment holds only for the minimal mapping.

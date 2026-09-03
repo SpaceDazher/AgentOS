@@ -2,7 +2,7 @@
   "schema": "agentos.s1-011.metrics/v1",
   "design": "minimal-gate",
   "seed": 11011,
-  "rows": 60,
+  "rows": 72,
   "admissible": true,
   "transition_coverage": [
     "challenge>challenge_accepted",
@@ -33,57 +33,60 @@
   },
   "hard_fail": false,
   "confusion": {
-    "tp": 38,
-    "tn": 22,
+    "tp": 13,
+    "tn": 59,
     "fp": 0,
     "fn": 0
   },
+  "confusion_definition": "positive outcome is PROMOTED; rejecting a valid promotion is a false negative",
   "overall": {
-    "n": 60,
+    "n": 72,
     "precision": 1.0,
     "recall": 1.0,
     "fpr": 0.0,
     "fnr": 0.0,
     "abstention": 0,
     "precision_wilson": [
-      0.908187,
+      0.771898,
       1.0
     ],
     "recall_wilson": [
-      0.908187,
+      0.771898,
       1.0
     ]
   },
+  "transition_exactness": 1.0,
+  "view_correctness": 1.0,
   "per_class": {
     "adversarial_authority": {
-      "n": 12,
+      "n": 20,
       "precision": 1.0,
       "recall": 1.0,
       "fpr": 0.0,
       "fnr": 0.0,
       "abstention": 0,
       "precision_wilson": [
-        0.5101,
-        1.0
+        0.0,
+        0.0
       ],
       "recall_wilson": [
-        0.5101,
-        1.0
+        0.0,
+        0.0
       ]
     },
     "challenge_retraction": {
-      "n": 12,
+      "n": 13,
       "precision": 1.0,
       "recall": 1.0,
       "fpr": 0.0,
       "fnr": 0.0,
       "abstention": 0,
       "precision_wilson": [
-        0.675584,
+        0.206543,
         1.0
       ],
       "recall_wilson": [
-        0.675584,
+        0.206543,
         1.0
       ]
     },
@@ -95,27 +98,27 @@
       "fnr": 0.0,
       "abstention": 0,
       "precision_wilson": [
-        0.74116,
-        1.0
+        0.0,
+        0.0
       ],
       "recall_wilson": [
-        0.74116,
-        1.0
+        0.0,
+        0.0
       ]
     },
     "replay_concurrency": {
-      "n": 12,
+      "n": 15,
       "precision": 1.0,
       "recall": 1.0,
       "fpr": 0.0,
       "fnr": 0.0,
       "abstention": 0,
       "precision_wilson": [
-        0.438494,
+        0.206543,
         1.0
       ],
       "recall_wilson": [
-        0.438494,
+        0.206543,
         1.0
       ]
     },
@@ -127,17 +130,17 @@
       "fnr": 0.0,
       "abstention": 0,
       "precision_wilson": [
-        0.757499,
+        0.74116,
         1.0
       ],
       "recall_wilson": [
-        0.757499,
+        0.74116,
         1.0
       ]
     }
   },
   "operator_model": {
-    "actions_per_case": 0.35,
+    "actions_per_case": 0.2917,
     "challenge_backlog": 4,
     "resolution_steps": 21,
     "note": "model/simulation estimate, NOT a human study; UX claims deferred to S1-013"
