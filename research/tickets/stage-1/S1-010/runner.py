@@ -403,17 +403,19 @@ def compare_runs(run_a: dict, run_b: dict) -> dict:
 def recompute_and_compare_metrics(run_a: dict, run_b: dict) -> dict:
     """Runner-side independent recomputation from raw records (no trust in
     producer metric summaries).  grade() validates records and corpus
-    fail-closed before deriving anything."""
+    fail-closed before deriving anything.  Reads the STAGED run directories
+    (byte-identity already verified by verify_staged_outputs), not the
+    children's deleted temp roots."""
     sys.path.insert(0, str(TICKET_ROOT))
     try:
         import evaluator as ev
         rubric = ev.load_rubric()
         cases = json.loads((TICKET_ROOT / "cases.json").read_text("utf-8"))
         metrics_by_run = {}
-        for label, summary in (("run_a", run_a), ("run_b", run_b)):
+        for label, run_dir in (("run_a", RESULTS / "run-a"),
+                               ("run_b", RESULTS / "run-b")):
             decisions_doc = json.loads(
-                Path(summary["output_root"], "evaluator-decisions.json")
-                .read_text("utf-8"))
+                (run_dir / "evaluator-decisions.json").read_text("utf-8"))
             recomputed = ev.grade(decisions_doc["decisions"], cases, rubric)
             producer = decisions_doc["metrics"]
             if json.dumps(recomputed, sort_keys=True) != \
@@ -434,7 +436,7 @@ def recompute_and_compare_metrics(run_a: dict, run_b: dict) -> dict:
 
 def extract_probes(run_a: dict) -> dict:
     decisions_doc = json.loads(
-        Path(run_a["output_root"], "evaluator-decisions.json").read_text("utf-8"))
+        (RESULTS / "run-a" / "evaluator-decisions.json").read_text("utf-8"))
     cases = {c["id"]: c for c in json.loads(
         (TICKET_ROOT / "cases.json").read_text("utf-8"))}
     by_id = {d["case_id"]: d for d in decisions_doc["decisions"]}
