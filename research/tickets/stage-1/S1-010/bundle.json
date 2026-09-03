@@ -1,0 +1,416 @@
+{
+ "artifact_hashes": {
+  "research/tickets/stage-1/S1-010/build_corpus.py": "9b40ece9f7695bd520ad92fcd4a0430312941c1f6c848d58a04b3118bf4ef4d7",
+  "research/tickets/stage-1/S1-010/cases.json": "704e5a79d4d97b7d5b7ae38fa57a03c636fb94c8dbabcaea46c83463652f8941",
+  "research/tickets/stage-1/S1-010/corpus-manifest.json": "29e796b6b19a67a011a852e8b49ef405ee6dd0a37f3a50682467c1fd8c042295",
+  "research/tickets/stage-1/S1-010/dependency-gate.json": "a1b08d0c8134c1401348af211db67e08f54f63046482aaefa04bda2bdc0cc052",
+  "research/tickets/stage-1/S1-010/evaluator.py": "df99140fd3b71bdff9f948bf807e573473ea96702a4f81feffd4c403eef1771a",
+  "research/tickets/stage-1/S1-010/make_bundle.py": "292bd0d67d471b2270c9a0723a8d4c1fb4f1a9a526afcef280f66dd7043912fa",
+  "research/tickets/stage-1/S1-010/make_candidate_record.py": "0f5f3e6bd78b5e148aeebae365077895c84f4e425eac7017c95e4a559ee0c9ca",
+  "research/tickets/stage-1/S1-010/results/comparison.json": "73549b4695270d1d6077baef8aeddf6ab146dcd61446e25f3154ca287dc77c4e",
+  "research/tickets/stage-1/S1-010/results/metrics.json": "f5cbe0a2b91eba393a11401b00c6a182d45b5815ccd71afda3740a8bc4ad4d00",
+  "research/tickets/stage-1/S1-010/results/probes.json": "80e8bb6d42810bb78833b0a44313d5113c59e7756d6044b3b0b2bce1561ca03d",
+  "research/tickets/stage-1/S1-010/rubric.json": "69039684dbe77a5fdc123b9c08ddeb0b755eaadb494219182c11baf7d1213002",
+  "research/tickets/stage-1/S1-010/runner.py": "df1dd02179e86c4891bdc0c8b42c2243eed783d4917be1888c9857582a8bc80f",
+  "research/tickets/stage-1/S1-010/source-registry.json": "d860a59537a5db369ee633939e82ba786548d6417caf31c8782fda6e684cea34",
+  "research/tickets/stage-1/S1-010/threat-model.json": "41cebc657fcc7e1b54c6c479cc02a47c95f32794e0b3163f12ba9a768b1ed357",
+  "research/tickets/stage-1/S1-010/tool-poisoning-contract.json": "356c018e35580ae03e9dcf2eb3754af84837f9a9cbe5805fdf4d9a68a1ae7b17"
+ },
+ "artifacts": [
+  "research_plan",
+  "source_registry",
+  "feature_catalog",
+  "architecture_models",
+  "mental_model",
+  "ontology",
+  "mathematical_model",
+  "synthesis_and_gaps",
+  "independent_audit",
+  "platform_plan",
+  "progress"
+ ],
+ "artifacts_content": {
+  "architecture_models": {
+   "authority_boundaries": {
+    "approval_claims": "an approval referenced only from manifest or tool_output is void; approvals live exclusively in registered_context.pre_approved bound to actor+operation+expiry",
+    "external_content_may_not": [
+     "add or remove registry capabilities",
+     "alter policy or effect mappings",
+     "create, consume, or extend approvals",
+     "change ownership or budgets",
+     "promote, verify, or revoke knowledge",
+     "mark reconciliation complete",
+     "accept or reject a goal"
+    ],
+    "governance_claims": "governance claims in tool_output are recorded as evidence and never applied"
+   },
+   "decision_flow": "L1-L3 gate -> L4 advisory evidence -> L6 output guard -> L7 fail-closed routing (faults override) -> L5 policy -> L8 audit; DENY/QUARANTINE/HUMAN_REVIEW/UNSUPPORTED never collapse to ALLOW.",
+   "layers": [
+    {
+     "authority": "gate",
+     "layer": 1,
+     "name": "structural",
+     "on_fail": "DENY",
+     "reason_prefix": "MP"
+    },
+    {
+     "authority": "gate",
+     "layer": 2,
+     "name": "provenance",
+     "on_fail": "DENY",
+     "reason_prefix": "SC"
+    },
+    {
+     "authority": "gate",
+     "layer": 3,
+     "name": "capability_diff",
+     "on_fail": "DENY",
+     "reason_prefix": "CD"
+    },
+    {
+     "authority": "advisory",
+     "layer": 4,
+     "name": "static_indicators",
+     "on_fail": "never_DECIDES",
+     "reason_prefix": "SI"
+    },
+    {
+     "authority": "gate",
+     "layer": 5,
+     "name": "policy_effect_gate",
+     "on_fail": "DENY_or_HUMAN_REVIEW",
+     "reason_prefix": "PE"
+    },
+    {
+     "authority": "gate_on_output_path",
+     "layer": 6,
+     "name": "output_guard",
+     "on_fail": "DENY_or_QUARANTINE",
+     "reason_prefix": "OD/GOV"
+    },
+    {
+     "authority": "gate",
+     "layer": 7,
+     "name": "routing",
+     "on_fail": "fail_closed",
+     "reason_prefix": "RT"
+    },
+    {
+     "authority": "evidence_only",
+     "layer": 8,
+     "name": "audit",
+     "on_fail": "FAIL_RUN",
+     "reason_prefix": "AUD"
+    }
+   ],
+   "trust_boundaries": [
+    "Tool manifests arrive from publishers/registries: untrusted until provenance-verified.",
+    "Tool outputs are untrusted external content regardless of manifest validity.",
+    "Detector outputs are evidence, never authority.",
+    "Only gateway policy over registered state authorizes effects."
+   ]
+  },
+  "feature_catalog": {
+   "advisory_vs_authoritative": "Only registry/policy/digest/capability layers decide; static indicators may add reason codes and escalate to quarantine/review, never to ALLOW or sole DENY of benign cases.",
+   "signals": [
+    "manifest structural validity (required fields, types, unknown fields)",
+    "identity charset hygiene (zero-width/bidi rejection, NFC)",
+    "content digest format and dependency digest coverage",
+    "publisher registration and drift",
+    "SBOM declaration for external/dangerous effects",
+    "version and schema skew vs registration",
+    "requested-vs-registered capability diff",
+    "effect-class power ordering",
+    "advisory static indicators (entropy, keywords, obfuscation markers)",
+    "output directive/expansion/override/secret/exfiltration patterns",
+    "governance claims (approval, knowledge, budget, reconciliation, acceptance)",
+    "detector health (timeout, crash, malformed, disagreement)"
+   ]
+  },
+  "independent_audit": {
+   "auditor": "verifier-B (Run B), process-separated from Run A producer",
+   "comparison": {
+    "commit_sha": null,
+    "identical": true,
+    "tree_sha": null,
+    "violations": []
+   },
+   "limitations": [
+    "Same-host process separation, not an external human auditor.",
+    "The auditor shares the codebase with the producer (independent process and identity, not an independent implementation)."
+   ],
+   "method": "Same frozen inputs, distinct PID/executor/nonce/output root; runner recomputes metrics from raw records and rejects any divergence; oracle expectations are excluded from decisions."
+  },
+  "mathematical_model": {
+   "confusion_semantics": "Raw matrix counts oracle-sanctioned benign routings as FP for visibility; the hard-gate benign FPR excludes sanctioned routing.",
+   "metrics": "precision = TP/(TP+FP), recall = TP/(TP+FN), FPR = FP/(FP+TN), FNR = FN/(FN+TP); Wilson score interval with z=1.959963984540054 for binomial proportions.",
+   "observed": "- confusion matrix (truth x treatment, overall): TP=34, FP=3, TN=19, FN=0 on 56 cases\n- precision=0.9189 (Wilson 95% [0.7870, 0.9720])\n- recall=1.0000 (Wilson 95% [0.8985, 1.0000])\n- benign hard FPR=0.0000 (raw benign blocked=3, all oracle-sanctioned routing)\n- abstentions: quarantine=8, human_review=1, unsupported=1\n- critical escapes=0; authority expansions: acceptance=0, approval=0, budget=0, capability=0, knowledge=0, policy=0\n- malformed=3, unknown=1, timeout=1, scanner_disagreement=1",
+   "reward_model": "Binary treatment per case: blocked = decision in {DENY, QUARANTINE, HUMAN_REVIEW, UNSUPPORTED}."
+  },
+  "mental_model": {
+   "adversary_view": "Poisoning must defeat digest/provenance checks, stay inside registered capabilities, avoid output-injection signatures, and keep detectors healthy - simultaneously.",
+   "auditor_view": "Every decision carries reason codes, layer trace, and empty authority_mutations; oracle outcomes live only in host-owned fixtures.",
+   "operator_view": "A tool is admitted only when provenance, capability, and policy layers all agree; anything uncertain on an effect-capable path is quarantined or reviewed."
+  },
+  "ontology": {
+   "decision_values": [
+    "ALLOW",
+    "DENY",
+    "QUARANTINE",
+    "HUMAN_REVIEW",
+    "UNSUPPORTED"
+   ],
+   "effect_classes": [
+    "read",
+    "write_local",
+    "write_external",
+    "dangerous"
+   ],
+   "entities": [
+    "ToolManifest",
+    "ToolOutput",
+    "RegisteredContext",
+    "Decision",
+    "ReasonCode",
+    "LayerTrace",
+    "AuditRecord",
+    "DetectorFault",
+    "FrozenCase",
+    "Corpus",
+    "Rubric"
+   ],
+   "relations": {
+    "AuditRecord": "immutable evidence of one decision",
+    "Decision": "produced by pipeline, graded only against oracle",
+    "FrozenCase": "binds input + registered context + oracle expectation"
+   },
+   "severity_scale": [
+    "none",
+    "low",
+    "medium",
+    "high",
+    "critical"
+   ]
+  },
+  "platform_plan": {
+   "adoption_steps": [
+    "keep advisory scanners out of the authorization path",
+    "enforce capability diff and effect-power ordering at registration",
+    "route uncertain effect-capable cases to quarantine/human review",
+    "treat tool output as data; deny effect paths on taint findings",
+    "emit immutable audit records with reason codes"
+   ],
+   "gateway_binding": "Layer semantics mirror agentos.gateway ToolContract: effect classes read/write_local/write_external/dangerous, capability checks, exact-action approvals consumed atomically once.",
+   "phase_b": "Local canonicalization on the trusted host (research-plan, tracked packs, wiki check, canonical evidence pack) before any status change."
+  },
+  "progress": {
+   "phase": "A (cloud branch work) COMPLETE",
+   "probes_all_pass": true,
+   "runs": {
+    "case_count": 56,
+    "comparison": "PASS",
+    "process_separation_verified": true
+   },
+   "status": "READY_FOR_CANONICALIZATION",
+   "todo_phase_b": [
+    "canonical DB revision/IDs/chain",
+    "tracked packs",
+    "wiki-check",
+    "final verdict and closure"
+   ]
+  },
+  "research_plan": {
+   "claims_classes": [
+    "threat_fact",
+    "detection_measurement",
+    "risk",
+    "abstention",
+    "control_decision"
+   ],
+   "design": "Deterministic, frozen-corpus adversarial evaluation of an 8-layer admission/output contract; two process-separated runs on one clean commit; host-owned oracle; fail-closed hard gates.",
+   "question": "Which layered controls detect malicious or misleading tool manifests and outputs, and when must the gateway quarantine or require human approval instead of trusting a scanner?",
+   "scope_boundary": "Evidence for G-07 / EP-06 only; no universal-detection or production-rollout claim."
+  },
+  "source_registry": {
+   "note": "Tests and evaluation are offline; snapshots are byte-frozen.",
+   "schema": "agentos.s1-010.source-registry/v1",
+   "sources": [
+    {
+     "canonical_uri": "https://github.com/mitre-atlas/atlas-data (dist/ATLAS.yaml)",
+     "id": "src_mitre_atlas_taxonomy",
+     "role": "threat_taxonomy",
+     "snapshots": [
+      {
+       "byte_length": 452399,
+       "path": "research/tickets/stage-1/S1-010/snapshots/mitre-atlas-ATLAS.yaml",
+       "retrieved_at": "2026-09-03T17:47:31Z",
+       "sha256": "c9c23971d0db07e2782423d795a20e78d5c2c9bcdc78fc67e24530657daaec41"
+      }
+     ],
+     "version": "MITRE ATLAS adversarial-ML taxonomy, atlas-data commit 41d4f5ca4112f0e492ffaa3ebff07dc80a75afa5"
+    },
+    {
+     "canonical_uri": "https://cwe.mitre.org/data/definitions/74.html",
+     "id": "src_cwe_74_injection",
+     "role": "threat_taxonomy",
+     "snapshots": [
+      {
+       "byte_length": 238655,
+       "path": "research/tickets/stage-1/S1-010/snapshots/cwe-74-injection.html",
+       "retrieved_at": "2026-09-03T17:47:34Z",
+       "sha256": "6ad898e43f700e82665f093b1780f63601b209446a66b322888246ca38e13e05"
+      }
+     ],
+     "version": "CWE 4.15 (weakness taxonomy entry CWE-74)"
+    },
+    {
+     "canonical_uri": "https://slsa.dev/spec/v1.1/",
+     "id": "src_slsa_v1_1",
+     "role": "supply_chain_guidance",
+     "snapshots": [
+      {
+       "byte_length": 20092,
+       "path": "research/tickets/stage-1/S1-010/snapshots/slsa-v1.1-spec.html",
+       "retrieved_at": "2026-09-03T17:47:35Z",
+       "sha256": "3edcdc7b84f92803b764c1504f6d37dc3c4f382c6ea383eb1f7cf49337f39519"
+      }
+     ],
+     "version": "SLSA v1.1"
+    },
+    {
+     "canonical_uri": "https://csrc.nist.gov/pubs/sp/800/218/final",
+     "id": "src_nist_ssdf_sp800_218",
+     "role": "supply_chain_guidance",
+     "snapshots": [
+      {
+       "byte_length": 48313,
+       "path": "research/tickets/stage-1/S1-010/snapshots/nist-sp-800-218-landing.html",
+       "retrieved_at": "2026-09-03T17:47:36Z",
+       "sha256": "0975ef3721e3efec8ebbc225ef3abab71ffccbcca325beca864e955b13df175d"
+      }
+     ],
+     "version": "NIST SP 800-218 (SSDF v1.1, 2022-02)"
+    },
+    {
+     "canonical_uri": "repo://AgentOS/src/agentos/gateway.py",
+     "id": "src_agentos_gateway_spec",
+     "role": "gateway_architecture",
+     "snapshots": [
+      {
+       "byte_length": 28367,
+       "path": "research/tickets/stage-1/S1-010/snapshots/agentos-gateway.py",
+       "retrieved_at": "2026-09-03T17:47:36Z",
+       "sha256": "226496f4711b9bff287c4617bd1de2140106fc4a2b465004e7b7bbff0e6fb313"
+      },
+      {
+       "byte_length": 26583,
+       "path": "research/tickets/stage-1/S1-010/snapshots/agentos-spec.md",
+       "retrieved_at": "2026-09-03T17:47:36Z",
+       "sha256": "e0b091bf38b7f27e22a4d37eb1b3d000b5154cc3ff64736bd4aea99f0ee4ffbc"
+      }
+     ],
+     "version": "branch codex/s1-010-tool-poisoning @ a0116167e0351beb1eef804d83845890be7253c9"
+    },
+    {
+     "canonical_uri": "https://www.itl.nist.gov/div898/handbook/prc/section2/prc241.htm",
+     "id": "src_wilson_ci_nist_handbook",
+     "role": "statistical_method",
+     "snapshots": [
+      {
+       "byte_length": 16665,
+       "path": "research/tickets/stage-1/S1-010/snapshots/nist-handbook-prc241.html",
+       "retrieved_at": "2026-09-03T17:47:37Z",
+       "sha256": "0e1edd34a81c7d28f53870a29ad4e21b40ed3a25b606d2f95575b1c369098e61"
+      }
+     ],
+     "version": "NIST/SEMATECH e-Handbook of Statistical Methods, §7.2.2.1"
+    }
+   ]
+  },
+  "synthesis_and_gaps": {
+   "gaps": [
+    "Deterministic pattern layers cannot cover unseen obfuscation families; routing-level defense (quarantine/human review) carries that residual risk.",
+    "No statistical/learned detector was evaluated; disagreement handling is exercised only via declared deterministic faults.",
+    "The 56-case corpus measures declared classes only."
+   ],
+   "probes": {
+    "A": {
+     "all_pass": true,
+     "cases": [
+      "s1-010-bc-003",
+      "s1-010-bc-004"
+     ]
+    },
+    "B": {
+     "all_pass": true,
+     "cases": [
+      "s1-010-mo-001"
+     ]
+    },
+    "C": {
+     "all_pass": true,
+     "cases": [
+      "s1-010-mm-010",
+      "s1-010-mm-011",
+      "s1-010-mm-012"
+     ]
+    },
+    "D": {
+     "all_pass": true,
+     "cases": [
+      "s1-010-mo-010",
+      "s1-010-mo-011",
+      "s1-010-mo-012",
+      "s1-010-mo-013",
+      "s1-010-mo-014"
+     ]
+    },
+    "E": {
+     "all_pass": true,
+     "cases": [
+      "s1-010-mo-005",
+      "s1-010-mo-006",
+      "s1-010-mo-007",
+      "s1-010-mo-008",
+      "s1-010-mo-009"
+     ]
+    },
+    "F": {
+     "all_pass": true,
+     "cases": [
+      "s1-010-nm-001",
+      "s1-010-nm-002",
+      "s1-010-nm-003",
+      "s1-010-nm-004"
+     ]
+    }
+   },
+   "synthesis": "Layered controls detected every malicious class in the frozen corpus with zero critical escapes and zero authority expansions; obfuscated content routes to quarantine; detector faults fail closed; benign unusual cases are not silently denied by advisory heuristics."
+  }
+ },
+ "bundle_version": "1.0",
+ "case_count": 56,
+ "contract_version": "1.0.0",
+ "corpus_version": "1.0.0",
+ "evaluator_hashes": {
+  "contract_sha256": "356c018e35580ae03e9dcf2eb3754af84837f9a9cbe5805fdf4d9a68a1ae7b17",
+  "corpus_sha256": "704e5a79d4d97b7d5b7ae38fa57a03c636fb94c8dbabcaea46c83463652f8941",
+  "evaluator_sha256": "df99140fd3b71bdff9f948bf807e573473ea96702a4f81feffd4c403eef1771a",
+  "rubric_sha256": "69039684dbe77a5fdc123b9c08ddeb0b755eaadb494219182c11baf7d1213002",
+  "runner_sha256": "df1dd02179e86c4891bdc0c8b42c2243eed783d4917be1888c9857582a8bc80f"
+ },
+ "frozen_at": "2026-09-03T00:00:00Z",
+ "note": "Cloud Phase A only; canonical local Phase B is required before any closure. Branch remains IN_REVIEW.",
+ "rule_count": 23,
+ "schema": "agentos.s1-010.bundle/v1",
+ "sources": [
+  "src_mitre_atlas_taxonomy",
+  "src_cwe_74_injection",
+  "src_slsa_v1_1",
+  "src_nist_ssdf_sp800_218",
+  "src_agentos_gateway_spec",
+  "src_wilson_ci_nist_handbook"
+ ],
+ "ticket": "S1-010",
+ "verdict": "PASS"
+}

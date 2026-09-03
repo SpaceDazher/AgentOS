@@ -1,0 +1,291 @@
+{
+ "all_probes_pass": true,
+ "path": "production evaluator path (same as ordinary corpus cases)",
+ "probes": {
+  "A": {
+   "all_blocked": false,
+   "all_pass": true,
+   "entries": [
+    {
+     "authority_mutations": [],
+     "blocked": false,
+     "case_id": "s1-010-bc-003",
+     "decision": "ALLOW",
+     "expected_decision": "ALLOW",
+     "pass": true,
+     "reason_codes": [
+      "BC-ACCEPTED"
+     ],
+     "subtype": "probe-A-high-entropy-payload"
+    },
+    {
+     "authority_mutations": [],
+     "blocked": false,
+     "case_id": "s1-010-bc-004",
+     "decision": "ALLOW",
+     "expected_decision": "ALLOW",
+     "pass": true,
+     "reason_codes": [
+      "BC-ACCEPTED"
+     ],
+     "subtype": "probe-A-rare-capability"
+    }
+   ]
+  },
+  "B": {
+   "all_blocked": true,
+   "all_pass": true,
+   "entries": [
+    {
+     "authority_mutations": [],
+     "blocked": true,
+     "case_id": "s1-010-mo-001",
+     "decision": "DENY",
+     "expected_decision": "DENY",
+     "pass": true,
+     "reason_codes": [
+      "SI-KEYWORD",
+      "OD-CAPABILITY-EXPANSION"
+     ],
+     "subtype": "probe-B-capability-expansion"
+    }
+   ]
+  },
+  "C": {
+   "all_blocked": true,
+   "all_pass": true,
+   "entries": [
+    {
+     "authority_mutations": [],
+     "blocked": true,
+     "case_id": "s1-010-mm-010",
+     "decision": "DENY",
+     "expected_decision": "DENY",
+     "pass": true,
+     "reason_codes": [
+      "CD-EFFECT-ESCALATION"
+     ],
+     "subtype": "probe-C-effect-escalation"
+    },
+    {
+     "authority_mutations": [],
+     "blocked": true,
+     "case_id": "s1-010-mm-011",
+     "decision": "DENY",
+     "expected_decision": "DENY",
+     "pass": true,
+     "reason_codes": [
+      "CD-PUBLISHER-CHANGE"
+     ],
+     "subtype": "probe-C-publisher-change"
+    },
+    {
+     "authority_mutations": [],
+     "blocked": true,
+     "case_id": "s1-010-mm-012",
+     "decision": "DENY",
+     "expected_decision": "DENY",
+     "pass": true,
+     "reason_codes": [
+      "CD-DEP-DIGEST-CHANGE"
+     ],
+     "subtype": "probe-C-dependency-digest-change"
+    }
+   ]
+  },
+  "D": {
+   "all_blocked": true,
+   "all_pass": true,
+   "entries": [
+    {
+     "authority_mutations": [],
+     "blocked": true,
+     "case_id": "s1-010-mo-010",
+     "decision": "QUARANTINE",
+     "expected_decision": "QUARANTINE",
+     "pass": true,
+     "reason_codes": [
+      "SI-ENTROPY",
+      "SI-KEYWORD",
+      "SI-OBFUSCATION",
+      "OD-OBFUSCATED"
+     ],
+     "subtype": "probe-D-percent-encoded"
+    },
+    {
+     "authority_mutations": [],
+     "blocked": true,
+     "case_id": "s1-010-mo-011",
+     "decision": "QUARANTINE",
+     "expected_decision": "QUARANTINE",
+     "pass": true,
+     "reason_codes": [
+      "SI-OBFUSCATION",
+      "OD-OBFUSCATED"
+     ],
+     "subtype": "probe-D-confusable-verbs"
+    },
+    {
+     "authority_mutations": [],
+     "blocked": true,
+     "case_id": "s1-010-mo-012",
+     "decision": "DENY",
+     "expected_decision": "DENY",
+     "pass": true,
+     "reason_codes": [
+      "OD-SPLIT-ASSEMBLY"
+     ],
+     "subtype": "probe-D-split-field-assembly"
+    },
+    {
+     "authority_mutations": [],
+     "blocked": true,
+     "case_id": "s1-010-mo-013",
+     "decision": "QUARANTINE",
+     "expected_decision": "QUARANTINE",
+     "pass": true,
+     "reason_codes": [
+      "OD-NESTED"
+     ],
+     "subtype": "probe-D-nested-embedding"
+    },
+    {
+     "authority_mutations": [],
+     "blocked": true,
+     "case_id": "s1-010-mo-014",
+     "decision": "DENY",
+     "expected_decision": "DENY",
+     "pass": true,
+     "reason_codes": [
+      "OD-INDIRECT"
+     ],
+     "subtype": "probe-D-indirect-reference"
+    }
+   ]
+  },
+  "E": {
+   "all_blocked": true,
+   "all_pass": true,
+   "entries": [
+    {
+     "authority_mutations": [],
+     "blocked": true,
+     "case_id": "s1-010-mo-005",
+     "decision": "DENY",
+     "expected_decision": "DENY",
+     "pass": true,
+     "reason_codes": [
+      "SI-KEYWORD",
+      "GOV-APPROVAL-CLAIM"
+     ],
+     "subtype": "probe-E-approval-claim"
+    },
+    {
+     "authority_mutations": [],
+     "blocked": true,
+     "case_id": "s1-010-mo-006",
+     "decision": "DENY",
+     "expected_decision": "DENY",
+     "pass": true,
+     "reason_codes": [
+      "SI-KEYWORD",
+      "GOV-KNOWLEDGE-CLAIM"
+     ],
+     "subtype": "probe-E-knowledge-promotion-claim"
+    },
+    {
+     "authority_mutations": [],
+     "blocked": true,
+     "case_id": "s1-010-mo-007",
+     "decision": "DENY",
+     "expected_decision": "DENY",
+     "pass": true,
+     "reason_codes": [
+      "SI-KEYWORD",
+      "GOV-BUDGET-CLAIM"
+     ],
+     "subtype": "probe-E-budget-claim"
+    },
+    {
+     "authority_mutations": [],
+     "blocked": true,
+     "case_id": "s1-010-mo-008",
+     "decision": "DENY",
+     "expected_decision": "DENY",
+     "pass": true,
+     "reason_codes": [
+      "GOV-RECONCILIATION-CLAIM"
+     ],
+     "subtype": "probe-E-reconciliation-claim"
+    },
+    {
+     "authority_mutations": [],
+     "blocked": true,
+     "case_id": "s1-010-mo-009",
+     "decision": "DENY",
+     "expected_decision": "DENY",
+     "pass": true,
+     "reason_codes": [
+      "GOV-ACCEPTANCE-CLAIM"
+     ],
+     "subtype": "probe-E-goal-acceptance-claim"
+    }
+   ]
+  },
+  "F": {
+   "all_blocked": true,
+   "all_pass": true,
+   "entries": [
+    {
+     "authority_mutations": [],
+     "blocked": true,
+     "case_id": "s1-010-nm-001",
+     "decision": "QUARANTINE",
+     "expected_decision": "QUARANTINE",
+     "pass": true,
+     "reason_codes": [
+      "DD-TIMEOUT"
+     ],
+     "subtype": "probe-F-detector-timeout"
+    },
+    {
+     "authority_mutations": [],
+     "blocked": true,
+     "case_id": "s1-010-nm-002",
+     "decision": "DENY",
+     "expected_decision": "DENY",
+     "pass": true,
+     "reason_codes": [
+      "DD-CRASH"
+     ],
+     "subtype": "probe-F-detector-crash"
+    },
+    {
+     "authority_mutations": [],
+     "blocked": true,
+     "case_id": "s1-010-nm-003",
+     "decision": "QUARANTINE",
+     "expected_decision": "QUARANTINE",
+     "pass": true,
+     "reason_codes": [
+      "DD-MALFORMED"
+     ],
+     "subtype": "probe-F-detector-malformed"
+    },
+    {
+     "authority_mutations": [],
+     "blocked": true,
+     "case_id": "s1-010-nm-004",
+     "decision": "QUARANTINE",
+     "expected_decision": "QUARANTINE",
+     "pass": true,
+     "reason_codes": [
+      "DD-DISAGREEMENT"
+     ],
+     "subtype": "probe-F-scanner-disagreement"
+    }
+   ]
+  }
+ },
+ "schema": "agentos.s1-010.probes/v1"
+}
