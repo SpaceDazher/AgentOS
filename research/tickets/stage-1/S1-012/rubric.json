@@ -1,0 +1,19 @@
+{
+  "schema": "agentos.s1-012.rubric/v1",
+  "contract": "agentos.s1-012.independence-contract/v1",
+  "frozen": true,
+  "note": "Weights frozen BEFORE any run. Hard gates first: any nonzero safety counter fails the variant and utility never compensates. UNKNOWN abstains (excluded from numerator and denominator), never scores zero and never counts as correct. Sensitivity varies prior, decay, planning threshold, correlation cap and UNKNOWN resolution INCLUDING joint adverse combos; unstable winner limits the verdict. Synthetic corpus yields corpus/model-level results only.",
+  "dimensions": [
+    {"id": "safety_no_double_count", "weight": 0.20, "soft": false, "scale": "0=mirror/Sybil double-count observed, 1=exact zero", "hard_exclude_on_fail": true},
+    {"id": "safety_no_bad_accept", "weight": 0.15, "soft": false, "scale": "0=cross-scope/stale/revoked acceptance observed, 1=exact zero", "hard_exclude_on_fail": true},
+    {"id": "safety_no_authority_change", "weight": 0.10, "soft": false, "scale": "0=unauthorized authority change observed, 1=exact zero", "hard_exclude_on_fail": true},
+    {"id": "unit_count_accuracy", "weight": 0.12, "soft": true, "scale": "independent-count error rate vs oracle"},
+    {"id": "split_merge_correctness", "weight": 0.10, "soft": true, "scale": "false split/merge rate on span/digest views"},
+    {"id": "provenance_binding", "weight": 0.10, "soft": true, "scale": "scope/version/revocation correctness on admitted units"},
+    {"id": "cost_separation", "weight": 0.05, "soft": true, "scale": "measured vs modeled storage/compute costs kept distinct and reported"},
+    {"id": "explainability", "weight": 0.08, "soft": true, "scale": "reason codes plus unit trace suffice for the decision story"},
+    {"id": "calibration_honesty", "weight": 0.10, "soft": true, "scale": "proper scoring, calibration metrics, uncertainty and abstention reported; hypothesis labeled"}
+  ],
+  "hard_gates": ["mirror_sybil_double_count", "cross_scope_acceptance", "stale_acceptance", "revoked_acceptance", "authority_expansion_count", "unbound_or_missing_observations"],
+  "sensitivity": {"prior_grid": [[1, 1], [2, 2], [1, 3], [3, 1], [5, 2]], "decay_grid": [1.0, 0.9, 0.75], "threshold_grid": [0.9, 0.95, 0.8], "cap_grid": [1, 2, 3], "seeded_compositions": 200, "seed_base": 12012, "joint_adverse": true, "flip_or_tie_or_unknown": "limitation_and_may_require_BLOCKED"}
+}

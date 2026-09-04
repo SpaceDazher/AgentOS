@@ -1,0 +1,39 @@
+{
+  "schema": "agentos.s1-012.calibration-plan/v1",
+  "contract": "agentos.s1-012.independence-contract/v1",
+  "beta": {
+    "prior": {"a0": 1, "b0": 1, "note": "Uniform prior; sensitivity grid varies it (see prior_grid)."},
+    "observation_unit": "One admitted independent unit contributes one Bernoulli trial with the oracle truth label as outcome. Correlated copies NEVER become independent trials.",
+    "positive_outcome": "Admitted unit whose oracle label is supporting.",
+    "negative_outcome": "Admitted unit whose oracle label is refuting, or any rejected unit presented as support.",
+    "weighting": "Unweighted trials. No publisher weights in the calibration core.",
+    "decay": {"clock": "per-batch multiplicative decay on (a,b) counts", "grid": [1.0, 0.9, 0.75], "note": "1.0 means no decay."},
+    "prior_grid": [[1, 1], [2, 2], [1, 3], [3, 1], [5, 2]],
+    "planning_threshold": {"rule": "P[theta > 0.9] >= 0.95", "status": "HYPOTHESIS", "note": "Remains a hypothesis without suitable data; reported as assumption unless measured."},
+    "tail_definition": "Regularized incomplete beta I_x(a,b) with x=0.9; posterior Beta(a0+s, b0+f).",
+    "numeric_guards": "Finite floats only; NaN/Infinity/overflow rejected; zero trials abstains (no posterior); invalid params (non-integer or negative counts, x outside [0,1]) rejected.",
+    "reference_values": {
+      "note": "Independently computed by finite binomial summation P[theta>x] = 1 - sum_{j=a}^{a+b-1} C(a+b-1,j) x^j (1-x)^{a+b-1-j} (exact for integer a,b), NOT by the runner's continued-fraction implementation. Values verified 2026-09-04 before freeze.",
+      "cases": [
+        {"a": 2, "b": 2, "x": 0.9, "tail": 0.028},
+        {"a": 5, "b": 2, "x": 0.9, "tail": 0.1143},
+        {"a": 10, "b": 2, "x": 0.9, "tail": 0.3026},
+        {"a": 20, "b": 2, "x": 0.9, "tail": 0.6353},
+        {"a": 1, "b": 1, "x": 0.9, "tail": 0.1}
+      ]
+    },
+    "metamorphic": ["monotone-in-successes", "monotone-in-failures-inverse", "symmetry-a-b-at-x-0.5", "prior-washout-with-data", "decay-reduces-effective-n"]
+  },
+  "eigentrust": {
+    "normalization": "Row-stochastic trust matrix (rows sum to 1; zero rows fall back to uniform over pre-trusted set, or abstain when anchorless).",
+    "anchor": "Fixed pre-trusted set declared per run; trust vector initialized on the anchor distribution.",
+    "damping": 0.85,
+    "convergence": "Power iteration to L1 delta < 1e-9 or 1000 iterations, whichever first; non-convergence abstains.",
+    "disconnected_anchorless": "No anchor and no path from any anchor means no trust: output is abstain/flagged-recommendation, never substituted cluster self-trust.",
+    "enforcement": "EigenTrust output is recommendation-only (see reputation_boundary)."
+  },
+  "correlation_cap": {"cap_independent_groups": 2, "note": "Frozen cap for the calibration core; sensitivity varies it (see rubric)."},
+  "reputation_baseline": {"name": "reputation-only", "role": "negative control", "description": "Ranks by raw score with no independence, provenance or policy checks. Expected to fail hard gates; included to prove the gates bite."},
+  "granularities": ["document", "span", "digest"],
+  "result_level": "Corpus/model-level result only. No empirically validated production threshold is claimed."
+}

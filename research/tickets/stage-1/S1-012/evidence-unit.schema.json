@@ -1,0 +1,98 @@
+{
+  "$id": "agentos.s1-012.evidence-unit-schema/v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "S1-012 evidence unit",
+  "description": "One independently countable evidence item. Missing/null/malformed mandatory bindings fail closed: they are never replaced by empty string, zero, ACTIVE, or a fresh independence group id.",
+  "type": "object",
+  "required": ["unit_id", "granularity", "claim", "source", "provenance", "digest", "status", "decision"],
+  "properties": {
+    "unit_id": {"type": "string", "minLength": 1, "description": "Stable unit identifier"},
+    "granularity": {"enum": ["document", "span", "digest"]},
+    "claim": {
+      "type": "object",
+      "required": ["claim_id", "claim_version", "scope"],
+      "properties": {
+        "claim_id": {"type": "string", "minLength": 1},
+        "claim_version": {"type": "integer", "minimum": 1},
+        "scope": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "source": {
+      "type": "object",
+      "required": ["source_id", "canonical_uri", "publisher"],
+      "properties": {
+        "source_id": {"type": "string", "minLength": 1},
+        "canonical_uri": {"type": "string", "minLength": 1},
+        "source_version": {"type": ["string", "null"], "default": null},
+        "publisher": {"type": "string", "minLength": 1, "description": "Publisher identity; a self-declared label alone proves nothing about independence"}
+      },
+      "additionalProperties": false
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["lineage", "independence_group", "group_basis", "group_allowed"],
+      "properties": {
+        "lineage": {"type": "string", "minLength": 1, "description": "Derivation lineage; shared upstream means shared lineage"},
+        "independence_group": {"type": "string", "minLength": 1},
+        "group_basis": {"type": "string", "minLength": 1, "description": "Grounds for establishing the group: distinct primary observation, separate publisher with disjoint upstream, or UNKNOWN"},
+        "group_allowed": {"type": "boolean", "description": "Whether the group may contribute independent weight"}
+      },
+      "additionalProperties": false
+    },
+    "digest": {
+      "type": "object",
+      "required": ["algorithm", "value"],
+      "properties": {
+        "algorithm": {"enum": ["sha256"]},
+        "value": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "span": {
+          "type": ["object", "null"], "default": null,
+          "description": "Required when granularity is span",
+          "required": ["start", "end", "encoding", "reference_document_digest"],
+          "properties": {
+            "start": {"type": "integer", "minimum": 0},
+            "end": {"type": "integer", "minimum": 1},
+            "encoding": {"enum": ["utf-8"]},
+            "reference_document_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+          },
+          "additionalProperties": false
+        },
+        "source_bytes_note": {"type": ["string", "null"], "default": null, "description": "Required when granularity is digest: provenance of the hashed bytes"}
+      },
+      "additionalProperties": false
+    },
+    "dedup": {
+      "type": ["object", "null"], "default": null,
+      "properties": {
+        "rule_source": {"type": "string"},
+        "rule_version": {"type": "string"},
+        "correlation_group": {"type": "string"},
+        "collapse_reason": {"type": "string", "description": "mirror, reprint, shared-upstream, split-span, overlap-span, reformat, rename"}
+      },
+      "additionalProperties": false
+    },
+    "status": {
+      "type": "object",
+      "required": ["temporal", "source_status"],
+      "properties": {
+        "temporal": {"enum": ["current", "stale"]},
+        "source_status": {"enum": ["ACTIVE", "REVOKED"]},
+        "revoked_by": {"type": ["string", "null"], "default": null},
+        "superseded_by": {"type": ["string", "null"], "default": null}
+      },
+      "additionalProperties": false
+    },
+    "decision": {
+      "type": "object",
+      "required": ["outcome", "reason_code"],
+      "properties": {
+        "outcome": {"enum": ["admit", "reject", "abstain"]},
+        "reason_code": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "compatibility": "v1 is the first version. New semantics require a new version id; frozen v1 bytes are never edited."
+}
