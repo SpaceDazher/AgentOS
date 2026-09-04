@@ -31,8 +31,15 @@ TICKET_ROOT = Path(__file__).resolve().parent
 REPO_ROOT = TICKET_ROOT.parents[3]
 GATE_PATH = TICKET_ROOT / "dependency-gate.json"
 
-S1_001_ROOT = Path("research/tickets/stage-1/S1-001")
-S1_009_ROOT = Path("research/tickets/stage-1/S1-009")
+# Round 3 (finding #7): dependency roots are repo-relative POSIX STRING
+# literals, never native Path objects.  Interpolating a Windows Path into an
+# f-string yields backslash separators (research\tickets\...), which Git
+# tree paths never contain, so tracked_file()/archive membership checks
+# failed on Windows even for genuinely tracked records.  Every Git path
+# boundary below is a POSIX string; Path is used only for local-filesystem
+# globbing and is converted back with .as_posix().
+S1_001_ROOT = "research/tickets/stage-1/S1-001"
+S1_009_ROOT = "research/tickets/stage-1/S1-009"
 
 SM_SEMANTICS_MARKER = "SM6/SM8/SM11 remain unsupported"
 PROVIDER_NEUTRAL_MARKER = "provider-neutral"
@@ -200,6 +207,10 @@ def verify_pack_file(rel_path: str, archive: set[str],
 
 def check_record(rel_path: str, archive: set[str], label: str) -> dict:
     assert_repo_relative(rel_path)
+    if "\\" in rel_path:
+        raise GateError(
+            f"git path must be POSIX-relative, got native separator: "
+            f"{rel_path!r}")
     if rel_path not in archive:
         raise GateError(f"{label} record missing from git archive HEAD: {rel_path}")
     record = json.loads(tracked_file(rel_path).decode("utf-8"))
@@ -254,9 +265,9 @@ def check_s1_009_semantics(archive: set[str]) -> dict:
         raise GateError(f"S1-009 semantics check failed: {missing}")
     packs = []
     for kind in ("ticket", "canonical"):
-        pack_dir = S1_009_ROOT / "tracked-packs" / kind
-        for entry in sorted((REPO_ROOT / pack_dir).glob("*.json")):
-            rel = str(entry.relative_to(REPO_ROOT)).replace("\\", "/")
+        pack_dir = REPO_ROOT / Path(S1_009_ROOT) / "tracked-packs" / kind
+        for entry in sorted(pack_dir.glob("*.json")):
+            rel = entry.relative_to(REPO_ROOT).as_posix()
             packs.append(verify_pack_file(rel, archive))
     return {"record": record_rel, "semantics": checks, "packs": packs}
 
