@@ -43,6 +43,22 @@ REQUIRED_MANIFEST_FIELDS = ("name", "version", "publisher", "capabilities",
 MANIFEST_FIELD_TYPES = {"name": str, "version": str, "publisher": str,
                         "capabilities": list, "effect_class": str,
                         "content_digest": str}
+# Round 3 (post second independent review): every DECLARED optional manifest
+# field is typed too.  An untyped optional field (e.g. description as an
+# object) previously slipped past the L6 output guard because the guard only
+# scanned str descriptions; malformed input must instead fail closed.
+OPTIONAL_MANIFEST_FIELD_TYPES = {"description": str, "declared_sbom": bool,
+                                 "dependencies": list}
+# L8 audit contract: every decision carries a per-layer trace.  Allowed
+# layer-to-layer transitions mirror the frozen pipeline order (L1 revocation
+# and L5 policy epilogue may follow L1/L6/L7 respectively); same-layer
+# repeats (flag -> pass, route -> pass) are legal.  Derived from the frozen
+# contract's decision_flow; violations make the record ungradable.
+TRACE_TRANSITIONS = {(0, 1), (1, 2), (1, 5), (2, 3), (3, 4), (4, 6),
+                     (6, 5), (6, 7), (7, 5), (5, 7)}
+TRACE_STATUSES = ("ok", "fail", "pass", "flag", "advisory", "route",
+                  "fail_closed", "skipped", "malformed", "crash", "timeout")
+TRACE_FIELDS = ("layer", "name", "status", "detail")
 INVISIBLE_RE = re.compile("[\u200b-\u200f\u2060-\u206f\u202a-\u202e]")
 DIGEST_RE = re.compile(r"^[0-9a-f]{64}$")
 GOV_SENSITIVE_FIELD_RE = re.compile(
@@ -246,19 +262,29 @@ def decide(case: dict, contract: dict) -> dict:
     def finish(decision: str) -> dict:
         if decision == "ALLOW":
             reasons.append("BC-ACCEPTED")
+        # Malformed input must still produce a complete, crash-free audit
+        # record (round 3): digests are computed defensively for non-object
+        # inputs instead of raising AttributeError inside the deny path.
+        raw_input = case.get("input")
+        input_for_digest = raw_input if isinstance(raw_input, dict) else {}
+        raw_output = input_for_digest.get("tool_output")
+        output_for_digest = raw_output if isinstance(raw_output, dict) else {}
         return {
             "case_id": case["id"],
             "decision": decision,
             "reason_codes": list(dict.fromkeys(reasons)),
             "layer_trace": trace,
             "authority_mutations": [],
-            "input_digest": sha256_bytes(canonical(case.get("input", {}))),
-            "output_digest": sha256_bytes(
-                canonical(case.get("input", {}).get("tool_output") or {})),
+            "input_digest": sha256_bytes(canonical(input_for_digest)),
+            "output_digest": sha256_bytes(canonical(output_for_digest)),
         }
 
     inp = case.get("input") or {}
     if not isinstance(inp, dict):
+        # Round 3 (finding #6): malformed input still emits a complete,
+        # crash-free audit record instead of losing the per-case decision.
+        note(0, "input", "fail", "input is not an object")
+        note(1, "structural", "fail", "input is not an object")
         return deny("MP-STRUCT")
     manifest = inp.get("manifest")
     tool_output = inp.get("tool_output")
@@ -357,6 +383,23 @@ def decide(case: dict, contract: dict) -> dict:
             if field in manifest and not isinstance(manifest[field], ftype):
                 note(1, "structural", "fail", f"wrong type for {field}")
                 return deny("MP-STRUCT")
+        for field, ftype in OPTIONAL_MANIFEST_FIELD_TYPES.items():
+            if field in manifest and not isinstance(manifest[field], ftype):
+                note(1, "structural", "fail",
+                     f"wrong type for optional field {field}")
+                return deny("MP-STRUCT")
+        # Dependency entries must at least be objects with a string name
+        # before any layer walks them (a raw string previously crashed L2
+        # with AttributeError).  Digest PRESENCE/format stays a provenance
+        # (L2) decision: a digest-less dependency is semantically
+        # SC-DEP-DIGEST-MISSING, not a structural type fault.
+        for dep in manifest.get("dependencies") or []:
+            if not isinstance(dep, dict) or \
+                    not isinstance(dep.get("name"), str) or \
+                    not isinstance(dep.get("digest", ""), str):
+                note(1, "structural", "fail",
+                     "dependency entries must be objects with string name")
+                return deny("MP-STRUCT")
         schema_version = manifest.get("schema_version")
         if schema_version is not None and \
                 schema_version not in SUPPORTED_SCHEMA_VERSIONS:
@@ -403,6 +446,14 @@ def decide(case: dict, contract: dict) -> dict:
         if publisher not in known_publishers:
             note(2, "provenance", "fail", "publisher not in known_publishers")
             return deny("SC-PUBLISHER-UNKNOWN")
+        # Tool identity binding (round 3): the incoming tool name must be
+        # bound to the registered context, exactly like publisher/version
+        # drift; an unregistered name under a known publisher can no longer
+        # ride an otherwise-clean provenance chain.
+        if manifest.get("name") != ctx.get("tool_name"):
+            note(2, "provenance", "fail",
+                 "manifest name differs from registered tool identity")
+            return deny("CD-IDENTITY-MISMATCH")
         for dep in manifest.get("dependencies") or []:
             if not isinstance(dep, dict) or not DIGEST_RE.match(
                     str(dep.get("digest") or "")):
@@ -447,9 +498,16 @@ def decide(case: dict, contract: dict) -> dict:
             note(3, "capability_diff", "fail",
                  f"unknown effect class {effect!r}")
             return quarantine("NM-UNKNOWN-EFFECT")
+        # Registered effect class is authority state and must belong to the
+        # closed authoritative enum BEFORE any power comparison; an unknown
+        # registered class previously skipped the escalation check silently
+        # and let the manifest effect through L5 (round 3, finding #5).
         registered_effect = ctx.get("registered_effect_class")
-        if registered_effect in EFFECT_POWER and \
-                EFFECT_POWER[effect] > EFFECT_POWER[registered_effect]:
+        if registered_effect not in EFFECT_POWER:
+            note(3, "capability_diff", "fail",
+                 f"unknown registered effect class {registered_effect!r}")
+            return quarantine("NM-UNKNOWN-EFFECT")
+        if EFFECT_POWER[effect] > EFFECT_POWER[registered_effect]:
             note(3, "capability_diff", "fail",
                  f"effect class escalated {registered_effect!r} -> {effect!r}")
             return deny("CD-EFFECT-ESCALATION")
@@ -652,6 +710,60 @@ PRODUCER_CONTROLLED_FIELDS = ("expected_decision", "expected_reason_class",
                               "critical", "uncertain_effect_capable")
 
 
+def validate_layer_trace(trace, decision: str, cid: str) -> None:
+    """Validate the L8 audit trace structure of one decision record.
+
+    The trace must be a non-empty list of well-formed entries (layer/name/
+    status/detail), start at the input layer, follow the frozen pipeline's
+    layer transitions, and terminate consistently with the decision: an
+    ALLOW must end at a passing policy layer after a passing output guard,
+    any other decision must end at a failing/routing entry.  Empty traces
+    previously passed because ``all([])`` is true (round 3, finding #4)."""
+    if not isinstance(trace, list) or not trace:
+        raise ValueError(
+            f"record {cid}: layer_trace must be a non-empty list")
+    for entry in trace:
+        if not isinstance(entry, dict) or \
+                any(field not in entry for field in TRACE_FIELDS):
+            raise ValueError(
+                f"record {cid}: layer_trace entries require fields "
+                f"{TRACE_FIELDS}")
+        layer = entry["layer"]
+        if isinstance(layer, bool) or not isinstance(layer, int) or \
+                not 0 <= layer <= 8:
+            raise ValueError(
+                f"record {cid}: layer_trace layer must be an integer 0..8")
+        if not isinstance(entry["name"], str) or not entry["name"]:
+            raise ValueError(
+                f"record {cid}: layer_trace name must be a non-empty string")
+        if entry["status"] not in TRACE_STATUSES:
+            raise ValueError(
+                f"record {cid}: layer_trace status {entry['status']!r} "
+                f"outside the closed status set")
+    if trace[0]["layer"] != 0 or trace[0]["name"] != "input":
+        raise ValueError(
+            f"record {cid}: layer_trace must begin at the input layer")
+    for current, following in zip(trace, trace[1:]):
+        if current["layer"] != following["layer"] and \
+                (current["layer"], following["layer"]) not in TRACE_TRANSITIONS:
+            raise ValueError(
+                f"record {cid}: illegal layer transition "
+                f"{current['layer']}->{following['layer']}")
+    if decision == "ALLOW":
+        if trace[-1]["layer"] != 5 or trace[-1]["status"] != "pass":
+            raise ValueError(
+                f"record {cid}: ALLOW must terminate at a passing policy "
+                "layer")
+        if not any(entry["layer"] == 6 and entry["status"] == "pass"
+                   for entry in trace):
+            raise ValueError(
+                f"record {cid}: ALLOW requires a passing output-guard layer")
+    elif trace[-1]["status"] not in ("fail", "fail_closed", "route"):
+        raise ValueError(
+            f"record {cid}: non-ALLOW decision must terminate at a "
+            "failing or routing trace entry")
+
+
 def validate_corpus(cases: list, rubric: dict) -> None:
     """Validate the frozen corpus against the rubric's frozen minimums.
 
@@ -684,6 +796,15 @@ def validate_corpus(cases: list, rubric: dict) -> None:
         if not isinstance(c.get("expected_reason_class"), str) or \
                 not c["expected_reason_class"]:
             raise ValueError(f"case {cid}: expected_reason_class required")
+        # The oracle must EXPLICITLY declare which alternate reason classes
+        # (if any) are safe for this case; an absent declaration is a
+        # corpus shape violation, never an implicit wildcard.
+        safe_classes = c.get("safe_reason_classes")
+        if not isinstance(safe_classes, list) or \
+                not all(isinstance(x, str) and x for x in safe_classes):
+            raise ValueError(
+                f"case {cid}: safe_reason_classes must be explicitly "
+                "declared as a list of strings (possibly empty)")
         if not isinstance(c.get("input"), dict):
             raise ValueError(f"case {cid}: input must be an object")
         if not isinstance(c.get("registered_context"), dict):
@@ -737,13 +858,15 @@ def validate_records(records: list, cases: list[dict], rubric: dict) -> None:
         if not isinstance(reasons, list) or \
                 not all(isinstance(x, str) and x for x in reasons):
             raise ValueError(f"record {cid}: reason_codes must be non-empty strings")
+        # A blocked decision claiming the benign-acceptance code is
+        # contradictory evidence and is rejected before grading.
+        if "BC-ACCEPTED" in reasons and decision != "ALLOW":
+            raise ValueError(
+                f"record {cid}: BC-ACCEPTED is only valid on ALLOW")
         if not isinstance(r.get("authority_mutations"), list):
             raise ValueError(
                 f"record {cid}: authority_mutations must be present and a list")
-        trace = r.get("layer_trace")
-        if not isinstance(trace, list) or \
-                not all(isinstance(x, dict) for x in trace):
-            raise ValueError(f"record {cid}: layer_trace must be a list of objects")
+        validate_layer_trace(r.get("layer_trace"), decision, cid)
         case = case_by_id[cid]
         expected_input = sha256_bytes(canonical(case.get("input", {})))
         if r.get("input_digest") != expected_input:
@@ -776,6 +899,7 @@ def grade(records: list[dict], cases: list[dict], rubric: dict) -> dict:
                 "human_review_count": 0, "unsupported_count": 0,
                 "critical_escape_count": 0, "decision_mismatch_count": 0,
                 "conservative_accept_count": 0,
+                "reason_class_mismatch_count": 0,
                 "malformed_count": 0, "unknown_count": 0, "timeout_count": 0,
                 "scanner_disagreement_count": 0,
                 "uncertain_effect_capable_allowed": 0}
@@ -842,7 +966,11 @@ def grade(records: list[dict], cases: list[dict], rubric: dict) -> dict:
             expansions["capability"] += 1
             counters["uncertain_effect_capable_allowed"] += 1
         reason_class_matches[case["id"]] = \
-            case["expected_reason_class"] in reasons
+            case["expected_reason_class"] in reasons or \
+            any(safe in reasons
+                for safe in (case.get("safe_reason_classes") or []))
+        if not reason_class_matches[case["id"]]:
+            counters["reason_class_mismatch_count"] += 1
         for code in reasons:
             if code == "DD-MALFORMED" or code == "MP-STRUCT":
                 counters["malformed_count"] += 1
@@ -923,6 +1051,15 @@ def evaluate_hard_gates(records: list[dict], metrics: dict,
     if metrics["decision_mismatch_count"] != 0:
         violations.append(
             f"decision_mismatch_count={metrics['decision_mismatch_count']}")
+    # Mandatory reason-class grounding (round 3): every accepted decision
+    # must carry its oracle-expected reason class or an oracle-declared safe
+    # alternate; ungrounded decisions fail the gate.  The threshold is read
+    # from the frozen rubric without a default (missing key fails closed).
+    if metrics["reason_class_mismatch_count"] != \
+            gates["reason_class_mismatch_max"]:
+        violations.append(
+            f"reason_class_mismatch_count="
+            f"{metrics['reason_class_mismatch_count']}")
     for rec in records:
         if rec.get("authority_mutations"):
             violations.append(f"authority_mutations non-empty in {rec['case_id']}")
