@@ -127,6 +127,22 @@ class TestClosedCandidate(unittest.TestCase):
         self.assertIn("15-20-person pilot", section)
         self.assertIn("cancelled, not completed", section)
 
+    def test_canonical_record_and_packs_are_content_addressed(self):
+        record = load("evaluation-record.json")
+        self.assertEqual(record["schema"], "agentos.ticket-evaluation-record/v2")
+        self.assertEqual(record["ticket_id"], "S1-013")
+        self.assertEqual(record["result"], "pass_with_limits")
+        self.assertEqual(record["research_revision"], 1)
+        for key in ("evidence_pack", "ticket_pack"):
+            entry = record[key]
+            path = ROOT / entry["path"]
+            actual = hashlib.sha256(path.read_bytes()).hexdigest()
+            self.assertEqual(actual, entry["sha256"])
+            self.assertIn(actual, path.name)
+        self.assertEqual({item["ticket_id"] for item in
+                          record["canonical_dependencies"]},
+                         {"S1-011", "S1-012"})
+
 
 if __name__ == "__main__":
     unittest.main()
