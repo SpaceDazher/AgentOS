@@ -1,0 +1,4635 @@
+{
+  "schema": "agentos.s1-012.cases/v1",
+  "contract": "agentos.s1-012.independence-contract/v1",
+  "cases": [
+    {
+      "case_id": "S1-012-D01",
+      "family": "gold",
+      "cluster": "GOLD-A",
+      "severity": "high",
+      "claim": {
+        "claim_id": "CL-D01"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-A",
+          "upstream": "UP-A",
+          "uri": "https://example.test/gold-a/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-B",
+          "upstream": "UP-B",
+          "uri": "https://example.test/gold-a/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "alpha report",
+          "label": "support",
+          "spans": [
+            {
+              "span_id": "D1s1",
+              "text": "alpha one",
+              "disjoint": true,
+              "digest": "ee84d3a90d1ffa664f3146386de43d32fd48589f054efc9b9d76a5960d80cd21"
+            },
+            {
+              "span_id": "D1s2",
+              "text": "alpha two",
+              "disjoint": true,
+              "digest": "7ad5690b60c105caaa4b83c816952d29a9b08ae935ef6bf75ad9860ff5c93d7e"
+            }
+          ],
+          "digest": "ad8eeff53d0f7659b0858e7b9606f42988d9ba4f05569220424f888184b6a3d1"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "beta report",
+          "label": "support",
+          "spans": [
+            {
+              "span_id": "D2s1",
+              "text": "beta one",
+              "disjoint": true,
+              "digest": "0c8a3e443899f7b81e014408dcf44853e6b1652c68e77c4b7b6654ed979327a4"
+            }
+          ],
+          "digest": "7daf41c567531d09d721235f933ec846614a1c981bf7769e00fb4118c7e48c0a"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Two distinct primary observations; disjoint spans add no new groups.",
+      "split": "dev",
+      "case_sha256": "8a8d384b5aeacbb1fb20eb2ac4767a17644a52afae33c81e66e275494fde540e"
+    },
+    {
+      "case_id": "S1-012-D02",
+      "family": "gold",
+      "cluster": "GOLD-B",
+      "severity": "high",
+      "claim": {
+        "claim_id": "CL-D02"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-C",
+          "upstream": "UP-C",
+          "uri": "https://example.test/gold-b/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-D",
+          "upstream": "UP-D",
+          "uri": "https://example.test/gold-b/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "identical finding wording",
+          "label": "support",
+          "spans": [],
+          "digest": "3163dec5fbf2d7e182a697bf1239766ab3f125f81882a43eab71329d770e49ce"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "identical finding wording",
+          "label": "support",
+          "spans": [],
+          "digest": "3163dec5fbf2d7e182a697bf1239766ab3f125f81882a43eab71329d770e49ce"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Benign identical text, disjoint provenance: document/span admit; naive digest-keying collapses (documented digest-view limit).",
+      "split": "dev",
+      "case_sha256": "9d2f494c869772e355cc6b0310cb1bee73b16b56b2adfb75085d8f2e904cbd70"
+    },
+    {
+      "case_id": "S1-012-D03",
+      "family": "gold",
+      "cluster": "GOLD-C",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-D03"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-E",
+          "upstream": "UP-E",
+          "uri": "https://example.test/gold-c/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-F",
+          "upstream": "UP-F",
+          "uri": "https://example.test/gold-c/2"
+        },
+        {
+          "source_id": "S3",
+          "publisher": "PUB-G",
+          "upstream": "UP-G",
+          "uri": "https://example.test/gold-c/3"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "gamma support",
+          "label": "support",
+          "spans": [],
+          "digest": "0e00f524c1dd1f8aaf6aa6e1af314382a3b86bf6e27b686506ff3057e49fc53a"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "delta support",
+          "label": "support",
+          "spans": [],
+          "digest": "40690ec32ca5fcbe0f9be1866f24d604723bb2d3ae9dc117ca1276c7193818e7"
+        },
+        {
+          "doc_id": "D3",
+          "source_id": "S3",
+          "text": "epsilon refute",
+          "label": "refute",
+          "spans": [],
+          "digest": "e045da1fb254e7d8f87d1819b716c0f3e7fb806d2a5426d633911cb16dcfe224"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 3,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 3,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 3,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 3,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Three independents; refuting trial enters Beta as failure.",
+      "split": "dev",
+      "case_sha256": "5da88dd5ea3586b6626f4577a3fd03dd43e35f7497387ed1f9f990d6dac623f6"
+    },
+    {
+      "case_id": "S1-012-D04",
+      "family": "gold",
+      "cluster": "GOLD-D",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-D04"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-H",
+          "upstream": "UP-H",
+          "uri": "https://example.test/gold-d/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-I",
+          "upstream": "UP-I",
+          "uri": "https://example.test/gold-d/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "zeta support",
+          "label": "support",
+          "spans": [],
+          "digest": "d81b29b84a03321d152e6477058aec419a757db8125d5120d9acdb8ee3b6ef28"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "eta support",
+          "label": "support",
+          "spans": [],
+          "digest": "efbc8edc477b45904138869423b213126077a44c469ecf5a83204844c203b4ad"
+        }
+      ],
+      "ratings": [
+        {
+          "from": "S1",
+          "to": "S2",
+          "value": 0.9
+        },
+        {
+          "from": "S2",
+          "to": "S1",
+          "value": 0.8
+        }
+      ],
+      "anchor": [
+        "S1"
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Anchored trust graph: EigenTrust converges, recommendation allowed, never enforcement.",
+      "split": "dev",
+      "case_sha256": "abfc93a26854ebea4d00744721dce086d046dc9e07a871bec12f842108cab0c8"
+    },
+    {
+      "case_id": "S1-012-D05",
+      "family": "gold",
+      "cluster": "GOLD-E",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-D05"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-J",
+          "upstream": "UP-J",
+          "uri": "https://example.test/gold-e/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-K",
+          "upstream": "UP-K",
+          "uri": "https://example.test/gold-e/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "theta full",
+          "label": "support",
+          "spans": [
+            {
+              "span_id": "D1s1",
+              "text": "theta part one",
+              "disjoint": true,
+              "digest": "015eac762fcbe99e7bf2d8ae2702c5f87570e2aef035f7b50166ab42b7c233fd"
+            },
+            {
+              "span_id": "D1s2",
+              "text": "theta part two",
+              "disjoint": true,
+              "digest": "33f8caf23b54995a55ae6eefa5bc9250b39914cda97e98ce7216ec46006fdd81"
+            }
+          ],
+          "digest": "fd34343e54c72d8a4782d764ca01939a007710dd043387bb56a819bb4a019371"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "iota full",
+          "label": "support",
+          "spans": [
+            {
+              "span_id": "D2s1",
+              "text": "iota part one",
+              "disjoint": true,
+              "digest": "5f9a19a96f1a89d55a35e8b7b1ad31a180c3224f3fb205df5fced160dbb5e215"
+            },
+            {
+              "span_id": "D2s2",
+              "text": "iota part two",
+              "disjoint": true,
+              "digest": "b1cfac9b4b7f206606b9f458905e0e384bab1bd270512f23d1147d73c3352612"
+            }
+          ],
+          "digest": "d177070d7e3f3a3e10ab1a6ce6d96bcedc318ff362fa4aa06b51b9247a970573"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Disjoint spans are separate observations but share groups: no weight inflation.",
+      "split": "dev",
+      "case_sha256": "c77430922ec5cb8a320bc4f4b3db5934326bb817b0d2bc20d7936f675e6750f9"
+    },
+    {
+      "case_id": "S1-012-D06",
+      "family": "gold",
+      "cluster": "GOLD-F",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-D06",
+        "version": 2
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-L",
+          "upstream": "UP-L",
+          "uri": "https://example.test/gold-f/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-M",
+          "upstream": "UP-M",
+          "uri": "https://example.test/gold-f/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "kappa v2",
+          "label": "support",
+          "version": 2,
+          "spans": [],
+          "digest": "909db140a30f8be68e5c3874e8857ea96bbb691c94a85ebd26ebc6453db0e5a5"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "lambda v2",
+          "label": "support",
+          "version": 2,
+          "spans": [],
+          "digest": "5c308cfa6788453520461ce94ae76db4091506df855227c8697e8833c1c9ef39"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Claim version 2 with matching v2 evidence.",
+      "split": "dev",
+      "case_sha256": "3b6c7108b44803fb880d70c2d6ffa4324fc60da3e5a24181b135f26b0ba68c74"
+    },
+    {
+      "case_id": "S1-012-D07",
+      "family": "gold",
+      "cluster": "GOLD-G",
+      "severity": "low",
+      "claim": {
+        "claim_id": "CL-D07"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-N",
+          "upstream": "UP-N",
+          "uri": "https://example.test/gold-g/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-O",
+          "upstream": "UP-O",
+          "uri": "https://example.test/gold-g/2"
+        },
+        {
+          "source_id": "S3",
+          "publisher": "PUB-P",
+          "upstream": "UP-P",
+          "uri": "https://example.test/gold-g/3"
+        },
+        {
+          "source_id": "S4",
+          "publisher": "PUB-Q",
+          "upstream": "UP-Q",
+          "uri": "https://example.test/gold-g/4"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "mu one",
+          "label": "support",
+          "spans": [],
+          "digest": "2632ae110aab4961ced03fc566b796822c26f316decad40f0859e51c7e054ef0"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "mu two",
+          "label": "support",
+          "spans": [],
+          "digest": "2cc36013b2b87f9be97c477d4a9b037520e4e48610a5c676636715b06070cd2e"
+        },
+        {
+          "doc_id": "D3",
+          "source_id": "S3",
+          "text": "mu three",
+          "label": "support",
+          "spans": [],
+          "digest": "31aaf55cfecad5c230bcd54d2202c8a6b8e497700040108a5c70e0774616e9a4"
+        },
+        {
+          "doc_id": "D4",
+          "source_id": "S4",
+          "text": "mu four",
+          "label": "support",
+          "spans": [],
+          "digest": "853a950e7324085a41efaf47901d12ceaac563b74afa0645955f0b697268b2a9"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 4,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 4,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 4,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 4,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Four independents; correlation cap binds weight at 2 without changing the count.",
+      "split": "dev",
+      "case_sha256": "16c634e2ef81d3da1e8343d99b54eca461021710488c094662ea2e24e422f9dd"
+    },
+    {
+      "case_id": "S1-012-D08",
+      "family": "gold",
+      "cluster": "GOLD-H",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-D08"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-R",
+          "upstream": "UP-R",
+          "uri": "https://example.test/gold-h/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-S",
+          "upstream": "UP-S",
+          "uri": "https://example.test/gold-h/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "nu support supersedes nu-old",
+          "label": "support",
+          "supersedes": "D0",
+          "spans": [],
+          "digest": "3c75c4d3da6697e3b02e0e8e395fb8fc3ed217e09c11aae0f0373b6cec0d89fa"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "xi support",
+          "label": "support",
+          "spans": [],
+          "digest": "9ec7cc25a86b1d8760b3c416da00de32be2fd0f5cf13fe68e2791cc308f6536a"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Supersession link resolved to the current version; old version excluded, history kept.",
+      "split": "dev",
+      "case_sha256": "add3aa493c8681d69ee7ad1161bf293096d92b0fa3ccb8a42e756244478ea9f6"
+    },
+    {
+      "case_id": "S1-012-D09",
+      "family": "correlation",
+      "cluster": "MIR-A",
+      "severity": "critical",
+      "probe": "A",
+      "claim": {
+        "claim_id": "CL-D09"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-T",
+          "upstream": "UP-T",
+          "uri": "https://example.test/mir-a/orig"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-T",
+          "upstream": "UP-T",
+          "uri": "https://example.test/mir-a/copy"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "omicron original",
+          "label": "support",
+          "spans": [],
+          "digest": "7f86e821ae56585af1c280f5ed2745c0a54d4db342564920ddeb09db12551377"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "omicron original",
+          "label": "support",
+          "spans": [],
+          "digest": "7f86e821ae56585af1c280f5ed2745c0a54d4db342564920ddeb09db12551377"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Probe A: mirror pair collapses to one; reputation-only double-counts (negative control).",
+      "split": "dev",
+      "case_sha256": "527bbb80d868228e2a953360d0fe15dd599a35f6de0ed51696e4c0f47319b652"
+    },
+    {
+      "case_id": "S1-012-D10",
+      "family": "correlation",
+      "cluster": "MIR-B",
+      "severity": "critical",
+      "probe": "A",
+      "claim": {
+        "claim_id": "CL-D10"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-U",
+          "upstream": "UP-U",
+          "uri": "https://example.test/mir-b/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-U",
+          "upstream": "UP-U",
+          "uri": "https://example.test/mir-b/2"
+        },
+        {
+          "source_id": "S3",
+          "publisher": "PUB-U",
+          "upstream": "UP-U",
+          "uri": "https://example.test/mir-b/3"
+        },
+        {
+          "source_id": "S4",
+          "publisher": "PUB-U",
+          "upstream": "UP-U",
+          "uri": "https://example.test/mir-b/4"
+        },
+        {
+          "source_id": "S5",
+          "publisher": "PUB-U",
+          "upstream": "UP-U",
+          "uri": "https://example.test/mir-b/5"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "pi farm",
+          "label": "support",
+          "spans": [],
+          "digest": "d6ee8dd094c5724b2bbf804862a59d37bf83f91465235f85efd342d66a405754"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "pi farm",
+          "label": "support",
+          "spans": [],
+          "digest": "d6ee8dd094c5724b2bbf804862a59d37bf83f91465235f85efd342d66a405754"
+        },
+        {
+          "doc_id": "D3",
+          "source_id": "S3",
+          "text": "pi farm",
+          "label": "support",
+          "spans": [],
+          "digest": "d6ee8dd094c5724b2bbf804862a59d37bf83f91465235f85efd342d66a405754"
+        },
+        {
+          "doc_id": "D4",
+          "source_id": "S4",
+          "text": "pi farm",
+          "label": "support",
+          "spans": [],
+          "digest": "d6ee8dd094c5724b2bbf804862a59d37bf83f91465235f85efd342d66a405754"
+        },
+        {
+          "doc_id": "D5",
+          "source_id": "S5",
+          "text": "pi farm",
+          "label": "support",
+          "spans": [],
+          "digest": "d6ee8dd094c5724b2bbf804862a59d37bf83f91465235f85efd342d66a405754"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 5,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Mass replication adds zero independent weight in every governed view.",
+      "split": "dev",
+      "case_sha256": "781341de4a16be5ab4f5428971f7af402b23c9ea52510fbacbc7dae36dba1731"
+    },
+    {
+      "case_id": "S1-012-D11",
+      "family": "correlation",
+      "cluster": "MIR-C",
+      "severity": "high",
+      "probe": "A",
+      "claim": {
+        "claim_id": "CL-D11"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-V",
+          "upstream": "UP-V",
+          "uri": "https://example.test/mir-c/orig"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-W",
+          "upstream": "UP-V",
+          "uri": "https://example.test/mir-c/retell"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "rho origin wording here",
+          "label": "support",
+          "spans": [],
+          "digest": "810bcbd5f511947c9f5e316c17ea373aca216bc77b0cde513f43075e71764dd6"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "rho retold differently",
+          "label": "support",
+          "spans": [],
+          "digest": "bc119007f45a9845a02782c24ae90a6962926350d4a20fb87aa138c081833618"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Reprint: distinct digests and labels, one upstream. Digest view sees 2 digests but upstream collapse still rejects (n=1).",
+      "split": "dev",
+      "case_sha256": "ec9127cac1c26f0e03f98b04e3fe1b88ab12e4427d998e9686edc231ba916b6e"
+    },
+    {
+      "case_id": "S1-012-D12",
+      "family": "correlation",
+      "cluster": "MIR-D",
+      "severity": "high",
+      "claim": {
+        "claim_id": "CL-D12"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-X",
+          "upstream": "UP-X",
+          "uri": "https://example.test/mir-d/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-Y",
+          "upstream": "UP-X",
+          "uri": "https://example.test/mir-d/2"
+        },
+        {
+          "source_id": "S3",
+          "publisher": "PUB-Z",
+          "upstream": "UP-X",
+          "uri": "https://example.test/mir-d/3"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "sigma one",
+          "label": "support",
+          "spans": [],
+          "digest": "a4e7e448ff01a92a8c8ba70347b22d16f3430620dfa97c76972f218e7b1f1379"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "sigma two",
+          "label": "support",
+          "spans": [],
+          "digest": "e392b616a655dcfa5a2b77c2fbed8615d7d05959e080c4093a8e89cf90a9a142"
+        },
+        {
+          "doc_id": "D3",
+          "source_id": "S3",
+          "text": "sigma three",
+          "label": "support",
+          "spans": [],
+          "digest": "b88dbe4332b862a5b4ddb684512821d481b38a4fdfc9a1578922bc5b3d6c0aa9"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 3,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Shared upstream under three publisher labels collapses.",
+      "split": "dev",
+      "case_sha256": "e82966ea04952483401568d7d48989670a278ba4df1adbb5f953c98bf9a73a22"
+    },
+    {
+      "case_id": "S1-012-D13",
+      "family": "correlation",
+      "cluster": "MIR-E",
+      "severity": "high",
+      "probe": "C",
+      "claim": {
+        "claim_id": "CL-D13"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-AA",
+          "upstream": "UP-AA",
+          "uri": "https://example.test/mir-e/1"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "tau whole observation",
+          "label": "support",
+          "spans": [
+            {
+              "span_id": "D1s1",
+              "text": "tau part a",
+              "disjoint": false,
+              "digest": "0a24139a16dac64ab99e6b2825f5c961143e4323e47203765f79366883d27d4c"
+            },
+            {
+              "span_id": "D1s2",
+              "text": "tau part b",
+              "disjoint": false,
+              "digest": "8caa28a4303284671381a9eb95a20394ac061592327e141565ef8f5c17158ac3"
+            },
+            {
+              "span_id": "D1s3",
+              "text": "tau part c",
+              "disjoint": false,
+              "digest": "0f4a0ee12be27f1b886e33d57289235e4cc3a3dbb222dce71cd15d0065e330c1"
+            },
+            {
+              "span_id": "D1s4",
+              "text": "tau part d",
+              "disjoint": false,
+              "digest": "260b659ce0848b78229cef345627d14256f6c651c08036f3f7aec198343b8b48"
+            }
+          ],
+          "digest": "da4c66bd520945f4ad149bf202dbe8f78ec37c9bca638d9012cda6f83223bad1"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 1,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Probe C: one document split into four spans is one observation in every view.",
+      "split": "dev",
+      "case_sha256": "fa373946d2608937687988aed30066ccd17ef105392c3ff53e59bf3ab95bbdf8"
+    },
+    {
+      "case_id": "S1-012-D14",
+      "family": "correlation",
+      "cluster": "MIR-F",
+      "severity": "high",
+      "probe": "C",
+      "claim": {
+        "claim_id": "CL-D14"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-AB",
+          "upstream": "UP-AB",
+          "uri": "https://example.test/mir-f/1"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "upsilon overlapping report",
+          "label": "support",
+          "spans": [
+            {
+              "span_id": "D1s1",
+              "text": "upsilon overlapping report head",
+              "disjoint": false,
+              "digest": "7e7ac651cc8cc2bf64eca564a22d05448cd7cd43b252fe4f8d67b468c2669672"
+            },
+            {
+              "span_id": "D1s2",
+              "text": "overlapping report head tail",
+              "disjoint": false,
+              "digest": "eca0bf49fe70f63bb820173d931a7658ca073e8c2e9be572debacd01d2b32dfb"
+            }
+          ],
+          "digest": "deb23b79b7358b1e497a62bf6d57de401c0f8da16bba9d4f4247d9e939d27199"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 1,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Probe C: overlapping spans share text and upstream; no double count.",
+      "split": "dev",
+      "case_sha256": "fe15647667131dc2e57a1d139cbfc2b3f44e52cf4ada43aa628beafe24bb5884"
+    },
+    {
+      "case_id": "S1-012-D15",
+      "family": "correlation",
+      "cluster": "MIR-G",
+      "severity": "medium",
+      "probe": "C",
+      "claim": {
+        "claim_id": "CL-D15"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-AC",
+          "upstream": "UP-AC",
+          "uri": "https://example.test/mir-g/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-AC2",
+          "upstream": "UP-AC",
+          "uri": "https://example.test/mir-g/renamed"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "phi Original Case",
+          "label": "support",
+          "spans": [],
+          "digest": "db70d7335cca520a3d655b508aee4b3ce5dca2fd5ace06f418d373a62f7437ec"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "phi original case",
+          "label": "support",
+          "spans": [],
+          "digest": "d16115bdaeaee96f996828e5e74df87aa08d50cbb9bdd8d2dc9243a4d9d55450"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Probe C: reformat plus rename without new observation collapses.",
+      "split": "dev",
+      "case_sha256": "f4c199aaf4c919a9daecdc69bac9245700ec14d64976302427fe1199490ea001"
+    },
+    {
+      "case_id": "S1-012-D16",
+      "family": "correlation",
+      "cluster": "MIR-H",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-D16"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-AD",
+          "upstream": "UP-AD",
+          "uri": "https://example.test/mir-h/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-AD",
+          "upstream": "UP-AD",
+          "uri": "https://example.test/mir-h/1?copy=2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "chi duplicate",
+          "label": "support",
+          "spans": [],
+          "digest": "b04029a17f3743676952285f3f8c41e620a327d49ab866661eef38bc64e98b10"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "chi duplicate",
+          "label": "support",
+          "spans": [],
+          "digest": "b04029a17f3743676952285f3f8c41e620a327d49ab866661eef38bc64e98b10"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Exact duplicate under a query-string URL is one unit.",
+      "split": "dev",
+      "case_sha256": "70e5e3e70d93b3eff55ba1b80d7e03cabf2e7da4758a7f31c72be264a89c6568"
+    },
+    {
+      "case_id": "S1-012-D17",
+      "family": "sybil",
+      "cluster": "SYB-A",
+      "severity": "critical",
+      "probe": "A",
+      "claim": {
+        "claim_id": "CL-D17"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "FARM",
+          "upstream": "UP-FARM",
+          "uri": "https://example.test/syb-a/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "FARM",
+          "upstream": "UP-FARM",
+          "uri": "https://example.test/syb-a/2"
+        },
+        {
+          "source_id": "S3",
+          "publisher": "FARM",
+          "upstream": "UP-FARM",
+          "uri": "https://example.test/syb-a/3"
+        },
+        {
+          "source_id": "S4",
+          "publisher": "FARM",
+          "upstream": "UP-FARM",
+          "uri": "https://example.test/syb-a/4"
+        },
+        {
+          "source_id": "S5",
+          "publisher": "FARM",
+          "upstream": "UP-FARM",
+          "uri": "https://example.test/syb-a/5"
+        },
+        {
+          "source_id": "S6",
+          "publisher": "FARM",
+          "upstream": "UP-FARM",
+          "uri": "https://example.test/syb-a/6"
+        },
+        {
+          "source_id": "S7",
+          "publisher": "FARM",
+          "upstream": "UP-FARM",
+          "uri": "https://example.test/syb-a/7"
+        },
+        {
+          "source_id": "S8",
+          "publisher": "FARM",
+          "upstream": "UP-FARM",
+          "uri": "https://example.test/syb-a/8"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "psi farmed",
+          "label": "support",
+          "spans": [],
+          "digest": "8dbe8f499834518759fd377cb7061a24d0d2242754f3584c6718bf2f74e4c902"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "psi farmed",
+          "label": "support",
+          "spans": [],
+          "digest": "8dbe8f499834518759fd377cb7061a24d0d2242754f3584c6718bf2f74e4c902"
+        },
+        {
+          "doc_id": "D3",
+          "source_id": "S3",
+          "text": "psi farmed",
+          "label": "support",
+          "spans": [],
+          "digest": "8dbe8f499834518759fd377cb7061a24d0d2242754f3584c6718bf2f74e4c902"
+        },
+        {
+          "doc_id": "D4",
+          "source_id": "S4",
+          "text": "psi farmed",
+          "label": "support",
+          "spans": [],
+          "digest": "8dbe8f499834518759fd377cb7061a24d0d2242754f3584c6718bf2f74e4c902"
+        },
+        {
+          "doc_id": "D5",
+          "source_id": "S5",
+          "text": "psi farmed",
+          "label": "support",
+          "spans": [],
+          "digest": "8dbe8f499834518759fd377cb7061a24d0d2242754f3584c6718bf2f74e4c902"
+        },
+        {
+          "doc_id": "D6",
+          "source_id": "S6",
+          "text": "psi farmed",
+          "label": "support",
+          "spans": [],
+          "digest": "8dbe8f499834518759fd377cb7061a24d0d2242754f3584c6718bf2f74e4c902"
+        },
+        {
+          "doc_id": "D7",
+          "source_id": "S7",
+          "text": "psi farmed",
+          "label": "support",
+          "spans": [],
+          "digest": "8dbe8f499834518759fd377cb7061a24d0d2242754f3584c6718bf2f74e4c902"
+        },
+        {
+          "doc_id": "D8",
+          "source_id": "S8",
+          "text": "psi farmed",
+          "label": "support",
+          "spans": [],
+          "digest": "8dbe8f499834518759fd377cb7061a24d0d2242754f3584c6718bf2f74e4c902"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 8,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "T1 mirror-farm: eight identities, one upstream, one unit.",
+      "split": "dev",
+      "case_sha256": "c6c35e3625303d8bc396cede98aa0ea5ae746cf765a101e97b7bcead4fe6c531"
+    },
+    {
+      "case_id": "S1-012-D18",
+      "family": "sybil",
+      "cluster": "SYB-B",
+      "severity": "high",
+      "claim": {
+        "claim_id": "CL-D18"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "RING-A",
+          "upstream": "UP-RING",
+          "uri": "https://example.test/syb-b/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "RING-B",
+          "upstream": "UP-RING",
+          "uri": "https://example.test/syb-b/2"
+        },
+        {
+          "source_id": "S3",
+          "publisher": "RING-C",
+          "upstream": "UP-RING",
+          "uri": "https://example.test/syb-b/3"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "omega ring alpha",
+          "label": "support",
+          "spans": [],
+          "digest": "a1f00fbf7f05591a897aad3f44fc7a45d1a9d58c38935aa94385a860640b129a"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "omega ring beta",
+          "label": "support",
+          "spans": [],
+          "digest": "35630e84ed719414d9992d17a5d2a54076bc567cb89e30500cd4a70adc094ac5"
+        },
+        {
+          "doc_id": "D3",
+          "source_id": "S3",
+          "text": "omega ring gamma",
+          "label": "support",
+          "spans": [],
+          "digest": "d8181da74c306edfbf5c28b35930c5838d7800dadb7fc5cc744c3e6fdb9ede61"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 3,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "T1 reprint ring: distinct texts and labels, one upstream.",
+      "split": "dev",
+      "case_sha256": "fb5e448cf918476148cb74f3709dcac46c6760f34d73c8a0b2d70de8fcb506c2"
+    },
+    {
+      "case_id": "S1-012-D19",
+      "family": "sybil",
+      "cluster": "SYB-C",
+      "severity": "critical",
+      "probe": "B",
+      "claim": {
+        "claim_id": "CL-D19"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "CLQ-1",
+          "upstream": "UP-CLQ",
+          "uri": "https://example.test/syb-c/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "CLQ-2",
+          "upstream": "UP-CLQ",
+          "uri": "https://example.test/syb-c/2"
+        },
+        {
+          "source_id": "S3",
+          "publisher": "CLQ-3",
+          "upstream": "UP-CLQ",
+          "uri": "https://example.test/syb-c/3"
+        },
+        {
+          "source_id": "S4",
+          "publisher": "CLQ-4",
+          "upstream": "UP-CLQ",
+          "uri": "https://example.test/syb-c/4"
+        },
+        {
+          "source_id": "S5",
+          "publisher": "CLQ-5",
+          "upstream": "UP-CLQ",
+          "uri": "https://example.test/syb-c/5"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "clique praise one",
+          "label": "support",
+          "spans": [],
+          "digest": "b49d16ea7fb7c145a92a030e66cd8691f41594f6b838f93b9ff307fb15d9a8a0"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "clique praise two",
+          "label": "support",
+          "spans": [],
+          "digest": "899258cb06e69db13629537eea50082fca1484c99ea9519d71b89693c49232e4"
+        },
+        {
+          "doc_id": "D3",
+          "source_id": "S3",
+          "text": "clique praise three",
+          "label": "support",
+          "spans": [],
+          "digest": "1ab56fb15433ebe1885e3bc94c611feba93a2bcb32866abd156a64eff5a5004b"
+        },
+        {
+          "doc_id": "D4",
+          "source_id": "S4",
+          "text": "clique praise four",
+          "label": "support",
+          "spans": [],
+          "digest": "07222cb7194b3186d5115154342a8ba0d9e0b9ae87d39cfad92e8ee2732080b5"
+        },
+        {
+          "doc_id": "D5",
+          "source_id": "S5",
+          "text": "clique praise five",
+          "label": "support",
+          "spans": [],
+          "digest": "542dfd19308139892ae4c99c0d44fdeea60df4598f9bf3188a1b6f83f9bed5c3"
+        }
+      ],
+      "ratings": [
+        {
+          "from": "S1",
+          "to": "S2",
+          "value": 0.95
+        },
+        {
+          "from": "S1",
+          "to": "S3",
+          "value": 0.95
+        },
+        {
+          "from": "S2",
+          "to": "S1",
+          "value": 0.95
+        },
+        {
+          "from": "S2",
+          "to": "S4",
+          "value": 0.95
+        },
+        {
+          "from": "S3",
+          "to": "S1",
+          "value": 0.95
+        },
+        {
+          "from": "S3",
+          "to": "S5",
+          "value": 0.95
+        },
+        {
+          "from": "S4",
+          "to": "S2",
+          "value": 0.95
+        },
+        {
+          "from": "S4",
+          "to": "S5",
+          "value": 0.95
+        },
+        {
+          "from": "S5",
+          "to": "S3",
+          "value": 0.95
+        },
+        {
+          "from": "S5",
+          "to": "S4",
+          "value": 0.95
+        }
+      ],
+      "anchor": null,
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 5,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Probe B T2: anchorless mutual-praise cluster. EigenTrust abstains; no enforcement in any view.",
+      "split": "dev",
+      "case_sha256": "0ecad5c1ce860b5c995e7d84c1903c84e1e30516025564355642edd52dd8f78b"
+    },
+    {
+      "case_id": "S1-012-D20",
+      "family": "sybil",
+      "cluster": "SYB-D",
+      "severity": "high",
+      "probe": "B",
+      "claim": {
+        "claim_id": "CL-D20"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "CLQ-A",
+          "upstream": "UP-CLQ2",
+          "uri": "https://example.test/syb-d/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "CLQ-B",
+          "upstream": "UP-CLQ2",
+          "uri": "https://example.test/syb-d/2"
+        },
+        {
+          "source_id": "S3",
+          "publisher": "OUT-X",
+          "upstream": "UP-OUT",
+          "uri": "https://example.test/syb-d/3"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "duo praise a",
+          "label": "support",
+          "spans": [],
+          "digest": "2d730c83e375bf6e6e1149bcd8ec33369040ef1e4cef30c2cb16f6d0f4aa965f"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "duo praise b",
+          "label": "support",
+          "spans": [],
+          "digest": "e7c7c60d2e5b3e7e0a8c6fef0c7a545910531cdc5edf0092aa49e41693939389"
+        },
+        {
+          "doc_id": "D3",
+          "source_id": "S3",
+          "text": "outside view",
+          "label": "support",
+          "spans": [],
+          "digest": "75ccb171bd161a752c10ca2f98713b9f2381ecc7f4975c2b09740637c1d74f3c"
+        }
+      ],
+      "ratings": [
+        {
+          "from": "S1",
+          "to": "S2",
+          "value": 0.99
+        },
+        {
+          "from": "S2",
+          "to": "S1",
+          "value": 0.99
+        }
+      ],
+      "anchor": null,
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 3,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "T2 variant: pair shares upstream (one group) plus one genuine outside source: n=2 admits. Ratings stay anchorless so trust abstains.",
+      "split": "dev",
+      "case_sha256": "ba3e4d48d576e3fe2215375766bf58026051f34108d90ab6cad081400d3ec426"
+    },
+    {
+      "case_id": "S1-012-D21",
+      "family": "sybil",
+      "cluster": "SYB-E",
+      "severity": "high",
+      "probe": "D",
+      "claim": {
+        "claim_id": "CL-D21"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "FRONT-A",
+          "upstream": "UP-HIDDEN",
+          "uri": "https://example.test/syb-e/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "FRONT-B",
+          "upstream": "UP-HIDDEN",
+          "uri": "https://example.test/syb-e/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "laundered alpha report",
+          "label": "support",
+          "spans": [
+            {
+              "span_id": "D1s1",
+              "text": "laundered alpha one",
+              "disjoint": false,
+              "digest": "c28970bf6d6f1c10117e15f7dd045831c2f54fd481ab9c20b2e19a33a70c3a4d"
+            },
+            {
+              "span_id": "D1s2",
+              "text": "laundered alpha two",
+              "disjoint": false,
+              "digest": "3bb5fc2fb5b39298e933bc9a06cd21a67caf5b21004eda79b71dc944479770d4"
+            }
+          ],
+          "digest": "b557f1f2682664f3d8f88076b653245b10341eda5942a0b4d72868d07e46b9d7"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "laundered beta report",
+          "label": "support",
+          "spans": [
+            {
+              "span_id": "D2s1",
+              "text": "laundered beta one",
+              "disjoint": false,
+              "digest": "393ed8e34af3963a83083bf9beb61c0254589ab5526a9d16a0b8d3390831269d"
+            },
+            {
+              "span_id": "D2s2",
+              "text": "laundered beta two",
+              "disjoint": false,
+              "digest": "5cfd2aee4366895f00bbf440edd3434254d742f2a81ee8a4f359af4416508dd0"
+            }
+          ],
+          "digest": "8d1c3225d78970a5eca93bcabc035ffefdd5a5e2620cc6ca5e3e536564bbcf1e"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Probe D T3: distinct front labels, one hidden upstream; span-split adds no groups.",
+      "split": "dev",
+      "case_sha256": "b867509139746f301ea5c8d4ed8ee0ecc5d187a63b7967dff07c4f0fd44d6b34"
+    },
+    {
+      "case_id": "S1-012-D22",
+      "family": "sybil",
+      "cluster": "SYB-F",
+      "severity": "high",
+      "probe": "D",
+      "claim": {
+        "claim_id": "CL-D22"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "RENAME-A",
+          "upstream": "UP-RENAME",
+          "uri": "https://example.test/syb-f/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "RENAME-B",
+          "upstream": "UP-RENAME",
+          "uri": "https://example.test/syb-f/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "Renamed Source Alpha",
+          "label": "support",
+          "spans": [],
+          "digest": "dbca775e769d9bc3a6451db6c5fb2cb288a97cba6eafa35ac384863766d16682"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "renamed source alpha",
+          "label": "support",
+          "spans": [],
+          "digest": "bbdd5904eba6b8f68bb02e1af4694aba93934d748e42f8e63cd981fe7dd36daf"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Probe D: rename plus reformat ring, one upstream.",
+      "split": "dev",
+      "case_sha256": "bfd3d9e62d3428780bba3093c41e8ef7c9f6f17069a76cebf5cb7400fa0ad3c6"
+    },
+    {
+      "case_id": "S1-012-D23",
+      "family": "sybil",
+      "cluster": "SYB-G",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-D23"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "ANCH-A",
+          "upstream": "UP-ANCH",
+          "uri": "https://example.test/syb-g/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "ANCH-B",
+          "upstream": "UP-ANCH2",
+          "uri": "https://example.test/syb-g/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "anchored alpha",
+          "label": "support",
+          "spans": [],
+          "digest": "6ed39340d94c926f7574e4c86470f1c21186808eb25211b146066b4f56134648"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "anchored beta",
+          "label": "support",
+          "spans": [],
+          "digest": "3a6374e935f7b2654cbb0ec9640c845262a698b6156bc469e3e4dd0eadc181ca"
+        }
+      ],
+      "ratings": [
+        {
+          "from": "S1",
+          "to": "S2",
+          "value": 1.0
+        },
+        {
+          "from": "S2",
+          "to": "S1",
+          "value": 1.0
+        }
+      ],
+      "anchor": [
+        "S1"
+      ],
+      "eigentrust_reference": {
+        "trust": [
+          0.5405405405,
+          0.4594594595
+        ],
+        "tolerance": 1e-06
+      },
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Anchored control: two independents admit; EigenTrust fixed point must equal 20/37, 17/37 (exact fractions).",
+      "split": "dev",
+      "case_sha256": "622dc8cf2a6fe4be02f6a09f59404df556391d8694252fe007b3fcebe5bc2a77"
+    },
+    {
+      "case_id": "S1-012-D24",
+      "family": "sybil",
+      "cluster": "SYB-H",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-D24"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "OVL-A",
+          "upstream": "UP-OVL",
+          "uri": "https://example.test/syb-h/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "OVL-B",
+          "upstream": "UP-OVL",
+          "uri": "https://example.test/syb-h/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "overlap farm head segment",
+          "label": "support",
+          "spans": [
+            {
+              "span_id": "D1s1",
+              "text": "overlap farm head",
+              "disjoint": false,
+              "digest": "e8a81915b78b41c38799754872097c6d7f502ee1ceeb4a040caa31f7230cfb6c"
+            }
+          ],
+          "digest": "c67a25cc7ccccc122609ebbbd77ca592d7f8f8aca12f68a40be930eb691d7d0f"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "farm head segment tail",
+          "label": "support",
+          "spans": [
+            {
+              "span_id": "D2s1",
+              "text": "head segment tail",
+              "disjoint": false,
+              "digest": "b7996994d263c6f9448a9ef0603cc6e7bc8403f933f93295ca496ec751f03bb9"
+            }
+          ],
+          "digest": "cb3c0f818cddb83379fd17365399fe649e2a61fde37721cd805c6b81648ee6d5"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Overlapping-span farm across two front docs, one upstream.",
+      "split": "dev",
+      "case_sha256": "5a3856a7ada8a83705be2bab310dd3abbb6ef721428277ec1e8da3e3e97baf1c"
+    },
+    {
+      "case_id": "S1-012-D25",
+      "family": "invalid",
+      "cluster": "INV-A",
+      "severity": "critical",
+      "probe": "E",
+      "claim": {
+        "claim_id": "CL-D25"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-BA",
+          "upstream": "UP-BA",
+          "uri": "https://example.test/inv-a/1",
+          "status": "REVOKED"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-BB",
+          "upstream": "UP-BB",
+          "uri": "https://example.test/inv-a/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "revoked evidence",
+          "label": "support",
+          "spans": [],
+          "digest": "8a3ef6604b8a6ecd3c74fa184904883c5998e87bd5a7ff41b3d534b879a43500"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "lone survivor",
+          "label": "support",
+          "spans": [],
+          "digest": "83e1f395313fe07ee1082be47068469a4204969194fdba80443caf3c9dc56023"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_REVOKED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_REVOKED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_REVOKED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Probe E: revoked source excluded; one survivor is not enough.",
+      "split": "dev",
+      "case_sha256": "1e2309f87ffa7279d04d3b3562ce3596dfdbfd539925c4c07fbb7316d8e756c7"
+    },
+    {
+      "case_id": "S1-012-D26",
+      "family": "invalid",
+      "cluster": "INV-B",
+      "severity": "high",
+      "probe": "E",
+      "claim": {
+        "claim_id": "CL-D26"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-BC",
+          "upstream": "UP-BC",
+          "uri": "https://example.test/inv-b/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-BD",
+          "upstream": "UP-BD",
+          "uri": "https://example.test/inv-b/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "superseded version one",
+          "label": "support",
+          "superseded_by": "D1v2",
+          "spans": [],
+          "digest": "b9cbc4ef3b7cb3185a4902c9c1e253d545400340d42ed1864dc46e74fb719ecd"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "current corroboration",
+          "label": "support",
+          "spans": [],
+          "digest": "d35a29eb812f81595e76cb3dae6d9585e713ffb62ccb8ae692e6c92dc10b8b2e"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_STALE"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_STALE"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_STALE"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Probe E: superseded evidence excluded without successor in corpus.",
+      "split": "dev",
+      "case_sha256": "3fb5fc4944eb27007c3fbb1aa25772fd610db678e5d1ae7671729e80475be319"
+    },
+    {
+      "case_id": "S1-012-D27",
+      "family": "invalid",
+      "cluster": "INV-C",
+      "severity": "high",
+      "claim": {
+        "claim_id": "CL-D27"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-BE",
+          "upstream": "UP-BE",
+          "uri": "https://example.test/inv-c/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-BF",
+          "upstream": "UP-BF",
+          "uri": "https://example.test/inv-c/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "aged observation",
+          "label": "support",
+          "temporal": "stale",
+          "spans": [],
+          "digest": "de4bd73eb4ef56706d62cac3334794b112ebc17f8a1a80ef80d6ac84d2d848d7"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "fresh observation",
+          "label": "support",
+          "spans": [],
+          "digest": "1e803ab682b1abad4343ec928dc10e31186880a0f6266f951386aa09cd40b045"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_STALE"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_STALE"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_STALE"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Stale temporal status excludes the aged unit.",
+      "split": "dev",
+      "case_sha256": "facfd31607858b77131da07a012407b70cf3e5644fbad82f4a5c234266c6cd74"
+    },
+    {
+      "case_id": "S1-012-D28",
+      "family": "invalid",
+      "cluster": "INV-D",
+      "severity": "high",
+      "claim": {
+        "claim_id": "CL-D28",
+        "scope": "SCOPE-1"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-BG",
+          "upstream": "UP-BG",
+          "uri": "https://example.test/inv-d/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-BH",
+          "upstream": "UP-BH",
+          "uri": "https://example.test/inv-d/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "foreign scope note",
+          "label": "support",
+          "scope": "SCOPE-9",
+          "spans": [],
+          "digest": "c27f4d7e7f97881e05a2148f62cb7a71bc4c67c67c876cc594f5a93379951e39"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "local scope note",
+          "label": "support",
+          "spans": [],
+          "digest": "370fe8b45514f02469a2a7f36fc605e2dadec5fdcd3896fd89b3fedfeb9804b7"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CROSS_SCOPE"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CROSS_SCOPE"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CROSS_SCOPE"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Cross-scope unit excluded; one in-scope survivor is not enough.",
+      "split": "dev",
+      "case_sha256": "dde709588916e7856fd32299edbc0cc9d043dd82aea272be5cf2c337d510fcab"
+    },
+    {
+      "case_id": "S1-012-D29",
+      "family": "invalid",
+      "cluster": "INV-E",
+      "severity": "high",
+      "claim": {
+        "claim_id": "CL-D29",
+        "version": 2
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-BI",
+          "upstream": "UP-BI",
+          "uri": "https://example.test/inv-e/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-BJ",
+          "upstream": "UP-BJ",
+          "uri": "https://example.test/inv-e/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "old version text",
+          "label": "support",
+          "version": 1,
+          "spans": [],
+          "digest": "bf250d4ac8edab1da99477d9b657b69dd71a6310ed0ba2a3f244fbe4258c66fd"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "new version text",
+          "label": "support",
+          "version": 2,
+          "spans": [],
+          "digest": "343268fafe2813fc9e138354c0a656442a1e5c4b33c89465a011534f6dc96dea"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_VERSION_MISMATCH"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_VERSION_MISMATCH"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_VERSION_MISMATCH"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Claim-version mismatch excludes the stale unit.",
+      "split": "dev",
+      "case_sha256": "677118e7cb469bc4acd66fff77aaab1377335c20e19e9f628b2a2950048b8d45"
+    },
+    {
+      "case_id": "S1-012-D30",
+      "family": "invalid",
+      "cluster": "INV-F",
+      "severity": "high",
+      "probe": "D",
+      "claim": {
+        "claim_id": "CL-D30"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "upstream": "UP-BK",
+          "uri": "https://example.test/inv-f/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-BL",
+          "upstream": "UP-BL",
+          "uri": "https://example.test/inv-f/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "publisherless note",
+          "label": "support",
+          "spans": [],
+          "digest": "d636a44d4a5883dc14bf5e77d12c30716b947c77f94b02388fc1282dff80d33a"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "solid note",
+          "label": "support",
+          "spans": [],
+          "digest": "f47387553bfa077037b21fce141502efea96ff2194680f98edabe1b16130f599"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "abstain",
+          "reason": "ABSTAIN_UNKNOWN"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "abstain",
+          "reason": "ABSTAIN_UNKNOWN"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "abstain",
+          "reason": "ABSTAIN_UNKNOWN"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Probe D: missing publisher means unresolved independence: abstain, not invent-a-group. Abstain allowed by oracle.",
+      "split": "dev",
+      "case_sha256": "162f3b761953ca6775242da8a1be18e14ef3e0c824252ef0338a7317f8433a83"
+    },
+    {
+      "case_id": "S1-012-D31",
+      "family": "invalid",
+      "cluster": "INV-G",
+      "severity": "high",
+      "claim": {
+        "claim_id": "CL-D31"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-BM",
+          "upstream": "UP-BM",
+          "uri": "https://example.test/inv-g/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-BN",
+          "upstream": "UP-BN",
+          "uri": "https://example.test/inv-g/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "unverified tip",
+          "label": "support",
+          "verified": false,
+          "spans": [],
+          "digest": "781de862cd74f92243abc51b1005ebb5883cd2938b8b6ed44f457f2f536f2693"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "verified backup",
+          "label": "support",
+          "spans": [],
+          "digest": "bed3f506b26e5487058b6849775fa0b5753e3ba9a98f9253ab5cf954aff609c7"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_UNVERIFIED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_UNVERIFIED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_UNVERIFIED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Unverified unit excluded; unverified is not a group.",
+      "split": "dev",
+      "case_sha256": "16b92da6b20c8cfa647fc8c2e7aa7376c8698f99a2525b1481982a8a32fc7a23"
+    },
+    {
+      "case_id": "S1-012-D32",
+      "family": "invalid",
+      "cluster": "INV-H",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-D32"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-BO",
+          "upstream": "UP-BO",
+          "uri": "https://example.test/inv-h/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-BP",
+          "upstream": "UP-BP",
+          "uri": "https://example.test/inv-h/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "null group item",
+          "label": "support",
+          "group": null,
+          "spans": [],
+          "digest": "def7f336808b9574596a4795719c8b4303333dde7ae8f64788443db49758f24b"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "grouped item",
+          "label": "support",
+          "spans": [],
+          "digest": "b4e31980833a024f3621008a0095c5fc04622f26a61b2a3aab1c611b0cf16293"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "abstain",
+          "reason": "ABSTAIN_UNKNOWN"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "abstain",
+          "reason": "ABSTAIN_UNKNOWN"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "abstain",
+          "reason": "ABSTAIN_UNKNOWN"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Null independence group is unresolved: abstain per oracle.",
+      "split": "dev",
+      "case_sha256": "7bc83c8b1a96327b9cf2d9aa08b31c8ca6ea63fd4b6be413c1257a1ca797f48c"
+    },
+    {
+      "case_id": "S1-012-D33",
+      "family": "nearmiss",
+      "cluster": "NEAR-A",
+      "severity": "high",
+      "probe": "G",
+      "claim": {
+        "claim_id": "CL-D33"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-CA",
+          "upstream": "UP-CA",
+          "uri": "https://example.test/near-a/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-CB",
+          "upstream": "UP-CB",
+          "uri": "https://example.test/near-a/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "word for word same sentence here",
+          "label": "support",
+          "spans": [],
+          "digest": "3df0bd37260d4dbe87c6977389ad28f493f5af671bcef35adc257a8001106330"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "word for word same sentence here",
+          "label": "support",
+          "spans": [],
+          "digest": "3df0bd37260d4dbe87c6977389ad28f493f5af671bcef35adc257a8001106330"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Probe G: lexical identity with disjoint transparent provenance keeps full weight in document/span views; digest view documents its keying limit.",
+      "split": "dev",
+      "case_sha256": "43a9b4b4919567e2487cd8710bc3dd0f3b7c01e562860906b17be747c87adcf1"
+    },
+    {
+      "case_id": "S1-012-D34",
+      "family": "nearmiss",
+      "cluster": "NEAR-B",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-D34"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-CC",
+          "upstream": "UP-CC",
+          "uri": "https://example.test/near-b/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-CD",
+          "upstream": "UP-CD",
+          "uri": "https://example.test/near-b/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "the result holds under condition x",
+          "label": "support",
+          "spans": [],
+          "digest": "38d24961cf99bd51be24e920e279279060ff0888677972d1566b274214fdff27"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "condition x implies the result holds",
+          "label": "support",
+          "spans": [],
+          "digest": "bee824c9ddd84ec86e6cf8393272b0fecb1484bdabd697664426a3034c826c54"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Paraphrase independents: distinct digests, disjoint provenance, full weight everywhere.",
+      "split": "dev",
+      "case_sha256": "162e3f0f9bd9e3c10ff321521c632ebe802739396d61ec5e30bd2299cdb35625"
+    },
+    {
+      "case_id": "S1-012-D35",
+      "family": "nearmiss",
+      "cluster": "NEAR-C",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-D35"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-CE",
+          "upstream": "UP-CE",
+          "uri": "https://example.test/near-c/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-CE",
+          "upstream": "UP-CF",
+          "uri": "https://example.test/near-c/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "desk alpha memo",
+          "label": "support",
+          "spans": [],
+          "digest": "ea934e98fccbab7a98dc583b39fd5be3e3f70d6bd4872b821d708f4334061b13"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "desk beta memo",
+          "label": "support",
+          "spans": [],
+          "digest": "64ce2b872d3707ddeb7ece6226ca2c572961dd78c397995125a51248f68c2ffd"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Same publisher, disjoint upstreams (separate desks): two groups. Publisher label alone never decides.",
+      "split": "dev",
+      "case_sha256": "3587a6593cfd52d7174272b3b5ca2dcc7867ea9044a0375aeb5a68de65440179"
+    },
+    {
+      "case_id": "S1-012-D36",
+      "family": "nearmiss",
+      "cluster": "NEAR-D",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-D36"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-CF",
+          "upstream": "UP-CG",
+          "uri": "https://example.test/near-d/1"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "lone but solid",
+          "label": "support",
+          "spans": [],
+          "digest": "83307271bcd6f1d05805b0133784a5aede30595e236b22ddc91c8292554d0ca9"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 1,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Single primary is insufficient everywhere; reputation-only admits on raw score (control shows the gap).",
+      "split": "dev",
+      "case_sha256": "e3cabe72f15c7afcc026dabc17b653abe48eb91c04fd8424bdbdab073bd98308"
+    },
+    {
+      "case_id": "S1-012-D37",
+      "family": "nearmiss",
+      "cluster": "NEAR-E",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-D37"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-CG",
+          "upstream": "UP-CH",
+          "uri": "https://example.test/near-e/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-CH",
+          "upstream": "UP-CI",
+          "uri": "https://example.test/near-e/2"
+        },
+        {
+          "source_id": "S3",
+          "publisher": "PUB-CI",
+          "upstream": "UP-CJ",
+          "uri": "https://example.test/near-e/3"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "keep alpha",
+          "label": "support",
+          "spans": [],
+          "digest": "24c40b24368e8a3e2a06a4571a73d213aee78f1937e44c22217112256aa31a21"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "keep beta revoked",
+          "label": "support",
+          "revoked": true,
+          "spans": [],
+          "digest": "3ac8d2213899fd9ba0fe8e40371b06cab54c444cdde8116771ec7f86147d5d5a"
+        },
+        {
+          "doc_id": "D3",
+          "source_id": "S3",
+          "text": "keep gamma",
+          "label": "support",
+          "spans": [],
+          "digest": "feecdcc84157a82c04c14a4918f0a392bf37ab38a5063599fe7222b034751a36"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 3,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Partial revocation: revoked unit excluded, two survivors admit.",
+      "split": "dev",
+      "case_sha256": "d56b57be744e9210ac8a21d5373985d8e864d5589362047ca568874a9a28f528"
+    },
+    {
+      "case_id": "S1-012-D38",
+      "family": "nearmiss",
+      "cluster": "NEAR-F",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-D38"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-CJ",
+          "upstream": "UP-CK",
+          "uri": "https://example.test/near-f/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-CK",
+          "upstream": "UP-CL",
+          "uri": "https://example.test/near-f/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "split decision head",
+          "label": "support",
+          "spans": [
+            {
+              "span_id": "D1s1",
+              "text": "split decision head alpha",
+              "disjoint": true,
+              "digest": "168dc81bbe77fbf7352d5e090b2fdffa2430f416662439b9da93dee2c6f5356d"
+            }
+          ],
+          "digest": "38160de27160050a5e1ab6b33e0cdc61880a6d68ada7d45495bdebff82af14b6"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "split decision tail",
+          "label": "support",
+          "spans": [
+            {
+              "span_id": "D2s1",
+              "text": "split decision tail beta",
+              "disjoint": true,
+              "digest": "d5171330644e49d7c136c3552c9b8326633e8bc2297622a7827345c701bfbf7e"
+            }
+          ],
+          "digest": "041a5e08f38711fb678aa5828670b1d79c2d7f1efb229397218ca0d4998f6e78"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Disjoint spans across disjoint upstreams: no merge anywhere.",
+      "split": "dev",
+      "case_sha256": "a903380d381d5f921e1216c35f9bdccfe092f4807f429b5f01e458ceebd3469a"
+    },
+    {
+      "case_id": "S1-012-D39",
+      "family": "nearmiss",
+      "cluster": "NEAR-G",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-D39"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-CL",
+          "upstream": "UP-CM",
+          "uri": "https://example.test/near-g/1"
+        },
+        {
+          "source_id": "S2",
+          "upstream": "UP-CN",
+          "uri": "https://example.test/near-g/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "half known good",
+          "label": "support",
+          "spans": [],
+          "digest": "6fbe4b33fb4d0e3c650de9597caf7a7965bf4a3c72dfab8e33d46cc730ff1cec"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "half unknown origin",
+          "label": "support",
+          "spans": [],
+          "digest": "fa446aa7ab53b6c43a66c184e3f0b22df1da4b747a4f6d9d3a38efedaecaa3af"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "abstain",
+          "reason": "ABSTAIN_UNKNOWN"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "abstain",
+          "reason": "ABSTAIN_UNKNOWN"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "abstain",
+          "reason": "ABSTAIN_UNKNOWN"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Ambiguous independence (unknown origin on one side): abstain allowed, not scored correct.",
+      "split": "dev",
+      "case_sha256": "06bc679d6df933ae5df6d422bb11549aeb4348825b2fccbbdd0359b56ce3a87c"
+    },
+    {
+      "case_id": "S1-012-D40",
+      "family": "nearmiss",
+      "cluster": "NEAR-H",
+      "severity": "low",
+      "claim": {
+        "claim_id": "CL-D40"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-CM",
+          "upstream": "UP-CO",
+          "uri": "https://example.test/near-h/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-CN",
+          "upstream": "UP-CP",
+          "uri": "https://example.test/near-h/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "alternate reading one",
+          "label": "support",
+          "spans": [],
+          "digest": "2fbdae7cfa39349261b35019f3fbf06b87eb4dee67e84b22ec73a527f5f8a658"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "alternate reading two",
+          "label": "support",
+          "spans": [],
+          "digest": "d9ccfc9917e7e27d89232d2e876820c492af654d5fda17b2bc5769bd0d894b3a"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Alternate-correct: two valid readings from disjoint origins admit without artificial FAIL.",
+      "split": "dev",
+      "case_sha256": "1fabc87f5242b749d33fb2b2a568d5fbb508105ad90f117cb84c78c9a1be7778"
+    },
+    {
+      "case_id": "S1-012-H01",
+      "family": "gold",
+      "cluster": "GOLD-I",
+      "severity": "high",
+      "claim": {
+        "claim_id": "CL-H01"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-HA",
+          "upstream": "UP-HA",
+          "uri": "https://example.test/h-gold-i/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-HB",
+          "upstream": "UP-HB",
+          "uri": "https://example.test/h-gold-i/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout gold alpha",
+          "label": "support",
+          "spans": [],
+          "digest": "bcee2808a5cc9ebd08268d1597ac6cd0d6b4e26f6f6b79bcf1c66a466b28cedf"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "holdout gold beta",
+          "label": "support",
+          "spans": [],
+          "digest": "e7af24b9c0e1e7d57b39b769a4afe3056b74cdcd10ce80edd7aa66e03a3a2bfa"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout gold pair.",
+      "split": "holdout",
+      "case_sha256": "1a0650727b5b66ed47c3a06814a4dbf735085e255b7cbcdbdf1fbecc9e91597f"
+    },
+    {
+      "case_id": "S1-012-H02",
+      "family": "gold",
+      "cluster": "GOLD-J",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-H02"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-HC",
+          "upstream": "UP-HC",
+          "uri": "https://example.test/h-gold-j/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-HD",
+          "upstream": "UP-HD",
+          "uri": "https://example.test/h-gold-j/2"
+        },
+        {
+          "source_id": "S3",
+          "publisher": "PUB-HE",
+          "upstream": "UP-HE",
+          "uri": "https://example.test/h-gold-j/3"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout trio one",
+          "label": "support",
+          "spans": [],
+          "digest": "15269b1e6e2ca559f95494bedb44cb954864e178a7b49d703586938f36526f0b"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "holdout trio two",
+          "label": "refute",
+          "spans": [],
+          "digest": "b2dc7cfd4783757c733c3dccd5650cf0adfbbe497d69b236eba2071411b0154e"
+        },
+        {
+          "doc_id": "D3",
+          "source_id": "S3",
+          "text": "holdout trio three",
+          "label": "support",
+          "spans": [],
+          "digest": "1348dd358f834880e6a5efd5087a1a038c934d8b00f346c6a0ea0af15dfecff3"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 3,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 3,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 3,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 3,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout trio with one refuting trial.",
+      "split": "holdout",
+      "case_sha256": "8e46c14452d0d1e230400c42ffae3b5c7d2439cb6549ec0412be2843e28819c7"
+    },
+    {
+      "case_id": "S1-012-H03",
+      "family": "gold",
+      "cluster": "GOLD-K",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-H03"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-HF",
+          "upstream": "UP-HF",
+          "uri": "https://example.test/h-gold-k/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-HG",
+          "upstream": "UP-HG",
+          "uri": "https://example.test/h-gold-k/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "same words twice holdout",
+          "label": "support",
+          "spans": [],
+          "digest": "f7ebfbf862beee22fa0ebb79a55afb242a0137cee8452e704b2f13dbcdeedfb5"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "same words twice holdout",
+          "label": "support",
+          "spans": [],
+          "digest": "f7ebfbf862beee22fa0ebb79a55afb242a0137cee8452e704b2f13dbcdeedfb5"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout identical-text benign pair; digest view documents its limit.",
+      "split": "holdout",
+      "case_sha256": "975ec7ef2af503659719fb0efbd59ece6f65161c8eff72571c013fdca882ee2f"
+    },
+    {
+      "case_id": "S1-012-H04",
+      "family": "gold",
+      "cluster": "GOLD-L",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-H04"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-HH",
+          "upstream": "UP-HH",
+          "uri": "https://example.test/h-gold-l/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-HI",
+          "upstream": "UP-HI",
+          "uri": "https://example.test/h-gold-l/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout rated one",
+          "label": "support",
+          "spans": [],
+          "digest": "1c2c042e895aa1b124aa2774401ef2c9ef29c15a0682a2723fdb98ace3d6b88a"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "holdout rated two",
+          "label": "support",
+          "spans": [],
+          "digest": "eeb22393ddf212d0c177616e605dd8a1b684a64477782786910342061166675b"
+        }
+      ],
+      "ratings": [
+        {
+          "from": "S1",
+          "to": "S2",
+          "value": 0.7
+        },
+        {
+          "from": "S2",
+          "to": "S1",
+          "value": 0.6
+        }
+      ],
+      "anchor": [
+        "S2"
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout anchored pair.",
+      "split": "holdout",
+      "case_sha256": "563bf8dd5a3c28bcacd57532f712ff9f8dfd142f1599e391150c6c2b5059435a"
+    },
+    {
+      "case_id": "S1-012-H05",
+      "family": "correlation",
+      "cluster": "MIR-I",
+      "severity": "critical",
+      "probe": "A",
+      "claim": {
+        "claim_id": "CL-H05"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-HJ",
+          "upstream": "UP-HJ",
+          "uri": "https://example.test/h-mir-i/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-HJ",
+          "upstream": "UP-HJ",
+          "uri": "https://example.test/h-mir-i/2"
+        },
+        {
+          "source_id": "S3",
+          "publisher": "PUB-HJ",
+          "upstream": "UP-HJ",
+          "uri": "https://example.test/h-mir-i/3"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout mirror chant",
+          "label": "support",
+          "spans": [],
+          "digest": "5d621d1cb28e083343cbe79109e79ecf33dedfded5ce6b6384968d781cc4227f"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "holdout mirror chant",
+          "label": "support",
+          "spans": [],
+          "digest": "5d621d1cb28e083343cbe79109e79ecf33dedfded5ce6b6384968d781cc4227f"
+        },
+        {
+          "doc_id": "D3",
+          "source_id": "S3",
+          "text": "holdout mirror chant",
+          "label": "support",
+          "spans": [],
+          "digest": "5d621d1cb28e083343cbe79109e79ecf33dedfded5ce6b6384968d781cc4227f"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 3,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout mirror trio collapses.",
+      "split": "holdout",
+      "case_sha256": "77560c44d8f37b0895e0f5f1e94fcb1e79fca6dc5692af389812d30e56d5cdb1"
+    },
+    {
+      "case_id": "S1-012-H06",
+      "family": "correlation",
+      "cluster": "MIR-J",
+      "severity": "high",
+      "claim": {
+        "claim_id": "CL-H06"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-HK",
+          "upstream": "UP-HK",
+          "uri": "https://example.test/h-mir-j/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-HL",
+          "upstream": "UP-HK",
+          "uri": "https://example.test/h-mir-j/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout upstream prime",
+          "label": "support",
+          "spans": [],
+          "digest": "8fa129562d59b52ba7d43447aa11717fcef63606da77edf73153c67606368458"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "holdout upstream restated",
+          "label": "support",
+          "spans": [],
+          "digest": "9033632cc8b73314b012df3b3f9520cf1d540cf4ad2420452633914e25c9caed"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout shared-upstream pair.",
+      "split": "holdout",
+      "case_sha256": "ba90d974d2a1a4856c27a474a32340baea635eaf98b4a7168a096d45f69b540b"
+    },
+    {
+      "case_id": "S1-012-H07",
+      "family": "correlation",
+      "cluster": "MIR-K",
+      "severity": "high",
+      "probe": "C",
+      "claim": {
+        "claim_id": "CL-H07"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-HM",
+          "upstream": "UP-HM",
+          "uri": "https://example.test/h-mir-k/1"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout overlap solo",
+          "label": "support",
+          "spans": [
+            {
+              "span_id": "D1s1",
+              "text": "holdout overlap",
+              "disjoint": false,
+              "digest": "d6f591d61f73e0b924358115b14988e18339a092dcf59a94b1581665316e534f"
+            },
+            {
+              "span_id": "D1s2",
+              "text": "overlap solo",
+              "disjoint": false,
+              "digest": "eb150235997f6e67a807882c8122bf0fd73234da2f20f760d41c20475325d285"
+            }
+          ],
+          "digest": "0a0fbdeb64dfdd4602d5d3c896f7c2a4b3cf735c0d814d66ec9895d8869e3887"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 1,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout overlap pair collapses.",
+      "split": "holdout",
+      "case_sha256": "c44a46b38722149aedadaf8d5e4c6454cc07f8cd3266044cf5e87c2ea3fd3322"
+    },
+    {
+      "case_id": "S1-012-H08",
+      "family": "correlation",
+      "cluster": "MIR-L",
+      "severity": "medium",
+      "probe": "C",
+      "claim": {
+        "claim_id": "CL-D16"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-HN",
+          "upstream": "UP-HN",
+          "uri": "https://example.test/h-mir-l/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-HN",
+          "upstream": "UP-HN",
+          "uri": "https://example.test/h-mir-l/2"
+        },
+        {
+          "source_id": "S3",
+          "publisher": "PUB-HN",
+          "upstream": "UP-HN",
+          "uri": "https://example.test/h-mir-l/3"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout split one",
+          "label": "support",
+          "spans": [
+            {
+              "span_id": "D1s1",
+              "text": "holdout split one a",
+              "disjoint": false,
+              "digest": "f658402204fd8093f46e779dfb50d27d2d2ac775d1d4e23fa8b7244a7dc7f64c"
+            },
+            {
+              "span_id": "D1s2",
+              "text": "holdout split one b",
+              "disjoint": false,
+              "digest": "df709fa494c8486eedac0ac02a5fc46764dcceb823844eebf999e009c57b92da"
+            },
+            {
+              "span_id": "D1s3",
+              "text": "holdout split one c",
+              "disjoint": false,
+              "digest": "e00b6333db927124adb4c2574721c85d6a864fe5fee7d914f5ab5d4278e3d516"
+            }
+          ],
+          "digest": "ccb81c6740c96ee860bb5536bdda5a1e1fdadadb0ed773773a8a8bed21b6e16e"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 1,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout split trio collapses to one.",
+      "split": "holdout",
+      "case_sha256": "261f1aa179f501175eccd9fe9a27714d34091eebc37346b570be2878a0aa3865"
+    },
+    {
+      "case_id": "S1-012-H09",
+      "family": "sybil",
+      "cluster": "SYB-I",
+      "severity": "critical",
+      "probe": "A",
+      "claim": {
+        "claim_id": "CL-H09"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "HFARM",
+          "upstream": "UP-HFARM",
+          "uri": "https://example.test/h-syb-i/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "HFARM",
+          "upstream": "UP-HFARM",
+          "uri": "https://example.test/h-syb-i/2"
+        },
+        {
+          "source_id": "S3",
+          "publisher": "HFARM",
+          "upstream": "UP-HFARM",
+          "uri": "https://example.test/h-syb-i/3"
+        },
+        {
+          "source_id": "S4",
+          "publisher": "HFARM",
+          "upstream": "UP-HFARM",
+          "uri": "https://example.test/h-syb-i/4"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout farmed chant",
+          "label": "support",
+          "spans": [],
+          "digest": "b46497eeb78a75c7ef2196e1dbdc1ddec21de6c2015979fd2f1a1a1941821b42"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "holdout farmed chant",
+          "label": "support",
+          "spans": [],
+          "digest": "b46497eeb78a75c7ef2196e1dbdc1ddec21de6c2015979fd2f1a1a1941821b42"
+        },
+        {
+          "doc_id": "D3",
+          "source_id": "S3",
+          "text": "holdout farmed chant",
+          "label": "support",
+          "spans": [],
+          "digest": "b46497eeb78a75c7ef2196e1dbdc1ddec21de6c2015979fd2f1a1a1941821b42"
+        },
+        {
+          "doc_id": "D4",
+          "source_id": "S4",
+          "text": "holdout farmed chant",
+          "label": "support",
+          "spans": [],
+          "digest": "b46497eeb78a75c7ef2196e1dbdc1ddec21de6c2015979fd2f1a1a1941821b42"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 4,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout T1 farm collapses.",
+      "split": "holdout",
+      "case_sha256": "26bcc4d63a50392f561e0468c6b7dc30fd05aa6f3397ac07e68d6de683f1dae4"
+    },
+    {
+      "case_id": "S1-012-H10",
+      "family": "sybil",
+      "cluster": "SYB-J",
+      "severity": "critical",
+      "probe": "B",
+      "claim": {
+        "claim_id": "CL-H10"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "HCLQ-1",
+          "upstream": "UP-HCLQ",
+          "uri": "https://example.test/h-syb-j/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "HCLQ-2",
+          "upstream": "UP-HCLQ",
+          "uri": "https://example.test/h-syb-j/2"
+        },
+        {
+          "source_id": "S3",
+          "publisher": "HCLQ-3",
+          "upstream": "UP-HCLQ",
+          "uri": "https://example.test/h-syb-j/3"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout clique a",
+          "label": "support",
+          "spans": [],
+          "digest": "119f0e1e54b355b50dd55a707e76c5f74d67cc1f659cc7ff44f2a98a7a58e0e2"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "holdout clique b",
+          "label": "support",
+          "spans": [],
+          "digest": "63d23fd5db2f4a08f0d2b93d53c2a6b7a834d0881b9c6fe59ac5378169500240"
+        },
+        {
+          "doc_id": "D3",
+          "source_id": "S3",
+          "text": "holdout clique c",
+          "label": "support",
+          "spans": [],
+          "digest": "32c29331c719b7493b3cb5cc1c37763e0d26114a16f0880ca60dcb05160dc8cd"
+        }
+      ],
+      "ratings": [
+        {
+          "from": "S1",
+          "to": "S2",
+          "value": 1.0
+        },
+        {
+          "from": "S1",
+          "to": "S3",
+          "value": 1.0
+        },
+        {
+          "from": "S2",
+          "to": "S1",
+          "value": 1.0
+        },
+        {
+          "from": "S2",
+          "to": "S3",
+          "value": 1.0
+        },
+        {
+          "from": "S3",
+          "to": "S1",
+          "value": 1.0
+        },
+        {
+          "from": "S3",
+          "to": "S2",
+          "value": 1.0
+        }
+      ],
+      "anchor": null,
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 3,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout T2 anchorless trio: no enforcement anywhere.",
+      "split": "holdout",
+      "case_sha256": "93c953f3aa384621fb39343cd10b111327dee0bf6336296d8951929213f1b138"
+    },
+    {
+      "case_id": "S1-012-H11",
+      "family": "sybil",
+      "cluster": "SYB-K",
+      "severity": "high",
+      "probe": "D",
+      "claim": {
+        "claim_id": "CL-H11"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "HFRONT-A",
+          "upstream": "UP-HHID",
+          "uri": "https://example.test/h-syb-k/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "HFRONT-B",
+          "upstream": "UP-HHID",
+          "uri": "https://example.test/h-syb-k/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout launder one",
+          "label": "support",
+          "spans": [],
+          "digest": "e6aa3fdc121958feece6b65328ea08b455736ceaf2bedd495c3a72b8ab52e10a"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "holdout launder two",
+          "label": "support",
+          "spans": [],
+          "digest": "6b1370908f6a968e25ade22a06207dffcafda315a7927ed243f8c9fe63d9f50f"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout T3 laundered pair collapses.",
+      "split": "holdout",
+      "case_sha256": "d121a4c2d41b1ff26b03fa60a22f63c6ec333a66cdc4ba641e71c953c1e4b40d"
+    },
+    {
+      "case_id": "S1-012-H12",
+      "family": "sybil",
+      "cluster": "SYB-L",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-H12"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "HANCH-A",
+          "upstream": "UP-HANCH",
+          "uri": "https://example.test/h-syb-l/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "HANCH-B",
+          "upstream": "UP-HANCH2",
+          "uri": "https://example.test/h-syb-l/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout anchored one",
+          "label": "support",
+          "spans": [],
+          "digest": "36f4610be5659e6f9e3127585a323ea7ab7cebef22769ce9cddb5d3a23dde030"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "holdout anchored two",
+          "label": "support",
+          "spans": [],
+          "digest": "8a14a054bc650d7e08a9259dd4f9ed10296761902af4dc2159b93123e42cf851"
+        }
+      ],
+      "ratings": [
+        {
+          "from": "S1",
+          "to": "S2",
+          "value": 1.0
+        },
+        {
+          "from": "S2",
+          "to": "S1",
+          "value": 1.0
+        }
+      ],
+      "anchor": [
+        "S1"
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout anchored control admits (recommendation only for trust).",
+      "split": "holdout",
+      "case_sha256": "e0162bfd31ca533c045afe0560d660f16c8b5ce3fef641062b2088bb4881953b"
+    },
+    {
+      "case_id": "S1-012-H13",
+      "family": "invalid",
+      "cluster": "INV-I",
+      "severity": "high",
+      "probe": "E",
+      "claim": {
+        "claim_id": "CL-H13"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-HO",
+          "upstream": "UP-HO",
+          "uri": "https://example.test/h-inv-i/1",
+          "status": "REVOKED"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-HP",
+          "upstream": "UP-HP",
+          "uri": "https://example.test/h-inv-i/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout revoked",
+          "label": "support",
+          "spans": [],
+          "digest": "526a75010e3c0713d6a50d32c6305709118fc61d483b8014314f13607d3dc7dd"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "holdout lone",
+          "label": "support",
+          "spans": [],
+          "digest": "85a10eb225e19c41dc9c4dcf20eefa1821a33457078a2cddb3c7bb6eacaa5bf0"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_REVOKED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_REVOKED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_REVOKED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout revoked pair rejects.",
+      "split": "holdout",
+      "case_sha256": "345d7eade9e060e08aaeb05ab206fbeb23717996a2ca47850592c855019e6ee4"
+    },
+    {
+      "case_id": "S1-012-H14",
+      "family": "invalid",
+      "cluster": "INV-J",
+      "severity": "high",
+      "claim": {
+        "claim_id": "CL-H14",
+        "scope": "SCOPE-1"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-HQ",
+          "upstream": "UP-HQ",
+          "uri": "https://example.test/h-inv-j/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-HR",
+          "upstream": "UP-HR",
+          "uri": "https://example.test/h-inv-j/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout foreign",
+          "label": "support",
+          "scope": "SCOPE-7",
+          "spans": [],
+          "digest": "fbbf955e69fbb803787717f9e0230568b67015638be7a325b49c5fef48332d99"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "holdout local",
+          "label": "support",
+          "spans": [],
+          "digest": "151cd48cbfbcc7aac2dab3a72730ed11edf24fc890a2e326366584e1b7347189"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CROSS_SCOPE"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CROSS_SCOPE"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CROSS_SCOPE"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout cross-scope pair rejects.",
+      "split": "holdout",
+      "case_sha256": "101803bd5b00ad523d2a3ef6d1c437cbdfece45c6cffe86cb9909d7fab8ca7b0"
+    },
+    {
+      "case_id": "S1-012-H15",
+      "family": "invalid",
+      "cluster": "INV-K",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-H15"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "upstream": "UP-HS",
+          "uri": "https://example.test/h-inv-k/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-HT",
+          "upstream": "UP-HT",
+          "uri": "https://example.test/h-inv-k/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout originless",
+          "label": "support",
+          "spans": [],
+          "digest": "da22f3da181d630738e13ebe9fd9ba71086f9a767ecb8716f999d98469af4307"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "holdout solid",
+          "label": "support",
+          "spans": [],
+          "digest": "eb4269e99b1f1f4fa7e5f5555a197f92a101c3599c2f48ebe7056137a0b6c284"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "abstain",
+          "reason": "ABSTAIN_UNKNOWN"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "abstain",
+          "reason": "ABSTAIN_UNKNOWN"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "abstain",
+          "reason": "ABSTAIN_UNKNOWN"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout missing-publisher abstains.",
+      "split": "holdout",
+      "case_sha256": "09e5845da40c38ea97b2d7527ea6713d4fb2389eb15e07aeb2fc17c68ae0df61"
+    },
+    {
+      "case_id": "S1-012-H16",
+      "family": "invalid",
+      "cluster": "INV-L",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-H16",
+        "version": 3
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-HU",
+          "upstream": "UP-HU",
+          "uri": "https://example.test/h-inv-l/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-HV",
+          "upstream": "UP-HV",
+          "uri": "https://example.test/h-inv-l/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout v2 text",
+          "label": "support",
+          "version": 2,
+          "spans": [],
+          "digest": "7de0f23103f06f48a88bf53665378c3bb6cf263bddf88e3676dac0bf48cfbd45"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "holdout v3 text",
+          "label": "support",
+          "version": 3,
+          "spans": [],
+          "digest": "8581553c985e4db88ec91dc258efae20a1787d78781b1f2e01c4aa5b889d873a"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_VERSION_MISMATCH"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_VERSION_MISMATCH"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_VERSION_MISMATCH"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout version-mismatch pair rejects.",
+      "split": "holdout",
+      "case_sha256": "986cbda0d4fc426d7fd3f2a63095e05af4a068618852b4cc650c4d787e47fda6"
+    },
+    {
+      "case_id": "S1-012-H17",
+      "family": "nearmiss",
+      "cluster": "NEAR-I",
+      "severity": "high",
+      "probe": "G",
+      "claim": {
+        "claim_id": "CL-H17"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-HW",
+          "upstream": "UP-HW",
+          "uri": "https://example.test/h-near-i/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-HX",
+          "upstream": "UP-HX",
+          "uri": "https://example.test/h-near-i/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout same sentence twice",
+          "label": "support",
+          "spans": [],
+          "digest": "9a55a6b8eca98fcfe6481bac00e7cd85ffe16535d06853d92a90847dabd83e89"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "holdout same sentence twice",
+          "label": "support",
+          "spans": [],
+          "digest": "9a55a6b8eca98fcfe6481bac00e7cd85ffe16535d06853d92a90847dabd83e89"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout benign identical-text pair; digest limit documented.",
+      "split": "holdout",
+      "case_sha256": "d2087e885564963870e8333d1d78faf14fd1a0aa297441894329d16b3ee90558"
+    },
+    {
+      "case_id": "S1-012-H18",
+      "family": "nearmiss",
+      "cluster": "NEAR-J",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-H18"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-HY",
+          "upstream": "UP-HY",
+          "uri": "https://example.test/h-near-j/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-HY",
+          "upstream": "UP-HZ",
+          "uri": "https://example.test/h-near-j/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout desk one",
+          "label": "support",
+          "spans": [],
+          "digest": "745a6d7d9d569eb6399781b6a6d6475069e56537775eb9ec72d438f5bc8129e4"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "holdout desk two",
+          "label": "support",
+          "spans": [],
+          "digest": "8897fe44014b4b95af1c89e10144bde9b34d6c512b52eeb036c54857c52b7c4d"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout same-publisher disjoint-upstream pair admits.",
+      "split": "holdout",
+      "case_sha256": "185dc93b5cf53ff918adbba0642a8aa9dfef032898afeca214278b40a03921fb"
+    },
+    {
+      "case_id": "S1-012-H19",
+      "family": "nearmiss",
+      "cluster": "NEAR-K",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-H19"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-IA",
+          "upstream": "UP-IA",
+          "uri": "https://example.test/h-near-k/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-IB",
+          "upstream": "UP-IB",
+          "uri": "https://example.test/h-near-k/2"
+        },
+        {
+          "source_id": "S3",
+          "publisher": "PUB-IC",
+          "upstream": "UP-IC",
+          "uri": "https://example.test/h-near-k/3"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout keep one",
+          "label": "support",
+          "spans": [],
+          "digest": "489b7663d980844e8ea9fd1beba2bb23a23aa7da9905ceab611215d66d9485a0"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "holdout drop revoked",
+          "label": "support",
+          "revoked": true,
+          "spans": [],
+          "digest": "c81ba6e32d277fbde21b7b42a66567e95dd1cc0b2b57752a7288654b4ef2c700"
+        },
+        {
+          "doc_id": "D3",
+          "source_id": "S3",
+          "text": "holdout keep three",
+          "label": "support",
+          "spans": [],
+          "digest": "ae3c7a65215c44d2f54ba7fd2bf0b145a171c695c68e5d528aa2a1e734741c28"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 3,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout partial revocation admits on survivors.",
+      "split": "holdout",
+      "case_sha256": "2187412686e49b39551fc93d462d8f8e192fb1658ea37bca2466fc28d5d3c1e0"
+    },
+    {
+      "case_id": "S1-012-H20",
+      "family": "nearmiss",
+      "cluster": "NEAR-L",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-H20"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "upstream": "UP-ID",
+          "uri": "https://example.test/h-near-l/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-IE",
+          "upstream": "UP-IE",
+          "uri": "https://example.test/h-near-l/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout known half",
+          "label": "support",
+          "spans": [],
+          "digest": "889e3468a3fd37c0dd0767fa4f75b3733f84afaab32982c3f80e09b85be637f9"
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "holdout unknown half",
+          "label": "support",
+          "spans": [],
+          "digest": "d7ed749691d0b0f08bd59e6a4d598ea4a645129dee4b65d6a1255191129c203e"
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "abstain",
+          "reason": "ABSTAIN_UNKNOWN"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "abstain",
+          "reason": "ABSTAIN_UNKNOWN"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "abstain",
+          "reason": "ABSTAIN_UNKNOWN"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout ambiguous pair abstains.",
+      "split": "holdout",
+      "case_sha256": "63259e169240cf3103eb15bd212978903e0296b6903037c3c468bd1e543a3bd7"
+    }
+  ]
+}
