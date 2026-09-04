@@ -857,22 +857,23 @@ python -m agentos.cli research-plan --topic "S1-009 MCP A2A delegation and knowl
 
 ### S1-010 — Tool-poisoning detection evaluation
 
-- **Status:** `PASS_WITH_LIMITS` — closed 2026-09-04 (research revision
-  1): goal `goal_0YJGMZWAHCSRGCVR01M1N3F77T`, campaign
-  `rcamp_DVXATRP0N41EZQ9601M1N3F77T`, evaluation `reval_R3Y7MD5STXP6SR3101M1N3F79N`, artifact chain
-  `8442d0dee8992f77f364ca7bfa1383babba4c5fca5beef9eb5ed0315d9010269`, evidence-pack content-addressed at
+- **Status:** `PASS_WITH_LIMITS` — closed 2026-09-04 (research revision 1).
+  Goal `goal_0YJGMZWAHCSRGCVR01M1N3F77T`, campaign
+  `rcamp_DVXATRP0N41EZQ9601M1N3F77T`, evaluation
+  `reval_R3Y7MD5STXP6SR3101M1N3F79N`, artifact chain
+  `8442d0dee8992f77f364ca7bfa1383babba4c5fca5beef9eb5ed0315d9010269`.
+  Evidence pack:
   `research/tickets/stage-1/S1-010/results/evidence/evidence-pack-22f1d222878b2771c92a648c884808f660d01e1459b56343fc4540ce43e84e4a.json`.
-  Frozen corpus 56 cases (14 benign / 14 malicious manifest / 14 malicious
-  output / 14 near-miss; 31 critical): TP=34, FP=3 (oracle-sanctioned
-  routing), TN=19, FN=0; precision 0.9189 (Wilson 95% [0.7870, 0.9720]),
-  recall 1.0; benign hard FPR 0.0; critical escapes 0; authority
-  expansions 0; probes A-F all detected through the production evaluator
-  path. Two process-separated A/B runs (runner pids 5259/5296) on clean
-  commit `eccba25c`, byte-identical decision sets. Phase A bundle,
-  independent round-3 review (READY_FOR_CANONICALIZATION) and canonical
-  Phase B: see [S1-010_CLOSURE.md](S1-010_CLOSURE.md) and
-  [evaluation-record.json](../research/tickets/stage-1/S1-010/evaluation-record.json).
-- **Status (was):** `READY`
+  Frozen corpus: 56 cases (14 per class; 31 critical), TP=34, FP=3
+  (oracle-sanctioned routing), TN=19, FN=0; precision 0.9189
+  (Wilson 95% [0.7870, 0.9720]), recall 1.0, benign hard FPR 0.0.
+  Critical escapes and authority expansions: zero. Probes A-F detected.
+  Two process-separated A/B runs (runner pids 5259/5296), clean measurement
+  commit `eccba25c`, byte-identical decision sets. Independent round-3
+  review and canonical Phase B: [closure report](S1-010_CLOSURE.md),
+  [evaluation record](../research/tickets/stage-1/S1-010/evaluation-record.json).
+  Integration with S1-011 on merge `4da4f72`: full suite 810 tests,
+  exit 0, one skipped; both tickets' archived evidence hashes verified.
 - **Priority:** `P0`
 - **Wave:** `W3`
 - **Owner:** `security`
