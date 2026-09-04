@@ -3,7 +3,7 @@
 - OS: Windows-11-10.0.22631-SP0 (Windows host, PowerShell)
 - Python: 3.12.6 (`py -3.12`), stdlib only for all ticket tooling
 - `$env:PYTHONPATH = "src"` (repo-root convention; ticket scripts need no PYTHONPATH)
-- Commit: `23ff603a72a2` (measurement commit; all 24 cells agree)
+- Commit: `f43217c53b89` (measurement commit; all 24 cells agree)
 - Tree: single tree shared by all 24 cells (see comparison.json)
 - Clean tree: true for every cell (verified per-manifest)
 - Corpus: 60 cases (40 dev + 20 holdout, lineage-isolated) x 4 variants
@@ -56,7 +56,7 @@ byte-for-byte plus `git ls-files` count (24 cells x 4 files + 4 merged
 files + 5 docs = 105 tracked files under results/). An earlier import
 attempt with PowerShell `Copy-Item` silently produced empty trees and
 was caught by the ls-files check; the false "copied verbatim" claim
-from that attempt is retracted here (see corrective-log.md item 6-7).
+from that attempt is retracted here (see corrective-log.md items 6-7).
 Manifest `output_root` values still point at the staging paths by
 design: they record where the bytes were produced.
 

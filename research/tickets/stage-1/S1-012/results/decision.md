@@ -7,8 +7,9 @@ oracle, no production threshold, no autonomous trust is claimed.
 
 Publication rule: the verdict above was re-derived from the tracked
 raw cells through the real entry points at publication time and
-crosschecked against the saved merged artifacts (finding F1 fix); any
-divergence would have refused publication.
+crosschecked against the saved merged artifacts (review finding F1);
+any divergence would have refused publication. The 24 raw cells are
+committed under results/run-a and results/run-b.
 
 ## Recommendation
 

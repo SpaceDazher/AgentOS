@@ -33,7 +33,7 @@ thresholds are never weakened to close a round.
    import was verified against staging instead of `git ls-files`, so
    96 files silently missed the commit; ENVIRONMENT.md repeated the
    false claim. Fixed by byte-verified robocopy import plus ls-files
-   count check; ENVIRONMENT.md corrected. Lesson: verify tracked
+   count check; ENVIRONMENT.md corrected here. Lesson: verify tracked
    state with `git ls-files`, never with the source of the copy.
 7. Copy-Item directory copies are unreliable (self-found, twice):
    PowerShell `Copy-Item -Recurse ...\*` silently produced empty
