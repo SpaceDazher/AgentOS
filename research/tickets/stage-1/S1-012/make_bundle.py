@@ -278,15 +278,31 @@ def derive_verdict() -> tuple:
             blockers.append(f"probes not all-pass for {variant}")
     if comparison.get("verdict") == "BLOCKED":
         blockers.append("comparison BLOCKED")
-    if comparison.get("sensitivity_winner") not in governed:
+    winner = comparison.get("sensitivity_winner")
+    if winner == "TIE":
+        tie = comparison.get("tie_limitation") or {}
+        if not tie.get("all_eligible") or not tie.get("tied"):
+            blockers.append("unresolved tie for winner")
+        elif comparison.get("sensitivity_flips"):
+            blockers.append("sensitivity flips present")
+        elif comparison.get("unknown_dependent") and \
+                not tie.get("tied"):
+            blockers.append("winner is UNKNOWN-dependent")
+    elif winner not in governed:
         blockers.append("comparison winner is not a governed variant")
-    if comparison.get("sensitivity_flips"):
-        blockers.append("sensitivity flips present")
-    if comparison.get("unknown_dependent"):
-        blockers.append("winner is UNKNOWN-dependent")
-    if sens.get("winner") not in governed or sens.get("flip_count"):
+    else:
+        if comparison.get("sensitivity_flips"):
+            blockers.append("sensitivity flips present")
+        if comparison.get("unknown_dependent"):
+            blockers.append("winner is UNKNOWN-dependent")
+    if sens.get("winner") not in governed:
+        if not (sens.get("winner") == "TIE" and winner == "TIE" and
+                (comparison.get("tie_limitation") or {}).get(
+                    "all_eligible")):
+            blockers.append("sensitivity artifact disagrees")
+    if sens.get("flip_count"):
         blockers.append("sensitivity artifact disagrees")
-    if sens.get("unknown_dependent"):
+    if sens.get("unknown_dependent") and winner != "TIE":
         blockers.append("sensitivity UNKNOWN-dependent")
     grid = (sens.get("parameter_grid") or {})
     if grid.get("flip_count"):

@@ -498,6 +498,21 @@ def main() -> int:
         sens["flips"].extend(
             {"grid_flip": True, **f} for f in grid["flips"])
         sens["flip_count"] = len(sens["flips"])
+    # Governed-only tie: all top-ranked designs are hard-passing
+    # eligible variants. Recorded as an explicit limitation (the MVP is
+    # then chosen on measured cost grounds, reported separately, never
+    # by reweighting). A tie involving anything else stays blocking.
+    tie_limitation = None
+    if sens["winner"] == "TIE":
+        ranking = sens.get("base_ranking", [])
+        top = ranking[0][0] if ranking else None
+        tied = sorted(d for v, d in ranking if v == top)
+        if tied and all(d in eligible for d in tied):
+            tie_limitation = {"tied": tied, "all_eligible": True,
+                              "note": "Safety tie among hard-passing "
+                                      "variants; MVP chosen on measured "
+                                      "cost grounds (see decision.md), "
+                                      "not by reweighting."}
     all_manifests = [cells_a[n]["manifest"] for n in cells_a] + \
         [cells_b[n]["manifest"] for n in cells_b]
     commits = sorted({m.get("commit") for m in all_manifests})
@@ -514,6 +529,7 @@ def main() -> int:
                   "sensitivity_winner": sens["winner"],
                   "sensitivity_flips": sens["flip_count"],
                   "unknown_dependent": sens["unknown_dependent"],
+                  "tie_limitation": tie_limitation,
                   "probe_h": tamper}
     Path(args.out).write_text(json.dumps(comparison, indent=2) + "\n",
                               encoding="utf-8", newline="\n")

@@ -511,5 +511,66 @@ class TestBundleRefusal(unittest.TestCase):
         self.assertFalse((work / "candidate-record.json").exists())
 
 
+    def test_governed_tie_accepted_with_limitation(self):
+        import tempfile
+        unique = "s1012_make_bundle_tie"
+        spec = importlib.util.spec_from_file_location(
+            unique, S1012 / "make_bundle.py")
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[unique] = module
+        spec.loader.exec_module(module)
+        work = Path(tempfile.mkdtemp())
+        (work / "results").mkdir()
+        (work / "dependency-gate.json").write_text(json.dumps(
+            {"all_proven": True, "canonical_db_recheck_required": True}))
+        governed = {"document": {"verdict": "PASS"},
+                    "span": {"verdict": "PASS"}}
+        (work / "results" / "metrics.json").write_text(json.dumps(
+            {"designs": governed}))
+        (work / "results" / "probes.json").write_text(json.dumps(
+            {"designs": {"document": {"all_pass": True},
+                         "span": {"all_pass": True}}}))
+        (work / "results" / "comparison.json").write_text(json.dumps(
+            {"verdict": "DECIDED", "sensitivity_winner": "TIE",
+             "sensitivity_flips": 0, "unknown_dependent": True,
+             "tie_limitation": {"tied": ["document", "span"],
+                                "all_eligible": True}}))
+        (work / "results" / "sensitivity.json").write_text(json.dumps(
+            {"winner": "TIE", "flip_count": 0, "unknown_dependent": True,
+             "parameter_grid": {"flip_count": 0}}))
+        module.HERE = work
+        module.RESULTS = work / "results"
+        blockers, facts = module.derive_verdict()
+        self.assertEqual(blockers, [])
+
+    def test_unresolved_tie_blocked(self):
+        import tempfile
+        unique = "s1012_make_bundle_tie2"
+        spec = importlib.util.spec_from_file_location(
+            unique, S1012 / "make_bundle.py")
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[unique] = module
+        spec.loader.exec_module(module)
+        work = Path(tempfile.mkdtemp())
+        (work / "results").mkdir()
+        (work / "dependency-gate.json").write_text(json.dumps(
+            {"all_proven": True, "canonical_db_recheck_required": True}))
+        (work / "results" / "metrics.json").write_text(json.dumps(
+            {"designs": {"document": {"verdict": "PASS"}}}))
+        (work / "results" / "probes.json").write_text(json.dumps(
+            {"designs": {"document": {"all_pass": True}}}))
+        (work / "results" / "comparison.json").write_text(json.dumps(
+            {"verdict": "DECIDED", "sensitivity_winner": "TIE",
+             "sensitivity_flips": 0, "unknown_dependent": True,
+             "tie_limitation": None}))
+        (work / "results" / "sensitivity.json").write_text(json.dumps(
+            {"winner": "TIE", "flip_count": 0, "unknown_dependent": True,
+             "parameter_grid": {"flip_count": 0}}))
+        module.HERE = work
+        module.RESULTS = work / "results"
+        blockers, _ = module.derive_verdict()
+        self.assertTrue(blockers)
+
+
 if __name__ == "__main__":
     unittest.main()
