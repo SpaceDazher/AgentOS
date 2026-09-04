@@ -200,7 +200,7 @@ def remove_ready_outputs(here: Path | None = None) -> None:
 def _ticket_relative_files(here: Path) -> set[str]:
     excluded_names = {
         "bundle.json", "candidate-record.json", "dependency-gate.json",
-        "frozen-manifest.json",
+        "evaluation-record.json", "frozen-manifest.json",
     }
     paths: set[str] = set()
     for path in sorted(here.rglob("*")):

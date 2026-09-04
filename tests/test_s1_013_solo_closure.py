@@ -143,6 +143,11 @@ class TestClosedCandidate(unittest.TestCase):
                           record["canonical_dependencies"]},
                          {"S1-011", "S1-012"})
 
+    def test_canonical_output_does_not_invalidate_frozen_inputs(self):
+        publisher = load_module("make_bundle")
+        problems, _ = publisher.verify_frozen_manifest(TICKET)
+        self.assertEqual(problems, [])
+
 
 if __name__ == "__main__":
     unittest.main()
