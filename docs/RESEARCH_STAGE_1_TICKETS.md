@@ -1045,6 +1045,14 @@ python -m agentos.cli research-plan --topic "S1-012 evidence granularity indepen
 - **Status:** `PASS_WITH_LIMITS` — re-scoped and closed by operator decision
   `S1-013-OPERATOR-2026-09-04`; the originally specified 15-20-person pilot was
   cancelled, not completed.
+- **Canonical record:** Revision 1; goal
+  `goal_PZ0WP37PRBM05XH101M1QB60YD`; campaign
+  `rcamp_YX958H0WJ4YDK4AH01M1QB60YD`; evaluation
+  `reval_P911RT2XC117Y74Y01M1QB612C`; artifact chain
+  `766172bb18bcf479ce672ebe5e881a083e89430003b697a12650abf11c943e34`.
+- **Tracked evidence:** canonical pack
+  `results/evidence/evidence-pack-f2ccd24fae47822ddc83ecb206c3414e2020ce9e1cc5218c00780de124ca356b.json`;
+  `chain_fresh=true`, `latest_evaluation_valid=true`.
 - **Priority:** `P1`
 - **Wave:** `W3`
 - **Owner:** `hci`
