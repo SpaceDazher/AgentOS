@@ -5,6 +5,11 @@ hypothesis, no measured calibration data, non-blinded holdout, no
 human study). Phase A result: `READY_FOR_CANONICALIZATION`. No truth
 oracle, no production threshold, no autonomous trust is claimed.
 
+Publication rule: the verdict above was re-derived from the tracked
+raw cells through the real entry points at publication time and
+crosschecked against the saved merged artifacts (finding F1 fix); any
+divergence would have refused publication.
+
 ## Recommendation
 
 Adopt **document granularity with upstream collapse** as the MVP

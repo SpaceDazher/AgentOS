@@ -709,6 +709,9 @@ class TestPublicationRecompute(unittest.TestCase):
         spec.loader.exec_module(module)
         registry = module.tracked_registry()
         self.assertGreater(len(registry), 20)
+        self.assertNotIn(
+            "research/tickets/stage-1/S1-012/candidate-record.json",
+            registry)
         for rel, pinned in sorted(registry.items())[:5]:
             path = ROOT / rel.replace("/", "\\")
             if not path.is_file():

@@ -3,7 +3,7 @@
 - OS: Windows-11-10.0.22631-SP0 (Windows host, PowerShell)
 - Python: 3.12.6 (`py -3.12`), stdlib only for all ticket tooling
 - `$env:PYTHONPATH = "src"` (repo-root convention; ticket scripts need no PYTHONPATH)
-- Commit: `aa555a1fd302` (measurement commit; all 24 cells agree)
+- Commit: `23ff603a72a2` (measurement commit; all 24 cells agree)
 - Tree: single tree shared by all 24 cells (see comparison.json)
 - Clean tree: true for every cell (verified per-manifest)
 - Corpus: 60 cases (40 dev + 20 holdout, lineage-isolated) x 4 variants
@@ -38,23 +38,27 @@ Comparison + joint sensitivity + merged metrics/probes:
 py -3.12 research/tickets/stage-1/S1-012/compare_runs.py --a <stage>/run-a --b <stage>/run-b --out <stage>/comparison.json --sensitivity <stage>/sensitivity.json --metrics <stage>/metrics.json --probes <stage>/probes.json
 ```
 
-Bundle + candidate record (verdict derived, refuses on blockers):
+Bundle + candidate record (verdict re-derived from tracked raw cells,
+refuses on blockers):
 
 ```powershell
 py -3.12 research/tickets/stage-1/S1-012/make_bundle.py
 ```
 
-## Staging note (provenance-relevant)
+## Staging and import (corrected record)
 
-`<stage>` was a temp dir outside the repo. Reason: writing cell
-outputs directly into the worktree would have made later cells record
-`clean_tree=false`, breaking the same-clean-tree requirement. All 24
-manifests therefore record one commit, one tree, `clean_tree=true`,
-distinct PID/PPID/invocation_id/nonce/executor_id and distinct output
-roots. After verification, the staging tree was copied verbatim to
-`research/tickets/stage-1/S1-012/results/`. Manifest `output_root`
-values still point at the staging paths by design: they record where
-the bytes were produced.
+`<stage>` was a temp dir outside the repo: writing cell outputs
+directly into the worktree would have made later cells record
+`clean_tree=false`, breaking the same-clean-tree requirement. After
+verification, the staging tree was copied into
+`research/tickets/stage-1/S1-012/results/` with robocopy and verified
+byte-for-byte plus `git ls-files` count (24 cells x 4 files + 4 merged
+files + 5 docs = 105 tracked files under results/). An earlier import
+attempt with PowerShell `Copy-Item` silently produced empty trees and
+was caught by the ls-files check; the false "copied verbatim" claim
+from that attempt is retracted here (see corrective-log.md item 6-7).
+Manifest `output_root` values still point at the staging paths by
+design: they record where the bytes were produced.
 
 ## Determinism notes
 

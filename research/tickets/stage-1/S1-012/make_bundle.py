@@ -281,7 +281,8 @@ def tracked_registry() -> dict:
     registry: dict = {}
     ticket_rel = Path("research/tickets/stage-1/S1-012")
     for path in sorted(HERE.rglob("*")):
-        if path.is_file() and "__pycache__" not in path.parts:
+        if path.is_file() and "__pycache__" not in path.parts \
+                and path.name != "candidate-record.json":
             rel = (ticket_rel / path.relative_to(HERE)).as_posix()
             registry[rel] = sha(path.read_bytes())
     test_file = Path(__file__).resolve().parents[4] / "tests" / \
@@ -480,8 +481,12 @@ def main() -> int:
         "tracked_artifacts": tracked,
         "tracked_registry_note": "Every ticket file plus the test module, "
                                  "by repo-relative POSIX path with SHA-256 "
-                                 "of committed bytes; verifiable from "
-                                 "`git archive HEAD`.",
+                                 "of committed bytes, except "
+                                 "candidate-record.json itself (self-"
+                                 "reference paradox): the candidate is "
+                                 "bound by its git commit and reproduces "
+                                 "byte-for-byte on rebuild. Verifiable "
+                                 "from `git archive HEAD`.",
         "run_provenance": {"commits": comparison["commits"],
                            "trees": comparison["trees"],
                            "cells": comparison["cells"]},
