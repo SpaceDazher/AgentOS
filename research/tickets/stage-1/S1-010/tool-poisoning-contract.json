@@ -1,7 +1,7 @@
 {
   "schema": "agentos.s1-010.control-contract/v1",
   "ticket": "S1-010",
-  "contract_version": "1.0.0",
+  "contract_version": "1.1.0",
   "frozen_at": "2026-09-03T00:00:00Z",
   "authority": "AgentOS tool gateway admission and output handling; advisory detection only",
   "decision_enum": ["ALLOW", "DENY", "QUARANTINE", "HUMAN_REVIEW", "UNSUPPORTED"],
@@ -72,6 +72,7 @@
     "L8_audit": "every decision emits an immutable audit record with case_id, decision, reason_codes, per-layer findings, authority_mutations (must be empty), input/output digests, runner identity"
   },
   "registry_comparison_rules": {
+    "identity_binding": "manifest name must equal registered_context.tool_name; a tool whose name differs from the registered identity is critical drift (CD-IDENTITY-MISMATCH). The registered_effect_class is authority state and must belong to the closed effect_classes enum; an unknown registered or requested effect class is rejected non-permissively (NM-UNKNOWN-EFFECT) before any power comparison.",
     "capability_diff": "requested capabilities minus registered capabilities must be empty; any extra capability is a critical drift (CD-CAPABILITY-ADDED)",
     "effect_diff": "power(requested effect_class) <= power(registered effect_class); any escalation is critical drift (CD-EFFECT-ESCALATION)",
     "publisher_diff": "manifest publisher != registered publisher is critical drift (CD-PUBLISHER-CHANGE)",

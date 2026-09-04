@@ -15,8 +15,8 @@ import sys
 from pathlib import Path
 
 TICKET_ROOT = Path(__file__).resolve().parent
-CORPUS_VERSION = "1.0.0"
-FROZEN_AT = "2026-09-03T00:00:00Z"
+CORPUS_VERSION = "1.1.0"
+FROZEN_AT = "2026-09-04T00:00:00Z"
 
 PROC = "research/tickets/stage-1/S1-010/threat-model.json"
 
@@ -31,7 +31,8 @@ def case(cls: str, num: int, subtype: str, severity: str, critical: bool,
          expected_decision: str, expected_reason_class: str,
          quarantine_ok: bool = False, human_review_ok: bool = False,
          uncertain_effect_capable: bool = False, fault: dict | None = None,
-         notes: str = "") -> dict:
+         notes: str = "",
+         safe_reason_classes: list[str] | None = None) -> dict:
     cid = {
         "benign": "s1-010-bc", "malicious_manifest": "s1-010-mm",
         "malicious_output": "s1-010-mo", "near_miss": "s1-010-nm",
@@ -49,6 +50,11 @@ def case(cls: str, num: int, subtype: str, severity: str, critical: bool,
         "registered_context": ctx,
         "expected_decision": expected_decision,
         "expected_reason_class": expected_reason_class,
+        # Round 3 (finding #4): the oracle EXPLICITLY declares which
+        # alternate reason classes, if any, count as grounded for this
+        # case.  Empty means only the expected reason class is accepted;
+        # nothing is implicit.
+        "safe_reason_classes": list(safe_reason_classes or []),
         "quarantine_acceptable": quarantine_ok,
         "human_review_acceptable": human_review_ok,
         "uncertain_effect_capable": uncertain_effect_capable,
