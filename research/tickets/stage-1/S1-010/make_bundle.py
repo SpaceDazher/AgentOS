@@ -61,6 +61,12 @@ SOURCE_URI_OVERRIDES = {
     "src_agentos_gateway_spec":
         "https://github.com/SpaceDazher/AgentOS/blob/"
         "a0116167e0351beb1eef804d83845890be7253c9/src/agentos/gateway.py",
+    # Phase B prep (trusted host): the canonical research DB enforces
+    # space-free HTTP(S) canonical URIs (append-only trigger in
+    # migrations/0013); the registry's parenthetical file annotation
+    # belongs to title/version, not to the URI itself.
+    "src_mitre_atlas_taxonomy":
+        "https://github.com/mitre-atlas/atlas-data",
 }
 
 
