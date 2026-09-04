@@ -14,7 +14,7 @@
  },
  "corpus": {
   "case_count": 56,
-  "cases_sha256": "704e5a79d4d97b7d5b7ae38fa57a03c636fb94c8dbabcaea46c83463652f8941",
+  "cases_sha256": "507da4b1010cdd41f4135ae855baf46794c4a0a325d71b228d252f5d1ed48416",
   "class_counts": {
    "benign": 14,
    "malicious_manifest": 14,
@@ -49,20 +49,22 @@
  "evidence_gates_verified": {
   "comparison": "PASS",
   "dependency_gate": "PASS",
+  "git_bindings_verified": true,
   "independent_regrade_match": true,
   "probes_all_pass": true,
   "process_separation_verified": true,
   "run_summaries_schema_valid": true,
-  "staged_digests_reverified": true
+  "staged_digests_reverified": true,
+  "stored_evidence_matches_recomputation": true
  },
  "frozen_inputs": {
-  "dependency-gate.json": "8e013ca3ae8d6715f003b3732d009e99e8290ebf2b1eea58d43168b971caa2e0",
-  "rubric.json": "69039684dbe77a5fdc123b9c08ddeb0b755eaadb494219182c11baf7d1213002",
+  "dependency-gate.json": "77abb94ee0d7a0a7719244eae596c98bb750c6b4c162764c055c2a0fa0798667",
+  "rubric.json": "2b6fe2f52ed9a553d5e0e7b47d0bea8c90e9d9ba8f726f32e606d35f72285148",
   "source-registry.json": "d860a59537a5db369ee633939e82ba786548d6417caf31c8782fda6e684cea34",
   "threat-model.json": "41cebc657fcc7e1b54c6c479cc02a47c95f32794e0b3163f12ba9a768b1ed357",
-  "tool-poisoning-contract.json": "356c018e35580ae03e9dcf2eb3754af84837f9a9cbe5805fdf4d9a68a1ae7b17"
+  "tool-poisoning-contract.json": "4b620d59bdb5683bb9ea1146b1e820b5a6c1e8c207847870b890ef8bf0c47ca8"
  },
- "head_commit_at_generation": "e3bd8d0bb08dea08a3ce6f8a48f47af3a8ba8ec6",
+ "head_commit_at_generation": "f0f36746a96f51895c15ee68dccd657f90b2b79d",
  "limitations": [
   "Cloud gate proves tracked Git evidence only; no live canonical-DB consistency claim.",
   "Same-host process separation (independent verifier-A/verifier-B runner processes with distinct evaluator children), not an external human auditor or independently implemented auditor.",
@@ -71,7 +73,7 @@
   "Scanner disagreement and detector faults are deterministic declared faults exercising the aggregation path.",
   "pre_approved is a boolean entitlement in the evaluated model; exact-action+operation+expiry approval binding is declared by the contract but must be enforced by the production gateway."
  ],
- "phase": "A (cloud branch work; post-review round 2 fixes)",
+ "phase": "A (cloud branch work; post-review round 3 fixes)",
  "phase_b_command": {
   "commands": [
    "cd <repo root>  # workspace root for verified local provenance",
@@ -86,33 +88,33 @@
  "proposed_result": "PASS",
  "proposed_result_caveat": "subject to local canonical Phase B; the branch remains IN_REVIEW and the ticket status stays READY/IN_REVIEW",
  "runs": {
-  "commit_sha": "02cd76891b3962d3078abd47c84272513ad50352",
+  "commit_sha": "eccba25ca028b5fb8d53030952d6cf0d1fc57a36",
   "comparison_verdict": "PASS",
   "identical": true,
   "process_separation_verified": true,
   "run_a": {
    "decisions_sha256": "0662cf2dd9fa414ee2a540afec3b45982edc52277c0a89b7cf2dbeff50324798",
-   "evaluator_pid": 24305,
-   "evaluator_sha256": "1ba7e064234637835b39be610433c8a6e4547db4e09031f49b5b527ee02b07bd",
+   "evaluator_pid": 5270,
+   "evaluator_sha256": "0eda25d7639c608cc9212bd02d7f40b48076ac38400f31dfa6b77a671bdebe19",
    "executor_id": "verifier-A",
-   "nonce": "00ae0e62ca9c40ccb77a82f3d425f618",
-   "output_root": "/tmp/s1-010-runner-a-ub895sv_",
-   "runner_pid": 24294,
-   "runner_sha256": "d136c7cb963e724b0a93811dd129a7efb55420f6c9689645cf389ae8589217df",
+   "nonce": "1f82be39e12f4ef4b341afd9f78bd57e",
+   "output_root": "/tmp/s1-010-runner-a-b5wu05hn",
+   "runner_pid": 5259,
+   "runner_sha256": "3e7a3bd400494a33c2b0d70b97507c8757acc9f8225a953894109ad47ac19c14",
    "verdict": "PASS"
   },
   "run_b": {
    "decisions_sha256": "0662cf2dd9fa414ee2a540afec3b45982edc52277c0a89b7cf2dbeff50324798",
-   "evaluator_pid": 24327,
-   "evaluator_sha256": "1ba7e064234637835b39be610433c8a6e4547db4e09031f49b5b527ee02b07bd",
+   "evaluator_pid": 5307,
+   "evaluator_sha256": "0eda25d7639c608cc9212bd02d7f40b48076ac38400f31dfa6b77a671bdebe19",
    "executor_id": "verifier-B",
-   "nonce": "edb16a39fbfc45a5bc91dc292381462e",
-   "output_root": "/tmp/s1-010-runner-b-b9245aq1",
-   "runner_pid": 24316,
-   "runner_sha256": "d136c7cb963e724b0a93811dd129a7efb55420f6c9689645cf389ae8589217df",
+   "nonce": "77ed326209da417b975874066fa0e748",
+   "output_root": "/tmp/s1-010-runner-b-hi60y_90",
+   "runner_pid": 5296,
+   "runner_sha256": "3e7a3bd400494a33c2b0d70b97507c8757acc9f8225a953894109ad47ac19c14",
    "verdict": "PASS"
   },
-  "tree_sha": "2d94589d4091440bd52d6622cfa8e94d78683747"
+  "tree_sha": "14f6254c10241b688ff4898d1cfcbc8b20203453"
  },
  "schema": "agentos.s1-010.candidate-record/v1",
  "source_snapshot_hashes": {
@@ -128,27 +130,27 @@
  "ticket": "S1-010",
  "tracked_artifact_hashes": {
   "research/tickets/stage-1/S1-010/TASK_FOR_CLOUD_GLM.md": "c1f0cc41ae91447bdb670a2c72725512256bde6c1d11f7ba0523af84274461ad",
-  "research/tickets/stage-1/S1-010/build_corpus.py": "9b40ece9f7695bd520ad92fcd4a0430312941c1f6c848d58a04b3118bf4ef4d7",
-  "research/tickets/stage-1/S1-010/bundle.json": "f1a955decda90fa3064cb83cac818b4606afe58451ac168fba39992b2ff17c1f",
-  "research/tickets/stage-1/S1-010/cases.json": "704e5a79d4d97b7d5b7ae38fa57a03c636fb94c8dbabcaea46c83463652f8941",
-  "research/tickets/stage-1/S1-010/corpus-manifest.json": "4981fe505cc08b4fea6148c099c68d475c609131e87f2f86664887bcd2b88c72",
-  "research/tickets/stage-1/S1-010/dependency-gate.json": "8e013ca3ae8d6715f003b3732d009e99e8290ebf2b1eea58d43168b971caa2e0",
-  "research/tickets/stage-1/S1-010/dependency_gate.py": "fb79ea52ec8e5e1563f1ea411bba8ca35414778d6b6f7c04ba31f172e474bc01",
-  "research/tickets/stage-1/S1-010/evaluator.py": "1ba7e064234637835b39be610433c8a6e4547db4e09031f49b5b527ee02b07bd",
+  "research/tickets/stage-1/S1-010/build_corpus.py": "aa10efcb8d6ebed1bf8bea18c2152df778e449f9990193c8b5ccb65bcebc7748",
+  "research/tickets/stage-1/S1-010/bundle.json": "cd32bb2bca8096233c001ca120910b525d5ff0a5704e9f005295642259624ac5",
+  "research/tickets/stage-1/S1-010/cases.json": "507da4b1010cdd41f4135ae855baf46794c4a0a325d71b228d252f5d1ed48416",
+  "research/tickets/stage-1/S1-010/corpus-manifest.json": "771d89f1cc62a31cd173fa3ca74f3f53581c87aa3482edc604baa5ae15d1df10",
+  "research/tickets/stage-1/S1-010/dependency-gate.json": "77abb94ee0d7a0a7719244eae596c98bb750c6b4c162764c055c2a0fa0798667",
+  "research/tickets/stage-1/S1-010/dependency_gate.py": "c868ee407423c4b6aaee415a46ab1c547246414eec39d4ed9f553afe56d55bdf",
+  "research/tickets/stage-1/S1-010/evaluator.py": "0eda25d7639c608cc9212bd02d7f40b48076ac38400f31dfa6b77a671bdebe19",
   "research/tickets/stage-1/S1-010/fetch_sources.py": "623b49cb7fec5b28a5d2752aa059182d70bc1961e8d0800ebc38f0ef74e280a9",
-  "research/tickets/stage-1/S1-010/make_bundle.py": "f097b6bb36539378c506f8da54c4028710d9afa10c39822bc0fac31c9ab5aaca",
-  "research/tickets/stage-1/S1-010/make_candidate_record.py": "5a716b57e3900a9c6dfa1c58eb4ae588bf461049e937b8832c2e5fd51c0d9693",
-  "research/tickets/stage-1/S1-010/results/ENVIRONMENT.md": "5b7c5b4186289fd7c4db3f70d76b3410c5d99f833396a9681de1f633f94dcd87",
-  "research/tickets/stage-1/S1-010/results/comparison.json": "9177c007ec4abe0a9175f2365a902bf173741f58b92b02620dcce391edc564a2",
+  "research/tickets/stage-1/S1-010/make_bundle.py": "c0049999d1757f7d1225bb0918da978ff62a9551e009f287f4f723f02f98f812",
+  "research/tickets/stage-1/S1-010/make_candidate_record.py": "c3d6716d49c5664c3b8d85ef3f7178e5a401c1ddd67ea7e73bf7d0b307fb590b",
+  "research/tickets/stage-1/S1-010/results/ENVIRONMENT.md": "db4c7e846e6219b64b571548152e59303edc41ac297f2d83cdedf6915f6686fd",
+  "research/tickets/stage-1/S1-010/results/comparison.json": "abe5bdac51e334de3a6694a5100bfba6de626d4116e1b438f17fcc2e125983af",
   "research/tickets/stage-1/S1-010/results/control-decision.md": "fe8256bbcc75ea53c143f6a8ce65c4cdd171132bc3804fbff16837e220f54be8",
-  "research/tickets/stage-1/S1-010/results/metrics.json": "85955df9d3e188d99ec9864dd239b74fb3570536af5e556fd37f0e66f5b871e3",
+  "research/tickets/stage-1/S1-010/results/metrics.json": "588a29ff05bff909451e1cbc9ad178ece4ba5330b819f6940d3ff9508df7c82f",
   "research/tickets/stage-1/S1-010/results/probes.json": "80e8bb6d42810bb78833b0a44313d5113c59e7756d6044b3b0b2bce1561ca03d",
   "research/tickets/stage-1/S1-010/results/roadmap.md": "f6d5255a82cdba27a209f41fc72e85de507415baab84f2e42e60f3daf3b9a431",
-  "research/tickets/stage-1/S1-010/rubric.json": "69039684dbe77a5fdc123b9c08ddeb0b755eaadb494219182c11baf7d1213002",
-  "research/tickets/stage-1/S1-010/runner.py": "d136c7cb963e724b0a93811dd129a7efb55420f6c9689645cf389ae8589217df",
+  "research/tickets/stage-1/S1-010/rubric.json": "2b6fe2f52ed9a553d5e0e7b47d0bea8c90e9d9ba8f726f32e606d35f72285148",
+  "research/tickets/stage-1/S1-010/runner.py": "3e7a3bd400494a33c2b0d70b97507c8757acc9f8225a953894109ad47ac19c14",
   "research/tickets/stage-1/S1-010/source-registry.json": "d860a59537a5db369ee633939e82ba786548d6417caf31c8782fda6e684cea34",
   "research/tickets/stage-1/S1-010/threat-model.json": "41cebc657fcc7e1b54c6c479cc02a47c95f32794e0b3163f12ba9a768b1ed357",
-  "research/tickets/stage-1/S1-010/tool-poisoning-contract.json": "356c018e35580ae03e9dcf2eb3754af84837f9a9cbe5805fdf4d9a68a1ae7b17",
-  "tests/test_s1_010_regressions.py": "dfc2e383fa2eb0dc1425113f27893b0412e7247ee1515efb24fc951cf0721e9e"
+  "research/tickets/stage-1/S1-010/tool-poisoning-contract.json": "4b620d59bdb5683bb9ea1146b1e820b5a6c1e8c207847870b890ef8bf0c47ca8",
+  "tests/test_s1_010_regressions.py": "e7c82aed6c49679032438d70789e75a809ad98542f75917c12f457662b1c64fc"
  }
 }
