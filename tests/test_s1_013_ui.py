@@ -4,6 +4,7 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -41,8 +42,15 @@ class TestPrototypeContract(unittest.TestCase):
         self.assertIsNotNone(node,"Install/configure Node for required real browser check")
         with tempfile.TemporaryDirectory(prefix="s1013-browser-") as td:
             out=Path(td)/"browser.export.json"
+            env=dict(os.environ)
+            if not env.get("NODE_PATH"):
+                suffix=Path(".cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules")
+                for root in Path(sys.executable).resolve().parents:
+                    bundled=root/suffix
+                    if bundled.is_dir():
+                        env["NODE_PATH"]=str(bundled);break
             proc=subprocess.run([node,str(T/"prototype/browser_probe.cjs"),str(out)],
-                capture_output=True,text=True,timeout=90,env=dict(os.environ))
+                capture_output=True,text=True,timeout=90,env=env)
             self.assertEqual(proc.returncode,0,proc.stdout+"\n"+proc.stderr)
             evidence=json.loads(proc.stdout.strip().splitlines()[-1])
             self.assertIn("stop-failure",evidence["checks"])

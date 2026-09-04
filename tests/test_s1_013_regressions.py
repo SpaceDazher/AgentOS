@@ -372,8 +372,10 @@ class TestBundleNative(unittest.TestCase):
         self.assertEqual(sha((S1013 / "bundle.json").read_bytes()),
                          candidate["bundle_sha256"])
         self.assertEqual(len(bundle["artifacts"]), 11)
-        self.assertEqual(candidate["status"], "PREPARATION_READY")
-        self.assertEqual(candidate["human_phase"], "BLOCKED_HUMAN_PILOT")
+        self.assertEqual(candidate["status"], "CLOSED_WITH_LIMITS")
+        self.assertEqual(candidate["result"], "PASS_WITH_LIMITS")
+        self.assertEqual(candidate["human_phase"], "CANCELLED_BY_OPERATOR")
+        self.assertEqual(candidate["human_n"], 0)
 
     def test_no_human_pass_claimed(self):
         candidate = json.loads((S1013 / "candidate-record.json").read_text(

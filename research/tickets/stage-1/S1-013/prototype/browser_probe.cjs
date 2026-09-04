@@ -1,7 +1,18 @@
 // Actual offline browser regression. Output is a synthetic session, never human evidence.
-const {chromium}=require('playwright');
 const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
+let playwright;
+try { playwright=require('playwright'); }
+catch (firstError) {
+ const Module=require('node:module');
+ const bundled=path.join(process.env.USERPROFILE||process.env.HOME||'', '.cache', 'codex-runtimes', 'codex-primary-runtime', 'dependencies', 'node', 'node_modules');
+ process.env.NODE_PATH=[process.env.NODE_PATH,bundled].filter(Boolean).join(path.delimiter);
+ Module._initPaths();
+ try { playwright=require(path.join(bundled,'playwright')); }
+ catch (_) { throw firstError; }
+}
+const {chromium}=playwright;
 (async()=>{
+ const role=process.argv[3]||'owner';assert.ok(['owner','reviewer'].includes(role),'role must be owner or reviewer');
  const allowed={'/index.html':'text/html','/app.js':'text/javascript','/style.css':'text/css','/browser-contract.json':'application/json'};
  const server=http.createServer((req,res)=>{const name=req.url.split('?')[0];if(!(name in allowed)){res.writeHead(404);res.end();return;}res.setHeader('Content-Type',allowed[name]);res.end(fs.readFileSync(path.join(__dirname,name.slice(1))));});
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
@@ -12,7 +23,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
   const page=await browser.newPage({acceptDownloads:true}),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   const url='http://127.0.0.1:'+server.address().port+'/index.html';
-  await page.goto(url);await page.getByText(/Frozen 1\.1\.0-draft loaded/).waitFor();
+  await page.goto(url);await page.getByText(/Frozen 1\.1\.0-draft loaded/).waitFor();await page.locator('#role').selectOption(role);
   await page.locator('#start').click();assert.equal(await page.locator('#scenario-card').isVisible(),false,'no consent must block start');
   await page.locator('#consent').check();await page.locator('#start').click();
   for(let i=0;i<4;i++){
@@ -32,7 +43,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
   const downloadPromise=page.waitForEvent('download');await page.locator('#export').click();
   const download=await downloadPromise;await download.saveAs(process.argv[2]);
   const doc=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
-  assert.equal(doc.answers.responses.length,4);assert.equal(doc.answers.responses[3].primary.value,'no');
+  assert.equal(doc.session.role,role);assert.equal(doc.answers.responses.length,4);assert.equal(doc.answers.responses[3].primary.value,'no');
   assert.equal(doc.events.events.find(e=>e.type==='fatigue_report').fatigue,'tired');
   assert.equal(doc.events.events.filter(e=>e.type==='decision').length,36);
   assert.equal(doc.events.events.filter(e=>e.type==='stop_confirmed').length,1);
@@ -46,6 +57,6 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),
   await page.locator('#stuck').check();await page.locator('#stop-request').click();await page.getByText(/Stop failed: mock agent still pending/).waitFor();
   await page.locator('#withdraw').click();assert.equal(await page.locator('#withdraw').isDisabled(),true);
   assert.deepEqual(errors,[]);
-  console.log(JSON.stringify({browser:browser.version(),checks:['consent','free-responses','fatigue-value','stop-ack','stop-failure','pause-resume','36-approvals','export-import','invalid-import','withdraw'],synthetic:true}));
+  console.log(JSON.stringify({browser:browser.version(),role,checks:['consent','free-responses','fatigue-value','stop-ack','stop-failure','pause-resume','36-approvals','export-import','invalid-import','withdraw'],synthetic:true}));
  }finally{if(browser)await browser.close();await new Promise(resolve=>server.close(resolve));}
 })().catch(e=>{console.error(e.stack);process.exit(1);});

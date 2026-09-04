@@ -182,7 +182,7 @@ from a lower wave to a higher wave, and S1-020 is the sole closure sink.
 | S1-010 | W3 | P0 | security | PASS_WITH_LIMITS | S1-001, S1-009 | tool-poisoning detection and quarantine evidence |
 | S1-011 | W1 | P0 | knowledge | PASS_WITH_LIMITS | S1-001, S1-003 | minimal promote/challenge knowledge gate |
 | S1-012 | W2 | P0 | knowledge | READY | S1-001, S1-003, S1-011 | evidence independence and Beta/Sybil calibration |
-| S1-013 | W3 | P1 | hci | READY | S1-011, S1-012 | 15–20-person comprehension and approval-fatigue pilot |
+| S1-013 | W3 | P1 | hci | PASS_WITH_LIMITS | S1-011, S1-012 | solo expert conformance review; human effectiveness not measured |
 | S1-014 | W4 | P1 | hci | READY | S1-011, S1-013 | claim-dispute card versus graph |
 | S1-015 | W4 | P2 | hci | READY | S1-013 | petname principal naming study |
 | S1-016 | W3 | P1 | formal | READY | S1-003, S1-007 | flat workspace scope versus PROV-Dictionary lineage |
@@ -1040,29 +1040,32 @@ $env:PYTHONPATH = "src"
 python -m agentos.cli research-plan --topic "S1-012 evidence granularity independence and Beta reputation Sybil collusion calibration" --bundle "research/tickets/stage-1/S1-012/bundle.json" --db ".agentos-research/platform-stage-1"
 ```
 
-### S1-013 — 15–20-person comprehension and approval-fatigue pilot
+### S1-013 — solo expert comprehension/control conformance review
 
-- **Status:** `READY`
+- **Status:** `PASS_WITH_LIMITS` — re-scoped and closed by operator decision
+  `S1-013-OPERATOR-2026-09-04`; the originally specified 15-20-person pilot was
+  cancelled, not completed.
 - **Priority:** `P1`
 - **Wave:** `W3`
 - **Owner:** `hci`
 - **Dependencies:** `S1-011, S1-012`
-- **Research question:** Can 15–20 representative participants understand
-  delegation, scope, provenance, and stop controls, and what approval volume
-  causes fatigue by role (QM2, G-01, G-09)?
-- **Decision enabled:** Calibrate the comprehension thresholds, approval
-  packaging, N_prompts/hour hypotheses, and pilot evidence needed for UX gates.
+- **Research question:** Does an operator-authorized accelerated walkthrough of
+  both roles demonstrate conformance of the prototype, importer, evaluator and
+  safety boundaries to the frozen mental model and rubric?
+- **Decision enabled:** Accept the bounded tooling/conformance package for
+  downstream design work while retaining `NOT_MEASURED` for human comprehension,
+  approval fatigue and N_prompts/hour calibration.
 - **Source evidence:** `SRC-04` §3, §7, and §8 QM2; `SRC-07` §3 G-01/G-09
   and §5 step 3; `SRC-08` §1/§5 (no user study); `SRC-02` EP-10; `SRC-01`
   §11 K-domain.
-- **Scope:** A bounded human-subject comprehension/approval-fatigue pilot,
-  five stated comprehension questions, role/task framing, consent and
-  anonymized results, and attention-budget observations.
+- **Scope:** One operator approval, accelerated scripted walkthrough of owner and
+  reviewer paths, five synthetic comprehension controls, approval-flow and stop
+  controls, privacy deletion, and reproducible tooling evidence.
 - **Non-scope:** General population claims, legal/medical conclusions, product
   launch, or claiming the pilot represents all deployments.
-- **Required source mix/count:** At least 3 evidence classes: current mental
-  model, HCI/permission-fatigue literature, and a preregistered pilot protocol;
-  exactly 15–20 participants, with role balance and a documented exclusion rule.
+- **Required source mix/count:** Current mental model, HCI/permission-fatigue
+  literature, frozen protocol and S1-011/S1-012 decisions; no participant sample
+  is claimed (`human_n=0`).
 - **Claim classes:** `HCI_measurement`, `user_observation`, `hypothesis`,
   `design_inference`, and `limitation`.
 - **FLOW-11 requirement:** Produce all eleven artifacts
@@ -1076,21 +1079,21 @@ python -m agentos.cli research-plan --topic "S1-012 evidence granularity indepen
   - A high approval count produced by an intentionally impossible task must not
     be used as a general N_prompts/hour threshold.
 - **Acceptance criteria (binary/quantitative):**
-  - Quantitative: exactly 15–20 participants; report the five measures with
-    targets ≥90%, ≥95%, ≥85%, ≥95% “no”, and stop-control time ≤30 seconds as
-    hypotheses/observations, not universal facts.
-  - Quantitative: report N_prompts/hour by role with confidence/uncertainty and
-    approval-fatigue observations; missing data is explicit.
-  - Binary: consent, anonymization, both probes, and distinct audit are recorded.
-- **Stop/escalation condition:** Stop if consent/role framing is inadequate,
-  sample size falls outside 15–20, a participant-risk issue appears, or a
-  stakeholder asks for a legal/high-risk classification (re-enter PARK-01).
+  - Binary: owner and reviewer browser paths export, import and evaluate through
+    the real pipeline; raw walkthrough envelopes are deleted after aggregation.
+  - Binary: `human_n=0`, no independent-human-grading claim, and human
+    effectiveness/fatigue/calibration remain `NOT_MEASURED`.
+  - Binary: probes A–H, process-separated replay, exact frozen hashes, FLOW-11
+    evaluation and canonical evidence chain pass.
+- **Stop/escalation condition:** Fail closed on any human-effectiveness claim,
+  retained private/raw data, missing role path, hash drift, or attempt to turn
+  solo conformance into population evidence.
 - **Bundle path:** `research/tickets/stage-1/S1-013/bundle.json`
 - **PowerShell command:**
 
 ```powershell
 $env:PYTHONPATH = "src"
-python -m agentos.cli research-plan --topic "S1-013 15 to 20 person comprehension and approval fatigue pilot" --bundle "research/tickets/stage-1/S1-013/bundle.json" --db ".agentos-research/platform-stage-1"
+python -m agentos.cli research-plan --topic "S1-013 solo expert comprehension and control conformance review" --bundle "research/tickets/stage-1/S1-013/bundle.json" --db ".agentos-research/platform-stage-1"
 ```
 
 ### S1-014 — Claim-dispute visualization: card versus graph

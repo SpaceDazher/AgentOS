@@ -1,4 +1,4 @@
-"""Build the S1-013 preparation evidence bundle.
+"""Build the S1-013 operator-authorized solo-closure evidence bundle.
 
 Publication is a derived operation.  A saved ``all_proven`` or
 ``replicated`` flag is never sufficient: this module verifies the exact
@@ -7,9 +7,9 @@ the importer and evaluator again, runs the two-process replication, and
 cross-checks the saved result files.  Any failure removes only this ticket's
 ready outputs and returns a non-zero status.
 
-The output deliberately remains preparation-only.  It can say
-``PREPARATION_READY`` while the human phase remains
-``BLOCKED_HUMAN_PILOT``; synthetic numbers are not human findings.
+The output closes only the bounded conformance review.  The original human
+pilot was cancelled by the operator, so synthetic and solo-review evidence
+must never be reported as human-effectiveness findings.
 """
 from __future__ import annotations
 
@@ -65,8 +65,8 @@ CLAIMS = [
      "claim_class": "inference",
      "text": "In-context least-privilege approvals with visible actor, "
              "exact action, scope and expiry reduce approval errors "
-             "relative to banner-style consent; stated as a hypothesis "
-             "for the human pilot, not a measured effect.",
+             "relative to banner-style consent; retained only as an "
+             "untested hypothesis after the human pilot was cancelled.",
      "support": ["SRC-S1-013-01", "SRC-S1-013-02"]},
     {"id": "CL-D1", "s1_013_class": "design_inference",
      "claim_class": "inference",
@@ -77,7 +77,7 @@ CLAIMS = [
      "support": ["SRC-S1-013-04", "SRC-S1-013-05"]},
     {"id": "CL-L1", "s1_013_class": "limitation",
      "claim_class": "assumption",
-     "text": "No human data exists yet: all rates and dispositions are "
+     "text": "No human data was collected: all rates and dispositions are "
              "dry-run tooling checks. Mental-model coverage is bounded "
              "by the locally authorized source snapshots and their stated "
              "verification limits.",
@@ -86,12 +86,10 @@ CLAIMS = [
 
 ARTIFACT_TEXTS = {
     "research_plan": (
-        "Prepare and, only after operator approval with real "
-        "participants, run a bounded comprehension and approval-fatigue "
-        "pilot (target N=16, two roles, five transfer measures, two "
-        "approval-load blocks). This preparation delivers a frozen "
-        "protocol, safe mock UI, evaluator and dry-run evidence; the "
-        "human phase stays blocked until recruitment is approved."),
+        "Close a bounded owner/reviewer conformance review using the frozen "
+        "protocol, mock UI, importer, evaluator and evidence pipeline. The "
+        "operator cancelled the originally planned 15-20-person pilot; "
+        "human comprehension, fatigue and effectiveness are not measured."),
     "source_registry": (
         "The source registry binds each locally authorized snapshot to "
         "its URI, role, verification status and SHA-256. Unavailable or "
@@ -123,24 +121,25 @@ ARTIFACT_TEXTS = {
         "rescaling is not stamina evidence; N=16 never proves universal "
         "accuracy."),
     "synthesis_and_gaps": (
-        "Preparation is complete and dry-run green; the human pilot, "
-        "operator approval, recruitment, second human rating and "
-        "canonicalization are all open. Source coverage limits and "
-        "Beta-free design are explicit; S1-014/S1-015 receive pilot "
-        "constraints, not closure."),
+        "Synthetic preparation and an accelerated solo expert walkthrough "
+        "of both owner and reviewer paths are complete. The human pilot was "
+        "cancelled, no independent human grading occurred and all human "
+        "effectiveness measures remain NOT_MEASURED. Source coverage and "
+        "Beta-free design limits remain explicit."),
     "independent_audit": (
         "Producer path (importer) and audit path (scorer plus "
         "replication) are independent code reading only frozen inputs. "
         "An independent process replicates the analysis byte-identical; "
-        "a separate auditor role is defined for protocol deviations, "
-        "consent coverage, exclusions, grading and privacy. Agent-only "
-        "audit never replaces the second human rater."),
+        "the operator exercised both UI roles for protocol deviations, "
+        "consent coverage and privacy. This same-operator review never "
+        "replaces independent human grading or a population study."),
     "progress": (
-        "Phase 1 preparation complete: dependency inventory, literature, "
+        "Bounded closure complete: dependency inventory, literature, "
         "frozen protocol/rubric/scenarios/schemas, consent/privacy/ "
         "facilitator docs, mock UI, synthetic dry-run, scorer with "
         "probes A-H, replication record, native FLOW-11 bundle and "
-        "derived candidate. Blocked: human pilot (no participants)."),
+        "derived candidate and owner/reviewer solo conformance review. The "
+        "human pilot was cancelled by the operator; human_n remains zero."),
 }
 
 
@@ -364,27 +363,26 @@ def build_artifacts() -> dict:
         if kind == "platform_plan":
             artifacts[kind] = {
                 "content": {
-                    "Scope": "Bounded HCI pilot preparation and, after "
-                              "approval, a 15-20 person comprehension and "
-                              "fatigue study; no production claims.",
+                    "Scope": "Bounded solo expert conformance review of "
+                              "owner and reviewer paths; no population, "
+                              "human-effectiveness or production claims.",
                     "Architecture": "Static mock UI plus stdlib importer, "
                                     "scorer, replicator and publisher on "
                                     "one frozen definition set.",
                     "Workstreams": "Freeze protocol; build mock UI; score "
-                                    "dry runs; replicate analysis; publish "
-                                    "native bundle; await recruitment.",
-                    "Milestones": "PREPARATION_READY now; human pilot only "
-                                   "after operator approval and real "
-                                   "participants; canonicalization after "
-                                   "review.",
+                                    "dry runs; replicate analysis; execute "
+                                    "both UI roles; publish canonical bundle.",
+                    "Milestones": "CLOSED_WITH_LIMITS after solo review and "
+                                   "canonicalization; original human pilot "
+                                   "cancelled by operator.",
                     "Verification": "Targeted suites, UI vocabulary "
                                     "checks, probe battery, replication "
                                     "record, native normalizer pass.",
                     "Risks": "Small samples, source coverage limits, "
                              "privacy handling, fatigue underestimated.",
-                    "Open decisions": "Exact N in 15-20 at recruitment; "
-                                      "ethics review outcome; S1-014/15 "
-                                      "handoff scope",
+                    "Open decisions": "No recruitment remains in scope; "
+                                      "S1-014/15 inherit NOT_MEASURED human "
+                                      "effectiveness and the bounded UX limits.",
                 },
                 "producer": PRODUCER,
                 "claim_refs": ["CL-D1", "CL-L1"],
@@ -1011,6 +1009,24 @@ def check_metrics_consistency(metrics_doc: dict) -> list[str]:
     return problems
 
 
+def verified_solo_closure(base: Path) -> tuple[dict, dict]:
+    """Load the explicit operator decision and its raw-free review aggregate."""
+
+    path = base / "solo_closure.py"
+    if not path.is_file() or path.is_symlink():
+        raise ValueError("solo closure verifier missing")
+    spec = importlib.util.spec_from_file_location(
+        f"s1013_solo_closure_{id(base)}", path)
+    if spec is None or spec.loader is None:
+        raise ValueError("solo closure verifier cannot be loaded")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    try:
+        return module.load_verified(base)
+    except (OSError, UnicodeError, ValueError, TypeError, KeyError) as exc:
+        raise ValueError(f"solo closure evidence invalid: {exc}") from exc
+
+
 def tracked_registry(here: Path | None = None) -> dict[str, str]:
     """Hash ticket bytes and the S1-013 test modules for the candidate."""
 
@@ -1073,21 +1089,39 @@ def main(argv: list[str] | None = None) -> int:
     try:
         sources = build_sources(base)
         manifest = _read_json(base / "frozen-manifest.json", "frozen manifest")
+        decision, solo_review = verified_solo_closure(base)
         limitations = [
-            "tracked-Git evidence only; live DB recheck required in Phase B",
+            "tracked-Git dependency evidence; local canonical DB recheck is "
+            "required before final publication",
             "no human data: all rates are dry-run tooling checks",
             "source coverage and verification limits remain explicit in the registry",
             "Beta-free design; no reputation-as-authority anywhere",
             "holdout concept not applicable pre-pilot; synthetic corpus is "
             "author-visible by construction",
+            "one operator authorized an accelerated scripted expert review; "
+            "no independent human grading was performed",
+            "the originally specified 15-20-person pilot was cancelled, so "
+            "human comprehension and effectiveness remain NOT_MEASURED",
         ]
+        artifacts = build_artifacts()
+        closure_text = (
+            " Operator decision S1-013-OPERATOR-2026-09-04 re-scoped closure "
+            "to an accelerated solo expert conformance review of owner and "
+            "reviewer paths. The 15-20-person pilot was cancelled; no human "
+            "effectiveness, fatigue calibration or independent-grading claim "
+            "is made. Raw walkthrough envelopes were deleted after aggregate "
+            "verification.")
+        for key in ("research_plan", "synthesis_and_gaps",
+                    "independent_audit", "progress"):
+            artifacts[key]["content"] += closure_text
+        artifacts["platform_plan"]["content"]["Milestones"] += closure_text
         bundle = {
             "config": {"min_source_count": 4,
                        "min_verified_ratio": 1.0,
                        "required_artifacts": list(FLOW)},
             "sources": sources,
             "claims": [dict(claim) for claim in CLAIMS],
-            "artifacts": build_artifacts(),
+            "artifacts": artifacts,
             "producer": PRODUCER,
             "auditor": AUDITOR,
             "audit": {"producer": PRODUCER, "auditor": AUDITOR,
@@ -1101,8 +1135,22 @@ def main(argv: list[str] | None = None) -> int:
         candidate = {
             "schema": "agentos.s1-013.candidate-record/v1",
             "ticket": TICKET,
-            "status": "PREPARATION_READY",
-            "human_phase": "BLOCKED_HUMAN_PILOT",
+            "status": "CLOSED_WITH_LIMITS",
+            "result": "PASS_WITH_LIMITS",
+            "human_phase": "CANCELLED_BY_OPERATOR",
+            "human_n": 0,
+            "human_effectiveness": "NOT_MEASURED",
+            "closure_basis": "solo_expert_review",
+            "solo_review": {
+                "operator_id": decision["operator_id"],
+                "mode": solo_review["mode"],
+                "roles": solo_review["reviewed_roles"],
+                "decision_path": "research/tickets/stage-1/S1-013/operator-decision.json",
+                "decision_sha256": sha(canonical(decision)),
+                "result_path": "research/tickets/stage-1/S1-013/results/solo-review.json",
+                "result_sha256": sha(canonical(solo_review)),
+                "raw_retained": False,
+            },
             "verdict_basis": facts,
             "bundle_path": "research/tickets/stage-1/S1-013/bundle.json",
             "bundle_sha256": bundle_sha,
@@ -1115,7 +1163,7 @@ def main(argv: list[str] | None = None) -> int:
             "assumptions": [
                 "mock UI interactions model the frozen scenarios faithfully",
                 "synthetic sessions cover every importer path",
-                "frozen targets stay hypotheses until human data exists",
+                "solo expert conformance does not estimate human behavior",
             ],
             "unknowns": [
                 "real comprehension rates and fatigue curves",
@@ -1126,11 +1174,11 @@ def main(argv: list[str] | None = None) -> int:
                 "privacy handling of free text at release",
                 "reputation mistaken for authorization downstream",
             ],
-            "phase_b_required": True,
+            "phase_b_required": False,
             "chain_fresh_claim": None,
-            "note": "No human N or human metrics are stated here; those "
-                    "require an approved human pilot plus Phase B "
-                    "canonicalization.",
+            "note": "Closed only as an operator-authorized solo expert "
+                    "conformance review. The original human pilot was "
+                    "cancelled and no human metric is claimed.",
         }
         _atomic_json(base / "candidate-record.json", candidate)
     except (OSError, UnicodeError, ValueError, TypeError, KeyError) as exc:
@@ -1138,8 +1186,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"BLOCKED: bundle assembly failed: {exc}", file=sys.stderr)
         return 1
     print(f"bundle.json sha256={bundle_sha}")
-    print("candidate-record.json status=PREPARATION_READY, "
-          "human=BLOCKED_HUMAN_PILOT")
+    print("candidate-record.json status=CLOSED_WITH_LIMITS, "
+          "human=CANCELLED_BY_OPERATOR, human_n=0")
     return 0
 
 

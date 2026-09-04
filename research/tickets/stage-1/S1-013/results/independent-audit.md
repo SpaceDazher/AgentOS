@@ -6,4 +6,4 @@ The importer validates frozen versions, schema types, identities, consent, event
 
 Publication checks fresh dependencies, exact input hashes, recomputed metrics, complete probes and two-process replication. Replication demonstrates deterministic analysis on one host; it is not an independent human study, independent code implementation, or external audit.
 
-Verification evidence and limitations are recorded in CORRECTIVE_R1.md after the final checks. Human consent administration, independent human rating, recruitment and ethics/privacy approval have not occurred. No human result, canonical closure or production claim is authorized by this audit.
+Verification evidence and limitations are recorded in CORRECTIVE_R1.md and the solo-closure record. Human consent administration, independent human rating, recruitment and ethics/privacy approval did not occur. The operator cancelled the planned 15–20-person pilot and authorized a single accelerated walkthrough of both owner and reviewer paths. This audit supports only bounded conformance closure as PASS_WITH_LIMITS; it authorizes no human-effectiveness or production claim.

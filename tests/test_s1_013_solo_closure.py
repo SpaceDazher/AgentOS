@@ -124,7 +124,8 @@ class TestClosedCandidate(unittest.TestCase):
         section = docs[start:end]
         self.assertIn("**Status:** `PASS_WITH_LIMITS`", section)
         self.assertIn("solo expert", section.lower())
-        self.assertIn("15–20-person pilot was cancelled", section)
+        self.assertIn("15-20-person pilot", section)
+        self.assertIn("cancelled, not completed", section)
 
 
 if __name__ == "__main__":
