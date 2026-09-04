@@ -318,9 +318,29 @@ class S1010ProductionPath(unittest.TestCase):
                     victim = dict(r)
                     break
             assert victim is not None
+            # Round 3: the fabricated ALLOW must be internally consistent
+            # (trace ending at a passing policy layer, acceptance reason) so
+            # it passes record validation and is caught by the HARD GATES.
+            fabricated_allow_trace = [
+                {"layer": 0, "name": "input", "status": "ok", "detail": {}},
+                {"layer": 1, "name": "structural", "status": "pass",
+                 "detail": {}},
+                {"layer": 2, "name": "provenance", "status": "pass",
+                 "detail": {}},
+                {"layer": 3, "name": "capability_diff", "status": "pass",
+                 "detail": {}},
+                {"layer": 4, "name": "static_indicators",
+                 "status": "advisory", "detail": []},
+                {"layer": 6, "name": "output_guard", "status": "pass",
+                 "detail": {}},
+                {"layer": 5, "name": "policy", "status": "pass",
+                 "detail": {}},
+            ]
             for r in records:
                 if r["case_id"] == victim["case_id"]:
                     r["decision"] = "ALLOW"
+                    r["reason_codes"] = ["BC-ACCEPTED"]
+                    r["layer_trace"] = fabricated_allow_trace
             metrics = ev.grade(records, load(CORPUS), load(RUBRIC))
             verdict = ev.evaluate_hard_gates(records, metrics, load(RUBRIC))
             self.assertNotEqual(verdict["verdict"], "PASS")
@@ -336,11 +356,18 @@ class S1010ProductionPath(unittest.TestCase):
             for r in records:
                 if self.cases[r["case_id"]]["truth"] == "benign":
                     # Round 3: a blocked decision may not claim the benign
-                    # acceptance code; strip it so the mutated record stays
-                    # internally consistent and reaches grading.
+                    # acceptance code and must end at a failing/routing
+                    # trace entry, so the mutated record stays internally
+                    # consistent and reaches grading.
                     r["decision"] = "DENY"
                     r["reason_codes"] = [c for c in r["reason_codes"]
                                          if c != "BC-ACCEPTED"] or ["MP-STRUCT"]
+                    r["layer_trace"] = [e for e in r["layer_trace"]
+                                        if e["layer"] != 5]
+                    r["layer_trace"][-1] = {
+                        "layer": 6, "name": "output_guard",
+                        "status": "fail",
+                        "detail": "injected benign denial"}
                     break
             metrics = ev.grade(records, [self.cases[r["case_id"]] for r in records],
                                load(RUBRIC))
