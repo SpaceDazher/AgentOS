@@ -1,53 +1,170 @@
 {
   "schema": "agentos.s1-013.pilot-protocol/v1",
-  "protocol_version": "1.0.0-draft",
+  "protocol_version": "1.1.0-draft",
   "status": "draft-frozen",
   "note": "Internal preregistered protocol (no public preregistration ID). Amendments after start become new versions; incompatible cohorts are never merged; primary outcome never changes retroactively.",
-  "owner": {"research_owner": "TBD-operator", "data_steward": "TBD-operator"},
-  "goals": ["comprehension of delegation, scope, provenance, knowledge gate and stop controls", "approval fatigue and N_prompts/hour by role"],
+  "owner": {
+    "research_owner": "TBD-operator",
+    "data_steward": "TBD-operator"
+  },
+  "goals": [
+    "comprehension of delegation, scope, provenance, knowledge gate and stop controls",
+    "approval fatigue and N_prompts/hour by role"
+  ],
   "roles": [
-    {"role": "owner", "description": "Workspace owner: manages delegation, private/shared scopes, challenge/revoke and stop-all.", "quota": 8},
-    {"role": "reviewer", "description": "Reviewer: approves or denies agent prompts with exact action, scope and expiry.", "quota": 8}
+    {
+      "role": "owner",
+      "description": "Workspace owner: manages delegation, private/shared scopes, challenge/revoke and stop-all.",
+      "quota": 8
+    },
+    {
+      "role": "reviewer",
+      "description": "Reviewer: approves or denies agent prompts with exact action, scope and expiry.",
+      "quota": 8
+    }
   ],
   "target_n": 16,
-  "eligibility": ["adult", "basic computer literacy", "no prior AgentOS exposure", "informed consent given"],
-  "exclusion_rules": ["no consent", "incomplete training", "protocol deviation by facilitator", "duplicate enrollment", "withdrawal honored at any time"],
+  "eligibility": [
+    "adult",
+    "basic computer literacy",
+    "no prior AgentOS exposure",
+    "informed consent given"
+  ],
+  "exclusion_rules": [
+    "no consent",
+    "incomplete training",
+    "protocol deviation by facilitator",
+    "duplicate enrollment",
+    "withdrawal honored at any time"
+  ],
   "replacement_rule": "Excluded sessions stay in the participant flow with reason; replacements enroll fresh pseudonymous ids up to quota; no backfilling to a pretty percentage.",
   "dropout_rule": "Dropouts count in every denominator they entered; missing data follows the missing/censoring policy, never zero-fill.",
-  "duration": {"training_min": 10, "comprehension_min": 20, "approval_blocks_min": [15, 15], "rest_min": 5, "debrief_min": 10},
-  "task_order": ["training", "comprehension", "approval_block_A", "rest", "approval_block_B", "debrief"],
-  "counterbalancing": {"method": "AB/BA block order by enrollment parity", "randomization_seed": 13013},
+  "duration": {
+    "training_min": 10,
+    "comprehension_min": 20,
+    "approval_blocks_min": [
+      15,
+      15
+    ],
+    "rest_min": 5,
+    "debrief_min": 10
+  },
+  "task_order": [
+    "training",
+    "comprehension",
+    "approval_block_A",
+    "rest",
+    "approval_block_B",
+    "debrief"
+  ],
+  "counterbalancing": {
+    "method": "AB/BA block order by enrollment parity",
+    "randomization_seed": 13013
+  },
   "facilitator_instructions": "Read the scripted intro verbatim; never hint correct answers before the primary response is recorded; record timing moments from task presentation; stop the session on discomfort or withdrawal.",
-  "timing_moments": ["task_presented", "primary_response_recorded", "stop_requested", "stop_confirmed"],
+  "timing_moments": [
+    "task_presented",
+    "primary_response_recorded",
+    "stop_requested",
+    "stop_confirmed"
+  ],
   "measures": [
-    {"id": "C1", "question": "What distinguishes a delegation from a password?", "target": ">=90% correct", "numerator": "correct transfer answers", "denominator": "all started sessions with a recorded primary response"},
-    {"id": "C2", "question": "Who can see private space contents?", "target": ">=95% correct", "numerator": "correct transfer answers", "denominator": "all started sessions with a recorded primary response"},
-    {"id": "C3", "question": "How does another agent's message differ from group knowledge?", "target": ">=85% correct", "numerator": "correct transfer answers", "denominator": "all started sessions with a recorded primary response"},
-    {"id": "C4", "question": "Can a system agent read private data without explicit connection?", "target": ">=95% correct 'no' with valid explanation", "numerator": "'no' with valid explanation", "denominator": "all started sessions with a recorded primary response", "note": "'No' with a wrong explanation is not proven understanding."},
-    {"id": "C5", "question": "Stop all your agents.", "target": "<=30 seconds to confirmed stop", "numerator": "sessions with stop_confirmed and acknowledged=true within 30000 ms of stop_requested", "denominator": "all sessions that reached the C5 task, including timeouts/failures/missing"}
+    {
+      "id": "C1",
+      "question": "What distinguishes a delegation from a password?",
+      "target": ">=90% correct",
+      "numerator": "correct transfer answers",
+      "denominator": "all sessions presented this measure, including missing/timeouts"
+    },
+    {
+      "id": "C2",
+      "question": "Who can see private space contents?",
+      "target": ">=95% correct",
+      "numerator": "correct transfer answers",
+      "denominator": "all sessions presented this measure, including missing/timeouts"
+    },
+    {
+      "id": "C3",
+      "question": "How does another agent's message differ from group knowledge?",
+      "target": ">=85% correct",
+      "numerator": "correct transfer answers",
+      "denominator": "all sessions presented this measure, including missing/timeouts"
+    },
+    {
+      "id": "C4",
+      "question": "Can a system agent read private data without explicit connection?",
+      "target": ">=95% correct 'no' with valid explanation",
+      "numerator": "'no' with valid explanation",
+      "denominator": "all sessions presented this measure, including missing/timeouts",
+      "note": "'No' with a wrong explanation is not proven understanding."
+    },
+    {
+      "id": "C5",
+      "question": "Stop all your agents.",
+      "target": "<=30 seconds to confirmed stop",
+      "numerator": "all mock agents stopped within 30000 ms from C5 presentation",
+      "denominator": "all sessions presented this measure, including missing/timeouts"
+    }
   ],
   "transfer_rule": "Banner rephrasing is insufficient: each measure is scored on a novel principal/scope scenario requiring the access basis, evidence status and stop boundary.",
-  "grading": {"primary": "frozen rubric by facilitator", "second_rater": "blind to the first coding, recodes all answers", "disagreement": "preserved in answers.json; resolved by the pre-registered rule: valid-explanation review by the research owner; unresolved stays missing, never correct"},
+  "grading": {
+    "primary": "frozen rubric by facilitator",
+    "second_rater": "blind to the first coding, recodes all answers",
+    "disagreement": "preserved in answers.json; resolved by the pre-registered rule: valid-explanation review by the research owner; unresolved stays missing, never correct"
+  },
   "missing_censoring": "Timeout, failure and missing stay in denominators; C5 missing acknowledgement is failure, not success; no imputation.",
   "outcomes": {
-    "primary": ["C1..C5 target_met/not_met/inconclusive with raw counts, percentages and uncertainty intervals"],
-    "exploratory": ["role-level fatigue, order/learning effects, error taxonomy"]
+    "primary": [
+      "C1..C5 target_met/not_met/inconclusive with raw counts, percentages and uncertainty intervals"
+    ],
+    "exploratory": [
+      "role-level fatigue, order/learning effects, error taxonomy"
+    ]
   },
   "analysis_plan_ref": "analysis-plan.md",
   "approval_load": {
     "conditions": [
-      {"id": "steady", "prompts": 12, "minutes": 15, "note": "Feasible baseline load with rest."},
-      {"id": "bursty", "prompts": 24, "minutes": 15, "note": "Feasible elevated load with rest; not an endurance claim."}
+      {
+        "id": "steady",
+        "prompts": 12,
+        "minutes": 15,
+        "note": "Feasible baseline load with rest."
+      },
+      {
+        "id": "bursty",
+        "prompts": 24,
+        "minutes": 15,
+        "note": "Feasible elevated load with rest; not an endurance claim."
+      }
     ],
     "rest_between_min": 5,
     "opt_out": "Clearly offered before and during each block; opt-outs recorded, never penalized.",
     "justification": "Loads are feasible by design and frozen pre-data; they measure short-block behavior only.",
-    "logged": ["displayed prompts", "eligible decisions", "approve/deny/abstain", "oracle accuracy", "response latency", "active minutes", "errors", "fatigue report"],
+    "logged": [
+      "displayed prompts",
+      "eligible decisions",
+      "approve/deny/abstain",
+      "oracle accuracy",
+      "response latency",
+      "active minutes",
+      "errors",
+      "fatigue report"
+    ],
     "n_prompts_per_hour": "Actual prompts divided by active hours, per role, participant-clustered. Short blocks rescaled to an hour prove nothing about hour-long stamina; report raw exposure duration alongside.",
     "fatigue_separation": "Subjective fatigue reports and behavioural error rates are analyzed separately.",
     "clustering": "Repeated events of one participant are dependent: primary n is people, not clicks. Participant-clustered/paired analysis with role-level uncertainty, order/learning effects, missingness and small-sample power."
   },
   "synthetic_policy": "LLM personas, bots, duplicate ids and synthetic sessions are tooling tests only (synthetic=true, separate corpus). They never enter human N, metrics or effectiveness claims.",
   "consent_version": "consent-v1",
-  "privacy_plan_ref": "privacy-plan.md"
+  "privacy_plan_ref": "privacy-plan.md",
+  "mock_agents": [
+    "A-1",
+    "A-2"
+  ],
+  "amendments": [
+    {
+      "version": "1.1.0-draft",
+      "reason": "R1: strict export binding, task-presentation stop timing, active blocks, no self-grading; synthetic only, human protocol approval still required."
+    }
+  ]
 }

@@ -4,26 +4,150 @@
   "title": "S1-013 pilot event log",
   "description": "Ordered session events. The prototype, exporter, evaluator and analyst share these exact event names; any other name is rejected at import.",
   "type": "object",
-  "required": ["session_id", "events"],
+  "required": [
+    "session_id",
+    "events"
+  ],
   "properties": {
-    "session_id": {"type": "string", "minLength": 1},
+    "session_id": {
+      "type": "string",
+      "minLength": 1
+    },
     "events": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["seq", "t_ms", "type"],
+        "required": [
+          "seq",
+          "t_ms",
+          "type"
+        ],
         "properties": {
-          "seq": {"type": "integer", "minimum": 0},
-          "t_ms": {"type": "integer", "minimum": 0, "description": "Milliseconds since session start (task timing moments)"},
-          "type": {"enum": ["prompt_displayed", "decision", "answer", "stop_requested", "stop_confirmed", "stop_failed", "fatigue_report", "debrief_done"]},
-          "prompt_id": {"type": ["string", "null"], "default": null},
-          "decision": {"enum": ["approve", "deny", "abstain", null], "default": null},
-          "correct": {"type": ["boolean", "null"], "default": null, "description": "Scenario-oracle correctness, set by scorer only"},
-          "actor_shown": {"type": ["string", "null"], "default": null},
-          "action_shown": {"type": ["string", "null"], "default": null},
-          "scope_shown": {"type": ["string", "null"], "default": null},
-          "expiry_shown": {"type": ["boolean", "null"], "default": null},
-          "acknowledged": {"type": ["boolean", "null"], "default": null, "description": "Stop acknowledgement outcome (C5 must reach confirmed stop)"}
+          "seq": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "t_ms": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Milliseconds since session start (task timing moments)"
+          },
+          "type": {
+            "enum": [
+              "prompt_displayed",
+              "decision",
+              "answer",
+              "stop_requested",
+              "stop_confirmed",
+              "stop_failed",
+              "fatigue_report",
+              "debrief_done",
+              "block_started",
+              "block_paused",
+              "block_resumed",
+              "block_ended",
+              "withdrawn"
+            ]
+          },
+          "prompt_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "decision": {
+            "enum": [
+              "approve",
+              "deny",
+              "abstain",
+              null
+            ],
+            "default": null
+          },
+          "correct": {
+            "type": [
+              "boolean",
+              "null"
+            ],
+            "default": null,
+            "description": "Scenario-oracle correctness, set by scorer only"
+          },
+          "actor_shown": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "action_shown": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "scope_shown": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "expiry_shown": {
+            "type": [
+              "boolean",
+              "null"
+            ],
+            "default": null
+          },
+          "acknowledged": {
+            "type": [
+              "boolean",
+              "null"
+            ],
+            "default": null,
+            "description": "Stop acknowledgement outcome (C5 must reach confirmed stop)"
+          },
+          "block_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "fatigue": {
+            "enum": [
+              "ok",
+              "tired",
+              "stop",
+              null
+            ]
+          },
+          "acknowledgements": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "object",
+              "required": [
+                "agent_id",
+                "state"
+              ],
+              "properties": {
+                "agent_id": {
+                  "type": "string"
+                },
+                "state": {
+                  "enum": [
+                    "stopped",
+                    "pending"
+                  ]
+                }
+              },
+              "additionalProperties": false
+            }
+          }
         },
         "additionalProperties": false
       }

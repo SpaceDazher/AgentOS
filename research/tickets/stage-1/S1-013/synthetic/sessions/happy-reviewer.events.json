@@ -5,79 +5,69 @@
       "seq": 0,
       "t_ms": 0,
       "type": "prompt_displayed",
-      "prompt_id": "C2-S1",
-      "decision": null,
-      "correct": null,
-      "actor_shown": null,
-      "action_shown": null,
-      "scope_shown": null,
-      "expiry_shown": null,
-      "acknowledged": null
+      "prompt_id": "C2-S1"
     },
     {
       "seq": 1,
-      "t_ms": 9000,
+      "t_ms": 1000,
       "type": "answer",
-      "prompt_id": "C2-S1",
-      "decision": null,
-      "correct": null,
-      "actor_shown": null,
-      "action_shown": null,
-      "scope_shown": null,
-      "expiry_shown": null,
-      "acknowledged": null
+      "prompt_id": "C2-S1"
     },
     {
       "seq": 2,
-      "t_ms": 20000,
+      "t_ms": 2000,
       "type": "prompt_displayed",
-      "prompt_id": "AP-03",
-      "decision": null,
-      "correct": null,
-      "actor_shown": "archive-agent A-2",
-      "action_shown": "write shared/docs",
-      "scope_shown": "shared/docs",
-      "expiry_shown": false,
-      "acknowledged": null
+      "prompt_id": "C5-S1"
     },
     {
       "seq": 3,
-      "t_ms": 30000,
-      "type": "decision",
-      "prompt_id": "AP-03",
-      "decision": "deny",
-      "correct": true,
-      "actor_shown": null,
-      "action_shown": null,
-      "scope_shown": null,
-      "expiry_shown": null,
-      "acknowledged": null
+      "t_ms": 3000,
+      "type": "stop_requested"
     },
     {
       "seq": 4,
-      "t_ms": 50000,
-      "type": "stop_requested",
-      "prompt_id": null,
-      "decision": null,
-      "correct": null,
-      "actor_shown": null,
-      "action_shown": null,
-      "scope_shown": null,
-      "expiry_shown": null,
-      "acknowledged": null
+      "t_ms": 4000,
+      "type": "stop_confirmed",
+      "acknowledged": true,
+      "acknowledgements": [
+        {
+          "agent_id": "A-1",
+          "state": "stopped"
+        },
+        {
+          "agent_id": "A-2",
+          "state": "stopped"
+        }
+      ]
     },
     {
       "seq": 5,
-      "t_ms": 62000,
-      "type": "stop_confirmed",
-      "prompt_id": null,
-      "decision": null,
-      "correct": null,
-      "actor_shown": null,
-      "action_shown": null,
-      "scope_shown": null,
-      "expiry_shown": null,
-      "acknowledged": true
+      "t_ms": 5000,
+      "type": "block_started",
+      "block_id": "A"
+    },
+    {
+      "seq": 6,
+      "t_ms": 6000,
+      "type": "prompt_displayed",
+      "prompt_id": "AP-03",
+      "actor_shown": "archive-agent A-2",
+      "action_shown": "write shared/docs",
+      "scope_shown": "shared/docs",
+      "expiry_shown": false
+    },
+    {
+      "seq": 7,
+      "t_ms": 7000,
+      "type": "decision",
+      "prompt_id": "AP-03",
+      "decision": "deny"
+    },
+    {
+      "seq": 8,
+      "t_ms": 8000,
+      "type": "block_ended",
+      "block_id": "A"
     }
   ]
 }

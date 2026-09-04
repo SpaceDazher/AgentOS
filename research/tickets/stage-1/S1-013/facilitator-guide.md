@@ -2,6 +2,10 @@
 
 ## Before the session
 
+This document is a proposed human script, not authorization to recruit or collect
+human data. The current browser and Python importer accept synthetic tooling
+sessions only. Do not enter participant identities or consent originals there.
+
 - Confirm consent-v1 signed, pseudonymous id assigned, role and block
   order (AB/BA by enrollment parity, seed 13013) recorded.
 - Open the mock prototype (local only). Verify the MOCK banner is
@@ -21,8 +25,9 @@
 
 ## Timing moments (log exactly)
 
-task_presented → primary_response_recorded → stop_requested →
-stop_confirmed. Use the prototype's event log; do not estimate.
+`prompt_displayed` with a C1–C5 scenario ID → `answer` → `stop_requested` →
+`stop_confirmed`/`stop_failed`. These are the canonical schema event names.
+Use monotonic elapsed timestamps from the prototype; do not estimate.
 
 ## Do / do not
 

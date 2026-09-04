@@ -1,0 +1,930 @@
+{
+  "protocol": {
+    "schema": "agentos.s1-013.pilot-protocol/v1",
+    "protocol_version": "1.1.0-draft",
+    "status": "draft-frozen",
+    "note": "Internal preregistered protocol (no public preregistration ID). Amendments after start become new versions; incompatible cohorts are never merged; primary outcome never changes retroactively.",
+    "owner": {
+      "research_owner": "TBD-operator",
+      "data_steward": "TBD-operator"
+    },
+    "goals": [
+      "comprehension of delegation, scope, provenance, knowledge gate and stop controls",
+      "approval fatigue and N_prompts/hour by role"
+    ],
+    "roles": [
+      {
+        "role": "owner",
+        "description": "Workspace owner: manages delegation, private/shared scopes, challenge/revoke and stop-all.",
+        "quota": 8
+      },
+      {
+        "role": "reviewer",
+        "description": "Reviewer: approves or denies agent prompts with exact action, scope and expiry.",
+        "quota": 8
+      }
+    ],
+    "target_n": 16,
+    "eligibility": [
+      "adult",
+      "basic computer literacy",
+      "no prior AgentOS exposure",
+      "informed consent given"
+    ],
+    "exclusion_rules": [
+      "no consent",
+      "incomplete training",
+      "protocol deviation by facilitator",
+      "duplicate enrollment",
+      "withdrawal honored at any time"
+    ],
+    "replacement_rule": "Excluded sessions stay in the participant flow with reason; replacements enroll fresh pseudonymous ids up to quota; no backfilling to a pretty percentage.",
+    "dropout_rule": "Dropouts count in every denominator they entered; missing data follows the missing/censoring policy, never zero-fill.",
+    "duration": {
+      "training_min": 10,
+      "comprehension_min": 20,
+      "approval_blocks_min": [
+        15,
+        15
+      ],
+      "rest_min": 5,
+      "debrief_min": 10
+    },
+    "task_order": [
+      "training",
+      "comprehension",
+      "approval_block_A",
+      "rest",
+      "approval_block_B",
+      "debrief"
+    ],
+    "counterbalancing": {
+      "method": "AB/BA block order by enrollment parity",
+      "randomization_seed": 13013
+    },
+    "facilitator_instructions": "Read the scripted intro verbatim; never hint correct answers before the primary response is recorded; record timing moments from task presentation; stop the session on discomfort or withdrawal.",
+    "timing_moments": [
+      "task_presented",
+      "primary_response_recorded",
+      "stop_requested",
+      "stop_confirmed"
+    ],
+    "measures": [
+      {
+        "id": "C1",
+        "question": "What distinguishes a delegation from a password?",
+        "target": ">=90% correct",
+        "numerator": "correct transfer answers",
+        "denominator": "all sessions presented this measure, including missing/timeouts"
+      },
+      {
+        "id": "C2",
+        "question": "Who can see private space contents?",
+        "target": ">=95% correct",
+        "numerator": "correct transfer answers",
+        "denominator": "all sessions presented this measure, including missing/timeouts"
+      },
+      {
+        "id": "C3",
+        "question": "How does another agent's message differ from group knowledge?",
+        "target": ">=85% correct",
+        "numerator": "correct transfer answers",
+        "denominator": "all sessions presented this measure, including missing/timeouts"
+      },
+      {
+        "id": "C4",
+        "question": "Can a system agent read private data without explicit connection?",
+        "target": ">=95% correct 'no' with valid explanation",
+        "numerator": "'no' with valid explanation",
+        "denominator": "all sessions presented this measure, including missing/timeouts",
+        "note": "'No' with a wrong explanation is not proven understanding."
+      },
+      {
+        "id": "C5",
+        "question": "Stop all your agents.",
+        "target": "<=30 seconds to confirmed stop",
+        "numerator": "all mock agents stopped within 30000 ms from C5 presentation",
+        "denominator": "all sessions presented this measure, including missing/timeouts"
+      }
+    ],
+    "transfer_rule": "Banner rephrasing is insufficient: each measure is scored on a novel principal/scope scenario requiring the access basis, evidence status and stop boundary.",
+    "grading": {
+      "primary": "frozen rubric by facilitator",
+      "second_rater": "blind to the first coding, recodes all answers",
+      "disagreement": "preserved in answers.json; resolved by the pre-registered rule: valid-explanation review by the research owner; unresolved stays missing, never correct"
+    },
+    "missing_censoring": "Timeout, failure and missing stay in denominators; C5 missing acknowledgement is failure, not success; no imputation.",
+    "outcomes": {
+      "primary": [
+        "C1..C5 target_met/not_met/inconclusive with raw counts, percentages and uncertainty intervals"
+      ],
+      "exploratory": [
+        "role-level fatigue, order/learning effects, error taxonomy"
+      ]
+    },
+    "analysis_plan_ref": "analysis-plan.md",
+    "approval_load": {
+      "conditions": [
+        {
+          "id": "steady",
+          "prompts": 12,
+          "minutes": 15,
+          "note": "Feasible baseline load with rest."
+        },
+        {
+          "id": "bursty",
+          "prompts": 24,
+          "minutes": 15,
+          "note": "Feasible elevated load with rest; not an endurance claim."
+        }
+      ],
+      "rest_between_min": 5,
+      "opt_out": "Clearly offered before and during each block; opt-outs recorded, never penalized.",
+      "justification": "Loads are feasible by design and frozen pre-data; they measure short-block behavior only.",
+      "logged": [
+        "displayed prompts",
+        "eligible decisions",
+        "approve/deny/abstain",
+        "oracle accuracy",
+        "response latency",
+        "active minutes",
+        "errors",
+        "fatigue report"
+      ],
+      "n_prompts_per_hour": "Actual prompts divided by active hours, per role, participant-clustered. Short blocks rescaled to an hour prove nothing about hour-long stamina; report raw exposure duration alongside.",
+      "fatigue_separation": "Subjective fatigue reports and behavioural error rates are analyzed separately.",
+      "clustering": "Repeated events of one participant are dependent: primary n is people, not clicks. Participant-clustered/paired analysis with role-level uncertainty, order/learning effects, missingness and small-sample power."
+    },
+    "synthetic_policy": "LLM personas, bots, duplicate ids and synthetic sessions are tooling tests only (synthetic=true, separate corpus). They never enter human N, metrics or effectiveness claims.",
+    "consent_version": "consent-v1",
+    "privacy_plan_ref": "privacy-plan.md",
+    "mock_agents": [
+      "A-1",
+      "A-2"
+    ],
+    "amendments": [
+      {
+        "version": "1.1.0-draft",
+        "reason": "R1: strict export binding, task-presentation stop timing, active blocks, no self-grading; synthetic only, human protocol approval still required."
+      }
+    ]
+  },
+  "contract_sha256": "e8446fcb0e14d16343d0d722de9863a58ae8946a4dc0fd4ed149de7215a84f88",
+  "scenarios": {
+    "schema": "agentos.s1-013.scenario-manifest/v1",
+    "protocol_version": "1.1.0-draft",
+    "comprehension_scenarios": [
+      {
+        "measure": "C1",
+        "id": "C1-S1",
+        "principal": "courier-agent K-7",
+        "scope": "shared/calendar",
+        "task": "Decide what K-7 may do and what must never be shared with it.",
+        "oracle": "correct"
+      },
+      {
+        "measure": "C1",
+        "id": "C1-S2",
+        "principal": "archive-agent A-2",
+        "scope": "shared/docs",
+        "task": "Grant expiring read access; state what happens at expiry.",
+        "oracle": "correct"
+      },
+      {
+        "measure": "C2",
+        "id": "C2-S1",
+        "principal": "helper-agent H-3",
+        "scope": "private/notes",
+        "task": "List who can see the private notes and why.",
+        "oracle": "correct"
+      },
+      {
+        "measure": "C2",
+        "id": "C2-S2",
+        "principal": "auditor-agent U-1",
+        "scope": "private/notes",
+        "task": "An auditor banner claims access. Decide readers of the private space.",
+        "oracle": "correct"
+      },
+      {
+        "measure": "C3",
+        "id": "C3-S1",
+        "principal": "foreign-agent F-9",
+        "scope": "group/knowledge",
+        "task": "A foreign message asserts a group fact. Decide its status and the evidence it needs.",
+        "oracle": "correct"
+      },
+      {
+        "measure": "C3",
+        "id": "C3-S2",
+        "principal": "foreign-agent F-9",
+        "scope": "group/knowledge",
+        "task": "Same message after a governance decision is recorded. Decide what changed.",
+        "oracle": "correct"
+      },
+      {
+        "measure": "C4",
+        "id": "C4-S1",
+        "principal": "system-agent S-0",
+        "scope": "private/notes",
+        "task": "Can S-0 read private notes with no explicit connection? Explain the basis.",
+        "oracle": "correct"
+      },
+      {
+        "measure": "C4",
+        "id": "C4-S2",
+        "principal": "system-agent S-0",
+        "scope": "shared/docs",
+        "task": "Can S-0 read shared docs approved yesterday? Explain expiry.",
+        "oracle": "correct"
+      },
+      {
+        "measure": "C5",
+        "id": "C5-S1",
+        "principal": "all-owned-agents",
+        "scope": "*",
+        "task": "Stop all your agents now.",
+        "oracle": "correct"
+      },
+      {
+        "measure": "C5",
+        "id": "C5-S2",
+        "principal": "all-owned-agents",
+        "scope": "*",
+        "task": "One agent shows stop-pending. Confirm the stop.",
+        "oracle": "correct"
+      }
+    ],
+    "approval_blocks": [
+      {
+        "block": "A",
+        "condition": "steady",
+        "prompts": [
+          {
+            "prompt_id": "AP-01",
+            "actor": "courier-agent K-7",
+            "action": "read shared/calendar",
+            "scope": "shared/calendar",
+            "expiry": "relative:+300s",
+            "oracle": "approve"
+          },
+          {
+            "prompt_id": "AP-02",
+            "actor": "unknown-agent X-1",
+            "action": "read private/notes",
+            "scope": "private/notes",
+            "expiry": "relative:+300s",
+            "oracle": "deny"
+          },
+          {
+            "prompt_id": "AP-03",
+            "actor": "archive-agent A-2",
+            "action": "write shared/docs",
+            "scope": "shared/docs",
+            "expiry": null,
+            "oracle": "deny"
+          },
+          {
+            "prompt_id": "AP-04",
+            "actor": "courier-agent K-7",
+            "action": "read shared/calendar",
+            "scope": "shared/calendar",
+            "expiry": "relative:+300s",
+            "oracle": "approve"
+          },
+          {
+            "prompt_id": "AP-05",
+            "actor": "unknown-agent X-1",
+            "action": "read private/notes",
+            "scope": "private/notes",
+            "expiry": "relative:+300s",
+            "oracle": "deny"
+          },
+          {
+            "prompt_id": "AP-06",
+            "actor": "archive-agent A-2",
+            "action": "write shared/docs",
+            "scope": "shared/docs",
+            "expiry": null,
+            "oracle": "deny"
+          },
+          {
+            "prompt_id": "AP-07",
+            "actor": "courier-agent K-7",
+            "action": "read shared/calendar",
+            "scope": "shared/calendar",
+            "expiry": "relative:+300s",
+            "oracle": "approve"
+          },
+          {
+            "prompt_id": "AP-08",
+            "actor": "unknown-agent X-1",
+            "action": "read private/notes",
+            "scope": "private/notes",
+            "expiry": "relative:+300s",
+            "oracle": "deny"
+          },
+          {
+            "prompt_id": "AP-09",
+            "actor": "archive-agent A-2",
+            "action": "write shared/docs",
+            "scope": "shared/docs",
+            "expiry": null,
+            "oracle": "deny"
+          },
+          {
+            "prompt_id": "AP-10",
+            "actor": "courier-agent K-7",
+            "action": "read shared/calendar",
+            "scope": "shared/calendar",
+            "expiry": "relative:+300s",
+            "oracle": "approve"
+          },
+          {
+            "prompt_id": "AP-11",
+            "actor": "unknown-agent X-1",
+            "action": "read private/notes",
+            "scope": "private/notes",
+            "expiry": "relative:+300s",
+            "oracle": "deny"
+          },
+          {
+            "prompt_id": "AP-12",
+            "actor": "archive-agent A-2",
+            "action": "write shared/docs",
+            "scope": "shared/docs",
+            "expiry": null,
+            "oracle": "deny"
+          }
+        ],
+        "feasible": true
+      },
+      {
+        "block": "B",
+        "condition": "bursty",
+        "prompts": [
+          {
+            "prompt_id": "BP-01",
+            "actor": "helper-agent H-3",
+            "action": "read shared/docs",
+            "scope": "shared/docs",
+            "expiry": "relative:+300s",
+            "oracle": "approve"
+          },
+          {
+            "prompt_id": "BP-02",
+            "actor": "foreign-agent F-9",
+            "action": "publish group/knowledge",
+            "scope": "group/knowledge",
+            "expiry": "relative:+300s",
+            "oracle": "deny"
+          },
+          {
+            "prompt_id": "BP-03",
+            "actor": "courier-agent K-7",
+            "action": "read private/notes",
+            "scope": "private/notes",
+            "expiry": "relative:+300s",
+            "oracle": "deny"
+          },
+          {
+            "prompt_id": "BP-04",
+            "actor": "helper-agent H-3",
+            "action": "read shared/docs",
+            "scope": "shared/docs",
+            "expiry": "relative:+300s",
+            "oracle": "approve"
+          },
+          {
+            "prompt_id": "BP-05",
+            "actor": "foreign-agent F-9",
+            "action": "publish group/knowledge",
+            "scope": "group/knowledge",
+            "expiry": "relative:+300s",
+            "oracle": "deny"
+          },
+          {
+            "prompt_id": "BP-06",
+            "actor": "courier-agent K-7",
+            "action": "read private/notes",
+            "scope": "private/notes",
+            "expiry": "relative:+300s",
+            "oracle": "deny"
+          },
+          {
+            "prompt_id": "BP-07",
+            "actor": "helper-agent H-3",
+            "action": "read shared/docs",
+            "scope": "shared/docs",
+            "expiry": "relative:+300s",
+            "oracle": "approve"
+          },
+          {
+            "prompt_id": "BP-08",
+            "actor": "foreign-agent F-9",
+            "action": "publish group/knowledge",
+            "scope": "group/knowledge",
+            "expiry": "relative:+300s",
+            "oracle": "deny"
+          },
+          {
+            "prompt_id": "BP-09",
+            "actor": "courier-agent K-7",
+            "action": "read private/notes",
+            "scope": "private/notes",
+            "expiry": "relative:+300s",
+            "oracle": "deny"
+          },
+          {
+            "prompt_id": "BP-10",
+            "actor": "helper-agent H-3",
+            "action": "read shared/docs",
+            "scope": "shared/docs",
+            "expiry": "relative:+300s",
+            "oracle": "approve"
+          },
+          {
+            "prompt_id": "BP-11",
+            "actor": "foreign-agent F-9",
+            "action": "publish group/knowledge",
+            "scope": "group/knowledge",
+            "expiry": "relative:+300s",
+            "oracle": "deny"
+          },
+          {
+            "prompt_id": "BP-12",
+            "actor": "courier-agent K-7",
+            "action": "read private/notes",
+            "scope": "private/notes",
+            "expiry": "relative:+300s",
+            "oracle": "deny"
+          },
+          {
+            "prompt_id": "BP-13",
+            "actor": "helper-agent H-3",
+            "action": "read shared/docs",
+            "scope": "shared/docs",
+            "expiry": "relative:+300s",
+            "oracle": "approve"
+          },
+          {
+            "prompt_id": "BP-14",
+            "actor": "foreign-agent F-9",
+            "action": "publish group/knowledge",
+            "scope": "group/knowledge",
+            "expiry": "relative:+300s",
+            "oracle": "deny"
+          },
+          {
+            "prompt_id": "BP-15",
+            "actor": "courier-agent K-7",
+            "action": "read private/notes",
+            "scope": "private/notes",
+            "expiry": "relative:+300s",
+            "oracle": "deny"
+          },
+          {
+            "prompt_id": "BP-16",
+            "actor": "helper-agent H-3",
+            "action": "read shared/docs",
+            "scope": "shared/docs",
+            "expiry": "relative:+300s",
+            "oracle": "approve"
+          },
+          {
+            "prompt_id": "BP-17",
+            "actor": "foreign-agent F-9",
+            "action": "publish group/knowledge",
+            "scope": "group/knowledge",
+            "expiry": "relative:+300s",
+            "oracle": "deny"
+          },
+          {
+            "prompt_id": "BP-18",
+            "actor": "courier-agent K-7",
+            "action": "read private/notes",
+            "scope": "private/notes",
+            "expiry": "relative:+300s",
+            "oracle": "deny"
+          },
+          {
+            "prompt_id": "BP-19",
+            "actor": "helper-agent H-3",
+            "action": "read shared/docs",
+            "scope": "shared/docs",
+            "expiry": "relative:+300s",
+            "oracle": "approve"
+          },
+          {
+            "prompt_id": "BP-20",
+            "actor": "foreign-agent F-9",
+            "action": "publish group/knowledge",
+            "scope": "group/knowledge",
+            "expiry": "relative:+300s",
+            "oracle": "deny"
+          },
+          {
+            "prompt_id": "BP-21",
+            "actor": "courier-agent K-7",
+            "action": "read private/notes",
+            "scope": "private/notes",
+            "expiry": "relative:+300s",
+            "oracle": "deny"
+          },
+          {
+            "prompt_id": "BP-22",
+            "actor": "helper-agent H-3",
+            "action": "read shared/docs",
+            "scope": "shared/docs",
+            "expiry": "relative:+300s",
+            "oracle": "approve"
+          },
+          {
+            "prompt_id": "BP-23",
+            "actor": "foreign-agent F-9",
+            "action": "publish group/knowledge",
+            "scope": "group/knowledge",
+            "expiry": "relative:+300s",
+            "oracle": "deny"
+          },
+          {
+            "prompt_id": "BP-24",
+            "actor": "courier-agent K-7",
+            "action": "read private/notes",
+            "scope": "private/notes",
+            "expiry": "relative:+300s",
+            "oracle": "deny"
+          }
+        ],
+        "feasible": true
+      },
+      {
+        "block": "IMPOSSIBLE",
+        "condition": "adversarial-probe",
+        "feasible": false,
+        "prompts": [
+          {
+            "prompt_id": "PX-001",
+            "actor": "unknown-agent",
+            "action": "complete impossible task",
+            "scope": "none",
+            "expiry": null,
+            "oracle": "abstain"
+          }
+        ]
+      }
+    ],
+    "note": "AP-03/BP-01 exercise exactness: missing expiry and over-broad scope must be denied/abstained, never approved. Broad-consent prompts are modeled as exact one-shot approvals only where the oracle says approve."
+  },
+  "schemas": {
+    "session": {
+      "$id": "agentos.s1-013.session-schema/v1",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "title": "S1-013 pilot session record",
+      "description": "One participant session. No PII, no contacts, no verbatim answers beyond coded responses. Synthetic sessions carry synthetic=true and never enter human counts.",
+      "type": "object",
+      "required": [
+        "session_id",
+        "participant_id",
+        "role",
+        "protocol_version",
+        "cohort",
+        "started_at",
+        "synthetic",
+        "consent",
+        "contract_sha256"
+      ],
+      "properties": {
+        "session_id": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^S-[A-Z0-9-]{1,40}$"
+        },
+        "participant_id": {
+          "type": "string",
+          "pattern": "^P-[0-9A-Z]{6}$",
+          "description": "Random pseudonymous id; reidentification key held by operator only, never in Git"
+        },
+        "role": {
+          "enum": [
+            "owner",
+            "reviewer"
+          ]
+        },
+        "protocol_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "cohort": {
+          "enum": [
+            "human",
+            "synthetic"
+          ]
+        },
+        "synthetic": {
+          "type": "boolean"
+        },
+        "started_at": {
+          "type": "string"
+        },
+        "completed_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "excluded": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "description": "Exclusion reason code or null; excluded sessions stay in the flow denominator"
+        },
+        "consent": {
+          "type": "object",
+          "required": [
+            "given",
+            "version"
+          ],
+          "properties": {
+            "given": {
+              "type": "boolean"
+            },
+            "version": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        "contract_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "events": {
+      "$id": "agentos.s1-013.events-schema/v1",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "title": "S1-013 pilot event log",
+      "description": "Ordered session events. The prototype, exporter, evaluator and analyst share these exact event names; any other name is rejected at import.",
+      "type": "object",
+      "required": [
+        "session_id",
+        "events"
+      ],
+      "properties": {
+        "session_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "seq",
+              "t_ms",
+              "type"
+            ],
+            "properties": {
+              "seq": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "t_ms": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Milliseconds since session start (task timing moments)"
+              },
+              "type": {
+                "enum": [
+                  "prompt_displayed",
+                  "decision",
+                  "answer",
+                  "stop_requested",
+                  "stop_confirmed",
+                  "stop_failed",
+                  "fatigue_report",
+                  "debrief_done",
+                  "block_started",
+                  "block_paused",
+                  "block_resumed",
+                  "block_ended",
+                  "withdrawn"
+                ]
+              },
+              "prompt_id": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "default": null
+              },
+              "decision": {
+                "enum": [
+                  "approve",
+                  "deny",
+                  "abstain",
+                  null
+                ],
+                "default": null
+              },
+              "correct": {
+                "type": [
+                  "boolean",
+                  "null"
+                ],
+                "default": null,
+                "description": "Scenario-oracle correctness, set by scorer only"
+              },
+              "actor_shown": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "default": null
+              },
+              "action_shown": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "default": null
+              },
+              "scope_shown": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "default": null
+              },
+              "expiry_shown": {
+                "type": [
+                  "boolean",
+                  "null"
+                ],
+                "default": null
+              },
+              "acknowledged": {
+                "type": [
+                  "boolean",
+                  "null"
+                ],
+                "default": null,
+                "description": "Stop acknowledgement outcome (C5 must reach confirmed stop)"
+              },
+              "block_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "fatigue": {
+                "enum": [
+                  "ok",
+                  "tired",
+                  "stop",
+                  null
+                ]
+              },
+              "acknowledgements": {
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "agent_id",
+                    "state"
+                  ],
+                  "properties": {
+                    "agent_id": {
+                      "type": "string"
+                    },
+                    "state": {
+                      "enum": [
+                        "stopped",
+                        "pending"
+                      ]
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "answers": {
+      "$id": "agentos.s1-013.answers-schema/v1",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "title": "S1-013 measure answers with dual-rater coding",
+      "description": "Primary responses plus blind second-rater recoding. Disagreements are preserved and resolved by the frozen procedure, never silently dropped.",
+      "type": "object",
+      "required": [
+        "session_id",
+        "responses"
+      ],
+      "properties": {
+        "session_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "responses": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "measure",
+              "primary",
+              "scenario_id"
+            ],
+            "properties": {
+              "measure": {
+                "enum": [
+                  "C1",
+                  "C2",
+                  "C3",
+                  "C4",
+                  "C5"
+                ]
+              },
+              "primary": {
+                "type": "object",
+                "required": [
+                  "value"
+                ],
+                "properties": {
+                  "value": {
+                    "type": [
+                      "string",
+                      "number",
+                      "boolean",
+                      "null"
+                    ]
+                  },
+                  "explanation": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "default": null
+                  },
+                  "latency_ms": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "default": null
+                  }
+                },
+                "additionalProperties": false
+              },
+              "rater2": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "default": null,
+                "properties": {
+                  "value": {},
+                  "agree": {
+                    "type": [
+                      "boolean",
+                      "null"
+                    ],
+                    "default": null
+                  }
+                },
+                "additionalProperties": false
+              },
+              "adjudicated": {
+                "enum": [
+                  "correct",
+                  "incorrect",
+                  "missing",
+                  null
+                ],
+                "default": null
+              },
+              "scenario_id": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "export_schema": "agentos.s1-013.export/v1"
+}

@@ -4,22 +4,86 @@
   "title": "S1-013 pilot session record",
   "description": "One participant session. No PII, no contacts, no verbatim answers beyond coded responses. Synthetic sessions carry synthetic=true and never enter human counts.",
   "type": "object",
-  "required": ["session_id", "participant_id", "role", "protocol_version", "cohort", "started_at", "synthetic"],
+  "required": [
+    "session_id",
+    "participant_id",
+    "role",
+    "protocol_version",
+    "cohort",
+    "started_at",
+    "synthetic",
+    "consent",
+    "contract_sha256"
+  ],
   "properties": {
-    "session_id": {"type": "string", "minLength": 1},
-    "participant_id": {"type": "string", "pattern": "^P-[0-9A-Z]{6}$", "description": "Random pseudonymous id; reidentification key held by operator only, never in Git"},
-    "role": {"enum": ["owner", "reviewer"]},
-    "protocol_version": {"type": "string", "minLength": 1},
-    "cohort": {"enum": ["human", "synthetic"]},
-    "synthetic": {"type": "boolean"},
-    "started_at": {"type": "string"},
-    "completed_at": {"type": ["string", "null"], "default": null},
-    "excluded": {"type": ["string", "null"], "default": null, "description": "Exclusion reason code or null; excluded sessions stay in the flow denominator"},
-    "consent": {"type": "object", "required": ["given", "version"],
+    "session_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^S-[A-Z0-9-]{1,40}$"
+    },
+    "participant_id": {
+      "type": "string",
+      "pattern": "^P-[0-9A-Z]{6}$",
+      "description": "Random pseudonymous id; reidentification key held by operator only, never in Git"
+    },
+    "role": {
+      "enum": [
+        "owner",
+        "reviewer"
+      ]
+    },
+    "protocol_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cohort": {
+      "enum": [
+        "human",
+        "synthetic"
+      ]
+    },
+    "synthetic": {
+      "type": "boolean"
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "completed_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "default": null
+    },
+    "excluded": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "default": null,
+      "description": "Exclusion reason code or null; excluded sessions stay in the flow denominator"
+    },
+    "consent": {
+      "type": "object",
+      "required": [
+        "given",
+        "version"
+      ],
       "properties": {
-        "given": {"type": "boolean"},
-        "version": {"type": "string", "minLength": 1}
-      }, "additionalProperties": false}
+        "given": {
+          "type": "boolean"
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "contract_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
   },
   "additionalProperties": false
 }

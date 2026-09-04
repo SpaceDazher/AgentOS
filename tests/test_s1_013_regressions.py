@@ -226,10 +226,8 @@ class TestScorer(unittest.TestCase):
                 "session_sha256": "x", "event_count": 2,
                 "response_count": 0, "problems": [],
                 "output_sha256": "tampered"}]}))
-        metrics = evaluator.evaluate(work, S1013)
-        # Tampered rows are not trusted: scorer works from session files,
-        # so this stays consistent; the hash mismatch is an importer fact.
-        self.assertIn("measures", metrics)
+        with self.assertRaisesRegex(ValueError, "hash mismatch"):
+            evaluator.evaluate(work, S1013)
 
     def test_adjudicated_flag_without_dual_rating_is_not_score(self):
         """A producer cannot turn a single response into human evidence."""
@@ -248,6 +246,7 @@ class TestScorer(unittest.TestCase):
         }
         answers["responses"][0].pop("rater2", None)
         answers["responses"][0]["adjudicated"] = "correct"
+        answers["responses"] = [answers["responses"][0]]
         answers_path.write_text(json.dumps(answers), encoding="utf-8")
         metrics = evaluator.score_measures(
             [{"session_id": "S-PA", "status": "ok"}], work)

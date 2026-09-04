@@ -1,86 +1,63 @@
-"""S1-013 mock UI checks (stdlib only, no browser needed).
-
-Verifies the static prototype against the frozen schemas and the
-scenario manifest WITHOUT executing JavaScript or launching a
-browser: event vocabulary identity, no external URLs, MOCK banner,
-keyboard-focus styles, required element ids, scenario/prompt id
-coverage. A real browser pass remains a manual checklist item
-(prototype/README.md); Playwright checks run only when the driver
-is importable, otherwise they skip without hiding anything.
-Run: $env:PYTHONPATH="src"; py -3.12 -m unittest tests.test_s1_013_ui -v
-"""
+"""Real browser -> canonical envelope -> Python importer -> scorer regression."""
+import importlib.util
 import json
-import re
+import os
+import shutil
+import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-S1013 = ROOT / "research" / "tickets" / "stage-1" / "S1-013"
-HTML = (S1013 / "prototype" / "index.html").read_text(encoding="utf-8")
+ROOT=Path(__file__).resolve().parents[1]
+T=ROOT/"research/tickets/stage-1/S1-013"
+def module(n):
+    spec=importlib.util.spec_from_file_location("s1013_ui_"+n,T/(n+".py"))
+    m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m);return m
 
+class TestPrototypeContract(unittest.TestCase):
+    def test_browser_contract_matches_canonical_inputs(self):
+        c=module("runner").contract
+        browser=json.loads((T/"prototype/browser-contract.json").read_text())
+        self.assertEqual(browser["protocol"],c.load("pilot-protocol.json"))
+        self.assertEqual(browser["contract_sha256"],c.digest(browser["protocol"]))
+        self.assertEqual(browser["scenarios"],c.load("scenario-manifest.json"))
+        for name in ("session","events","answers"):
+            self.assertEqual(browser["schemas"][name],c.load("schemas/"+name+".schema.json"))
 
-def schema_events():
-    schema = json.loads(
-        (S1013 / "schemas" / "events.schema.json").read_text(
-            encoding="utf-8"))
-    props = schema["properties"]["events"]["items"]["properties"]
-    return props["type"]["enum"]
+    def test_actual_planned_prompt_counts(self):
+        c=json.loads((T/"scenario-manifest.json").read_text())
+        self.assertEqual([len(b["prompts"]) for b in c["approval_blocks"] if b["feasible"]],[12,24])
 
+    def test_no_external_telemetry_or_self_grading_button(self):
+        js=(T/"prototype/app.js").read_text()
+        html=(T/"prototype/index.html").read_text()
+        self.assertNotIn("https://",js)
+        self.assertNotIn("Record correct answer",html)
+        self.assertNotIn("Date.now()",js)
+        self.assertIn("performance.now()",js)
 
-def html_event_types():
-    match = re.search(r"EVENT_TYPES = \[(.*?)\]", HTML, re.DOTALL)
-    assert match, "EVENT_TYPES array missing in prototype"
-    return re.findall(r'"([a-z_]+)"', match.group(1))
+    def test_real_browser_export_import_and_score(self):
+        node=shutil.which("node")
+        self.assertIsNotNone(node,"Install/configure Node for required real browser check")
+        with tempfile.TemporaryDirectory(prefix="s1013-browser-") as td:
+            out=Path(td)/"browser.export.json"
+            proc=subprocess.run([node,str(T/"prototype/browser_probe.cjs"),str(out)],
+                capture_output=True,text=True,timeout=90,env=dict(os.environ))
+            self.assertEqual(proc.returncode,0,proc.stdout+"\n"+proc.stderr)
+            evidence=json.loads(proc.stdout.strip().splitlines()[-1])
+            self.assertIn("stop-failure",evidence["checks"])
+            runner=module("runner")
+            obs=runner.import_export(json.loads(out.read_text()),set())
+            self.assertEqual(obs["status"],"ok",obs)
+            obs["output_sha256"]=runner.contract.digest(obs)
+            imp=Path(td)/"observations.json"
+            imp.write_text(json.dumps({"schema":"agentos.s1-013.observations/v1","observations":[obs]}))
+            metrics=module("evaluator").evaluate(Path(td),T)
+            self.assertEqual(metrics["human_n"],0)
+            self.assertEqual(metrics["measures"]["C5"]["correct"],1)
+            self.assertEqual(metrics["approvals"]["n"],36)
+            self.assertEqual(metrics["measures"]["C4"]["missing"],1,
+                "UI cannot appoint its own independent grader")
+            self.assertIn("tired",metrics["prompt_rate_by_role"]["by_role"]["owner"]["participants"][0]["fatigue"])
 
-
-class TestPrototypeVocabulary(unittest.TestCase):
-    def test_event_vocabulary_identical(self):
-        self.assertEqual(sorted(html_event_types()),
-                         sorted(schema_events()))
-
-    def test_no_external_urls(self):
-        urls = re.findall(r"https?://[^\s\"'<>]+", HTML)
-        self.assertEqual(urls, [])
-
-    def test_mock_banner_present(self):
-        self.assertIn("MOCK", HTML)
-        self.assertIn("nothing here is real", HTML)
-
-    def test_keyboard_focus_styles(self):
-        self.assertIn(":focus", HTML)
-
-    def test_required_element_ids(self):
-        for element_id in ("role", "consent", "start", "scenario-card",
-                           "scenario-title", "scenario-text",
-                           "scenario-actions", "stop-card", "stop-request",
-                           "stop-confirm", "stop-status", "export",
-                           "import", "import-status", "eventlog"):
-            self.assertIn(f'id="{element_id}"', HTML, element_id)
-
-    def test_scenario_ids_covered(self):
-        for sid in ("C1-S1", "C2-S1", "C3-S1", "C4-S1"):
-            self.assertIn(sid, HTML, sid)
-
-    def test_all_buttons_are_buttons(self):
-        # Keyboard operability: actions must be <button>, not divs.
-        self.assertNotIn("<div onclick", HTML)
-        self.assertIn("<button", HTML)
-
-    def test_stop_flow_states_present(self):
-        for text in ("stop_requested", "stop_confirmed", "stop_failed",
-                     "pending acknowledgement", "30000"):
-            self.assertIn(text, HTML, text)
-
-
-class TestPrototypeBrowser(unittest.TestCase):
-    def test_playwright_optional(self):
-        try:
-            import playwright  # noqa: F401
-        except ImportError:
-            self.skipTest("playwright absent: manual checklist applies")
-            return
-        self.assertIn("MOCK", HTML)
-
-
-if __name__ == "__main__":
-    unittest.main()
+if __name__=="__main__": unittest.main()

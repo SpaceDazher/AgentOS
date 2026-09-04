@@ -5,118 +5,110 @@
       "seq": 0,
       "t_ms": 0,
       "type": "prompt_displayed",
-      "prompt_id": "C1-S1",
-      "decision": null,
-      "correct": null,
-      "actor_shown": null,
-      "action_shown": null,
-      "scope_shown": null,
-      "expiry_shown": null,
-      "acknowledged": null
+      "prompt_id": "C1-S1"
     },
     {
       "seq": 1,
-      "t_ms": 8000,
+      "t_ms": 1000,
       "type": "answer",
-      "prompt_id": "C1-S1",
-      "decision": null,
-      "correct": null,
-      "actor_shown": null,
-      "action_shown": null,
-      "scope_shown": null,
-      "expiry_shown": null,
-      "acknowledged": null
+      "prompt_id": "C1-S1"
     },
     {
       "seq": 2,
-      "t_ms": 20000,
+      "t_ms": 2000,
       "type": "prompt_displayed",
-      "prompt_id": "AP-01",
-      "decision": null,
-      "correct": null,
-      "actor_shown": "courier-agent K-7",
-      "action_shown": "read shared/calendar",
-      "scope_shown": "shared/calendar",
-      "expiry_shown": true,
-      "acknowledged": null
+      "prompt_id": "C3-S1"
     },
     {
       "seq": 3,
-      "t_ms": 26000,
-      "type": "decision",
-      "prompt_id": "AP-01",
-      "decision": "approve",
-      "correct": true,
-      "actor_shown": null,
-      "action_shown": null,
-      "scope_shown": null,
-      "expiry_shown": null,
-      "acknowledged": null
+      "t_ms": 3000,
+      "type": "answer",
+      "prompt_id": "C3-S1"
     },
     {
       "seq": 4,
-      "t_ms": 40000,
+      "t_ms": 4000,
       "type": "prompt_displayed",
-      "prompt_id": "AP-02",
-      "decision": null,
-      "correct": null,
-      "actor_shown": "unknown-agent X-1",
-      "action_shown": "read private/notes",
-      "scope_shown": "private/notes",
-      "expiry_shown": true,
-      "acknowledged": null
+      "prompt_id": "C4-S1"
     },
     {
       "seq": 5,
-      "t_ms": 47000,
-      "type": "decision",
-      "prompt_id": "AP-02",
-      "decision": "deny",
-      "correct": true,
-      "actor_shown": null,
-      "action_shown": null,
-      "scope_shown": null,
-      "expiry_shown": null,
-      "acknowledged": null
+      "t_ms": 5000,
+      "type": "answer",
+      "prompt_id": "C4-S1"
     },
     {
       "seq": 6,
-      "t_ms": 60000,
-      "type": "stop_requested",
-      "prompt_id": null,
-      "decision": null,
-      "correct": null,
-      "actor_shown": null,
-      "action_shown": null,
-      "scope_shown": null,
-      "expiry_shown": null,
-      "acknowledged": null
+      "t_ms": 6000,
+      "type": "prompt_displayed",
+      "prompt_id": "C5-S1"
     },
     {
       "seq": 7,
-      "t_ms": 72000,
-      "type": "stop_confirmed",
-      "prompt_id": null,
-      "decision": null,
-      "correct": null,
-      "actor_shown": null,
-      "action_shown": null,
-      "scope_shown": null,
-      "expiry_shown": null,
-      "acknowledged": true
+      "t_ms": 7000,
+      "type": "stop_requested"
     },
     {
       "seq": 8,
-      "t_ms": 90000,
-      "type": "debrief_done",
-      "prompt_id": null,
-      "decision": null,
-      "correct": null,
-      "actor_shown": null,
-      "action_shown": null,
-      "scope_shown": null,
-      "expiry_shown": null,
-      "acknowledged": null
+      "t_ms": 8000,
+      "type": "stop_confirmed",
+      "acknowledged": true,
+      "acknowledgements": [
+        {
+          "agent_id": "A-1",
+          "state": "stopped"
+        },
+        {
+          "agent_id": "A-2",
+          "state": "stopped"
+        }
+      ]
+    },
+    {
+      "seq": 9,
+      "t_ms": 9000,
+      "type": "block_started",
+      "block_id": "A"
+    },
+    {
+      "seq": 10,
+      "t_ms": 10000,
+      "type": "prompt_displayed",
+      "prompt_id": "AP-01",
+      "actor_shown": "courier-agent K-7",
+      "action_shown": "read shared/calendar",
+      "scope_shown": "shared/calendar",
+      "expiry_shown": true
+    },
+    {
+      "seq": 11,
+      "t_ms": 11000,
+      "type": "decision",
+      "prompt_id": "AP-01",
+      "decision": "approve"
+    },
+    {
+      "seq": 12,
+      "t_ms": 12000,
+      "type": "prompt_displayed",
+      "prompt_id": "AP-02",
+      "actor_shown": "unknown-agent X-1",
+      "action_shown": "read private/notes",
+      "scope_shown": "private/notes",
+      "expiry_shown": true
+    },
+    {
+      "seq": 13,
+      "t_ms": 13000,
+      "type": "decision",
+      "prompt_id": "AP-02",
+      "decision": "deny"
+    },
+    {
+      "seq": 14,
+      "t_ms": 14000,
+      "type": "block_ended",
+      "block_id": "A"
     }
   ]
 }
