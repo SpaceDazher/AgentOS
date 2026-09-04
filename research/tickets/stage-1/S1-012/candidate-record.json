@@ -1,0 +1,81 @@
+{
+  "assumptions": [
+    "naive textbook semantics faithfully represent granularity views for comparison",
+    "lineage equality proxies source dependence for MVP purposes",
+    "uniform prior grid and decay clock cover the plausible range"
+  ],
+  "bundle_path": "research/tickets/stage-1/S1-012/bundle.json",
+  "bundle_sha256": "931dc344c14f372c9a135f39c41a9778c48cbb12d03397c8d69ba40fba765953",
+  "chain_fresh_claim": null,
+  "comparison_sha256": "5ee3b847c55cb03ea5db32939910264cd8f5e024acf635b9e4bfd7598574abe6",
+  "frozen_hashes": {
+    "calibration-plan.json": "abd79f8c0519c56e1b5d77775b5b21f454e2509920da53c87598be5a306d9744",
+    "canonicalize_corpus.py": "b3cd76850a1eebb2bb3afa2381ef3a8babde50bea3db1765393d23fd02879fae",
+    "cases-dev.src.json": "09290c2abb8a12ef3574add1612201b4eeff84ae60af0a977b712dc900475eb4",
+    "cases-holdout.src.json": "22a7007428583048e593e80dae21ecbad0cdc439ac61f522178bfe1aac2ba8ff",
+    "cases.json": "633a98f2d5654d20c7a2b42de390e00a0300cb082b17e59e68da1db52cea746c",
+    "compare_runs.py": "5284c4509b41507bbdcb344d5a04e094b1ee86fe03d204644d637118f9f8f7ff",
+    "dependency_gate.py": "2fe233ce3f27881870eee0585620b66a53f0986472c261f8e0636314c4260840",
+    "evaluator.py": "da1c77dc720401380c0f73fc38fc44885348091316352a625ab40fdcaefe497d",
+    "evidence-unit.schema.json": "2fffb42f2ea9a1b0a529ca8194ccea181ed25c1506d25b21cb160abbe04b1bcc",
+    "independence-contract.json": "e0570db8a39ce091fb5322cbbad8e53247f99f18a101702b44451d1a2a1161bb",
+    "retrieval-manifest.json": "74850d92a797b46e028f6e4a22a067f8fb5416d62a8b71f972885111a5e99239",
+    "rubric.json": "fd8200c187f1b7fa5f8b7a25a8b6c2c7073b19f00faf70db8b6a90b87af53c63",
+    "runner.py": "5e1f217b46c9c423066507f25801b8a927274889766df1288d1f660ba303e8dd",
+    "source-registry.json": "89a69225d49f07c4d5b34ed3a1a655e1a7bc862fd3d60b9519029544d5c21ecd",
+    "split-manifest.json": "5a51be21e1fa202f03bb3795d95658efe8ac97c480dc7317b1cac54614b1ed2e",
+    "threat-model.json": "dcd2cd20f8b5a57e6e755752f4bb9c8c0dff6d3b95f9a1a60e944bf6523f1226"
+  },
+  "metrics_sha256": "e76a914584e7cbd9542b4235eba0bf951ae7b0c8b6aeb711e8352f805a47f678",
+  "note": "No goal_id, campaign_id, evaluation_id, research revision, artifact-chain hash, or wiki counts are stated here; those are Phase B canonical-harness outputs only.",
+  "phase_b_required": true,
+  "residual_risks": [
+    "novel Sybil shapes evading lineage analysis",
+    "threshold promoted to production without measured data",
+    "reputation mistaken for authorization downstream"
+  ],
+  "run_provenance": {
+    "cells": [
+      "digest-12012",
+      "digest-22012",
+      "digest-33012",
+      "document-12012",
+      "document-22012",
+      "document-33012",
+      "reputation-only-12012",
+      "reputation-only-22012",
+      "reputation-only-33012",
+      "span-12012",
+      "span-22012",
+      "span-33012"
+    ],
+    "commits": [
+      "aa555a1fd302b023b1c6528b77a0e9bceab3a32e"
+    ],
+    "trees": [
+      "8e007b0dcada997f1d4edbeb9e85ec81f3881a5e"
+    ]
+  },
+  "schema": "agentos.s1-012.candidate-record/v1",
+  "status": "READY_FOR_CANONICALIZATION",
+  "ticket": "S1-012",
+  "unknowns": [
+    "cyclic attack-graph behavior",
+    "true Sybil/collusion rates in the wild",
+    "measured operator cost and comprehension"
+  ],
+  "verdict": "PASS_WITH_LIMITS",
+  "verdict_basis": {
+    "flips": 0,
+    "gate": true,
+    "governed_verdicts": {
+      "digest": "PASS",
+      "document": "PASS",
+      "span": "PASS"
+    },
+    "grid_flips": 0,
+    "unknown_dependent": true,
+    "winner": "TIE"
+  },
+  "verdict_cap_reason": "planning threshold is a hypothesis and no measured calibration data exists"
+}
