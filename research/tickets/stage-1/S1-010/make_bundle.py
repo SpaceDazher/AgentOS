@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Assemble the FLOW-11 bundle for S1-010 (native schema, offline).
 
-Round 2 (post independent review REVISE):
+Round 3 (post second independent review REVISE):
 
 - emits the NATIVE FLOW-11 schema consumed by src/agentos/research.py:
   sources are objects with canonical_uri/title/source_type/verification and
@@ -13,8 +13,12 @@ Round 2 (post independent review REVISE):
   (``agentos.research._normalise_config`` + ``_normalize_bundle`` +
   ``_evaluation_checks``) BEFORE it is written; any error aborts without
   writing (fail-closed);
-- the bundle verdict is derived from the recorded evidence (run verdicts,
-  comparison, probes, dependency gate).  Generators refuse to publish a
+- the evidence basis is RECOMPUTED from the current raw inputs through
+  runner.recompute_and_verify_evidence, the stored comparison/metrics/
+  probes must agree with that recomputation
+  (runner.crosscheck_stored_evidence), and the hard-gate verdicts of BOTH
+  runs (A and B) are checked — a stale or one-sided PASS flag can no
+  longer publish a bundle (finding #3).  Generators refuse to publish a
   bundle when any mandatory gate did not pass.
 """
 from __future__ import annotations
@@ -60,6 +64,14 @@ SOURCE_URI_OVERRIDES = {
 }
 
 
+def load_module_by_path(name: str, path: Path):
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(name, path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def sha256_file(path: Path) -> str:
     h = hashlib.sha256()
     with open(path, "rb") as fh:
@@ -77,7 +89,14 @@ def results(ticket: Path, path: str):
 
 
 def evidence_gates(ticket: Path) -> dict:
-    """Read every mandatory verdict from the recorded evidence.  Returns the
+    """Read every mandatory verdict from the recorded evidence.
+
+    Round 3 (finding #3): the hard-gate verdicts of BOTH runs are checked
+    (previously only metrics.run_a was consulted, and Run B was trusted
+    from the saved comparison).  Callers must already have established via
+    runner.recompute_and_verify_evidence + crosscheck_stored_evidence that
+    these stored artifacts agree with the recomputed basis; this function
+    is the last-mile fail-closed check on the same basis.  Returns the
     basis dict; raises RuntimeError when any mandatory gate did not pass."""
     comparison = results(ticket, "comparison.json")
     probes = results(ticket, "probes.json")
@@ -92,6 +111,8 @@ def evidence_gates(ticket: Path) -> dict:
         "run_b_verdict": comparison.get("run_b_verdict"),
         "gates_verdict": (metrics.get("run_a", {}).get("gates", {})
                           .get("verdict")),
+        "gates_verdict_run_b": (metrics.get("run_b", {}).get("gates", {})
+                                .get("verdict")),
         "all_probes_pass": probes.get("all_probes_pass"),
         "dependency_gate_verdict": gate.get("verdict"),
     }
@@ -499,6 +520,22 @@ def main() -> int:
     args = parser.parse_args()
     ticket = Path(args.ticket_root).resolve()
     repo_root = Path(args.repo_root).resolve()
+
+    # Round 3 (findings #1/#3): recompute the evidence basis from the
+    # CURRENT raw inputs (both run summaries, staged digests, Git
+    # bindings, both runs' regrades, probes) and refuse any stored
+    # artifact that contradicts it BEFORE reading a single PASS flag.
+    code_root = Path(__file__).resolve().parent
+    runner_mod = load_module_by_path("s1_010_runner_bundle",
+                                     code_root / "runner.py")
+    try:
+        recomputed = runner_mod.recompute_and_verify_evidence(ticket,
+                                                              repo_root)
+        runner_mod.crosscheck_stored_evidence(ticket, recomputed)
+    except runner_mod.RunnerError as exc:
+        raise RuntimeError(
+            "evidence gates did not pass; refusing to publish a bundle: "
+            f"{exc}")
 
     basis = evidence_gates(ticket)
 

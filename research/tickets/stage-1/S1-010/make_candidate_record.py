@@ -1,17 +1,21 @@
 #!/usr/bin/env python3
 """Generate the S1-010 Phase A candidate record (READY_FOR_CANONICALIZATION).
 
-Round 2 (post independent review REVISE): the record is only published when
-EVERY mandatory verdict in the recorded evidence passes.  The generator:
+Round 3 (post second independent review REVISE): the record is only
+published when the ENTIRE evidence basis, recomputed from the CURRENT raw
+inputs, passes AND the stored evidence artifacts agree with that
+recomputation.  The generator:
 
-- validates both run summaries against the mandatory binding schema
-  (runner.validate_run_summary) and re-verifies staged digests
-  (runner.verify_staged_outputs);
-- regrades the raw decision records through the real evaluator
-  (grade + evaluate_hard_gates) and rejects any divergence from the
-  producer metrics;
-- requires comparison PASS/identical/process separation, all probes pass,
-  both run verdicts PASS, and dependency-gate PASS;
+- rebuilds the evidence basis with runner.recompute_and_verify_evidence:
+  schema validation of both run summaries (null/malformed bindings are
+  violations), staged digest re-verification, positive Git binding
+  verification (objects, cross-layer agreement, blob/file matching),
+  fail-closed A/B comparison recomputation, independent regrade of BOTH
+  runs through the real evaluator, probe recomputation, exact case set;
+- requires runner.crosscheck_stored_evidence: the saved comparison.json,
+  metrics.json, and probes.json must agree with the recomputed basis —
+  stale stored PASS flags can no longer publish a record (finding #1);
+- requires dependency-gate PASS;
 - otherwise exits non-zero WITHOUT writing a ready record.
 
 The record contains NO canonical database IDs, no research revision, no
@@ -85,12 +89,8 @@ def main() -> int:
     repo_root = Path(args.repo_root).resolve()
 
     # --- evidence gate: no ready record is published on any failure ---
-    comparison = load_json(ticket / "results" / "comparison.json")
-    probes = load_json(ticket / "results" / "probes.json")
     manifest = load_json(ticket / "corpus-manifest.json")
     gate = load_json(ticket / "dependency-gate.json")
-    run_a = load_json(ticket / "results" / "run-a" / "run-summary.json")
-    run_b = load_json(ticket / "results" / "run-b" / "run-summary.json")
 
     # The generator's OWN code (same directory as this file) is executed;
     # only DATA is taken from --ticket-root, so sandboxed invocations can
@@ -98,48 +98,20 @@ def main() -> int:
     code_root = Path(__file__).resolve().parent
     runner_mod = load_module_by_path("s1_010_runner_record",
                                      code_root / "runner.py")
-    violations = (runner_mod.validate_run_summary(run_a)
-                  + runner_mod.validate_run_summary(run_b)
-                  + [f"staging run-a: {v}" for v in runner_mod.verify_staged_outputs(
-                      run_a, ticket / "results" / "run-a")]
-                  + [f"staging run-b: {v}" for v in runner_mod.verify_staged_outputs(
-                      run_b, ticket / "results" / "run-b")])
-    if violations:
-        print("candidate record refused; run summary violations: "
-              + "; ".join(violations), file=sys.stderr)
+    # --- round 3 (finding #1): rebuild the whole evidence basis from the
+    # CURRENT raw inputs and refuse any stored artifact that contradicts it.
+    try:
+        recomputed = runner_mod.recompute_and_verify_evidence(ticket,
+                                                              repo_root)
+        runner_mod.crosscheck_stored_evidence(ticket, recomputed)
+    except runner_mod.RunnerError as exc:
+        print(f"candidate record refused; {exc}", file=sys.stderr)
         return 1
-
-    # Independent regrade of the raw records through the real evaluator.
-    evaluator_mod = load_module_by_path("s1_010_evaluator_record",
-                                        code_root / "evaluator.py")
-    cases = load_json(ticket / "cases.json")
-    rubric = load_json(ticket / "rubric.json")
-    for label, run_dir in (("run-a", ticket / "results" / "run-a"),
-                           ("run-b", ticket / "results" / "run-b")):
-        decisions_doc = load_json(run_dir / "evaluator-decisions.json")
-        metrics = evaluator_mod.grade(decisions_doc["decisions"], cases, rubric)
-        gates = evaluator_mod.evaluate_hard_gates(decisions_doc["decisions"],
-                                                  metrics, rubric)
-        if json.dumps(metrics, sort_keys=True) != \
-                json.dumps(decisions_doc["metrics"], sort_keys=True):
-            print(f"candidate record refused; {label} regrade differs from "
-                  "producer metrics", file=sys.stderr)
-            return 1
-        if gates["verdict"] != "PASS":
-            print(f"candidate record refused; {label} hard gates: "
-                  f"{gates['verdict']} {gates['violations']}", file=sys.stderr)
-            return 1
+    run_a = recomputed["run_a"]
+    run_b = recomputed["run_b"]
+    comparison = recomputed["comparison"]
 
     gate_failures = []
-    if comparison.get("verdict") != "PASS" or comparison.get("identical") is not True:
-        gate_failures.append("comparison")
-    if comparison.get("process_separation_verified") is not True:
-        gate_failures.append("process separation")
-    if run_a.get("decision_verdict") != "PASS" or \
-            run_b.get("decision_verdict") != "PASS":
-        gate_failures.append("run verdicts")
-    if probes.get("all_probes_pass") is not True:
-        gate_failures.append("probes")
     if gate.get("verdict") != "PASS":
         gate_failures.append("dependency gate")
     if gate_failures:
@@ -167,7 +139,7 @@ def main() -> int:
     record = {
         "schema": "agentos.s1-010.candidate-record/v1",
         "ticket": "S1-010",
-        "phase": "A (cloud branch work; post-review round 2 fixes)",
+        "phase": "A (cloud branch work; post-review round 3 fixes)",
         "status": "READY_FOR_CANONICALIZATION",
         "proposed_result": "PASS",
         "proposed_result_caveat": "subject to local canonical Phase B; the "
@@ -176,11 +148,13 @@ def main() -> int:
         "evidence_gates_verified": {
             "run_summaries_schema_valid": True,
             "staged_digests_reverified": True,
+            "git_bindings_verified": True,
+            "stored_evidence_matches_recomputation": True,
             "independent_regrade_match": True,
             "comparison": comparison["verdict"],
             "process_separation_verified":
                 comparison["process_separation_verified"],
-            "probes_all_pass": probes["all_probes_pass"],
+            "probes_all_pass": recomputed["all_probes_pass"],
             "dependency_gate": gate["verdict"],
         },
         "head_commit_at_generation": head,
@@ -242,7 +216,7 @@ def main() -> int:
                       "decisions_sha256": run_b["decisions_sha256"],
                       "verdict": run_b["decision_verdict"]},
         },
-        "probes_all_pass": probes["all_probes_pass"],
+        "probes_all_pass": recomputed["all_probes_pass"],
         "source_snapshot_hashes": snapshot_hashes,
         "tracked_artifact_hashes": tracked,
         "limitations": [
