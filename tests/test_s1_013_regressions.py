@@ -113,6 +113,54 @@ class TestImporter(unittest.TestCase):
                 {k: v for k, v in obs.items() if k != "output_sha256"}))
             self.assertEqual(obs["output_sha256"], want)
 
+    def test_event_and_answer_privacy_are_quarantined(self):
+        import tempfile
+        import shutil
+        src = Path(tempfile.mkdtemp())
+        for suffix in ("session", "events", "answers"):
+            shutil.copy2(
+                S1013 / "synthetic" / "sessions" / f"happy-owner.{suffix}.json",
+                src / f"leak.{suffix}.json")
+        events_path = src / "leak.events.json"
+        events = json.loads(events_path.read_text(encoding="utf-8"))
+        events["events"][0]["action_shown"] = "email jane.doe@example.com"
+        events_path.write_text(json.dumps(events), encoding="utf-8")
+        out = import_synthetic(src.parent / "out") if False else Path(tempfile.mkdtemp())
+        old = sys.argv
+        sys.argv = ["runner", "--src", str(src), "--out", str(out)]
+        try:
+            self.assertEqual(runner.main(), 0)
+        finally:
+            sys.argv = old
+        observations = json.loads(
+            (out / "observations.json").read_text(encoding="utf-8"))[
+                "observations"]
+        self.assertEqual(observations[0]["status"], "quarantined")
+        self.assertNotIn("jane.doe@example.com", (out / "observations.json").read_text(encoding="utf-8"))
+
+    def test_protocol_version_drift_is_rejected(self):
+        import tempfile
+        import shutil
+        src = Path(tempfile.mkdtemp())
+        for suffix in ("session", "events", "answers"):
+            shutil.copy2(
+                S1013 / "synthetic" / "sessions" / f"happy-owner.{suffix}.json",
+                src / f"drift.{suffix}.json")
+        session_path = src / "drift.session.json"
+        session = json.loads(session_path.read_text(encoding="utf-8"))
+        session["protocol_version"] = "0.9.0"
+        session_path.write_text(json.dumps(session), encoding="utf-8")
+        out = Path(tempfile.mkdtemp())
+        old = sys.argv
+        sys.argv = ["runner", "--src", str(src), "--out", str(out)]
+        try:
+            self.assertEqual(runner.main(), 0)
+        finally:
+            sys.argv = old
+        observations = json.loads(
+            (out / "observations.json").read_text(encoding="utf-8"))["observations"]
+        self.assertEqual(observations[0]["status"], "rejected")
+
 
 class TestScorer(unittest.TestCase):
     @classmethod
@@ -183,6 +231,55 @@ class TestScorer(unittest.TestCase):
         # so this stays consistent; the hash mismatch is an importer fact.
         self.assertIn("measures", metrics)
 
+    def test_adjudicated_flag_without_dual_rating_is_not_score(self):
+        """A producer cannot turn a single response into human evidence."""
+        import tempfile
+        work = Path(tempfile.mkdtemp())
+        src = S1013 / "synthetic" / "sessions"
+        for suffix in ("session", "events", "answers"):
+            (work / f"attack.{suffix}.json").write_bytes(
+                (src / f"probe-a.{suffix}.json").read_bytes())
+        answers_path = work / "attack.answers.json"
+        answers = json.loads(answers_path.read_text(encoding="utf-8"))
+        answers["session_id"] = "S-PA"
+        answers["responses"][0]["measure"] = "C4"
+        answers["responses"][0]["primary"] = {
+            "value": "yes", "explanation": "everyone reads private notes"
+        }
+        answers["responses"][0].pop("rater2", None)
+        answers["responses"][0]["adjudicated"] = "correct"
+        answers_path.write_text(json.dumps(answers), encoding="utf-8")
+        metrics = evaluator.score_measures(
+            [{"session_id": "S-PA", "status": "ok"}], work)
+        self.assertEqual(metrics["C4"]["correct"], 0)
+        self.assertEqual(metrics["C4"]["missing"], 1)
+
+    def test_c5_latency_starts_at_task_presentation(self):
+        import tempfile
+        work = Path(tempfile.mkdtemp())
+        session = {
+            "session_id": "S-SLOW", "participant_id": "P-LLLLLL",
+            "role": "owner", "protocol_version": "1.0.0-draft",
+            "cohort": "synthetic", "synthetic": True,
+        }
+        events = {"session_id": "S-SLOW", "events": [
+            {"seq": 0, "t_ms": 0, "type": "prompt_displayed",
+             "prompt_id": "C5-S1"},
+            {"seq": 1, "t_ms": 60000, "type": "stop_requested"},
+            {"seq": 2, "t_ms": 61000, "type": "stop_confirmed",
+             "acknowledged": True,
+             "acknowledgements": [{"agent_id": "A-1", "state": "stopped"}]},
+        ]}
+        answers = {"session_id": "S-SLOW", "responses": []}
+        (work / "slow.session.json").write_text(json.dumps(session), encoding="utf-8")
+        (work / "slow.events.json").write_text(json.dumps(events), encoding="utf-8")
+        (work / "slow.answers.json").write_text(json.dumps(answers), encoding="utf-8")
+        scored = evaluator.score_measures(
+            [{"session_id": "S-SLOW", "status": "ok"}], work)
+        self.assertEqual(scored["C5"]["n"], 1)
+        self.assertEqual(scored["C5"]["correct"], 0)
+        self.assertEqual(scored["C5"]["latencies_ms"], [61000])
+
 
 class TestReplication(unittest.TestCase):
     def test_replicate_matches(self):
@@ -236,6 +333,23 @@ class TestDependencyGateStrict(unittest.TestCase):
         self.assertTrue(dependency_gate.contained(
             "research/tickets/stage-1/S1-011/results/evidence/x.json",
             "S1-011"))
+
+    def test_forged_override_cannot_replace_dependency_identity(self):
+        dep = {"ticket": "S1-011",
+               "branch": "codex/s1-011-knowledge-gate",
+               "record": "research/tickets/stage-1/S1-011/evaluation-record.json"}
+        record = json.loads((
+            __import__("subprocess").check_output(
+                ["git", "show", f"{dep['branch']}:{dep['record']}"])
+            .decode("utf-8")))
+        forged = copy.deepcopy(record)
+        forged["goal_id"] = "fabricated"
+        forged["campaign_id"] = "fabricated"
+        forged["evaluation_id"] = "fabricated"
+        forged["artifact_chain_hash"] = "f" * 64
+        forged["result"] = "pass_with_limits"
+        result = dependency_gate.check(dep, rec_override=forged)
+        self.assertEqual(result["status"], "NOT_PROVEN")
 
 
 class TestBundleNative(unittest.TestCase):
