@@ -55,8 +55,8 @@
       "content": {
         "Architecture": "Static mock UI plus stdlib importer, scorer, replicator and publisher on one frozen definition set.",
         "Milestones": "PREPARATION_READY now; human pilot only after operator approval and real participants; canonicalization after review.",
-        "Open decisions": "Exact N in 15-20 at recruitment; ethics review outcome; S1-014/15 handoff scope.",
-        "Risks": "Small samples, no-SRC-04 mental-model gap, privacy handling, fatigue underestimated.",
+        "Open decisions": "Exact N in 15-20 at recruitment; ethics review outcome; S1-014/15 handoff scope",
+        "Risks": "Small samples, source coverage limits, privacy handling, fatigue underestimated.",
         "Scope": "Bounded HCI pilot preparation and, after approval, a 15-20 person comprehension and fatigue study; no production claims.",
         "Verification": "Targeted suites, UI vocabulary checks, probe battery, replication record, native normalizer pass.",
         "Workstreams": "Freeze protocol; build mock UI; score dry runs; replicate analysis; publish native bundle; await recruitment."
@@ -83,7 +83,7 @@
         "CL-H1",
         "CL-L1"
       ],
-      "content": "Five sources: UDAC primary fragment (in-context approvals), Nudges citation record (hypothesis framing only), SRC-04 unavailability record with explicit substitution, S1-011 and S1-012 canonical decisions via cross-branch git show.",
+      "content": "The source registry binds each locally authorized snapshot to its URI, role, verification status and SHA-256. Unavailable or limited records remain explicit and are not presented as verified evidence.",
       "producer": "agentos-s1-013-producer"
     },
     "synthesis_and_gaps": {
@@ -91,7 +91,7 @@
         "CL-D1",
         "CL-L1"
       ],
-      "content": "Preparation is complete and dry-run green; the human pilot, operator approval, recruitment, second human rating and canonicalization are all open. SRC-04 gap and Beta-free design are explicit limits; S1-014/S1-015 receive pilot constraints, not closure.",
+      "content": "Preparation is complete and dry-run green; the human pilot, operator approval, recruitment, second human rating and canonicalization are all open. Source coverage limits and Beta-free design are explicit; S1-014/S1-015 receive pilot constraints, not closure.",
       "producer": "agentos-s1-013-producer"
     }
   },
@@ -100,8 +100,7 @@
     "limitations": [
       "tracked-Git evidence only; live DB recheck required in Phase B",
       "no human data: all rates are dry-run tooling checks",
-      "SRC-04 unavailable; mental-model coverage rests on task text",
-      "source base 4/4 verified in-bundle; the fifth registry entry is the recorded SRC-04 absence (kept in registry, snapshots and limitations, never as bundle evidence)",
+      "source coverage and verification limits remain explicit in the registry",
       "Beta-free design; no reputation-as-authority anywhere",
       "holdout concept not applicable pre-pilot; synthetic corpus is author-visible by construction"
     ],
@@ -154,7 +153,7 @@
       "id": "CL-L1",
       "s1_013_class": "limitation",
       "support": [],
-      "text": "No human data exists yet: all rates and dispositions are dry-run tooling checks. SRC-04 is unavailable, so mental-model coverage rests on the task text and protocol."
+      "text": "No human data exists yet: all rates and dispositions are dry-run tooling checks. Mental-model coverage is bounded by the locally authorized source snapshots and their stated verification limits."
     }
   ],
   "config": {
@@ -194,6 +193,17 @@
       "id": "SRC-S1-013-02",
       "source_type": "hci-permission-fatigue",
       "title": "Nudges for Privacy and Security (ACM Comput. Surv. 2017)",
+      "verification_method": "tracked-file-hash-review",
+      "verification_status": "verified",
+      "verifier": "s1-013-source-review-2026-09-04"
+    },
+    {
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-013/sources/snap-06-src04-mental-model.md",
+      "content": "# 40 — Ментальная модель пользователей личного агентного хаба\n\nСтатус: v2, независимо проаудирован (раунд 13). Основа: system image Нормана — интерфейс должен отражать\nреальную архитектуру, иначе пользователь строит ложную модель [K8]; уровни автоматизации\nPOOR'CT для распределения контроля [K2]; калиброванное доверие [K1][K5].\n\n## 0. Дизайн-обязательство\n\n> UI показывает ровно те сущности, которые есть в онтологии (`50_ontology.md`):\n> человек / установка агента / запуск / поручение / пространство / знание.\n> Никаких скрытых участников: platform agents видимы как участники {H15,H6}.\n\n## 1. Роли и их информационные потребности\n\n| Роль | Что должно быть видно | Чего не должно быть видно |\n|---|---|---|\n| Участник-владелец | свои установки, активные гранты, расходы, историю действий своих агентов | содержимое чужих private пространств |\n| Участник-коллега | общие пространства, кто что публиковал, приглашённые агенты | внутренние гранты чужих агентов |\n| Оператор | health/costs/queues/security events (platform ops) | plaintext личного контента (policy + break-glass) |\n| Спонсор внешнего агента | статус карты/lease внешнего агента | данные workspace, куда агент приглашён |\n\n## 2. Концептуальные объекты в голове пользователя\n\n| Объект модели | Онтологический аналог | Бытовая метафора | Ключевой вопрос пользователя |\n|---|---|---|---|\n| «Мой агент» | AgentInstallation (+ текущий RuntimeInstance) | наёмный помощник с ключами от квартиры? нет — с разовой доверенностью | «что ему можно прямо сейчас?» |\n| «Поручение» | DelegationGrant + Run | доверенность на конкретное действие со сроком и лимитом | «на что я его уполномочил?» |\n| «Рабочее место» | Workspace (private/shared/platform/knowledge) | столы: личный, общий, служебный, библиотека | «кто это увидит?» |\n| «Сообщение» | Message | записка от коллеги (может быть ошибочной) | «от кого и проверено ли?» |\n| «Документ» | Artifact | подписанный файл с хешем | «кто сделал и не менялся ли?» |\n| «Знание» | KnowledgeAssertion (promoted) | карточка в библиотеке после рецензии | «на чём это основано?» |\n| «Системный помощник» | PlatformAgent | техничка с ограниченным допуском | «что именно он обслуживает?» |\n| «Чужой внешний агент» | ExternalAgent | подрядчик по рекомендации спонсора | «кто за него отвечает?» |\n\nПравило соответствия: каждая метафора обязана иметь единственную визуальную форму;\nзапрещены гибридные образы («чат» = одновременно память, сообщение и знание).\n\n## 3. Принципы видимости делегирования {H15}\n\n1. **On-behalf banner**: каждое действие агента помечено «от имени X · права: Y · в Z»\n   [K7]; для high-impact — неотключаемо (F-10.1).\n2. **Прогрессивное раскрытие**: баннер → карточка гранта → полный журнал ≤ 3 кликов.\n3. **Калибровка, а не убеждение**: рядом с результатами — уверенность и границы; никаких\n   «доверься, он умный» [K1][K5].\n4. **Бюджет внимания**: approvals пакетируются и ранжируются; шторм подтверждений =\n   баг дизайна [K9][K10].\n5. **Симметрия аудита**: любое действие агента можно показать владельцу И пострадавшей\n   стороне (tracking/tracing) [K4].\n6. **Стоп-линия**: глобальный «стоп всем моим агентам» и per-run cancel доступны из\n   одного места (дизайн-паттерн override, согласованный с Art.14) [K3].\n\nОговорка применимости: Article 14 Регламента (EU) 2024/1689 является юридическим\nтребованием для high-risk AI systems. Здесь он используется как добровольный\nhuman-oversight benchmark; это не классифицирует любой personal hub как high-risk и не\nзаменяет юридическую оценку конкретного deployment.\n\n## 4. Journey-карты\n\n### J1 · Подключение первого агента\n```mermaid\njourney\n    title Первый агент\n    Section Установка\n      Выбор определения из реестра: 5\n      Просмотр заявленных capabilities: 4\n    Section Выдача поручения\n      Настройка scope/TTL/бюджета: 4\n      Понимание «это не мои пароли»: 5\n    Section Первый запуск\n      Наблюдение banner'а on-behalf: 5\n      Отзыв гранта одной кнопкой: 5\n```\nПровал journey = пользователь не может ответить «что агенту можно» без посторонней помощи.\n\n### J2 · Приглашение чужого агента в общий workspace\n- владелец workspace видит: чей агент, publisher, capabilities diff против версии,\n  минимальную роль (contributor/indexer);\n- приглашение = явная операция membership (F-4.5), никогда «агент сам пришёл».\n\n### J3 · Межагентное поручение (A → агент B)\n- инициатор A видит: кому поручено, какой грант покрыл задачу;\n- B видит: входящую задачу в inbox под СВОЕЙ политикой + кнопку approve exact scope;\n- результат возвращается с provenance + audit id (seed §4.3 sequence).\n\n### J4 · Публикация знания\npropose (черновик из сообщения/артефакта) → review (≥2 независимых оценок) →\npromoted в group knowledge; автор видит статус и причины отказа; challenged claim\nпомечается как спорный в UI (F-7.3), но остаётся доступным как «мнение с провенансом».\n\n### J5 · Инцидент: превышение полномочий\nобнаружение (anomaly/approval-required) → авто-suspend run → разбор владельцем\n(журнал решений PDP) → отзыв гранта/кворантин установки → отчёт в platform ops.\nМодель восстановления: инцидент — нормальный режим работы, а не исключение (supervision-\nмышление [H10]).\n\n## 5. Анти-паттерны UX (запрещаются)\n\n| Анти-паттерн | Почему опасно | Контрмера |\n|---|---|---|\n| Blanket grant «на всё сразу» | rubber-stamping, доказано исследованиями разрешений [K10] | только exact scope; шаблоны узких грантов |\n| Скрытые platform agents | разрушают доверие и attribution {H6} | список системных участников в каждом пространстве |\n| «Магический» автопоиск между приватными данными | иллюзия общей памяти {H8} | поиск только в рамках видимых пространств |\n| Один бесконечный лог вместо объяснимых решений | alert fatigue [K9] | решения PDP показываются как структурированные карточки |\n| Метафора «умного друга» для platform services | LLM ≠ власть {H14} | сервисные действия оформлены как операции системы |\n\n## 6. Соответствие oversight-требованиям\n\n| Требование Art.14 / MHC | Реализация в UX |\n|---|---|\n| понимать границы и риски [K3] | capability-карточки, confidence-labels |\n| противодействовать automation bias [K5] | обязательные альтернативы: «сделать вручную» рядом с каждым агентским действием |\n| вмешиваться/останавливать | стоп-линия §3.6, cancel run |\n| tracking/tracing ответственности [K4] | on-behalf + симметричный аудит |\n\n## 7. Метрики понятности (comprehension test для MVP)\n\nПользователь после 20-минутной сессии должен правильно ответить:\n1. Чем «поручение» отличается от «пароля»? (≥90%)\n2. Кто видит содержимое private space? (≥95%)\n3. Чем «сообщение чужого агента» отличается от «знания группы»? (≥85%)\n4. Может ли системный агент читать личное без явного подключения? (≥95% «нет»)\n5. Как остановить всех своих агентов? (≤30 c на выполнение)\n\nМетрики входят в acceptance MVP (расширение seed §9.2 пунктом 12).\n\n## 8. Открытые вопросы\n\n- QM1: визуализация аргументационных споров claims без перегрузки (карточка vs граф).\n- QM2: пороги N_prompts/час по ролям — калибровать на пилоте.\n- QM3: petname-словарь [G16] — персональные псевдонимы принципалов в UI при канонических ID.\n",
+      "content_sha256": "cf4789616c2465389db58a645deed39a26f1f79f6a7272632bd6fe5fb73b4eab",
+      "id": "SRC-S1-013-03",
+      "source_type": "mental-model",
+      "title": "SRC-04 — AgentOS mental model",
       "verification_method": "tracked-file-hash-review",
       "verification_status": "verified",
       "verifier": "s1-013-source-review-2026-09-04"

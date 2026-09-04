@@ -1,27 +1,9 @@
-# S1-013 independent audit (preparation)
+# S1-013 corrective audit scope
 
-Role: agent-implemented audit path independent from the producer
-(importer) path: the scorer recomputes every measure from session
-files plus frozen oracle files, never from producer summaries.
+Root review independently exercised importer boundaries and actual Edge browser-to-Python export/scoring. RED mutation tests covered forged grading, late stop requests, privacy/version drift, duplicate sessions and displayed actor substitution. A separate implementation agent repaired dependency, replication and publication checks; the root verifies its result.
 
-Checked pre-pilot:
-- Protocol/rubric/scenario/schema hashes match the frozen manifest.
-- Importer boundaries: duplicate/malformed/no-consent rejected, PII
-  quarantined, event vocabulary exact, sequence monotonic.
-- Scorer rules: C4 needs valid explanation, C5 needs confirmed
-  acknowledgement in window with failures kept in denominators,
-  approval oracle exact, N/hour clustered with load probes excluded.
-- Probes A-H pass through the real importer/scorer path, each with
-  a passing unmutated control and a specific assertion.
-- Replication: a separate process pair reproduces metrics, probes
-  and observations byte-identical (see comparison.json).
-- Bundle: native schema passes the real normalizer and evaluation
-  checks; claim classes mapped explicitly; producer/auditor
-  distinct; verdict derived, never constant.
-- Privacy: no PII, contacts, consent originals or reidentification
-  keys in tracked files (scanner test green); quarantine path
-  exercised by probe H.
+The importer validates frozen versions, schema types, identities, consent, event chronology and lifecycle before embedding raw records. The evaluator re-imports embedded records and verifies hashes. Browser-entered free answers remain ungraded; fixture exact-answer oracles are synthetic-only. Stop acknowledgement is produced by two mock-agent states, never a self-confirmation button.
 
-Explicitly NOT covered by agent-only audit (requires humans):
-second human rater coding, consent administration, session
-facilitation, privacy release review, ethics consideration.
+Publication checks fresh dependencies, exact input hashes, recomputed metrics, complete probes and two-process replication. Replication demonstrates deterministic analysis on one host; it is not an independent human study, independent code implementation, or external audit.
+
+Verification evidence and limitations are recorded in CORRECTIVE_R1.md after the final checks. Human consent administration, independent human rating, recruitment and ethics/privacy approval have not occurred. No human result, canonical closure or production claim is authorized by this audit.
