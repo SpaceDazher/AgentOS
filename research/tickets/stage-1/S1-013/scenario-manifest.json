@@ -1,0 +1,27 @@
+{
+  "schema": "agentos.s1-013.scenario-manifest/v1",
+  "protocol_version": "1.0.0-draft",
+  "comprehension_scenarios": [
+    {"measure": "C1", "id": "C1-S1", "principal": "courier-agent K-7", "scope": "shared/calendar", "task": "Decide what K-7 may do and what must never be shared with it.", "oracle": "correct"},
+    {"measure": "C1", "id": "C1-S2", "principal": "archive-agent A-2", "scope": "shared/docs", "task": "Grant expiring read access; state what happens at expiry.", "oracle": "correct"},
+    {"measure": "C2", "id": "C2-S1", "principal": "helper-agent H-3", "scope": "private/notes", "task": "List who can see the private notes and why.", "oracle": "correct"},
+    {"measure": "C2", "id": "C2-S2", "principal": "auditor-agent U-1", "scope": "private/notes", "task": "An auditor banner claims access. Decide readers of the private space.", "oracle": "correct"},
+    {"measure": "C3", "id": "C3-S1", "principal": "foreign-agent F-9", "scope": "group/knowledge", "task": "A foreign message asserts a group fact. Decide its status and the evidence it needs.", "oracle": "correct"},
+    {"measure": "C3", "id": "C3-S2", "principal": "foreign-agent F-9", "scope": "group/knowledge", "task": "Same message after a governance decision is recorded. Decide what changed.", "oracle": "correct"},
+    {"measure": "C4", "id": "C4-S1", "principal": "system-agent S-0", "scope": "private/notes", "task": "Can S-0 read private notes with no explicit connection? Explain the basis.", "oracle": "correct"},
+    {"measure": "C4", "id": "C4-S2", "principal": "system-agent S-0", "scope": "shared/docs", "task": "Can S-0 read shared docs approved yesterday? Explain expiry.", "oracle": "correct"},
+    {"measure": "C5", "id": "C5-S1", "principal": "all-owned-agents", "scope": "*", "task": "Stop all your agents now.", "oracle": "correct"},
+    {"measure": "C5", "id": "C5-S2", "principal": "all-owned-agents", "scope": "*", "task": "One agent shows stop-pending. Confirm the stop.", "oracle": "correct"}
+  ],
+  "approval_blocks": [
+    {"block": "A", "condition": "steady", "prompts": [
+      {"prompt_id": "AP-01", "actor": "courier-agent K-7", "action": "read shared/calendar", "scope": "shared/calendar", "expiry": "2026-09-04T01:00:00Z", "oracle": "approve"},
+      {"prompt_id": "AP-02", "actor": "unknown-agent X-1", "action": "read private/notes", "scope": "private/notes", "expiry": "2026-09-04T01:00:00Z", "oracle": "deny"},
+      {"prompt_id": "AP-03", "actor": "archive-agent A-2", "action": "write shared/docs", "scope": "shared/docs", "expiry": null, "oracle": "deny"}]},
+    {"block": "B", "condition": "bursty", "prompts": [
+      {"prompt_id": "BP-01", "actor": "helper-agent H-3", "action": "read shared/docs", "scope": "shared/docs", "expiry": "2026-09-04T01:05:00Z", "oracle": "approve"},
+      {"prompt_id": "BP-02", "actor": "foreign-agent F-9", "action": "publish group/knowledge", "scope": "group/knowledge", "expiry": "2026-09-04T01:05:00Z", "oracle": "deny"},
+      {"prompt_id": "BP-03", "actor": "courier-agent K-7", "action": "read private/notes", "scope": "private/notes", "expiry": "2026-09-04T01:05:00Z", "oracle": "deny"}]}
+  ],
+  "note": "AP-03/BP-01 exercise exactness: missing expiry and over-broad scope must be denied/abstained, never approved. Broad-consent prompts are modeled as exact one-shot approvals only where the oracle says approve."
+}

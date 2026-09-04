@@ -1,0 +1,42 @@
+{
+  "$id": "agentos.s1-013.answers-schema/v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "S1-013 measure answers with dual-rater coding",
+  "description": "Primary responses plus blind second-rater recoding. Disagreements are preserved and resolved by the frozen procedure, never silently dropped.",
+  "type": "object",
+  "required": ["session_id", "responses"],
+  "properties": {
+    "session_id": {"type": "string", "minLength": 1},
+    "responses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["measure", "primary"],
+        "properties": {
+          "measure": {"enum": ["C1", "C2", "C3", "C4", "C5"]},
+          "primary": {
+            "type": "object",
+            "required": ["value"],
+            "properties": {
+              "value": {"type": ["string", "number", "boolean", "null"]},
+              "explanation": {"type": ["string", "null"], "default": null},
+              "latency_ms": {"type": ["integer", "null"], "default": null}
+            },
+            "additionalProperties": false
+          },
+          "rater2": {
+            "type": ["object", "null"], "default": null,
+            "properties": {
+              "value": {},
+              "agree": {"type": ["boolean", "null"], "default": null}
+            },
+            "additionalProperties": false
+          },
+          "adjudicated": {"enum": ["correct", "incorrect", "missing", null], "default": null}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

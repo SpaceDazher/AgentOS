@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MOCK — S1-013 Comprehension &amp; Approval Pilot (research prototype)</title>
+<style>
+  body { font-family: sans-serif; max-width: 720px; margin: 2em auto; }
+  .mock-banner { background: #fff3b0; border: 2px dashed #a80; padding: 0.6em; font-weight: bold; }
+  .card { border: 1px solid #999; padding: 1em; margin: 1em 0; }
+  button { margin: 0.2em; padding: 0.4em 0.9em; }
+  button:focus, input:focus, select:focus { outline: 3px solid #06c; }
+  .status-ok { color: #060; } .status-bad { color: #a00; } .status-pending { color: #a60; }
+  #eventlog { font-size: 0.85em; white-space: pre-wrap; background: #f4f4f4; padding: 0.5em; }
+</style>
+</head>
+<body>
+<div class="mock-banner" role="alert">MOCK RESEARCH PROTOTYPE — nothing here is real. No real agents, files, or permissions change.</div>
+<h1>S1-013 pilot mock (v1.0.0-draft)</h1>
+
+<div class="card">
+  <label>Role:
+    <select id="role"><option value="owner">owner</option><option value="reviewer">reviewer</option></select>
+  </label>
+  <label><input type="checkbox" id="consent"> I consent (mock consent-v1)</label>
+  <button id="start">Start session</button>
+</div>
+
+<div class="card" id="scenario-card" hidden>
+  <h2 id="scenario-title"></h2>
+  <p id="scenario-text"></p>
+  <div id="scenario-actions"></div>
+</div>
+
+<div class="card" id="stop-card" hidden>
+  <h2>Stop all your agents</h2>
+  <p id="stop-status" class="status-pending">Not requested.</p>
+  <button id="stop-request">Request stop</button>
+  <button id="stop-confirm" disabled>Confirm stop</button>
+</div>
+
+<div class="card">
+  <h2>Fatigue report</h2>
+  <button data-fatigue="ok">Feeling OK</button>
+  <button data-fatigue="tired">Tired</button>
+  <button data-fatigue="stop">Want to stop</button>
+</div>
+
+<div class="card">
+  <h2>Export / import (round-trip check)</h2>
+  <button id="export">Download session JSON</button>
+  <input type="file" id="import" accept="application/json">
+  <p id="import-status"></p>
+</div>
+
+<h2>Event log (schema: events.schema.json vocabulary)</h2>
+<div id="eventlog" aria-live="polite"></div>
+
+<script>
+"use strict";
+// Event vocabulary MUST match schemas/events.schema.json exactly.
+const EVENT_TYPES = ["prompt_displayed","decision","answer","stop_requested","stop_confirmed","stop_failed","fatigue_report","debrief_done"];
+const SCENARIOS = [
+  {measure:"C1", id:"C1-S1", principal:"courier-agent K-7", scope:"shared/calendar",
+   text:"Decide what courier-agent K-7 may do in shared/calendar and what must never be shared with it."},
+  {measure:"C2", id:"C2-S1", principal:"helper-agent H-3", scope:"private/notes",
+   text:"List who can see the private notes and why."},
+  {measure:"C3", id:"C3-S1", principal:"foreign-agent F-9", scope:"group/knowledge",
+   text:"A foreign message asserts a group fact. Decide its status and the evidence it needs."},
+  {measure:"C4", id:"C4-S1", principal:"system-agent S-0", scope:"private/notes",
+   text:"Can system-agent S-0 read private notes with no explicit connection? Explain the basis."}
+];
+const PROMPTS = [
+  {prompt_id:"AP-01", actor:"courier-agent K-7", action:"read shared/calendar", scope:"shared/calendar", expiry:"2026-09-04T01:00:00Z"},
+  {prompt_id:"AP-02", actor:"unknown-agent X-1", action:"read private/notes", scope:"private/notes", expiry:"2026-09-04T01:00:00Z"},
+  {prompt_id:"AP-03", actor:"archive-agent A-2", action:"write shared/docs", scope:"shared/docs", expiry:null}
+];
+const session = {session_id:"S-" + Math.random().toString(36).slice(2,8).toUpperCase(),
+  participant_id:"P-XXXXXX", role:"owner", protocol_version:"1.0.0-draft",
+  cohort:"synthetic", synthetic:true, started_at:new Date().toISOString(),
+  completed_at:null, excluded:null, consent:{given:false, version:"consent-v1"}};
+const events = [];
+let t0 = Date.now(), seq = 0, scenarioIdx = 0, promptIdx = 0;
+function log(type, extra) {
+  if (!EVENT_TYPES.includes(type)) throw new Error("unknown event type: " + type);
+  const ev = Object.assign({seq:seq++, t_ms:Date.now()-t0, type:type,
+    prompt_id:null, decision:null, correct:null, actor_shown:null,
+    action_shown:null, scope_shown:null, expiry_shown:null, acknowledged:null}, extra||{});
+  events.push(ev);
+  document.getElementById("eventlog").textContent = JSON.stringify(events, null, 1);
+}
+document.getElementById("start").onclick = () => {
+  session.role = document.getElementById("role").value;
+  session.consent.given = document.getElementById("consent").checked;
+  t0 = Date.now();
+  showScenario();
+  document.getElementById("stop-card").hidden = false;
+};
+function showScenario() {
+  const card = document.getElementById("scenario-card");
+  if (scenarioIdx < SCENARIOS.length) {
+    const s = SCENARIOS[scenarioIdx];
+    card.hidden = false;
+    document.getElementById("scenario-title").textContent = s.measure + " / " + s.id;
+    document.getElementById("scenario-text").textContent =
+      s.text + " (principal: " + s.principal + ", scope: " + s.scope + ")";
+    log("prompt_displayed", {prompt_id:s.id});
+    const box = document.getElementById("scenario-actions");
+    box.innerHTML = "";
+    ["answer-correct","answer-wrong"].forEach((kind) => {
+      const b = document.createElement("button");
+      b.textContent = kind === "answer-correct" ? "Record correct answer" : "Record wrong answer";
+      b.onclick = () => { log("answer", {prompt_id:s.id}); scenarioIdx++; showScenario(); };
+      box.appendChild(b);
+    });
+  } else if (promptIdx < PROMPTS.length) {
+    const p = PROMPTS[promptIdx];
+    document.getElementById("scenario-title").textContent = "Approval " + p.prompt_id;
+    document.getElementById("scenario-text").textContent =
+      p.actor + " wants to " + p.action + " (scope: " + p.scope + ", expiry: " + p.expiry + ")";
+    log("prompt_displayed", {prompt_id:p.prompt_id, actor_shown:p.actor,
+      action_shown:p.action, scope_shown:p.scope, expiry_shown:p.expiry !== null});
+    const box = document.getElementById("scenario-actions");
+    box.innerHTML = "";
+    ["approve","deny","abstain"].forEach((d) => {
+      const b = document.createElement("button");
+      b.textContent = d;
+      b.onclick = () => { log("decision", {prompt_id:p.prompt_id, decision:d}); promptIdx++; showScenario(); };
+      box.appendChild(b);
+    });
+  } else {
+    card.hidden = true;
+    log("debrief_done", {});
+    session.completed_at = new Date().toISOString();
+  }
+}
+let stopRequestedAt = 0;
+document.getElementById("stop-request").onclick = () => {
+  stopRequestedAt = Date.now();
+  document.getElementById("stop-status").textContent = "Stop requested — pending acknowledgement…";
+  document.getElementById("stop-status").className = "status-pending";
+  document.getElementById("stop-confirm").disabled = false;
+  log("stop_requested", {});
+};
+document.getElementById("stop-confirm").onclick = () => {
+  const ms = Date.now() - stopRequestedAt;
+  const ok = ms <= 30000;
+  document.getElementById("stop-status").textContent = ok
+    ? "Stop CONFIRMED in " + ms + " ms." : "Stop FAILED (timeout).";
+  document.getElementById("stop-status").className = ok ? "status-ok" : "status-bad";
+  log(ok ? "stop_confirmed" : "stop_failed", {acknowledged:ok});
+};
+document.querySelectorAll("[data-fatigue]").forEach((b) => {
+  b.onclick = () => log("fatigue_report", {});
+});
+document.getElementById("export").onclick = () => {
+  const blob = new Blob([JSON.stringify({session:session, events:events}, null, 2)],
+    {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = session.session_id + ".json";
+  a.click();
+};
+document.getElementById("import").onchange = (e) => {
+  const f = e.target.files[0];
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const data = JSON.parse(r.result);
+      const ok = data && data.session && Array.isArray(data.events) &&
+        data.events.every((ev) => EVENT_TYPES.includes(ev.type));
+      document.getElementById("import-status").textContent =
+        ok ? "Import round-trip OK." : "Import FAILED: schema mismatch.";
+      document.getElementById("import-status").className = ok ? "status-ok" : "status-bad";
+    } catch (err) { document.getElementById("import-status").textContent = "Import FAILED: " + err; }
+  };
+  r.readAsText(f);
+};
+</script>
+</body>
+</html>

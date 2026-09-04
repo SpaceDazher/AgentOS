@@ -1,0 +1,15 @@
+{
+  "schema": "agentos.s1-013.rubric/v1",
+  "protocol_version": "1.0.0-draft",
+  "frozen": true,
+  "measures": {
+    "C1": {"correct": "Delegation grants scoped, revocable, expiring authority to act; a password authenticates identity and must never be shared. Transfer scenario must name principal, scope and revocability.", "incorrect_includes": ["banner rephrase without transfer", "password sharing as delegation"]},
+    "C2": {"correct": "Only explicitly connected principals; no other agent, admin view, or group inference grants access. Must state the access basis.", "incorrect_includes": ["banner repeat while misidentifying private-space readers"]},
+    "C3": {"correct": "Another agent's message is untrusted external content with provenance; group knowledge passed the governance gate for the stated scope. Must cite provenance and gate status.", "incorrect_includes": ["treating foreign text as promoted knowledge"]},
+    "C4": {"correct": "'No' plus a valid explanation (explicit connection/approval required; default deny).", "incorrect_includes": ["bare 'no' with wrong explanation (not proven understanding)", "'yes' in any form"]},
+    "C5": {"correct": "stop_confirmed with acknowledged=true within 30000 ms of stop_requested; pending/failed acknowledgement shown.", "incorrect_includes": ["click without confirmation", "timeout", "missing acknowledgement (counts as failure, stays in denominator)"]}
+  },
+  "dual_rating": {"second_rater_blind": true, "disagreement": "preserved; owner adjudicates by explanation validity; unresolved stays missing"},
+  "disposition": ["target_met", "not_met", "inconclusive"],
+  "disposition_rule": "Per measure from raw counts with uncertainty intervals; N=15-20 never proves universal 95% accuracy; a failed UX hypothesis is a valid research result, not a passed UX gate."
+}

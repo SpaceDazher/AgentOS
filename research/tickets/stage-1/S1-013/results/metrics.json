@@ -1,0 +1,122 @@
+{
+  "schema": "agentos.s1-013.metrics/v1",
+  "synthetic": true,
+  "sessions": 11,
+  "ok": 7,
+  "rejected": 3,
+  "quarantined": 1,
+  "effective_participants": 7,
+  "measures": {
+    "C1": {
+      "n": 1,
+      "correct": 1,
+      "missing": 0,
+      "rate": 1.0,
+      "target": ">=90%",
+      "disposition": "target_met",
+      "wilson": [
+        0.206543,
+        1.0
+      ]
+    },
+    "C2": {
+      "n": 2,
+      "correct": 1,
+      "missing": 0,
+      "rate": 0.5,
+      "target": ">=95%",
+      "disposition": "not_met",
+      "wilson": [
+        0.094529,
+        0.905471
+      ]
+    },
+    "C3": {
+      "n": 1,
+      "correct": 1,
+      "missing": 0,
+      "rate": 1.0,
+      "target": ">=85%",
+      "disposition": "target_met",
+      "wilson": [
+        0.206543,
+        1.0
+      ]
+    },
+    "C4": {
+      "n": 2,
+      "correct": 1,
+      "missing": 0,
+      "rate": 0.5,
+      "target": ">=95%",
+      "disposition": "not_met",
+      "wilson": [
+        0.094529,
+        0.905471
+      ]
+    },
+    "C5": {
+      "n": 3,
+      "correct": 2,
+      "rate": 0.666667,
+      "max_ms": 12000,
+      "latencies_ms": [
+        12000,
+        12000
+      ],
+      "target": "confirmed stop <=30s",
+      "disposition": "not_met",
+      "wilson": [
+        0.207655,
+        0.93851
+      ]
+    }
+  },
+  "approvals": {
+    "n": 4,
+    "correct": 4,
+    "accuracy": 1.0,
+    "participants": 3,
+    "per_participant": {
+      "P-AAAAAA": {
+        "n": 2,
+        "correct": 2
+      },
+      "P-BBBBBB": {
+        "n": 1,
+        "correct": 1
+      },
+      "P-IIIIII": {
+        "n": 1,
+        "correct": 1
+      }
+    }
+  },
+  "prompt_rate_by_role": {
+    "load_probes": [
+      {
+        "session_id": "S-PB",
+        "prompts": 100,
+        "note": "load probe: excluded from rates"
+      }
+    ],
+    "by_role": {
+      "owner": {
+        "prompts": 5,
+        "active_minutes": 3.77,
+        "participants": 4,
+        "prompts_per_hour": 79.65,
+        "note": "rescaled short-block rate; not stamina proof"
+      },
+      "reviewer": {
+        "prompts": 2,
+        "active_minutes": 2.03,
+        "participants": 2,
+        "prompts_per_hour": 59.11,
+        "note": "rescaled short-block rate; not stamina proof"
+      }
+    }
+  },
+  "protocol_problems": [],
+  "note": "Dry-run tooling metrics only. Never human N, metrics or effectiveness claims."
+}

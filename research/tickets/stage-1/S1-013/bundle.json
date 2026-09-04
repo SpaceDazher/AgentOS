@@ -1,0 +1,224 @@
+{
+  "artifacts": {
+    "architecture_models": {
+      "claim_refs": [
+        "CL-H1",
+        "CL-D1"
+      ],
+      "content": "Static mock UI plus stdlib importer, scorer, replicator and bundle publisher sharing one frozen definition set; synthetic dry-run corpus kept strictly separate from (empty) human data.",
+      "producer": "agentos-s1-013-producer"
+    },
+    "feature_catalog": {
+      "claim_refs": [
+        "CL-H1",
+        "CL-H2"
+      ],
+      "content": "Delegation vs credential, private-space readers, foreign message vs gated knowledge, system-agent default deny, confirmed stop-all; exact approvals with expiry; fatigue reports; pseudonymous sessions; dual-rater adjudication.",
+      "producer": "agentos-s1-013-producer"
+    },
+    "independent_audit": {
+      "claim_refs": [
+        "CL-H2",
+        "CL-L1"
+      ],
+      "content": "Producer path (importer) and audit path (scorer plus replication) are independent code reading only frozen inputs. An independent process replicates the analysis byte-identical; a separate auditor role is defined for protocol deviations, consent coverage, exclusions, grading and privacy. Agent-only audit never replaces the second human rater.",
+      "producer": "agentos-s1-013-independent-verifier"
+    },
+    "mathematical_model": {
+      "claim_refs": [
+        "CL-H3",
+        "CL-L1"
+      ],
+      "content": "Per-measure rates with Wilson intervals against frozen targets reported as met/not-met/inconclusive; prompts per active hour per role, participant-clustered, with raw exposure; short-block rescaling is not stamina evidence; N=16 never proves universal accuracy.",
+      "producer": "agentos-s1-013-producer"
+    },
+    "mental_model": {
+      "claim_refs": [
+        "CL-H1"
+      ],
+      "content": "Delegation is scoped, revocable, expiring authority; passwords authenticate and are never shared. Only connected principals see private spaces. Foreign content is untrusted until gated. Stop means confirmed acknowledgement, not a click.",
+      "producer": "agentos-s1-013-producer"
+    },
+    "ontology": {
+      "claim_refs": [
+        "CL-H1",
+        "CL-D1"
+      ],
+      "content": "Session, event and answer records per frozen schemas; measures C1-C5 with transfer scenarios; approval prompts with actor, action, scope and expiry; participant flow accounting starters, exclusions and completers without PII.",
+      "producer": "agentos-s1-013-producer"
+    },
+    "platform_plan": {
+      "claim_refs": [
+        "CL-D1",
+        "CL-L1"
+      ],
+      "content": {
+        "Architecture": "Static mock UI plus stdlib importer, scorer, replicator and publisher on one frozen definition set.",
+        "Milestones": "PREPARATION_READY now; human pilot only after operator approval and real participants; canonicalization after review.",
+        "Open decisions": "Exact N in 15-20 at recruitment; ethics review outcome; S1-014/15 handoff scope.",
+        "Risks": "Small samples, no-SRC-04 mental-model gap, privacy handling, fatigue underestimated.",
+        "Scope": "Bounded HCI pilot preparation and, after approval, a 15-20 person comprehension and fatigue study; no production claims.",
+        "Verification": "Targeted suites, UI vocabulary checks, probe battery, replication record, native normalizer pass.",
+        "Workstreams": "Freeze protocol; build mock UI; score dry runs; replicate analysis; publish native bundle; await recruitment."
+      },
+      "producer": "agentos-s1-013-producer"
+    },
+    "progress": {
+      "claim_refs": [
+        "CL-H2"
+      ],
+      "content": "Phase 1 preparation complete: dependency inventory, literature, frozen protocol/rubric/scenarios/schemas, consent/privacy/ facilitator docs, mock UI, synthetic dry-run, scorer with probes A-H, replication record, native FLOW-11 bundle and derived candidate. Blocked: human pilot (no participants).",
+      "producer": "agentos-s1-013-producer"
+    },
+    "research_plan": {
+      "claim_refs": [
+        "CL-H3",
+        "CL-L1"
+      ],
+      "content": "Prepare and, only after operator approval with real participants, run a bounded comprehension and approval-fatigue pilot (target N=16, two roles, five transfer measures, two approval-load blocks). This preparation delivers a frozen protocol, safe mock UI, evaluator and dry-run evidence; the human phase stays blocked until recruitment is approved.",
+      "producer": "agentos-s1-013-producer"
+    },
+    "source_registry": {
+      "claim_refs": [
+        "CL-H1",
+        "CL-L1"
+      ],
+      "content": "Five sources: UDAC primary fragment (in-context approvals), Nudges citation record (hypothesis framing only), SRC-04 unavailability record with explicit substitution, S1-011 and S1-012 canonical decisions via cross-branch git show.",
+      "producer": "agentos-s1-013-producer"
+    },
+    "synthesis_and_gaps": {
+      "claim_refs": [
+        "CL-D1",
+        "CL-L1"
+      ],
+      "content": "Preparation is complete and dry-run green; the human pilot, operator approval, recruitment, second human rating and canonicalization are all open. SRC-04 gap and Beta-free design are explicit limits; S1-014/S1-015 receive pilot constraints, not closure.",
+      "producer": "agentos-s1-013-producer"
+    }
+  },
+  "audit": {
+    "auditor": "agentos-s1-013-independent-verifier",
+    "limitations": [
+      "tracked-Git evidence only; live DB recheck required in Phase B",
+      "no human data: all rates are dry-run tooling checks",
+      "SRC-04 unavailable; mental-model coverage rests on task text",
+      "source base 4/4 verified in-bundle; the fifth registry entry is the recorded SRC-04 absence (kept in registry, snapshots and limitations, never as bundle evidence)",
+      "Beta-free design; no reputation-as-authority anywhere",
+      "holdout concept not applicable pre-pilot; synthetic corpus is author-visible by construction"
+    ],
+    "producer": "agentos-s1-013-producer",
+    "verdict": "pass_with_limits"
+  },
+  "auditor": "agentos-s1-013-independent-verifier",
+  "claims": [
+    {
+      "claim_class": "fact",
+      "id": "CL-H1",
+      "s1_013_class": "HCI_measurement",
+      "support": [
+        "SRC-S1-013-01",
+        "SRC-S1-013-04"
+      ],
+      "text": "The mock prototype exposes delegation, scope, provenance and stop controls with keyboard-focusable, exported and re-importable event vocabulary identical to the frozen schemas."
+    },
+    {
+      "claim_class": "fact",
+      "id": "CL-H2",
+      "s1_013_class": "user_observation",
+      "support": [
+        "SRC-S1-013-04"
+      ],
+      "text": "Synthetic dry-run sessions exercise every importer path (ok, rejected duplicate/id-shape/consent, quarantined PII) and every probe A-H through the real scorer."
+    },
+    {
+      "claim_class": "inference",
+      "id": "CL-H3",
+      "s1_013_class": "hypothesis",
+      "support": [
+        "SRC-S1-013-01",
+        "SRC-S1-013-02"
+      ],
+      "text": "In-context least-privilege approvals with visible actor, exact action, scope and expiry reduce approval errors relative to banner-style consent; stated as a hypothesis for the human pilot, not a measured effect."
+    },
+    {
+      "claim_class": "inference",
+      "id": "CL-D1",
+      "s1_013_class": "design_inference",
+      "support": [
+        "SRC-S1-013-04",
+        "SRC-S1-013-05"
+      ],
+      "text": "Frozen protocol, rubric, scenarios and schemas consumed by a single definition let UI, exporter, evaluator and analyst agree byte-for-byte; deviations are detected at import."
+    },
+    {
+      "claim_class": "assumption",
+      "id": "CL-L1",
+      "s1_013_class": "limitation",
+      "support": [],
+      "text": "No human data exists yet: all rates and dispositions are dry-run tooling checks. SRC-04 is unavailable, so mental-model coverage rests on the task text and protocol."
+    }
+  ],
+  "config": {
+    "min_source_count": 4,
+    "min_verified_ratio": 1.0,
+    "required_artifacts": [
+      "research_plan",
+      "source_registry",
+      "feature_catalog",
+      "architecture_models",
+      "mental_model",
+      "ontology",
+      "mathematical_model",
+      "synthesis_and_gaps",
+      "independent_audit",
+      "platform_plan",
+      "progress"
+    ]
+  },
+  "producer": "agentos-s1-013-producer",
+  "sources": [
+    {
+      "canonical_uri": "https://www.microsoft.com/en-us/research/publication/user-driven-access-control-rethinking-permission-granting-in-modern-operating-systems-2/",
+      "content": "# Retrieval record (not a source claim)\n\n- snapshot: snap-01-udac-msr.md\n- canonical_uri: https://www.microsoft.com/en-us/research/publication/user-driven-access-control-rethinking-permission-granting-in-modern-operating-systems-2/\n- version: Proceedings of the IEEE Symposium on Security and Privacy,\n  May 2012, Best Practical Paper (DOI 10.1109/sp.2012.24)\n- authors: Franziska Roesner, Tadayoshi Kohno, Alex Moshchuk,\n  Bryan Parno, Helen Wang, Crispin Cowan\n- retrieved_at: 2026-09-04T00:00:00Z (UTC)\n- method: webfetch-text of the publication landing page; substantive\n  fragment archived below (title, authorship, venue, abstract).\n  Navigation chrome omitted; see the reproducibility limit.\n- reproducibility_limit: fragment (title/authors/venue/abstract), not\n  full-page bytes and not the paper PDF. No sentence beyond the\n  abstract is attributed to this page.\n- use: primary HCI evidence for in-context, non-disruptive,\n  least-privilege approval design (approval-load conditions,\n  anti-fatigue grouping that must not hide actor/action/scope/expiry).\n\n# Archived fragment (verbatim)\n\nTitle: User-Driven Access Control: Rethinking Permission Granting in\nModern Operating Systems\n\n\"Modern client platforms, such as iOS, Android, Windows Phone,\nWindows 8, and web browsers, run each application in an isolated\nenvironment with limited privileges. A pressing open problem in such\nsystems is how to allow users to grant applications access to\nuser-owned resources, e.g., to privacy- and cost-sensitive devices\nlike the camera or to user data residing in other applications. A key\nchallenge is to enable such access in a way that is non-disruptive to\nusers while still maintaining least-privilege restrictions on\napplications.\"\n\n\"In this paper, we take the approach of user-driven access control,\nwhereby permission granting is built into existing user actions in\nthe context of an application, rather than added as an afterthought\nvia manifests or system prompts. To allow the system to precisely\ncapture permission-granting intent in an application's context, we\nintroduce access control gadgets (ACGs). Each user-owned resource\nexposes ACGs for applications to embed. The user's authentic UI\ninteractions with an ACG grant the application permission to access\nthe corresponding resource. Our prototyping and evaluation experience\nindicates that user-driven access control enables in-context,\nnon-disruptive, and least-privilege permission granting on modern\nclient platforms.\"\n",
+      "content_sha256": "d802860c3fd1d3d3773bee207d150b6ef3e83af825739c84117bdbcf48556c09",
+      "id": "SRC-S1-013-01",
+      "source_type": "hci-permission-fatigue",
+      "title": "User-Driven Access Control (IEEE S&P 2012)",
+      "verification_method": "tracked-file-hash-review",
+      "verification_status": "verified",
+      "verifier": "s1-013-source-review-2026-09-04"
+    },
+    {
+      "canonical_uri": "https://doi.org/10.1145/3054926",
+      "content": "# Retrieval record (not a source claim)\n\n- snapshot: snap-02-nudges-doi.md\n- canonical_uri: https://doi.org/10.1145/3054926\n- version: ACM Computing Surveys 50(3), 2017\n- authors: Acquisti, Adjerid, Balebako, Brandimarte, Cranor,\n  Komanduri, Leon, Sadeh, Schaub, Sleeper, Wang, Wilson\n- retrieved_at: 2026-09-04T00:00:00Z (UTC)\n- method: webfetch-text of the DOI landing record; full citation\n  archived below. Full paper text was NOT retrieved.\n- reproducibility_limit: citation metadata only. No finding beyond\n  this citation is attributed to the page. Used only to frame\n  nudge-style presentation choices as hypotheses, never as measured\n  effects of this pilot.\n- note: an earlier candidate DOI (10.1145/2382196.2382218, guessed\n  for Roesner et al.) resolved to an unrelated paper and was\n  discarded; the correct UDAC venue is IEEE S&P 2012 (see snap-01).\n\n# Archived record (verbatim)\n\n\"Acquisti, A., Adjerid, I., Balebako, R., Brandimarte, L., Cranor,\nL. F., Komanduri, S., Leon, P. G., Sadeh, N., Schaub, F., Sleeper,\nM., Wang, Y., & Wilson, S. (2017). Nudges for Privacy and Security.\nACM Computing Surveys, 50(3), 1–41.\nhttps://doi.org/10.1145/3054926\"\n",
+      "content_sha256": "c465e52c0a1ddb6ba90598160e8c91155808dab119234ad89d98721748a255ba",
+      "id": "SRC-S1-013-02",
+      "source_type": "hci-permission-fatigue",
+      "title": "Nudges for Privacy and Security (ACM Comput. Surv. 2017)",
+      "verification_method": "tracked-file-hash-review",
+      "verification_status": "verified",
+      "verifier": "s1-013-source-review-2026-09-04"
+    },
+    {
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-011/results/decision.md",
+      "content": "# S1-011 decision: minimal promote/challenge gate as MVP (PASS_WITH_LIMITS)\n\nVerdict: `PASS_WITH_LIMITS` (cap forced by the provisional independence\nthreshold and the absence of a human operator study; see limits below).\nPhase A result: `READY_FOR_CANONICALIZATION`. No truth oracle is claimed.\n\nRevision note: this is the R3 corrective evidence revision, measured\nfresh at commit `9d4c910`. R2's nine findings are closed: explicit\nevidence bindings, shared promotion predicates, stale-view exclusion,\ncomplete case-bound ledgers, exact per-cell matrix, resolvable Git\nprovenance, dependency identity, raw-derived publication and simultaneous\nUNKNOWN bounds. Follow-up probes also covered evidence-free reads and\nthe shared-path ledger identity for all three designs. See\n`CORRECTIVE_R3.md`. The corpus contains 72 cases; the contract is v1.0.2.\n\n## Recommendation\n\nAdopt the **minimal promote/challenge gate** exactly as frozen in\n`knowledge-gate-contract.json` v1.0.2 / `state-machine.json`:\n\n- States: `PROPOSED -> PROMOTED / REJECTED / RETRACTED`,\n  `PROMOTED -> CHALLENGED / RETRACTED`, `CHALLENGED -> PROMOTED (new\n  decision/version) / RETRACTED`. `REJECTED` and `RETRACTED` are terminal\n  and preserve immutable history.\n- `PROMOTED` means only \"passed the versioned governance gate for the\n  stated scope/policy\". It is not truth.\n- Provisional evidence threshold with strict bindings: >=2 verified\n  evidence records with valid digests, strict boolean verified flags,\n  declared lineages and groups, >=2 distinct lineages AND >=2 groups\n  (lineage-collapsed), same claim version/scope, active sources, no\n  unresolved challenge or revocation, provenance/digest/policy present,\n  governance-only final step. Malformed bindings fail as\n  INVALID_EVIDENCE_BINDING; missing fields fail closed (no defaults).\n- Authority: worker proposes/opens challenges and withdraws own\n  proposals; governance gate promotes/upholds/retracts/revokes/\n  supersedes; operator upholds/resolves/withdraws/revokes. External\n  content never transitions anything (quarantine).\n- Challenge immediately excludes the claim from the eligible derived\n  view; history stays hash-verifiable in a hash-chained ledger.\n  Source revocation invalidates the claim and its dependents.\n  Supersession links `SUPERSEDES` and retires the old version. Derived\n  claims need their own evidence and a governance decision. Duplicate\n  keys and replays re-evaluate the live predicate; stale records never\n  restore visibility.\n- Rollback: select a prior contract version and re-run the gate over\n  preserved history; nothing is ever rewritten.\n\n## Evidence (648 rows/run, two process-separated runs, one commit/tree)\n\n- minimal-gate: all 11 hard safety counters exactly zero,\n  invalid_transition_count zero, transition exactness and view\n  correctness 1.0, probes A-H pass on all seeds, confusion P/R 1.0.\n- argumentation (naive grounded-style, no independence counting,\n  transitive support allowed): false promotions (precision 0.448),\n  probes A, D, G fail; exactness 0.778. Failure mode: single or\n  correlated support suffices for IN, and parent support transitively\n  promotes derived claims without their own evidence.\n- tms (naive automatic revision by `tms_engine`): false promotions\n  (precision 0.464), 96 ledger/authority consistency violations across\n  merged seeds plus authority expansions, probes A, D, G fail. Failure\n  modes: same acceptability weakness plus view-changing transitions\n  with no governance decision.\n- All three: recall 1.0 (no valid promotion missed), probes B/C/E/F/H\n  pass (shared strict plumbing holds).\n- Sensitivity: 20 per-weight (+-50%) sweeps + 200 seeded normalized\n  compositions, 0 winner flips, UNKNOWN disclosure clean\n  (unknown_dependent=false). The winner is robust because measured\n  safety dimensions floor minimal-gate above any permitted reweighting.\n  Hard-failed designs are excluded before ranking; an all-fail field\n  would yield BLOCKED, never \"best of the unsafe\".\n\n## Why not the richer models now\n\nBoth alternatives fail hard invariants in their textbook (naive) form,\nnot because of implementation bugs: acceptability without independence\nbinding promotes correlated/Sybil support, and automatic revision\nbypasses governance authority. Hardening either (independence binding +\nauthority binding + UNDECIDED/backtracking operator procedure) is real\nwork that converges toward the minimal gate plus a graph cache. That\nwork is deferred, not denied (see handoffs). This resolves G-06 for the\nMVP boundary: argumentation/TMS are rarely production-tested here\nbecause their naive forms are unsafe under the frozen invariants.\n\n## Limits (transferred, must gate production)\n\n1. Provisional threshold is uncalibrated: real independence,\n   correlation/Sybil resistance and evidence-unit calibration are\n   S1-012. Any production use before S1-012 stays blocked; this task\n   caps at `PASS_WITH_LIMITS`.\n2. Operator workload is a model/simulation estimate, not a human study.\n   Comprehension and approval fatigue are S1-013; explainability stays\n   utility-estimated until then.\n3. No SHACL mapping exists yet for attack/support/justification\n   relations (ontology_shacl_fit abstains for both alternatives); S1-003\n   alignment holds only for the minimal mapping.\n4. Argumentation cycles never occur in the corpus (no cyclic attack\n   graphs); convergence behavior on hostile graphs is UNKNOWN.\n5. Phase A is worktree evidence. Live DB consistency, artifact-chain\n   freshness and wiki checks are a separate Phase B result; consult\n   `../evaluation-record.json` for canonical publication. Neither phase\n   proves production persistence, distributed concurrency or human UX.\n\n## Rollback without history loss\n\nRe-select any prior contract version; replay immutable history through\nits gate; past decisions are re-evaluated, never edited (contract\nsection `migration_expiry_rollback`). The corpus, runner and evaluator\nare deterministic, so any rollback decision is exactly reproducible.\n",
+      "content_sha256": "2774c982dd1b61cf0ad5f2ff639eac72c9189287a84c24706de98989066c5889",
+      "id": "SRC-S1-013-04",
+      "source_type": "gate-design",
+      "title": "S1-011 gate decision (canonical rev 1)",
+      "verification_method": "tracked-file-hash-review",
+      "verification_status": "verified",
+      "verifier": "s1-013-source-review-2026-09-04"
+    },
+    {
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-012/results/decision.md",
+      "content": "# S1-012 decision: document granularity as MVP (PASS_WITH_LIMITS)\n\nVerdict: `PASS_WITH_LIMITS` (cap forced: planning threshold stays a\nhypothesis, no measured calibration data, non-blinded holdout, no\nhuman study). Phase A result: `READY_FOR_CANONICALIZATION`. No truth\noracle, no production threshold, no autonomous trust is claimed.\n\nPublication rule: the verdict above was re-derived from the tracked\nraw cells through the real entry points at publication time and\ncrosschecked against the saved merged artifacts (review finding F1);\nany divergence would have refused publication. The 24 raw cells are\ncommitted under results/run-a and results/run-b.\n\n## Recommendation\n\nAdopt **document granularity with upstream collapse** as the MVP\ncounting rule: one unit per source document, groups by provenance\nlineage, independent weight counts distinct allowed groups (cap 2),\nstrict bindings, lifecycle exclusion, UNKNOWN abstention, policy\nfirewall, Beta tails and EigenTrust as recommendation-only inputs to\nthe review queue.\n\n- Span view is **safety-tied** with document on this corpus (identical\n  independence decisions everywhere) at higher measured cost\n  (456 vs 420 units, 45,012 vs 39,240 bytes per run-a). Keep it for\n  fine-grained revocation, not as the default.\n- Digest view is cheapest (354 units, 39,120 bytes) but carries a\n  documented keying limit: identical-text independents collapse\n  (D02/D33/H03/H17). Viable only with bound upstream, never alone.\n- Reputation-only is **excluded**: 17 mirror/Sybil double counts plus\n  unbound observations, FAIL in all 6 cells. Scores never create\n  enforcement, capability, approval, budget, PROMOTED or ACCEPTED.\n- The document~span safety tie is recorded as an explicit limitation\n  (tie_limitation in comparison.json), not resolved by reweighting.\n  The MVP choice between the tied views rests on measured cost and\n  simplicity, stated as hypothesis, with span retained as an\n  equivalent alternative.\n\n## Evidence (720 rows/run, two process-separated runs, one commit/tree)\n\n- document/span/digest: all hard counters exactly zero, probes A-G\n  pass on all seeds, confusion P/R 1.0, transition exactness 1.0,\n  abstention only where the oracle allows it (rate 0.083).\n- Beta tails agree with exact binomial references to 1e-9 on all\n  integer parameters; metamorphic properties hold (monotone,\n  washout, decay); invalid params rejected; zero trials carry no\n  posterior. Tail AUC against admit labels (hypothesis quantities):\n  digest 0.724, document 0.568, span 0.495.\n- EigenTrust: frozen 2-node reference matches 20/37, 17/37 to 1e-6;\n  anchorless graphs abstain with null trust; anchored vectors are\n  stochastic; recommendation-only everywhere.\n- Sensitivity: 20 weight sweeps + 200 seeded compositions + 135 joint\n  prior/decay/threshold/cap combos executed through the real decision\n  core — 0 flips; UNKNOWN disclosure clean apart from the recorded\n  tie. Thresholds were chosen on dev; holdout metrics reported\n  separately per split (no holdout-driven change occurred).\n\n## Why not the alternatives\n\nDigest-alone is unsafe on identical-text independents; span-alone\nbuys no safety over document at higher cost; reputation-alone fails\nthe hard gates by construction (that is its job as negative control).\nThe planning threshold P[theta>0.9]>=0.95 stays a hypothesis: tails\nare reported, never enforced.\n\n## Limits (transferred, must gate production)\n\n1. Provisional counting rule is uncalibrated against measured data:\n   production thresholds stay blocked (S1-012 follow-up with data).\n2. Beta formulas are standard results with independent computation,\n   not archived primary full text (explicit retrieval limit).\n3. Holdout is lineage-isolated but author-visible, not blinded.\n4. No cyclic attack graphs in corpus; no operator study (S1-013).\n5. Cloud/worktree evidence only: live DB consistency, artifact chain\n   freshness and wiki checks require the Phase B local harness.\n\n## Rollback without history loss\n\nRe-select any prior contract version; replay immutable history\nthrough its rules; past rows are re-evaluated, never edited. Corpus,\nrunner and evaluator are deterministic, so any rollback comparison\nis exactly reproducible.\n",
+      "content_sha256": "466a4ee1219f8741639a853f6cadd72232165cd195624c660ec06736160031fe",
+      "id": "SRC-S1-013-05",
+      "source_type": "gate-design",
+      "title": "S1-012 decision (canonical rev 1)",
+      "verification_method": "tracked-file-hash-review",
+      "verification_status": "verified",
+      "verifier": "s1-013-source-review-2026-09-04"
+    }
+  ]
+}

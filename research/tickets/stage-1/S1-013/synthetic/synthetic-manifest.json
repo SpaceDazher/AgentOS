@@ -1,0 +1,91 @@
+{
+  "schema": "agentos.s1-013.synthetic-manifest/v1",
+  "synthetic": true,
+  "note": "Dry-run tooling tests only. Never human N, metrics or effectiveness claims.",
+  "sessions": [
+    {
+      "session": "happy-owner",
+      "session_id": "S-HO",
+      "expect": {
+        "import": "ok",
+        "c5": "pass"
+      }
+    },
+    {
+      "session": "happy-reviewer",
+      "session_id": "S-HR",
+      "expect": {
+        "import": "ok",
+        "c5": "pass"
+      }
+    },
+    {
+      "session": "probe-a",
+      "session_id": "S-PA",
+      "expect": {
+        "import": "ok",
+        "c2": "fail"
+      }
+    },
+    {
+      "session": "probe-b",
+      "session_id": "S-PB",
+      "expect": {
+        "import": "ok",
+        "load_claim": "rejected"
+      }
+    },
+    {
+      "session": "probe-c-dup",
+      "session_id": "S-PC1",
+      "expect": {
+        "import": "rejected-duplicate"
+      }
+    },
+    {
+      "session": "probe-c-noconsent",
+      "session_id": "S-PC2",
+      "expect": {
+        "import": "rejected-no-consent"
+      }
+    },
+    {
+      "session": "probe-c-extra",
+      "session_id": "S-PC3",
+      "expect": {
+        "import": "rejected-id-shape"
+      }
+    },
+    {
+      "session": "probe-d",
+      "session_id": "S-PD",
+      "expect": {
+        "import": "ok",
+        "c5": "fail"
+      }
+    },
+    {
+      "session": "probe-e",
+      "session_id": "S-PE",
+      "expect": {
+        "import": "ok",
+        "effective_n": 1
+      }
+    },
+    {
+      "session": "probe-g",
+      "session_id": "S-PG",
+      "expect": {
+        "import": "ok",
+        "private_read": "denied"
+      }
+    },
+    {
+      "session": "probe-h",
+      "session_id": "S-PH",
+      "expect": {
+        "import": "quarantined-pii"
+      }
+    }
+  ]
+}
