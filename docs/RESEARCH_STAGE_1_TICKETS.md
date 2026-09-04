@@ -9,7 +9,7 @@ tags:
   - agentos/stage-1
   - agentos/tickets
 created_at: 2026-08-24
-updated_at: 2026-09-02
+updated_at: 2026-09-04
 stage: 1
 status: PLANNING_ONLY
 owner: research-planning
@@ -179,7 +179,7 @@ from a lower wave to a higher wave, and S1-020 is the sole closure sink.
 | S1-007 | W2 | P0 | security | PASS_WITH_LIMITS | S1-003, S1-005 | QA3 retrieval/index scope isolation |
 | S1-008 | W2 | P0 | security | PASS_WITH_LIMITS | S1-002, S1-004 | revocation propagation bound of ≤5 seconds |
 | S1-009 | W2 | P1 | architecture | PASS_WITH_LIMITS | S1-001, S1-005 | MCP/A2A delegation and knowledge adapter roadmap |
-| S1-010 | W3 | P0 | security | READY | S1-001, S1-009 | tool-poisoning detection and quarantine evidence |
+| S1-010 | W3 | P0 | security | PASS_WITH_LIMITS | S1-001, S1-009 | tool-poisoning detection and quarantine evidence |
 | S1-011 | W1 | P0 | knowledge | READY | S1-001, S1-003 | minimal promote/challenge knowledge gate |
 | S1-012 | W2 | P0 | knowledge | READY | S1-001, S1-003, S1-011 | evidence independence and Beta/Sybil calibration |
 | S1-013 | W3 | P1 | hci | READY | S1-011, S1-012 | 15–20-person comprehension and approval-fatigue pilot |
@@ -857,7 +857,22 @@ python -m agentos.cli research-plan --topic "S1-009 MCP A2A delegation and knowl
 
 ### S1-010 — Tool-poisoning detection evaluation
 
-- **Status:** `READY`
+- **Status:** `PASS_WITH_LIMITS` — closed 2026-09-04 (research revision
+  1): goal `goal_0YJGMZWAHCSRGCVR01M1N3F77T`, campaign
+  `rcamp_DVXATRP0N41EZQ9601M1N3F77T`, evaluation `reval_R3Y7MD5STXP6SR3101M1N3F79N`, artifact chain
+  `8442d0dee8992f77f364ca7bfa1383babba4c5fca5beef9eb5ed0315d9010269`, evidence-pack content-addressed at
+  `research/tickets/stage-1/S1-010/results/evidence/evidence-pack-22f1d222878b2771c92a648c884808f660d01e1459b56343fc4540ce43e84e4a.json`.
+  Frozen corpus 56 cases (14 benign / 14 malicious manifest / 14 malicious
+  output / 14 near-miss; 31 critical): TP=34, FP=3 (oracle-sanctioned
+  routing), TN=19, FN=0; precision 0.9189 (Wilson 95% [0.7870, 0.9720]),
+  recall 1.0; benign hard FPR 0.0; critical escapes 0; authority
+  expansions 0; probes A-F all detected through the production evaluator
+  path. Two process-separated A/B runs (runner pids 5259/5296) on clean
+  commit `eccba25c`, byte-identical decision sets. Phase A bundle,
+  independent round-3 review (READY_FOR_CANONICALIZATION) and canonical
+  Phase B: see [S1-010_CLOSURE.md](S1-010_CLOSURE.md) and
+  [evaluation-record.json](../research/tickets/stage-1/S1-010/evaluation-record.json).
+- **Status (was):** `READY`
 - **Priority:** `P0`
 - **Wave:** `W3`
 - **Owner:** `security`
