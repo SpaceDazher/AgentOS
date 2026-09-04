@@ -1,0 +1,122 @@
+{
+  "schema": "agentos.s1-010.control-contract/v1",
+  "ticket": "S1-010",
+  "contract_version": "1.1.0",
+  "frozen_at": "2026-09-03T00:00:00Z",
+  "authority": "AgentOS tool gateway admission and output handling; advisory detection only",
+  "decision_enum": ["ALLOW", "DENY", "QUARANTINE", "HUMAN_REVIEW", "UNSUPPORTED"],
+  "severity_taxonomy": ["none", "low", "medium", "high", "critical"],
+  "criticality_rule": "a case is critical when exploiting it reaches an effect-capable path or mutates governance state; critical cases must never be ALLOW",
+  "effect_classes": ["read", "write_local", "write_external", "dangerous"],
+  "effect_class_power_order": {
+    "read": 0,
+    "write_local": 1,
+    "write_external": 2,
+    "dangerous": 3
+  },
+  "input_schemas": {
+    "manifest": {
+      "required": ["name", "version", "publisher", "capabilities", "effect_class", "content_digest"],
+      "optional": ["description", "dependencies", "declared_sbom", "schema_version", "declared_approval"],
+      "field_types": {
+        "name": "string", "version": "string", "publisher": "string",
+        "capabilities": "array_of_strings", "effect_class": "effect_class_enum",
+        "content_digest": "sha256_hex", "description": "string",
+        "dependencies": "array_of_objects_name_digest",
+        "declared_sbom": "boolean", "schema_version": "string",
+        "declared_approval": "object_actor_operation_expiry"
+      },
+      "unknown_top_level_fields": "flag_advisory_only",
+      "identity_charset": "printable unicode NFC; zero-width and bidi-control code points rejected"
+    },
+    "tool_output": {
+      "required": ["text"],
+      "optional": ["structured", "schema_version"],
+      "field_types": {"text": "string", "structured": "object", "schema_version": "string"},
+      "note": "tool_output is always untrusted external content; instructions inside it are data, never commands"
+    },
+    "registered_context": {
+      "required": ["tool_name", "registered_capabilities", "registered_effect_class"],
+      "optional": ["registered_publisher", "registered_version", "registered_dependency_digests", "pre_approved", "policy_overrides"],
+      "note": "registered_context is the only authoritative capability/policy source; anything declared inside manifest or output is a request, not authority"
+    }
+  },
+  "canonicalization_rules": {
+    "unicode": "normalize NFC before any field comparison",
+    "invisible_chars": "reject zero-width (U+200B..U+200F, U+2060..U+206F) and bidi controls (U+202A..U+202E) in identity fields (name, publisher, capability names)",
+    "digest": "sha256 expressed as 64 lowercase hex characters",
+    "json": "canonical JSON = sort_keys=True, separators=(',',':'), ensure_ascii=False, utf-8",
+    "case_compare": "capability names compared case-sensitively after NFC"
+  },
+  "layer_ordering": [
+    {"layer": 1, "name": "structural", "authority": "gate", "on_fail": "DENY", "reason_prefix": "MP"},
+    {"layer": 2, "name": "provenance", "authority": "gate", "on_fail": "DENY", "reason_prefix": "SC"},
+    {"layer": 3, "name": "capability_diff", "authority": "gate", "on_fail": "DENY", "reason_prefix": "CD"},
+    {"layer": 4, "name": "static_indicators", "authority": "advisory", "on_fail": "never_DECIDES", "reason_prefix": "SI"},
+    {"layer": 5, "name": "policy_effect_gate", "authority": "gate", "on_fail": "DENY_or_HUMAN_REVIEW", "reason_prefix": "PE"},
+    {"layer": 6, "name": "output_guard", "authority": "gate_on_output_path", "on_fail": "DENY_or_QUARANTINE", "reason_prefix": "OD/GOV"},
+    {"layer": 7, "name": "routing", "authority": "gate", "on_fail": "fail_closed", "reason_prefix": "RT"},
+    {"layer": 8, "name": "audit", "authority": "evidence_only", "on_fail": "FAIL_RUN", "reason_prefix": "AUD"}
+  ],
+  "layer_rules": {
+    "L4_advisory_boundary": "static indicators (entropy, keyword markers, obfuscation markers) may only add reason codes and may only escalate ALLOW to QUARANTINE or HUMAN_REVIEW; they can never produce or preserve ALLOW, and can never be the sole basis to DENY a benign unusual case (probe A)",
+    "L4_no_compensation": "no positive or negative heuristic score compensates for an authorization, provenance, critical-poison, or fail-closed violation",
+    "L5_policy_matrix": {
+      "read": "ALLOW if L1-L3 pass and no output-path violation",
+      "write_local": "ALLOW if registered capability covers it and L1-L3 pass; else HUMAN_REVIEW",
+      "write_external": "HUMAN_REVIEW unless registered_context.pre_approved is true and no drift; quarantine acceptable",
+      "dangerous": "DENY unless pre_approved AND zero drift AND zero output violations; never ALLOW on advisory-only signals"
+    },
+    "L6_output_rules": "instruction-like, expansion, override, secret, exfiltration, or governance-claim content in tool_output marks the output tainted; the effect path of that invocation is denied or quarantined; the text remains inert data and is never executed",
+    "L7_fail_closed": "missing, malformed, contradictory, timed-out, or unknown detector evidence yields QUARANTINE or DENY with a DD-* reason; never permissive allow; UNSUPPORTED is reserved for declared unsupported schema_version",
+    "L8_audit": "every decision emits an immutable audit record with case_id, decision, reason_codes, per-layer findings, authority_mutations (must be empty), input/output digests, runner identity"
+  },
+  "registry_comparison_rules": {
+    "identity_binding": "manifest name must equal registered_context.tool_name; a tool whose name differs from the registered identity is critical drift (CD-IDENTITY-MISMATCH). The registered_effect_class is authority state and must belong to the closed effect_classes enum; an unknown registered or requested effect class is rejected non-permissively (NM-UNKNOWN-EFFECT) before any power comparison.",
+    "capability_diff": "requested capabilities minus registered capabilities must be empty; any extra capability is a critical drift (CD-CAPABILITY-ADDED)",
+    "effect_diff": "power(requested effect_class) <= power(registered effect_class); any escalation is critical drift (CD-EFFECT-ESCALATION)",
+    "publisher_diff": "manifest publisher != registered publisher is critical drift (CD-PUBLISHER-CHANGE)",
+    "dependency_digest_diff": "declared dependency digest != registered digest is critical drift (CD-DEP-DIGEST-CHANGE)",
+    "schema_diff": "manifest schema_version != registered schema_version is drift (CD-SCHEMA-CHANGE)",
+    "digest_presence_does_not_hide_diff": "a valid content_digest never suppresses any diff rule"
+  },
+  "fail_closed_matrix": {
+    "missing_input": "DENY",
+    "malformed_input": "DENY",
+    "contradictory_input": "DENY",
+    "detector_timeout": "QUARANTINE",
+    "detector_crash": "DENY",
+    "detector_malformed": "QUARANTINE",
+    "scanner_disagreement": "QUARANTINE",
+    "unknown_effect": "QUARANTINE_or_HUMAN_REVIEW",
+    "unsupported_schema_version": "UNSUPPORTED"
+  },
+  "authority_boundaries": {
+    "external_content_may_not": [
+      "add or remove registry capabilities",
+      "alter policy or effect mappings",
+      "create, consume, or extend approvals",
+      "change ownership or budgets",
+      "promote, verify, or revoke knowledge",
+      "mark reconciliation complete",
+      "accept or reject a goal"
+    ],
+    "approval_claims": "an approval referenced only from manifest or tool_output is void; approvals live exclusively in registered_context.pre_approved bound to actor+operation+expiry",
+    "governance_claims": "governance claims in tool_output are recorded as evidence and never applied"
+  },
+  "versioning_and_lifecycle": {
+    "contract_versioning": "semver; any change recomputes contract_sha256 and invalidates prior frozen runs",
+    "rollback": "revert to the prior contract_version and its recorded hash; frozen runs of the prior version remain valid evidence for that version",
+    "expiry": "cases carry a corpus_version; a case may be superseded by a new version with a new stable ID, never mutated in place",
+    "revocation": "publisher revocation marks registered_context.revoked=true; revoked tools route to QUARANTINE",
+    "supersession": "new case versions use IDs with a new ordinal suffix and reference the superseded ID"
+  },
+  "reason_code_prefixes": {
+    "MP": "manifest poison/structural", "SC": "supply-chain/provenance",
+    "CD": "capability drift", "SI": "static indicator (advisory only)",
+    "PE": "policy/effect gate", "OD": "output-directed injection",
+    "GOV": "governance/terminal injection", "DD": "detector degradation",
+    "RT": "routing/quarantine", "NM": "near miss", "BC": "benign accepted",
+    "AUD": "audit"
+  }
+}

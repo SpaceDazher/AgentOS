@@ -1,0 +1,117 @@
+{
+  "retrieval_note": "Snapshots are frozen byte copies; tests and evaluation are offline and verify sha256 against this registry only.",
+  "schema": "agentos.s1-010.source-registry/v1",
+  "sources": [
+    {
+      "canonical_uri": "https://github.com/mitre-atlas/atlas-data (dist/ATLAS.yaml)",
+      "id": "src_mitre_atlas_taxonomy",
+      "notes": "Primary adversarial-ML threat taxonomy maintained by MITRE: includes LLM prompt injection (AML.T0051), poisoned training data (AML.T0020), and agentic techniques used to derive the S1-010 threat model classes.",
+      "role": "threat_taxonomy",
+      "snapshots": [
+        {
+          "byte_length": 452399,
+          "content_type": "application/yaml; pinned git export",
+          "imported_from": "/tmp/atlas-data/dist/ATLAS.yaml",
+          "retrieved_at": "2026-09-03T17:47:31Z",
+          "sha256": "c9c23971d0db07e2782423d795a20e78d5c2c9bcdc78fc67e24530657daaec41",
+          "snapshot_path": "research/tickets/stage-1/S1-010/snapshots/mitre-atlas-ATLAS.yaml"
+        }
+      ],
+      "version": "MITRE ATLAS adversarial-ML taxonomy, atlas-data commit 41d4f5ca4112f0e492ffaa3ebff07dc80a75afa5"
+    },
+    {
+      "canonical_uri": "https://cwe.mitre.org/data/definitions/74.html",
+      "id": "src_cwe_74_injection",
+      "notes": "Official weakness taxonomy entry for injection: improper neutralization of special elements in output used by others; grounds the output-injection and delimiting case classes.",
+      "role": "threat_taxonomy",
+      "snapshots": [
+        {
+          "byte_length": 238655,
+          "content_type": "text/html",
+          "fetched_uri": "https://cwe.mitre.org/data/definitions/74.html",
+          "retrieved_at": "2026-09-03T17:47:34Z",
+          "sha256": "6ad898e43f700e82665f093b1780f63601b209446a66b322888246ca38e13e05",
+          "snapshot_path": "research/tickets/stage-1/S1-010/snapshots/cwe-74-injection.html"
+        }
+      ],
+      "version": "CWE 4.15 (weakness taxonomy entry CWE-74)"
+    },
+    {
+      "canonical_uri": "https://slsa.dev/spec/v1.1/",
+      "id": "src_slsa_v1_1",
+      "notes": "Primary supply-chain integrity framework: provenance, verification levels, and artifact attestation semantics.",
+      "role": "supply_chain_guidance",
+      "snapshots": [
+        {
+          "byte_length": 20092,
+          "content_type": "text/html; charset=UTF-8",
+          "fetched_uri": "https://slsa.dev/spec/v1.1/",
+          "retrieved_at": "2026-09-03T17:47:35Z",
+          "sha256": "3edcdc7b84f92803b764c1504f6d37dc3c4f382c6ea383eb1f7cf49337f39519",
+          "snapshot_path": "research/tickets/stage-1/S1-010/snapshots/slsa-v1.1-spec.html"
+        }
+      ],
+      "version": "SLSA v1.1"
+    },
+    {
+      "canonical_uri": "https://csrc.nist.gov/pubs/sp/800/218/final",
+      "id": "src_nist_ssdf_sp800_218",
+      "notes": "Primary software supply-chain guidance: provenance of build inputs and verification of component integrity (PO tasks).",
+      "role": "supply_chain_guidance",
+      "snapshots": [
+        {
+          "byte_length": 48313,
+          "content_type": "text/html; charset=utf-8",
+          "fetched_uri": "https://csrc.nist.gov/pubs/sp/800/218/final",
+          "retrieved_at": "2026-09-03T17:47:36Z",
+          "sha256": "0975ef3721e3efec8ebbc225ef3abab71ffccbcca325beca864e955b13df175d",
+          "snapshot_path": "research/tickets/stage-1/S1-010/snapshots/nist-sp-800-218-landing.html"
+        }
+      ],
+      "version": "NIST SP 800-218 (SSDF v1.1, 2022-02)"
+    },
+    {
+      "canonical_uri": "repo://AgentOS/src/agentos/gateway.py",
+      "id": "src_agentos_gateway_spec",
+      "notes": "Internal primary source: ToolContract, capability checks, exact-action approvals, effect classes (read|write_local|write_external|dangerous), idempotency, fencing. Snapshot is the tracked repo file itself.",
+      "role": "gateway_architecture",
+      "snapshots": [
+        {
+          "byte_length": 28367,
+          "content_type": "text/x-python; repo-tracked",
+          "repo_relative_source": "src/agentos/gateway.py",
+          "retrieved_at": "2026-09-03T17:47:36Z",
+          "sha256": "226496f4711b9bff287c4617bd1de2140106fc4a2b465004e7b7bbff0e6fb313",
+          "snapshot_path": "research/tickets/stage-1/S1-010/snapshots/agentos-gateway.py"
+        },
+        {
+          "byte_length": 26583,
+          "content_type": "text/x-python; repo-tracked",
+          "repo_relative_source": "spec/SPEC.md",
+          "retrieved_at": "2026-09-03T17:47:36Z",
+          "sha256": "e0b091bf38b7f27e22a4d37eb1b3d000b5154cc3ff64736bd4aea99f0ee4ffbc",
+          "snapshot_path": "research/tickets/stage-1/S1-010/snapshots/agentos-spec.md"
+        }
+      ],
+      "version": "branch codex/s1-010-tool-poisoning @ a0116167e0351beb1eef804d83845890be7253c9"
+    },
+    {
+      "canonical_uri": "https://www.itl.nist.gov/div898/handbook/prc/section2/prc241.htm",
+      "id": "src_wilson_ci_nist_handbook",
+      "notes": "Primary statistical method reference for confidence intervals on a binomial proportion (Wilson score interval implementation in evaluator is validated against this method family).",
+      "role": "statistical_method",
+      "snapshots": [
+        {
+          "byte_length": 16665,
+          "content_type": "text/html; charset=utf-8",
+          "fetched_uri": "https://www.itl.nist.gov/div898/handbook/prc/section2/prc241.htm",
+          "retrieved_at": "2026-09-03T17:47:37Z",
+          "sha256": "0e1edd34a81c7d28f53870a29ad4e21b40ed3a25b606d2f95575b1c369098e61",
+          "snapshot_path": "research/tickets/stage-1/S1-010/snapshots/nist-handbook-prc241.html"
+        }
+      ],
+      "version": "NIST/SEMATECH e-Handbook of Statistical Methods, §7.2.2.1"
+    }
+  ],
+  "ticket": "S1-010"
+}

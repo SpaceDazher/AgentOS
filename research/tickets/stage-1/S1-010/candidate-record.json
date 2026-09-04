@@ -1,0 +1,156 @@
+{
+ "base_commit": "a0116167e0351beb1eef804d83845890be7253c9",
+ "canonical_state": {
+  "artifact_chain_hash": null,
+  "campaign_id": null,
+  "canonical_db_recheck_required": true,
+  "chain_fresh": null,
+  "evaluation_id": null,
+  "goal_id": null,
+  "note": "host-owned canonical state is intentionally absent in the cloud record; never fabricated",
+  "research_revision": null,
+  "wiki_files": null,
+  "wiki_links_checked": null
+ },
+ "corpus": {
+  "case_count": 56,
+  "cases_sha256": "507da4b1010cdd41f4135ae855baf46794c4a0a325d71b228d252f5d1ed48416",
+  "class_counts": {
+   "benign": 14,
+   "malicious_manifest": 14,
+   "malicious_output": 14,
+   "near_miss": 14
+  },
+  "critical_count": 31,
+  "probes": {
+   "A": 2,
+   "B": 1,
+   "C": 3,
+   "D": 5,
+   "E": 5,
+   "F": 4
+  },
+  "truth_counts": {
+   "benign": 22,
+   "malicious": 34
+  }
+ },
+ "dependency_gate": {
+  "s1_001_result": "pass_with_limits",
+  "s1_009_result": "pass_with_limits",
+  "s1_009_semantics": {
+   "provider_neutral_boundary_preserved": true,
+   "record_tracked_in_archive": true,
+   "sm6_sm8_sm11_unsupported_preserved": true
+  },
+  "scope": "cloud_git_evidence_only",
+  "verdict": "PASS"
+ },
+ "evidence_gates_verified": {
+  "comparison": "PASS",
+  "dependency_gate": "PASS",
+  "git_bindings_verified": true,
+  "independent_regrade_match": true,
+  "probes_all_pass": true,
+  "process_separation_verified": true,
+  "run_summaries_schema_valid": true,
+  "staged_digests_reverified": true,
+  "stored_evidence_matches_recomputation": true
+ },
+ "frozen_inputs": {
+  "dependency-gate.json": "77abb94ee0d7a0a7719244eae596c98bb750c6b4c162764c055c2a0fa0798667",
+  "rubric.json": "2b6fe2f52ed9a553d5e0e7b47d0bea8c90e9d9ba8f726f32e606d35f72285148",
+  "source-registry.json": "d860a59537a5db369ee633939e82ba786548d6417caf31c8782fda6e684cea34",
+  "threat-model.json": "41cebc657fcc7e1b54c6c479cc02a47c95f32794e0b3163f12ba9a768b1ed357",
+  "tool-poisoning-contract.json": "4b620d59bdb5683bb9ea1146b1e820b5a6c1e8c207847870b890ef8bf0c47ca8"
+ },
+ "head_commit_at_generation": "ee1578c807eaf57c3f1af8466aa4a7f384ac5c34",
+ "limitations": [
+  "Cloud gate proves tracked Git evidence only; no live canonical-DB consistency claim.",
+  "Same-host process separation (independent verifier-A/verifier-B runner processes with distinct evaluator children), not an external human auditor or independently implemented auditor.",
+  "Deterministic stdlib detectors cover declared pattern families; unseen obfuscation relies on quarantine/human-review routing.",
+  "The frozen 56-case corpus measures declared classes only; no production or universal-detection claim is licensed.",
+  "Scanner disagreement and detector faults are deterministic declared faults exercising the aggregation path.",
+  "pre_approved is a boolean entitlement in the evaluated model; exact-action+operation+expiry approval binding is declared by the contract but must be enforced by the production gateway."
+ ],
+ "phase": "A (cloud branch work; post-review round 3 fixes)",
+ "phase_b_command": {
+  "commands": [
+   "cd <repo root>  # workspace root for verified local provenance",
+   "$env:PYTHONPATH = \"src\"",
+   "py -3.12 -m agentos.cli research-plan --topic \"S1-010 tool poisoning detection evaluation\" --bundle \"research/tickets/stage-1/S1-010/bundle.json\" --db \".agentos-research/platform-stage-1\"",
+   "py -3.12 -m agentos.cli wiki-check --db \".agentos-research/platform-stage-1\""
+  ],
+  "note": "run from the repository root so verifier_provenance snapshot paths resolve; otherwise pass --workspace-root <repo root>",
+  "shell": "powershell"
+ },
+ "probes_all_pass": true,
+ "proposed_result": "PASS",
+ "proposed_result_caveat": "subject to local canonical Phase B; the branch remains IN_REVIEW and the ticket status stays READY/IN_REVIEW",
+ "runs": {
+  "commit_sha": "eccba25ca028b5fb8d53030952d6cf0d1fc57a36",
+  "comparison_verdict": "PASS",
+  "identical": true,
+  "process_separation_verified": true,
+  "run_a": {
+   "decisions_sha256": "0662cf2dd9fa414ee2a540afec3b45982edc52277c0a89b7cf2dbeff50324798",
+   "evaluator_pid": 5270,
+   "evaluator_sha256": "0eda25d7639c608cc9212bd02d7f40b48076ac38400f31dfa6b77a671bdebe19",
+   "executor_id": "verifier-A",
+   "nonce": "1f82be39e12f4ef4b341afd9f78bd57e",
+   "output_root": "/tmp/s1-010-runner-a-b5wu05hn",
+   "runner_pid": 5259,
+   "runner_sha256": "3e7a3bd400494a33c2b0d70b97507c8757acc9f8225a953894109ad47ac19c14",
+   "verdict": "PASS"
+  },
+  "run_b": {
+   "decisions_sha256": "0662cf2dd9fa414ee2a540afec3b45982edc52277c0a89b7cf2dbeff50324798",
+   "evaluator_pid": 5307,
+   "evaluator_sha256": "0eda25d7639c608cc9212bd02d7f40b48076ac38400f31dfa6b77a671bdebe19",
+   "executor_id": "verifier-B",
+   "nonce": "77ed326209da417b975874066fa0e748",
+   "output_root": "/tmp/s1-010-runner-b-hi60y_90",
+   "runner_pid": 5296,
+   "runner_sha256": "3e7a3bd400494a33c2b0d70b97507c8757acc9f8225a953894109ad47ac19c14",
+   "verdict": "PASS"
+  },
+  "tree_sha": "14f6254c10241b688ff4898d1cfcbc8b20203453"
+ },
+ "schema": "agentos.s1-010.candidate-record/v1",
+ "source_snapshot_hashes": {
+  "research/tickets/stage-1/S1-010/snapshots/agentos-gateway.py": "226496f4711b9bff287c4617bd1de2140106fc4a2b465004e7b7bbff0e6fb313",
+  "research/tickets/stage-1/S1-010/snapshots/agentos-spec.md": "e0b091bf38b7f27e22a4d37eb1b3d000b5154cc3ff64736bd4aea99f0ee4ffbc",
+  "research/tickets/stage-1/S1-010/snapshots/cwe-74-injection.html": "6ad898e43f700e82665f093b1780f63601b209446a66b322888246ca38e13e05",
+  "research/tickets/stage-1/S1-010/snapshots/mitre-atlas-ATLAS.yaml": "c9c23971d0db07e2782423d795a20e78d5c2c9bcdc78fc67e24530657daaec41",
+  "research/tickets/stage-1/S1-010/snapshots/nist-handbook-prc241.html": "0e1edd34a81c7d28f53870a29ad4e21b40ed3a25b606d2f95575b1c369098e61",
+  "research/tickets/stage-1/S1-010/snapshots/nist-sp-800-218-landing.html": "0975ef3721e3efec8ebbc225ef3abab71ffccbcca325beca864e955b13df175d",
+  "research/tickets/stage-1/S1-010/snapshots/slsa-v1.1-spec.html": "3edcdc7b84f92803b764c1504f6d37dc3c4f382c6ea383eb1f7cf49337f39519"
+ },
+ "status": "READY_FOR_CANONICALIZATION",
+ "ticket": "S1-010",
+ "tracked_artifact_hashes": {
+  "research/tickets/stage-1/S1-010/TASK_FOR_CLOUD_GLM.md": "c1f0cc41ae91447bdb670a2c72725512256bde6c1d11f7ba0523af84274461ad",
+  "research/tickets/stage-1/S1-010/build_corpus.py": "aa10efcb8d6ebed1bf8bea18c2152df778e449f9990193c8b5ccb65bcebc7748",
+  "research/tickets/stage-1/S1-010/bundle.json": "74e92032464c67de4bfd740d82bb8085f0505fd401e118ecfefad2ac45e99755",
+  "research/tickets/stage-1/S1-010/cases.json": "507da4b1010cdd41f4135ae855baf46794c4a0a325d71b228d252f5d1ed48416",
+  "research/tickets/stage-1/S1-010/corpus-manifest.json": "771d89f1cc62a31cd173fa3ca74f3f53581c87aa3482edc604baa5ae15d1df10",
+  "research/tickets/stage-1/S1-010/dependency-gate.json": "77abb94ee0d7a0a7719244eae596c98bb750c6b4c162764c055c2a0fa0798667",
+  "research/tickets/stage-1/S1-010/dependency_gate.py": "c868ee407423c4b6aaee415a46ab1c547246414eec39d4ed9f553afe56d55bdf",
+  "research/tickets/stage-1/S1-010/evaluator.py": "0eda25d7639c608cc9212bd02d7f40b48076ac38400f31dfa6b77a671bdebe19",
+  "research/tickets/stage-1/S1-010/fetch_sources.py": "623b49cb7fec5b28a5d2752aa059182d70bc1961e8d0800ebc38f0ef74e280a9",
+  "research/tickets/stage-1/S1-010/make_bundle.py": "1eb64c0eaf7feb8d3ce951316a8426f09d138a37be831103ccaf3fb96f11a9ff",
+  "research/tickets/stage-1/S1-010/make_candidate_record.py": "c3d6716d49c5664c3b8d85ef3f7178e5a401c1ddd67ea7e73bf7d0b307fb590b",
+  "research/tickets/stage-1/S1-010/results/ENVIRONMENT.md": "db4c7e846e6219b64b571548152e59303edc41ac297f2d83cdedf6915f6686fd",
+  "research/tickets/stage-1/S1-010/results/comparison.json": "abe5bdac51e334de3a6694a5100bfba6de626d4116e1b438f17fcc2e125983af",
+  "research/tickets/stage-1/S1-010/results/control-decision.md": "fe8256bbcc75ea53c143f6a8ce65c4cdd171132bc3804fbff16837e220f54be8",
+  "research/tickets/stage-1/S1-010/results/metrics.json": "588a29ff05bff909451e1cbc9ad178ece4ba5330b819f6940d3ff9508df7c82f",
+  "research/tickets/stage-1/S1-010/results/probes.json": "80e8bb6d42810bb78833b0a44313d5113c59e7756d6044b3b0b2bce1561ca03d",
+  "research/tickets/stage-1/S1-010/results/roadmap.md": "f6d5255a82cdba27a209f41fc72e85de507415baab84f2e42e60f3daf3b9a431",
+  "research/tickets/stage-1/S1-010/rubric.json": "2b6fe2f52ed9a553d5e0e7b47d0bea8c90e9d9ba8f726f32e606d35f72285148",
+  "research/tickets/stage-1/S1-010/runner.py": "3e7a3bd400494a33c2b0d70b97507c8757acc9f8225a953894109ad47ac19c14",
+  "research/tickets/stage-1/S1-010/source-registry.json": "d860a59537a5db369ee633939e82ba786548d6417caf31c8782fda6e684cea34",
+  "research/tickets/stage-1/S1-010/threat-model.json": "41cebc657fcc7e1b54c6c479cc02a47c95f32794e0b3163f12ba9a768b1ed357",
+  "research/tickets/stage-1/S1-010/tool-poisoning-contract.json": "4b620d59bdb5683bb9ea1146b1e820b5a6c1e8c207847870b890ef8bf0c47ca8",
+  "tests/test_s1_010_regressions.py": "a21b7add282dc8be3c8bff2cc59deb5775c41ae595fea94bbfc13e33c86c3c3c"
+ }
+}
