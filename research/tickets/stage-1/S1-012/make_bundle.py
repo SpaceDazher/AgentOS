@@ -244,40 +244,62 @@ def build_artifacts() -> dict:
     return artifacts
 
 
-def derive_verdict() -> tuple:
-    """Re-derive the verdict from evidence. Missing files are blockers,
-    never defaults. Returns (blockers, facts)."""
+def _load_compare():
+    import importlib.util
+    unique = "s1012_compare_runs_pub"
+    if unique in sys.modules:
+        return sys.modules[unique]
+    spec = importlib.util.spec_from_file_location(
+        unique, HERE / "compare_runs.py")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[unique] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def check_verdict_consistency(metrics_doc: dict) -> list:
+    """Hard-counter <-> verdict consistency per variant. A PASS flag next
+    to nonzero hard counters is a blocking inconsistency, not a
+    measurement."""
+    problems = []
+    for variant, doc in (metrics_doc.get("designs", {}) or {}).items():
+        counters = doc.get("hard_counters", {}) or {}
+        expected = "FAIL" if any(v != 0 for v in counters.values()) \
+            else "PASS"
+        if doc.get("verdict") != expected:
+            problems.append(
+                f"verdict/counter mismatch for {variant}: "
+                f"verdict={doc.get('verdict')!r} counters={counters}")
+    return problems
+
+
+def tracked_registry() -> dict:
+    """F3: registry of every tracked ticket artifact by repo-relative
+    POSIX path with SHA-256 of file bytes (snapshots, contracts,
+    corpus, scripts, results incl. raw cells, docs). Verifiable from
+    `git archive HEAD` without .git or DB."""
+    registry: dict = {}
+    ticket_rel = Path("research/tickets/stage-1/S1-012")
+    for path in sorted(HERE.rglob("*")):
+        if path.is_file() and "__pycache__" not in path.parts:
+            rel = (ticket_rel / path.relative_to(HERE)).as_posix()
+            registry[rel] = sha(path.read_bytes())
+    test_file = Path(__file__).resolve().parents[4] / "tests" / \
+        "test_s1_012_regressions.py"
+    if test_file.is_file():
+        registry["tests/test_s1_012_regressions.py"] = sha(
+            test_file.read_bytes())
+    return registry
+
+
+def adjudicate_winner(comparison: dict, sens: dict,
+                      governed: dict) -> list:
+    """Pure winner adjudication (unit-testable). TIE is accepted only
+    with a recorded all-eligible limitation; anything else blocks."""
     blockers = []
-    try:
-        gate = load("dependency-gate.json")
-    except (OSError, ValueError) as exc:
-        return [f"dependency gate unreadable: {exc}"], {}
-    if not gate.get("all_proven"):
-        blockers.append("dependency gate not proven")
-    try:
-        metrics = load_result("metrics.json")
-        probes = load_result("probes.json")
-        comparison = load_result("comparison.json")
-        sens = load_result("sensitivity.json")
-    except (OSError, ValueError) as exc:
-        return blockers + [f"results unreadable: {exc}"], {}
-    governed = {v: doc for v, doc in metrics["designs"].items()
-                if v != "reputation-only"}
-    if any(doc.get("verdict") != "PASS" for doc in governed.values()):
-        bad = sorted(v for v, doc in governed.items()
-                     if doc.get("verdict") != "PASS")
-        blockers.append(f"governed variants not PASS: {bad}")
-    for variant, probe_doc in probes["designs"].items():
-        if variant == "H":
-            if not isinstance(probe_doc, dict) or \
-                    not probe_doc.get("passed"):
-                blockers.append("publication-tamper battery not passed")
-            continue
-        if isinstance(probe_doc, dict) and not probe_doc.get("all_pass",
-                                                              True):
-            blockers.append(f"probes not all-pass for {variant}")
     if comparison.get("verdict") == "BLOCKED":
         blockers.append("comparison BLOCKED")
+        return blockers
     winner = comparison.get("sensitivity_winner")
     if winner == "TIE":
         tie = comparison.get("tie_limitation") or {}
@@ -307,12 +329,101 @@ def derive_verdict() -> tuple:
     grid = (sens.get("parameter_grid") or {})
     if grid.get("flip_count"):
         blockers.append("joint parameter grid flips the winner")
+    return blockers
+
+
+def derive_verdict(here=None, results=None) -> tuple:
+    """Re-derive the verdict from evidence. Missing files are blockers,
+    never defaults. Returns (blockers, facts).
+
+    F1 publication rule (task section 10): saved PASS flags are never
+    authority. The full pipeline is recomputed from the tracked raw
+    cells through the real runner/evaluator/compare entry points into
+    a temp dir, then crosschecked against the saved merged artifacts.
+    Any divergence blocks publication."""
+    here = Path(here) if here else HERE
+    results = Path(results) if results else RESULTS
+    blockers = []
+
+    def load_local(name: str):
+        return json.loads((here / name).read_text(encoding="utf-8"))
+
+    def load_saved(name: str):
+        return json.loads((results / name).read_text(encoding="utf-8"))
+
+    try:
+        gate = load_local("dependency-gate.json")
+    except (OSError, ValueError) as exc:
+        return [f"dependency gate unreadable: {exc}"], {}
+    if not gate.get("all_proven"):
+        blockers.append("dependency gate not proven")
+    for required in ("run-a", "run-b"):
+        if not (results / required).is_dir():
+            blockers.append(f"tracked raw series missing: {required}")
+    if blockers:
+        return blockers, {}
+    compare_runs = _load_compare()
+    import tempfile
+    tmp = Path(tempfile.mkdtemp(prefix="s1012-recompute-"))
+    argv = ["--a", str(results / "run-a"), "--b", str(results / "run-b"),
+            "--out", str(tmp / "comparison.json"),
+            "--sensitivity", str(tmp / "sensitivity.json"),
+            "--metrics", str(tmp / "metrics.json"),
+            "--probes", str(tmp / "probes.json")]
+    code = compare_runs.main(argv)
+    if code != 0:
+        return blockers + ["recomputed comparison inadmissible"], {}
+    recomputed = {}
+    try:
+        for name in ("comparison", "sensitivity", "metrics", "probes"):
+            recomputed[name] = json.loads(
+                (tmp / f"{name}.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        return blockers + [f"recomputation unreadable: {exc}"], {}
+    try:
+        saved = {name: load_saved(f"{name}.json") for name in
+                 ("comparison", "sensitivity", "metrics", "probes")}
+    except (OSError, ValueError) as exc:
+        return blockers + [f"saved merged artifact unreadable: {exc}"], {}
+    for name in ("comparison", "sensitivity", "metrics", "probes"):
+        if json.dumps(recomputed[name], sort_keys=True) != json.dumps(
+                saved[name], sort_keys=True):
+            blockers.append(
+                f"saved {name}.json differs from recomputation")
+            break
+    metrics = recomputed["metrics"]
+    probes = recomputed["probes"]
+    comparison = recomputed["comparison"]
+    sens = recomputed["sensitivity"]
+    blockers.extend("metrics " + line for line in
+                    check_verdict_consistency(metrics))
+    governed = {v: doc for v, doc in metrics["designs"].items()
+                if v != "reputation-only"}
+    if any(doc.get("verdict") != "PASS" for doc in governed.values()):
+        bad = sorted(v for v, doc in governed.items()
+                     if doc.get("verdict") != "PASS")
+        blockers.append(f"governed variants not PASS: {bad}")
+    for variant, probe_doc in probes["designs"].items():
+        if variant == "H":
+            if not isinstance(probe_doc, dict) or \
+                    not probe_doc.get("passed"):
+                blockers.append("publication-tamper battery not passed")
+            continue
+        if isinstance(probe_doc, dict) and not probe_doc.get("all_pass",
+                                                              True):
+            blockers.append(f"probes not all-pass for {variant}")
+    blockers.extend(adjudicate_winner(comparison, sens, governed))
+    winner = comparison.get("sensitivity_winner")
+    grid = (sens.get("parameter_grid") or {})
     facts = {"gate": gate.get("all_proven"),
+             "recomputed_from": "tracked raw cells via real entry points",
              "governed_verdicts": {v: d.get("verdict") for v, d in
                                    governed.items()},
-             "winner": comparison.get("sensitivity_winner"),
+             "winner": winner,
+             "tied": (comparison.get("tie_limitation") or {}).get("tied"),
              "flips": comparison.get("sensitivity_flips"),
              "unknown_dependent": comparison.get("unknown_dependent"),
+             "grid_combos": grid.get("combos", 0),
              "grid_flips": grid.get("flip_count", 0)}
     return blockers, facts
 
@@ -351,6 +462,7 @@ def main() -> int:
     bundle_sha = sha((HERE / "bundle.json").read_bytes())
     manifest = load("corpus-manifest.json")
     comparison = load_result("comparison.json")
+    tracked = tracked_registry()
     candidate = {
         "schema": "agentos.s1-012.candidate-record/v1",
         "ticket": "S1-012",
@@ -365,6 +477,11 @@ def main() -> int:
                                  .read_bytes()),
         "metrics_sha256": sha((RESULTS / "metrics.json").read_bytes()),
         "frozen_hashes": manifest["hashes"],
+        "tracked_artifacts": tracked,
+        "tracked_registry_note": "Every ticket file plus the test module, "
+                                 "by repo-relative POSIX path with SHA-256 "
+                                 "of committed bytes; verifiable from "
+                                 "`git archive HEAD`.",
         "run_provenance": {"commits": comparison["commits"],
                            "trees": comparison["trees"],
                            "cells": comparison["cells"]},

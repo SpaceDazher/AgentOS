@@ -511,65 +511,213 @@ class TestBundleRefusal(unittest.TestCase):
         self.assertFalse((work / "candidate-record.json").exists())
 
 
-    def test_governed_tie_accepted_with_limitation(self):
-        import tempfile
-        unique = "s1012_make_bundle_tie"
-        spec = importlib.util.spec_from_file_location(
-            unique, S1012 / "make_bundle.py")
-        module = importlib.util.module_from_spec(spec)
-        sys.modules[unique] = module
-        spec.loader.exec_module(module)
-        work = Path(tempfile.mkdtemp())
-        (work / "results").mkdir()
-        (work / "dependency-gate.json").write_text(json.dumps(
-            {"all_proven": True, "canonical_db_recheck_required": True}))
-        governed = {"document": {"verdict": "PASS"},
-                    "span": {"verdict": "PASS"}}
-        (work / "results" / "metrics.json").write_text(json.dumps(
-            {"designs": governed}))
-        (work / "results" / "probes.json").write_text(json.dumps(
-            {"designs": {"document": {"all_pass": True},
-                         "span": {"all_pass": True}}}))
-        (work / "results" / "comparison.json").write_text(json.dumps(
-            {"verdict": "DECIDED", "sensitivity_winner": "TIE",
-             "sensitivity_flips": 0, "unknown_dependent": True,
-             "tie_limitation": {"tied": ["document", "span"],
-                                "all_eligible": True}}))
-        (work / "results" / "sensitivity.json").write_text(json.dumps(
-            {"winner": "TIE", "flip_count": 0, "unknown_dependent": True,
-             "parameter_grid": {"flip_count": 0}}))
-        module.HERE = work
-        module.RESULTS = work / "results"
-        blockers, facts = module.derive_verdict()
-        self.assertEqual(blockers, [])
-
     def test_unresolved_tie_blocked(self):
-        import tempfile
-        unique = "s1012_make_bundle_tie2"
+        unique = "s1012_make_bundle_adj"
         spec = importlib.util.spec_from_file_location(
             unique, S1012 / "make_bundle.py")
         module = importlib.util.module_from_spec(spec)
         sys.modules[unique] = module
         spec.loader.exec_module(module)
-        work = Path(tempfile.mkdtemp())
-        (work / "results").mkdir()
+        governed = {"document": {}, "span": {}}
+        base = {"verdict": "DECIDED", "sensitivity_flips": 0,
+                "unknown_dependent": False}
+        sens = {"winner": "TIE", "flip_count": 0,
+                "unknown_dependent": True,
+                "parameter_grid": {"flip_count": 0}}
+        tied = dict(base, sensitivity_winner="TIE",
+                    tie_limitation={"tied": ["document", "span"],
+                                    "all_eligible": True})
+        self.assertEqual(module.adjudicate_winner(tied, sens, governed),
+                         [])
+        untied = dict(base, sensitivity_winner="TIE",
+                      tie_limitation=None)
+        problems = module.adjudicate_winner(untied, sens, governed)
+        self.assertTrue(any("tie" in line for line in problems), problems)
+        flips = dict(tied, sensitivity_flips=1)
+        problems = module.adjudicate_winner(flips, sens, governed)
+        self.assertTrue(any("flip" in line for line in problems))
+
+
+class TestPublicationRecompute(unittest.TestCase):
+    """Finding F1: saved flags are never authority. These tests build
+    full in-process series (real decision core, realistic manifests)
+    and prove the publication gate recomputes and crosschecks."""
+
+    @classmethod
+    def setUpClass(cls):
+        import subprocess
+        import tempfile
+        cls.work = Path(tempfile.mkdtemp(prefix="s1012-pub-"))
+        manifest = load("corpus-manifest.json")
+        commit = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True,
+            text=True, check=False).stdout.strip()
+        tree = subprocess.run(
+            ["git", "rev-parse", "HEAD^{tree}"], cwd=ROOT,
+            capture_output=True, text=True, check=False).stdout.strip()
+        base = 50000
+        for series in ("run-a", "run-b"):
+            for vi, variant in enumerate(
+                    ("document", "span", "digest", "reputation-only")):
+                for si, seed in enumerate((12012, 22022, 33033)):
+                    pid = base + vi * 10 + si + (1000 if series == "run-b"
+                                                 else 0)
+                    cell = cls.work / series / f"{variant}-{seed}"
+                    cell.mkdir(parents=True)
+                    rows = run_variant(variant, seed)
+                    (cell / "raw-observations.json").write_text(json.dumps(
+                        {"schema": "agentos.s1-012.raw-observations/v1",
+                         "variant": variant, "seed": seed,
+                         "rows": rows}, indent=2) + "\n",
+                        encoding="utf-8")
+                    (cell / "run-manifest.json").write_text(json.dumps(
+                        {"schema": "agentos.s1-012.run-manifest/v1",
+                         "ticket": "S1-012", "variant": variant,
+                         "seed": seed, "rows": len(rows), "pid": pid,
+                         "ppid": pid - 1,
+                         "invocation_id": f"test-{series}-{variant}-{seed}",
+                         "nonce": f"nonce-{series}-{variant}-{seed}",
+                         "executor_id": f"test@localhost#{pid}",
+                         "commit": commit, "tree": tree,
+                         "clean_tree": True,
+                         "describe": commit[:12],
+                         "python": "3.12.6",
+                         "input_hashes": dict(manifest["hashes"]),
+                         "output_root": str(cell)}) + "\n",
+                        encoding="utf-8")
+        for variant in ("document", "span", "digest", "reputation-only"):
+            for series in ("run-a", "run-b"):
+                for seed in (12012, 22022, 33033):
+                    cell = cls.work / series / f"{variant}-{seed}"
+                    metrics = evaluator.evaluate(cell)
+                    (cell / "metrics.json").write_text(
+                        json.dumps(metrics, indent=2) + "\n",
+                        encoding="utf-8")
+                    (cell / "probes.json").write_text(
+                        json.dumps(evaluator.probes(cell), indent=2) + "\n",
+                        encoding="utf-8")
+        unique = "s1012_compare_runs_pubtest"
+        spec = importlib.util.spec_from_file_location(
+            unique, S1012 / "compare_runs.py")
+        cls.compare_runs = importlib.util.module_from_spec(spec)
+        sys.modules[unique] = cls.compare_runs
+        spec.loader.exec_module(cls.compare_runs)
+        code = cls.compare_runs.main([
+            "--a", str(cls.work / "run-a"), "--b", str(cls.work / "run-b"),
+            "--out", str(cls.work / "comparison.json"),
+            "--sensitivity", str(cls.work / "sensitivity.json"),
+            "--metrics", str(cls.work / "metrics.json"),
+            "--probes", str(cls.work / "probes.json")])
+        assert code == 0, "fixture series must compare cleanly"
+
+    def _derive(self, results):
+        unique = "s1012_make_bundle_pubtest"
+        spec = importlib.util.spec_from_file_location(
+            unique, S1012 / "make_bundle.py")
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[unique] = module
+        spec.loader.exec_module(module)
+        (results / "dependency-gate.json").write_text(json.dumps(
+            load("dependency-gate.json")))
+        return module.derive_verdict(here=S1012, results=results)
+
+    def test_honest_series_publishes(self):
+        blockers, facts = self._derive(self.work)
+        self.assertEqual(blockers, [])
+        self.assertIn("recomputed_from", facts)
+
+    def test_repro_a_flag_counter_mismatch_blocked(self):
+        import shutil
+        work = Path(self.work.parent / "s1012-repro-a")
+        if work.exists():
+            shutil.rmtree(work)
+        shutil.copytree(self.work, work)
+        metrics = json.loads((work / "metrics.json").read_text(
+            encoding="utf-8"))
+        doc = metrics["designs"]["document"]
+        doc["hard_fail"] = True
+        doc["hard_counters"]["mirror_sybil_double_count"] = 5
+        (work / "metrics.json").write_text(json.dumps(metrics))
+        unique = "s1012_make_bundle_reproa"
+        spec = importlib.util.spec_from_file_location(
+            unique, S1012 / "make_bundle.py")
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[unique] = module
+        spec.loader.exec_module(module)
         (work / "dependency-gate.json").write_text(json.dumps(
-            {"all_proven": True, "canonical_db_recheck_required": True}))
-        (work / "results" / "metrics.json").write_text(json.dumps(
-            {"designs": {"document": {"verdict": "PASS"}}}))
-        (work / "results" / "probes.json").write_text(json.dumps(
-            {"designs": {"document": {"all_pass": True}}}))
-        (work / "results" / "comparison.json").write_text(json.dumps(
-            {"verdict": "DECIDED", "sensitivity_winner": "TIE",
-             "sensitivity_flips": 0, "unknown_dependent": True,
-             "tie_limitation": None}))
-        (work / "results" / "sensitivity.json").write_text(json.dumps(
-            {"winner": "TIE", "flip_count": 0, "unknown_dependent": True,
-             "parameter_grid": {"flip_count": 0}}))
-        module.HERE = work
-        module.RESULTS = work / "results"
-        blockers, _ = module.derive_verdict()
-        self.assertTrue(blockers)
+            load("dependency-gate.json")))
+        blockers, _ = module.derive_verdict(here=S1012, results=work)
+        self.assertTrue(blockers, "Repro A must block publication")
+        self.assertTrue(any("differs from recomputation" in line or
+                            "mismatch" in line for line in blockers),
+                        blockers)
+
+    def test_repro_b_fabrication_blocked(self):
+        import shutil
+        work = Path(self.work.parent / "s1012-repro-b")
+        if work.exists():
+            shutil.rmtree(work)
+        shutil.copytree(self.work, work)
+        metrics = {"designs": {
+            v: {"verdict": "PASS",
+                "hard_counters": {k: 0 for k in evaluator.HARD_COUNTERS}}
+            for v in ("document", "span", "digest", "reputation-only")}}
+        (work / "metrics.json").write_text(json.dumps(metrics))
+        comparison = {"verdict": "DECIDED", "sensitivity_winner": "digest",
+                      "sensitivity_flips": 0, "unknown_dependent": False,
+                      "tie_limitation": None, "commits": ["x"],
+                      "trees": ["y"], "cells": []}
+        (work / "comparison.json").write_text(json.dumps(comparison))
+        sens = {"winner": "digest", "flip_count": 0,
+                "unknown_dependent": False,
+                "parameter_grid": {"flip_count": 0}}
+        (work / "sensitivity.json").write_text(json.dumps(sens))
+        unique = "s1012_make_bundle_reprob"
+        spec = importlib.util.spec_from_file_location(
+            unique, S1012 / "make_bundle.py")
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[unique] = module
+        spec.loader.exec_module(module)
+        (work / "dependency-gate.json").write_text(json.dumps(
+            load("dependency-gate.json")))
+        blockers, _ = module.derive_verdict(here=S1012, results=work)
+        self.assertTrue(blockers, "Repro B must block publication")
+
+    def test_consistency_unit(self):
+        unique = "s1012_make_bundle_cons"
+        spec = importlib.util.spec_from_file_location(
+            unique, S1012 / "make_bundle.py")
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[unique] = module
+        spec.loader.exec_module(module)
+        ok = {"designs": {"document": {
+            "verdict": "PASS",
+            "hard_counters": {"mirror_sybil_double_count": 0}}}}
+        self.assertEqual(module.check_verdict_consistency(ok), [])
+        bad = {"designs": {"document": {
+            "verdict": "PASS",
+            "hard_counters": {"mirror_sybil_double_count": 5}}}}
+        problems = module.check_verdict_consistency(bad)
+        self.assertTrue(any("mismatch" in line for line in problems))
+
+    def test_tracked_registry_matches_disk(self):
+        unique = "s1012_make_bundle_reg"
+        spec = importlib.util.spec_from_file_location(
+            unique, S1012 / "make_bundle.py")
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[unique] = module
+        spec.loader.exec_module(module)
+        registry = module.tracked_registry()
+        self.assertGreater(len(registry), 20)
+        for rel, pinned in sorted(registry.items())[:5]:
+            path = ROOT / rel.replace("/", "\\")
+            if not path.is_file():
+                path = ROOT / rel
+            self.assertTrue(path.is_file(), rel)
+            self.assertEqual(sha(path.read_bytes()), pinned, rel)
+        snapshots = [k for k in registry
+                     if "/snapshots/" in k]
+        self.assertEqual(len(snapshots), 6)
 
 
 if __name__ == "__main__":

@@ -416,7 +416,7 @@ def merged_metrics(cells: dict, variant: str, tmp: Path):
     return metrics, probe_doc, rows
 
 
-def main() -> int:
+def main(argv: list | None = None) -> int:
     parser = argparse.ArgumentParser(description="S1-012 run comparison")
     parser.add_argument("--a", required=True)
     parser.add_argument("--b", required=True)
@@ -424,7 +424,7 @@ def main() -> int:
     parser.add_argument("--sensitivity", required=True)
     parser.add_argument("--metrics", required=True)
     parser.add_argument("--probes", required=True)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     root_a = Path(args.a)
     root_b = Path(args.b)
     cells_a = load_root(root_a)
