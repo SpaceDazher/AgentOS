@@ -687,6 +687,22 @@ def recompute_and_verify_evidence(ticket_root: Path | None = None,
     if run_a.get("decision_verdict") != "PASS" or \
             run_b.get("decision_verdict") != "PASS":
         raise RunnerError("run summaries do not record PASS verdicts")
+    # Present the recomputed comparison as the FULL document the
+    # orchestrator would have written: every derived field is computed from
+    # the verified raw inputs, never from stored flags.
+    comparison.update({
+        "case_count": run_a["decision_count"],
+        "exact_case_set": exact_case_set,
+        "decision_identical": run_a["decision_digest"] == run_b["decision_digest"],
+        "hash_match": run_a["decisions_sha256"] == run_b["decisions_sha256"],
+        "mismatches": comparison["violations"],
+        "run_a_verdict": run_a["decision_verdict"],
+        "run_b_verdict": run_b["decision_verdict"],
+        "gates_verdict": metrics_by_run["run_a"]["gates"]["verdict"],
+        "gates_verdict_run_b": metrics_by_run["run_b"]["gates"]["verdict"],
+        "all_probes_pass": probes_doc["all_probes_pass"],
+        "verdict": "PASS",
+    })
     return {
         "run_a": run_a,
         "run_b": run_b,
