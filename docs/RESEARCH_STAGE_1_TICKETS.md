@@ -1206,7 +1206,8 @@ python -m agentos.cli research-plan --topic "S1-015 petname principal naming stu
 
 ### S1-016 — Workspace lineage: flat scope versus PROV-Dictionary
 
-- **Status:** `READY`
+- **Status:** `INCONCLUSIVE` (canonical revision 1; design decision INCONCLUSIVE, research execution `pass_with_limits` with limits)
+- **Result:** operator review `1A 2A 3A 4A 5A 6B 7A 8A 9A 10A`; answer `6B` (provenance authorizes access) is forbidden and contradicts hard invariant L6, so no authorization-from-provenance is granted. Independently, one recorded sensitivity flip (`lodo_implementation_parsimony` → B by 0.02, zero utility gap) caps the verdict per the frozen rule. Substance leader `FLAT_RUNTIME_PROV_EXPORT` (base winner 747/748 vectors). Technical evidence: 48 scenarios x 3 representations x 3 seeds x 2 executors = 864 observations, L1–L12 zero, round-trip/reconstruction/rejection 100%, probes A–P pass, 144/144 SHACL exact, replay byte-identical.
 - **Priority:** `P1`
 - **Wave:** `W3`
 - **Owner:** `formal`
