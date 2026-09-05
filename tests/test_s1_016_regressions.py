@@ -500,6 +500,58 @@ class TestOperatorVerdict(unittest.TestCase):
         self.assertTrue(blockers)
 
 
+class TestClosureArtifacts(unittest.TestCase):
+    """Canonical closure artifacts stay internally consistent (rev 2 fix)."""
+
+    def test_operator_decision_has_no_forbidden_answers(self):
+        doc = json.loads((S1016 / "operator-decision.json").read_text("utf-8"))
+        answers = doc["selected_answers"]
+        self.assertEqual(sorted(answers, key=int), [str(n) for n in range(1, 11)])
+        for num, letter in answers.items():
+            self.assertNotIn(f"{num}{letter}", make_bundle.FORBIDDEN_ANSWERS)
+        self.assertEqual(doc["answer_string"],
+                         "1A 2A 3A 4A 5A 6A 7A 8A 9A 10A")
+        self.assertTrue(doc.get("deviation_log"), "6B slip correction must be logged")
+
+    def test_candidate_matches_frozen_sensitivity(self):
+        sens = json.loads((S1016 / "results" / "sensitivity.json").read_text("utf-8"))
+        cand = json.loads((S1016 / "candidate-record.json").read_text("utf-8"))
+        self.assertEqual(sens["flips"], 1)
+        self.assertEqual(sens["winners_distribution"], {"A": 747, "B": 1})
+        self.assertEqual(cand["sensitivity_flips"], sens["flips"])
+        self.assertEqual(cand["status"], "CLOSED_INCONCLUSIVE")
+        self.assertEqual(cand["blocking_answers"], [])
+
+    def test_real_answers_with_frozen_sensitivity_stay_inconclusive(self):
+        doc = json.loads((S1016 / "operator-decision.json").read_text("utf-8"))
+        sens = json.loads((S1016 / "results" / "sensitivity.json").read_text("utf-8"))
+        metrics = json.loads((S1016 / "results" / "metrics.json").read_text("utf-8"))
+        comparison = json.loads((S1016 / "results" / "comparison.json").read_text("utf-8"))
+        blockers, verdict = make_bundle.derive_verdict(
+            metrics, comparison, sens, True, doc["selected_answers"])
+        self.assertEqual(blockers, [])
+        self.assertEqual(verdict["status"], "CLOSED_INCONCLUSIVE")
+        self.assertEqual(verdict["sensitivity_flips"], 1)
+
+    def test_semantic_metrics_drops_latencies(self):
+        with_lat = {"observations": 432, "latencies": {"shacl_ns": {"p50": 1}},
+                    "safety_verdict": True}
+        stripped = make_bundle._semantic_metrics(with_lat)
+        self.assertNotIn("latencies", stripped)
+        self.assertEqual(stripped["observations"], 432)
+
+    def test_audit_limitations_never_claim_unrecorded_flips(self):
+        verdict = {"design_decision": "INCONCLUSIVE", "status": "OPEN_INCONCLUSIVE",
+                   "sensitivity_flips": 0, "substance_leader": "A",
+                   "blocking_answers": []}
+        limitations = " ".join(make_bundle.audit_limitations(verdict, True))
+        self.assertNotIn("flips cap", limitations)
+        self.assertIn("verdict remains INCONCLUSIVE", limitations)
+        verdict_flip = dict(verdict, sensitivity_flips=1)
+        flip_text = " ".join(make_bundle.audit_limitations(verdict_flip, True))
+        self.assertIn("recorded sensitivity flips (1) cap", flip_text)
+
+
 class TestSourcesFrozen(unittest.TestCase):
     def test_registry_roles_and_hashes(self):
         registry = load("source-registry.json")

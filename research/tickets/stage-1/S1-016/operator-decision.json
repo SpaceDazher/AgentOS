@@ -3,6 +3,7 @@
   "ticket": "S1-016",
   "decision_id": "S1-016-OPERATOR-2026-09-05",
   "decided_at_utc": "2026-09-05T03:00:00Z",
+  "corrected_at_utc": "2026-09-05T09:10:00Z",
   "operator_id": "OP-OPERATOR-01",
   "scope": "single_architecture_decision",
   "selected_answers": {
@@ -11,13 +12,13 @@
     "3": "A",
     "4": "A",
     "5": "A",
-    "6": "B",
+    "6": "A",
     "7": "A",
     "8": "A",
     "9": "A",
     "10": "A"
   },
-  "answer_string": "1A 2A 3A 4A 5A 6B 7A 8A 9A 10A",
+  "answer_string": "1A 2A 3A 4A 5A 6A 7A 8A 9A 10A",
   "approved_artifact_hashes": {
     "lineage-contract.json": "beb589d3e0cdf2b3da6798a08ad7131ca89ab56ac4d7cb2a819a013c520a31cc",
     "corpus.json": "00064b46cd5e2119d36960a00532e7dc4ef6caf355ddf24138c23ea961fa1feb",
@@ -30,16 +31,29 @@
   "interpretation": {
     "mode": "single_operator_architecture_review",
     "answer_use": "architecture_decision_only",
-    "blocking_answers": [
-      "6B"
-    ],
-    "blocking_effect": "answer 6B (provenance edge inherits access) is forbidden and contradicts hard invariant L6; petname-style closure impossible; honest outcome INCONCLUSIVE",
-    "sensitivity_cap": "recorded flips cap the verdict at INCONCLUSIVE regardless",
+    "blocking_answers": [],
+    "blocking_effect": "no forbidden answers; the one sensitivity flip recorded in the frozen measurement caps the verdict at INCONCLUSIVE per the frozen decision rule",
+    "sensitivity_flips": 1,
     "raw_policy": "structured_answers_only_no_raw_retained"
   },
+  "deviation_log": [
+    {
+      "recorded_at_utc": "2026-09-05T03:00:00Z",
+      "event": "initial recording held answer 6B",
+      "resolution": "operator confirmed 6B was a slip (analogous to the S1-014 initial 6B slip); intended and corrected answer is 6A (lineage never influences authorization, invariant L6)",
+      "corrected_at_utc": "2026-09-05T09:10:00Z",
+      "authorized_by": "OP-OPERATOR-01"
+    },
+    {
+      "recorded_at_utc": "2026-09-05T09:10:00Z",
+      "event": "closure regeneration had overwritten the frozen measurement artifacts (run-a/run-b observations, metrics, comparison, sensitivity) with re-rolled wall-clock latencies, changing the recorded sensitivity result from flips=1 (A:747/B:1) to flips=0 (A:748)",
+      "resolution": "frozen measurement commit d920079 artifacts restored as authoritative; publisher hardened with --use-existing-results validation so closure can never re-roll the frozen measurement again",
+      "authorized_by": "OP-OPERATOR-01"
+    }
+  ],
   "limitations": [
     "one operator architecture review is not a production audit",
-    "answer 6B contradicts invariant L6 enforced by all technical evidence",
+    "the recorded sensitivity flip (lodo_implementation_parsimony -> B) is driven by wall-clock latency noise feeding latency parsimony; a deterministic latency proxy is deferred",
     "production conformance and arbitrary executions remain unproven"
   ]
 }

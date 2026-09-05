@@ -4,18 +4,16 @@
   "status": "CLOSED_INCONCLUSIVE",
   "design_decision": "INCONCLUSIVE",
   "substance_leader": "FLAT_RUNTIME_PROV_EXPORT",
-  "sensitivity_flips": 0,
+  "sensitivity_flips": 1,
   "operator_review": "COMPLETE",
   "operator_review_n": 1,
   "result": "INCONCLUSIVE",
   "bundle_path": "research/tickets/stage-1/S1-016/bundle.json",
-  "bundle_sha256": "80e3eb85619bb19c04b633122b55953f3070911bf50f35dfc81d2ffc9f72695b",
+  "bundle_sha256": "ef08966d9a72dd020e49c90f2c91a783d52755e613ea16f316a5d6b77a8df9b5",
   "matrix": "48 scenarios x 3 representations x 3 seeds x 2 executors = 864 observations",
   "safety_verdict": true,
   "replicated": true,
-  "blocking_answers": [
-    "6B"
-  ],
+  "blocking_answers": [],
   "frozen_hashes": {
     "TASK_FOR_AGENT.md": "1fd80017d05bc588c44b48fe8f5dd689352194b7665359e4d79f543280b0f6f6",
     "analysis-plan.md": "00238654e1df99a6fdeac0b176d27b64faec7376bc4a486281d0d9698a8ba90c",
@@ -32,7 +30,7 @@
     "freeze.py": "68d3b4f21a4163a82c7cd2b14706e3d27cef4aa1ec337512d85d0f6f0526fc13",
     "importer.py": "4598e2ca2c2799cd9b250693a7690338efc38ff7e064da0cf41239775c13164e",
     "lineage-contract.json": "beb589d3e0cdf2b3da6798a08ad7131ca89ab56ac4d7cb2a819a013c520a31cc",
-    "make_bundle.py": "81d4180824cf31d7ff2c53c3982b07da5000b67f0970e83531c72491e5ac4d63",
+    "make_bundle.py": "aad8eee5c95c64f4e52d0340b88b5290045b73d0f6b069b668242b183b31a7f4",
     "mapping-profile.json": "a608d40115a49472e8ba6cbe738d26a89a6295d6268bb4ea50af2c05dcbf5954",
     "models.py": "20a22b23c1fb53a504fc1dc5404904f3be5ccfd07884203a10e3e2ebea0c227e",
     "operator-protocol.md": "8b0ccc603480fa07bc6eeda8c66430c6afd0e4cb13847a976b1dd9d87f8615aa",
@@ -57,5 +55,5 @@
     "threat-model.json": "a1b0f97a94c56aa609feebf3029f5597ae9e10f2a320b380b870535aa48daea4"
   },
   "closure_basis": "operator_architecture_decision",
-  "note": "operator answers 6B are forbidden and contradict hard invariants; no authorization-from-provenance is granted; no PASS_WITH_LIMITS ticket closure is claimed"
+  "note": "recorded sensitivity flips (1) cap the verdict at INCONCLUSIVE; substance leader FLAT_RUNTIME_PROV_EXPORT; no PASS_WITH_LIMITS ticket closure is claimed"
 }
