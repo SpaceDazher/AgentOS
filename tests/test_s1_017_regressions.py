@@ -373,3 +373,121 @@ class TestSourcesPresent(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestPhaseBNonCircularity(unittest.TestCase):
+    """Phase B: producer must not read the answer key."""
+
+    def _cases(self):
+        return json.loads((S1017 / "corpus.json").read_text("utf-8"))["cases"]
+
+    def test_analyzer_ignores_oracle_hint(self):
+        for case in self._cases():
+            forged = copy.deepcopy(case)
+            forged["oracle_hint"] = {"kind": "forged"}
+            base = runner.analyze_scenario(case, "A", 1)
+            other = runner.analyze_scenario(forged, "A", 1)
+            for field in ("verdict", "confidence", "unknowns", "disagreement"):
+                self.assertEqual(
+                    base[field], other[field],
+                    f"{case['scenario_id']} changed {field} with forged hint")
+
+    def test_oracle_holds_no_engine_internals(self):
+        oracle = json.loads((S1017 / "oracle.json").read_text("utf-8"))
+        for sid, entry in oracle["entries"].items():
+            self.assertNotIn("expected_stit", entry, sid)
+            self.assertNotIn("expected_atl", entry, sid)
+            self.assertIn("expected_verdict", entry, sid)
+            self.assertIn("expected_confidence", entry, sid)
+            self.assertIn("construction", entry, sid)
+
+    def test_oracle_verdict_matches_construction_mapping(self):
+        oracle = json.loads((S1017 / "oracle.json").read_text("utf-8"))
+        mapping = {"stit_holds": ("ATTRIBUTION", "PROVEN"),
+                   "atl_holds": ("ATTRIBUTION", "PROVEN"),
+                   "stit_absent": ("NO_ATTRIBUTION", "SUPPORTED"),
+                   "atl_absent": ("NO_ATTRIBUTION", "SUPPORTED"),
+                   "underdetermined": ("UNDERDETERMINED", "UNDERDETERMINED"),
+                   "invalid": ("UNDERDETERMINED", "UNDERDETERMINED")}
+        for sid, entry in oracle["entries"].items():
+            expected = mapping[entry["construction"]]
+            self.assertEqual(entry["expected_verdict"], expected[0], sid)
+            self.assertEqual(entry["expected_confidence"], expected[1], sid)
+
+
+class TestPhaseBSemantics(unittest.TestCase):
+    def _cases(self):
+        return json.loads((S1017 / "corpus.json").read_text("utf-8"))["cases"]
+
+    def _oracle(self):
+        return json.loads((S1017 / "oracle.json").read_text("utf-8"))["entries"]
+
+    def test_full_corpus_agreement_every_placement(self):
+        oracle = self._oracle()
+        for case in self._cases():
+            for placement in runner.PLACEMENTS:
+                out = runner.analyze_scenario(case, placement, 1)
+                entry = oracle[case["scenario_id"]]
+                self.assertEqual(
+                    out["verdict"], entry["expected_verdict"],
+                    f"{case['scenario_id']}/{placement}: {out['unknowns']} "
+                    f"stit={out['stit'].get('reason')} atl={out['atl'].get('reason')}")
+                self.assertEqual(out["confidence"], entry["expected_confidence"],
+                                 case["scenario_id"])
+
+    def test_unknown_without_reconciliation_abstains(self):
+        game = runner.game_of(self._cases()[0])
+        scenario = copy.deepcopy(self._cases()[0])
+        scenario["transitions"] = [dict(t) for t in scenario["transitions"]]
+        for transition in scenario["transitions"]:
+            if transition.get("outcome") == "effect":
+                transition["outcome"] = "unknown"  # crash, no reconciliation
+        out = runner.analyze_scenario(scenario, "A", 1)
+        self.assertEqual(out["verdict"], "UNDERDETERMINED")
+
+    def test_disagreement_between_models_abstains(self):
+        case = next(c for c in self._cases() if c["scenario_id"] == "UD-04")
+        out = runner.analyze_scenario(case, "A", 1)
+        self.assertEqual(out["verdict"], "UNDERDETERMINED")
+        self.assertTrue(out["disagreement"])
+
+    def test_atl_question_without_env_moves_abstains(self):
+        case = next(c for c in self._cases() if c["scenario_id"] == "UD-10")
+        out = runner.analyze_scenario(case, "A", 1)
+        self.assertEqual(out["verdict"], "UNDERDETERMINED")
+
+    def test_no_effect_under_revoked_grant(self):
+        case = next(c for c in self._cases() if c["scenario_id"] == "CS-04")
+        for transition in case["transitions"]:
+            if transition.get("authority_required"):
+                self.assertNotEqual(transition.get("outcome"), "effect",
+                                    "revoked grant must not produce an effect")
+        out = runner.analyze_scenario(case, "A", 1)
+        self.assertEqual(out["verdict"], "NO_ATTRIBUTION")
+
+
+class TestPhaseBInfrastructure(unittest.TestCase):
+    def test_dependency_gate_script_exists_and_expected_refs(self):
+        source = (S1017 / "dependency_gate.py").read_text("utf-8")
+        self.assertIn("S1-004", source)
+        self.assertIn("S1-016", source)
+        self.assertIn("origin/main", source)
+
+    def test_freeze_script_exists(self):
+        self.assertTrue((S1017 / "freeze.py").is_file())
+        self.assertTrue((S1017 / "replicate.py").is_file())
+
+    def test_sensitivity_uses_no_wallclock_dimension(self):
+        source = (S1017 / "sensitivity.py").read_text("utf-8")
+        self.assertNotIn("latency_parsimony", source)
+        self.assertIn("steps_parsimony", source)
+
+    def test_evaluator_exposes_full_probe_set(self):
+        source = (S1017 / "evaluator.py").read_text("utf-8")
+        for letter in "ABCDEFGHIJKLMNOP":
+            self.assertIn(f"probe_{letter.lower()}_", source)
+
+    def test_make_bundle_operator_fail_closed(self):
+        source = (S1017 / "make_bundle.py").read_text("utf-8")
+        self.assertIn("verify_operator_decision", source)
+        self.assertIn("FORBIDDEN", source)
