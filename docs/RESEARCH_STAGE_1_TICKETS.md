@@ -1157,7 +1157,8 @@ python -m agentos.cli research-plan --topic "S1-014 claim dispute visualization 
 
 ### S1-015 — Petname principal naming study
 
-- **Status:** `READY`
+- **Status:** `INCONCLUSIVE` (canonical revision 1; design decision INCONCLUSIVE, research execution `pass_with_limits` with limits)
+- **Result:** operator review `1A 2B 3A 4A 5A 6A 7A 8A 9A 10A 11A 12A`; answer `2B` blocks any petname contract per fail-closed rules, so no provisional display-only contract is granted and no `PASS_WITH_LIMITS` ticket closure is claimed. Technical evidence: 40 cases x 2 variants x 3 seeds x 2 executors = 480 observations, all 10 hard counters zero, probes A-N pass, replay replicates byte-identical. `operator_review_n=1`, `human_study_n=0`, `recognition_improvement=NOT_MEASURED`.
 - **Priority:** `P2`
 - **Wave:** `W4`
 - **Owner:** `hci`

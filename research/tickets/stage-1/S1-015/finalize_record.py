@@ -212,7 +212,7 @@ def main(argv: list[str] | None = None) -> int:
         "limitations": json.loads(evaluation["limitations_json"]),
         "tracked_artifact_hashes": hashes,
     }
-    (HERE / "evaluation-record.json").write_text(
+    (HERE / "evaluation-record.json").write_bytes(
         json.dumps(record, indent=2, sort_keys=True,
                    ensure_ascii=False).encode("utf-8") + b"\n")
     print(json.dumps({key: value for key, value in record.items()
