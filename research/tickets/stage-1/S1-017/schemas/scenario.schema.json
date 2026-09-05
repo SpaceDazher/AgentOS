@@ -1,0 +1,87 @@
+{
+  "$id": "agentos.s1-017.scenario/v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "S1-017 responsibility scenario (canonical input)",
+  "type": "object",
+  "required": ["scenario_id", "class", "description", "principals", "states", "initial", "transitions", "trace", "oracle_hint"],
+  "properties": {
+    "scenario_id": { "type": "string", "pattern": "^[A-Z]+-[0-9]{2}$" },
+    "class": { "type": "string", "enum": ["complete_supported", "complete_no_responsibility", "underdetermined", "adversarial_or_invalid"] },
+    "description": { "type": "string", "minLength": 1 },
+    "principals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["principal_id", "scope"],
+        "properties": {
+          "principal_id": { "type": "string", "minLength": 1 },
+          "display": { "type": ["string", "null"] },
+          "scope": {
+            "type": "object",
+            "required": ["tenant_id", "workspace_id", "goal_id"],
+            "properties": {
+              "tenant_id": { "type": "string", "minLength": 1 },
+              "workspace_id": { "type": "string", "minLength": 1 },
+              "goal_id": { "type": "string", "minLength": 1 }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "states": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["state_id", "authority", "phase"],
+        "properties": {
+          "state_id": { "type": "string", "minLength": 1 },
+          "authority": { "type": "object" },
+          "phase": { "type": "string", "minLength": 1 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "initial": { "type": "string", "minLength": 1 },
+    "transitions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["from", "actor", "action", "to", "authority_required", "audit_ref"],
+        "properties": {
+          "from": { "type": "string", "minLength": 1 },
+          "actor": { "type": "string", "minLength": 1 },
+          "action": { "type": "string", "minLength": 1 },
+          "args": { "type": "object" },
+          "to": { "type": "string", "minLength": 1 },
+          "authority_required": { "type": ["object", "null"] },
+            "outcome": { "type": "string", "enum": ["effect", "denied", "unknown"] },
+            "environment_move": { "type": ["string", "null"] },
+            "reconciled_as": { "type": "string", "enum": ["effect", "failed"] },
+            "audit_ref": { "type": "string", "minLength": 1 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "trace": {
+      "type": "object",
+      "required": ["events", "request_scope"],
+      "properties": {
+        "events": { "type": "array", "items": { "type": "object" } },
+        "request_scope": { "type": "object" },
+        "redacted": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "oracle_hint": {
+      "type": "object",
+      "required": ["kind"],
+      "properties": {
+        "kind": { "type": "string", "enum": ["stit_holds", "stit_absent", "atl_holds", "atl_absent", "underdetermined", "invalid"] }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

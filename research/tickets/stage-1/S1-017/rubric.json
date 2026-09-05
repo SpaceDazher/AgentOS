@@ -1,0 +1,34 @@
+{
+  "schema": "agentos.s1-017.rubric/v1",
+  "ticket": "S1-017",
+  "frozen": false,
+  "phase": "A-draft (freezes before Phase B measurements)",
+  "hard_gates": {
+    "invariant_violations_R1_R14": 0,
+    "gateway_owned_authorization_rate": 1.0,
+    "authority_expansion_count": 0,
+    "supported_semantic_agreement_rate": 1.0,
+    "invalid_rejection_rate": 1.0,
+    "complete_reconstruction_rate": 1.0,
+    "confident_attribution_on_incomplete": 0
+  },
+  "hard_gate_rule": "every hard gate must hold in each placement/seed/executor; any violation is FAIL uncompensated by latency, coverage or score",
+  "reported_metrics": [
+    "R1-R14 violations",
+    "gateway-owned authorization ratio",
+    "trace completeness and exact reconstruction rate",
+    "supported STIT/ATL semantic agreement rate",
+    "correct UNDERDETERMINED/abstention rate",
+    "false and missed responsibility attribution",
+    "alternatives completeness/precision",
+    "revoked/denied misclassification count",
+    "delegation-chain completeness",
+    "cross-scope/identity/privacy leakage count",
+    "model disagreement and assumption-sensitive cells",
+    "annotation build/query p50/p95/max technical latency",
+    "runtime writes/bytes/schema dependencies and complexity proxy",
+    "replay determinism and executor comparison"
+  ],
+  "counting_rule": "raw numerator/denominator; a missing metric/raw/case/seed/provenance field fails closed, never zero",
+  "performance_note": "latencies are same-host technical measurements, not production SLOs"
+}

@@ -1,0 +1,34 @@
+{
+  "schema": "agentos.s1-017.decision-rule/v1",
+  "ticket": "S1-017",
+  "frozen": false,
+  "phase": "A-draft (freezes before Phase B measurements)",
+  "allowed_decisions": [
+    "OFFLINE_ANALYTICS",
+    "DERIVED_EXPORT_ANNOTATION",
+    "BOUNDED_RUNTIME_ANNOTATION",
+    "INCONCLUSIVE"
+  ],
+  "forbidden": [
+    "STIT/ATL result changing ALLOW/DENY",
+    "absence of alternatives read as fault",
+    "authority derived from a modal graph",
+    "post-hoc annotation rewriting source history",
+    "heuristic inference published as proven fact",
+    "legal/moral/production-conformance oracle claims"
+  ],
+  "selection": {
+    "A_wins": "offline latency acceptable and B/C show no proven needed audit capability",
+    "B_wins": "derived export materially improves query/reconstruction with no runtime authority and no canonical duplication",
+    "C_wins": "only on proven operational need plus machine-checked absence of any authorization dependency",
+    "otherwise": "INCONCLUSIVE on close/unstable tradeoff, model disagreement or insufficient audit data"
+  },
+  "safety_gates_unweighted": true,
+  "sensitivity": {
+    "weight_perturbation": "±50%",
+    "leave_one_dimension_out": true,
+    "min_weight_vectors": 200,
+    "rule": "any winner flip or unknown cell caps the verdict at INCONCLUSIVE"
+  },
+  "status_cap": "PASS_WITH_LIMITS at most; PASS only for bounded-research-contract completeness, never for production or universal attribution"
+}

@@ -1,0 +1,49 @@
+{
+  "schema": "agentos.s1-017.threat-model/v1",
+  "ticket": "S1-017",
+  "phase": "A",
+  "assets": [
+    "gateway allow/deny decisions (sole authority)",
+    "immutable audit/lineage trace rows",
+    "bounded transition/choice model",
+    "derived responsibility annotations",
+    "operator architecture decision"
+  ],
+  "actors": [
+    "canonical principal (actor/worker/delegator/approver/service)",
+    "adversarial environment (game moves)",
+    "producer (model runner, untrusted for verdicts)",
+    "evaluator/auditor (recompute from raw traces)",
+    "operator (single architecture decision, not an auditor)"
+  ],
+  "trust_boundaries": [
+    "gateway decision -> analytics input (one direction only)",
+    "runtime state -> derived annotation (never back into policy)",
+    "producer claims -> evaluator recomputation",
+    "visible scope -> redacted foreign scope"
+  ],
+  "invariant_catalog": ["R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9", "R10", "R11", "R12", "R13", "R14"],
+  "threats": [
+    { "id": "T-auth-influence", "description": "annotation output reaches an allow/deny path", "violates": ["R1", "R2"], "probes": ["A", "H"] },
+    { "id": "T-delegation-gap", "description": "delegator/chain dropped from attribution graph", "violates": ["R8"], "probes": ["B"] },
+    { "id": "T-revoke-reorder", "description": "revoke event removed or reordered around decision/effect", "violates": ["R7"], "probes": ["C"] },
+    { "id": "T-phantom-alternative", "description": "unavailable action declared available", "violates": ["R6"], "probes": ["D"] },
+    { "id": "T-absence-proof", "description": "missing event sold as proof of missing possibility", "violates": ["R10"], "probes": ["E"] },
+    { "id": "T-identity-collapse", "description": "same display name merges distinct principals", "violates": ["R9"], "probes": ["F"] },
+    { "id": "T-scope-bleed", "description": "cross-goal/cross-tenant trace mixed into analysis", "violates": ["R11"], "probes": ["G"] },
+    { "id": "T-capability-smuggle", "description": "modal result creates capability/approval/transition", "violates": ["R2"], "probes": ["H"] },
+    { "id": "T-history-rewrite", "description": "post-hoc annotation mutates a source audit row", "violates": ["R3"], "probes": ["I"] },
+    { "id": "T-unknown-success", "description": "partial/unknown effect reported successful without reconciliation", "violates": ["R5"], "probes": ["J"] },
+    { "id": "T-envless-ability", "description": "coalition ability computed without environment moves", "violates": ["R6"], "probes": ["K"] },
+    { "id": "T-hidden-disagreement", "description": "conflicting models hidden by producer summary", "violates": ["R10", "R14"], "probes": ["L"] },
+    { "id": "T-redact-leak", "description": "redacted trace reveals hidden actor/action/content", "violates": ["R11"], "probes": ["M"] },
+    { "id": "T-forged-metrics", "description": "forged all_safe/metrics/engine marker/verdict", "violates": ["R14"], "probes": ["N"] },
+    { "id": "T-mixed-provenance", "description": "mixed commits/manifests/executors or stale frozen hash", "violates": ["R12"], "probes": ["O"] },
+    { "id": "T-parser", "description": "duplicate key, NaN, unknown schema, remote ref, traversal, symlink escape", "violates": ["R4"], "probes": ["P"] }
+  ],
+  "residual_risks": [
+    "bounded 48-scenario corpus cannot cover arbitrary systems",
+    "same-host replay is not an external audit",
+    "single-operator decision is not a human-subject study"
+  ]
+}
