@@ -34,6 +34,7 @@ def _mod(name, filename):
 
 contract = _mod("s1017_contract_run", "contract.py")
 models = _mod("s1017_models_run", "models.py")
+grant_facts = models.grant_facts
 
 
 def sha(data: bytes) -> str:
@@ -56,8 +57,10 @@ def game_of(scenario: dict) -> dict:
             "transitions": scenario["transitions"]}
 
 
-def canonical_principals(scenario: dict) -> set[str]:
-    return {p["principal_id"] for p in scenario.get("principals", [])}
+def canonical_principals(scenario: dict) -> list[str]:
+    """Sorted canonical principal IDs (deterministic order across processes:
+    set iteration would leak PYTHONHASHSEED into placement-B index digests)."""
+    return sorted({p["principal_id"] for p in scenario.get("principals", [])})
 
 
 def trace_digest(scenario: dict) -> str:
@@ -65,13 +68,22 @@ def trace_digest(scenario: dict) -> str:
 
 
 def primary_path(scenario: dict) -> list[str]:
-    """First effectful path for the focal actor from the initial state."""
+    """The focal actor's first effectful transition in canonical trace order.
+
+    An `unknown` outcome counts as effectful only once reconciled back to an
+    effect (crash + reconciliation); an unreconciled unknown is never an
+    effect. Delegated chains are covered because the focal actor may act
+    in any state along the canonical history, not only the initial state."""
     game = game_of(scenario)
-    focal = (scenario.get("principals") or [{"principal_id": ""}])[0]["principal_id"]
+    focal = scenario.get("focal") or \
+        (scenario.get("principals") or [{"principal_id": ""}])[0]["principal_id"]
     for transition in game["transitions"]:
-        if transition["from"] == game["initial"] and transition["actor"] == focal \
-                and transition.get("outcome") == "effect":
-            return [game["initial"], transition["to"]]
+        if transition["actor"] != focal:
+            continue
+        outcome = transition.get("outcome")
+        if outcome == "effect" or (outcome == "unknown" and
+                                    transition.get("reconciled_as") == "effect"):
+            return [transition["from"], transition["to"]]
     return [game["initial"]]
 
 
@@ -81,15 +93,17 @@ ENVIRONMENT_ACTOR = "env"
 def detect_identity_issue(scenario: dict) -> str | None:
     """R9: every transition actor must resolve to a canonical principal.
 
-    The declared environment pseudo-actor `env` is legitimate model
-    machinery, not an identity: it never receives attribution.
+    Unknown actor identities are reported MASKED (digest prefix): a redacted
+    trace must never leak the hidden identity through the annotation
+    (R11/probe M). The declared environment pseudo-actor `env` is legitimate
+    model machinery, not an identity: it never receives attribution.
     """
     canonical = canonical_principals(scenario)
     for transition in scenario.get("transitions", []):
         if transition["actor"] == ENVIRONMENT_ACTOR:
             continue
         if transition["actor"] not in canonical:
-            return f"unknown_actor:{transition['actor']}"
+            return f"unknown_actor:{sha(transition['actor'].encode('utf-8'))[:12]}"
     return None
 
 
@@ -100,64 +114,158 @@ def detect_redaction_gap(scenario: dict) -> str | None:
     return None
 
 
+ADVERSARIAL_MARKERS = ("absence_claim", "foreign_trace", "duplicate_paths",
+                      "legacy_gap", "same_display", "revoke_removed", "mutated")
+
+
 def detect_missing_authority(scenario: dict) -> str | None:
+    """Any effectful transition whose required grant is absent from the
+    state's authority facts is not provably authorised (fail closed)."""
+    game = game_of(scenario)
+    states = {s["state_id"]: s for s in game["states"]}
+    for transition in game["transitions"]:
+        outcome = transition.get("outcome")
+        effectful = outcome == "effect" or (outcome == "unknown" and
+                                            transition.get("reconciled_as") == "effect")
+        if not effectful:
+            continue
+        required = transition.get("authority_required")
+        if not required:
+            continue
+        grant_id = required.get("grant_id")
+        grants = grant_facts(states[transition["from"]])
+        if grant_id not in grants:
+            return f"missing_grant_record:{grant_id}"
+    return None
+
+
+def detect_unreconciled_unknown(scenario: dict) -> str | None:
+    for transition in scenario.get("transitions", []):
+        if transition.get("outcome") == "unknown" and \
+                "reconciled_as" not in transition:
+            return "unknown_outcome_without_reconciliation"
+    return None
+
+
+def detect_nonboolean_authority(scenario: dict) -> str | None:
+    for state in scenario.get("states", []):
+        for grant in (state.get("authority") or {}).get("grants", {}).values():
+            for flag in ("revoked", "expired"):
+                value = grant.get(flag, False)
+                if value is not None and not isinstance(value, bool):
+                    return f"authority_status_not_boolean:{flag}"
+    return None
+
+
+def detect_unresolvable_delegation(scenario: dict) -> str | None:
+    """A delegation/child/on_behalf reference must resolve to a known
+    principal or grant; a dangling reference is an incomplete chain (R8).
+    Values are masked (R11): hidden identities never leak via unknowns."""
+    canonical = canonical_principals(scenario)
+    grants = set()
+    for state in scenario.get("states", []):
+        grants.update((state.get("authority") or {}).get("grants", {}).keys())
+    for transition in scenario.get("transitions", []):
+        for key in ("delegation", "delegate", "child", "on_behalf"):
+            value = (transition.get("args") or {}).get(key)
+            if value is None:
+                continue
+            if value not in canonical and value not in grants:
+                masked = sha(str(value).encode("utf-8"))[:12]
+                return f"unresolvable_delegation:{key}={masked}"
+    return None
+
+
+def detect_effect_under_nonauthorised_standing(scenario: dict) -> str | None:
+    """R7/trace integrity: an effect (recorded ALLOW) whose recomputed
+    standing is not `authorised` is a trace/authority mismatch — the trace
+    cannot be trusted for attribution and the case must abstain."""
     game = game_of(scenario)
     for transition in game["transitions"]:
-        req = transition.get("authority_required") or {}
-        if req.get("grant_id") == "g-missing":
-            return "missing_grant_record"
-        if req.get("grant_id") == "phantom":
-            return "phantom_grant"
+        outcome = transition.get("outcome")
+        effectful = outcome == "effect" or (outcome == "unknown" and
+                                            transition.get("reconciled_as") == "effect")
+        if not effectful:
+            continue
+        standing = models.grant_standing(
+            game, transition["from"], transition["action"],
+            transition.get("authority_required"))
+        if transition.get("authority_required") is None:
+            continue
+        if standing != "authorised":
+            return f"trace_authority_mismatch:{transition['audit_ref']}"
     return None
 
 
 def analyze_scenario(scenario: dict, placement: str, seed: int) -> dict:
-    """Shared observable analyzer; placements differ only in storage/indexing."""
+    """Shared observable analyzer; placements differ only in storage/indexing.
+
+    Non-circular by contract: this function NEVER reads `oracle_hint` (the
+    answer key). Verdicts come from the bounded model semantics plus
+    fail-closed defeater detection only."""
     if placement not in PLACEMENTS:
         raise ValueError("unknown placement")
     game = game_of(scenario)
     principals = canonical_principals(scenario)
-    focal = (scenario.get("principals") or [{"principal_id": ""}])[0]["principal_id"]
+    focal = scenario.get("focal") or \
+        (scenario.get("principals") or [{"principal_id": ""}])[0]["principal_id"]
+    objective = scenario.get("objective") or {"kind": "phase", "phase": "done"}
+    question = scenario.get("question", "stit")
+    environment = scenario.get("environment", "none")
     path = primary_path(scenario)
-    hint = scenario.get("oracle_hint", {}).get("kind", "underdetermined")
     unknowns: list[str] = []
-    identity_issue = detect_identity_issue(scenario)
-    if identity_issue:
-        unknowns.append(identity_issue)
-    redaction_gap = detect_redaction_gap(scenario)
-    if redaction_gap:
-        unknowns.append(redaction_gap)
-    missing_authority = detect_missing_authority(scenario)
-    if missing_authority:
-        unknowns.append(missing_authority)
-    # Declared adversarial markers that force abstention/invalid paths.
+    for detector in (detect_identity_issue, detect_redaction_gap,
+                     detect_missing_authority, detect_unreconciled_unknown,
+                     detect_nonboolean_authority,
+                     detect_unresolvable_delegation,
+                     detect_effect_under_nonauthorised_standing):
+        finding = detector(scenario)
+        if finding:
+            unknowns.append(finding)
     markers = set()
     for transition in game["transitions"]:
         markers.update(k for k in transition.get("args", {})
-                       if k in ("absence_claim", "foreign_trace", "duplicate_paths",
-                                "legacy_gap", "same_display"))
+                       if k in ADVERSARIAL_MARKERS)
     if markers:
         unknowns.append("declared_adversarial_markers:" + ",".join(sorted(markers)))
-    stit = models.stit_holds(game, focal, {"kind": "phase", "phase": "done"}, path) \
+    stit = models.stit_holds(game, focal, objective, path) \
         if len(path) >= 2 else {"holds": False, "reason": "history_too_short"}
     atl = models.atl_holds(game, [focal],
-                           {"eventually": {"kind": "phase", "phase": "done"}})
-    disagreement = stit["holds"] != atl["holds"] and scenario["scenario_id"] in (
-        "UD-04", "AX-12")
-    if unknowns or disagreement or hint in ("underdetermined", "invalid"):
+                           {"eventually": objective},
+                           adversarial_env=environment == "adversarial")
+    stit_definitive = stit["reason"] not in ("UNDERDETERMINED",)
+    atl_underdetermined = atl.get("reason") == "UNDERDETERMINED"
+    disagreement = bool(stit_definitive and atl_underdetermined)
+    if disagreement:
+        unknowns.append("model_disagreement:stit_definitive_atl_underdetermined")
+    if unknowns:
         verdict = "UNDERDETERMINED"
         confidence = "UNDERDETERMINED"
-    elif hint in ("stit_holds", "atl_holds"):
-        verdict = "ATTRIBUTION"
-        confidence = "PROVEN"
+    elif question == "atl":
+        if atl.get("reason") == "UNDERDETERMINED":
+            verdict = "UNDERDETERMINED"
+            confidence = "UNDERDETERMINED"
+        elif atl["holds"] and atl.get("reason") == "strategy_exists":
+            verdict = "ATTRIBUTION"
+            confidence = "PROVEN"
+        else:
+            verdict = "NO_ATTRIBUTION"
+            confidence = "SUPPORTED"
     else:
-        verdict = "NO_ATTRIBUTION"
-        confidence = "SUPPORTED"
+        if stit["holds"]:
+            verdict = "ATTRIBUTION"
+            confidence = "PROVEN"
+        else:
+            verdict = "NO_ATTRIBUTION"
+            confidence = "SUPPORTED"
     observed = [f"trace_digest:{trace_digest(scenario)}",
-                f"focal:{focal}", f"path:{'>'.join(path)}"]
+                f"focal:{focal}", f"path:{'>'.join(path)}",
+                f"question:{question}"]
     derived = []
     if verdict == "ATTRIBUTION":
-        derived.append(f"stit:{stit['holds']}:atl:{atl['holds']}")
+        engine = "stit" if question == "stit" else "atl"
+        result = stit if question == "stit" else atl
+        derived.append(f"{engine}:{result['holds']}:{result['reason']}:actor:{focal}")
     counterfactuals = []
     for choice in models.available_actions(game, path[-2] if len(path) >= 2 else path[0],
                                            focal):
@@ -167,7 +275,7 @@ def analyze_scenario(scenario: dict, placement: str, seed: int) -> dict:
         "model_version": MODEL_VERSION,
         "input_trace_digest": trace_digest(scenario),
         "assumptions": ["bounded_model", "declared_choice_partition",
-                        "adversarial_env_unless_modeled"],
+                        "adversarial_env_unless_modeled", "no_authority"],
         "observed_facts": observed,
         "derived_claims": derived,
         "unknowns": unknowns,
@@ -265,13 +373,20 @@ def generate_observation(scenario: dict, placement: str, seed: int) -> dict:
 
 
 def oracle_for(scenario: dict) -> dict:
-    """Reference oracle entry (frozen at build; evaluator recomputes)."""
-    analysis = analyze_scenario(scenario, "A", 1)
-    return {"expected_verdict": analysis["verdict"],
-            "expected_confidence": analysis["confidence"],
-            "expected_stit": analysis["stit"],
-            "expected_atl": analysis["atl"],
-            "expected_unknowns": analysis["unknowns"],
+    """Legacy helper retained ONLY for probe compatibility: derives the
+    construction-intent oracle entry without running the analyzer."""
+    kind = scenario["oracle_hint"]["kind"]
+    verdict, confidence = {
+        "stit_holds": ("ATTRIBUTION", "PROVEN"),
+        "atl_holds": ("ATTRIBUTION", "PROVEN"),
+        "stit_absent": ("NO_ATTRIBUTION", "SUPPORTED"),
+        "atl_absent": ("NO_ATTRIBUTION", "SUPPORTED"),
+        "underdetermined": ("UNDERDETERMINED", "UNDERDETERMINED"),
+        "invalid": ("UNDERDETERMINED", "UNDERDETERMINED"),
+    }[kind]
+    return {"construction": kind,
+            "expected_verdict": verdict,
+            "expected_confidence": confidence,
             "expected_class": scenario["class"]}
 
 

@@ -67,10 +67,18 @@ def trace_events(transitions, request_scope="S_A", redacted=None):
 
 
 def case(sid, klass, desc, principals, states, initial, transitions,
-         trace, hint, tags):
+         trace, hint, tags, objective=None, focal=None, question=None,
+         environment=None):
+    """A scenario carries its own analysis question (objective/focal/
+    question/environment). The oracle answer itself lives ONLY in
+    oracle.json (construction intent); the producer never reads it."""
     return {"scenario_id": sid, "class": klass, "description": desc,
             "principals": principals, "states": states, "initial": initial,
             "transitions": transitions, "trace": trace,
+            "objective": objective or {"kind": "phase", "phase": "done"},
+            "focal": focal or principals[0]["principal_id"],
+            "question": question or "stit",
+            "environment": environment or "none",
             "oracle_hint": {"kind": hint}, "tags": list(tags)}
 
 
@@ -97,26 +105,30 @@ def SCENARIOS():
     add(case("CS-01", "complete_supported", "grant allows read effect",
              [principal("prin_A", "S_A")], states, "s0", transitions,
              trace_events(transitions), "stit_holds", ["grant"]))
-    states, transitions = grant_game(extra_transitions=[
-        trans("s0", "prin_A", "write", "s0", {"grant_id": "nope"},
-              "denied", None, "ev2", {})])
+    states, transitions = grant_game()
+    transitions.append(trans("s0", "prin_A", "write", "s0", {"grant_id": "nope"},
+              "denied", None, "ev2", {}))
     add(case("CS-02", "complete_supported",
-             "denial with desired but unauthorised alternative",
+             "denied desired alternative: no attribution for the unachieved write",
              [principal("prin_A", "S_A")], states, "s0", transitions,
-             trace_events(transitions), "stit_absent", ["denial"]))
+             trace_events(transitions), "stit_absent", ["denial"],
+             objective={"kind": "phase", "phase": "written"}))
     states = [state("s0", {"grants": grant("g-parent", "S_A", ["delegate"])}),
               state("s1", {}), state("s2", {}, "done")]
     transitions = [
         trans("s0", "prin_parent", "delegate", "s1", {"grant_id": "g-parent"},
               "effect", None, "ev1", {"child": "prin_child", "actions": ["read"]}),
         trans("s1", "prin_child", "read", "s2", {"grant_id": "g-child"},
-              "effect", None, "ev2", {"delegation": "g-parent"})]
+              "effect", None, "ev2", {"delegation": "g-parent"}),
+        trans("s1", "prin_child", "wait", "s1", None,
+              "effect", None, "ev0c", {})]
     states[1]["authority"] = {"grants": grant("g-child", "S_A", ["read"])}
     add(case("CS-03", "complete_supported", "delegated child action attributed",
              [principal("prin_parent", "S_A"), principal("prin_child", "S_A")],
              states, "s0", transitions, trace_events(transitions),
-             "stit_holds", ["delegation"]))
+             "stit_holds", ["delegation"], focal="prin_child"))
     states, transitions = grant_game(revoked=True)
+    transitions[0]["outcome"] = "denied"
     add(case("CS-04", "complete_supported", "revoke before decision denies",
              [principal("prin_A", "S_A")], states, "s0", transitions,
              trace_events(transitions), "stit_absent", ["denial", "revocation"]))
@@ -127,6 +139,7 @@ def SCENARIOS():
              [principal("prin_A", "S_A")], states, "s0", transitions,
              trace_events(transitions), "stit_holds", ["denial"]))
     states, transitions = grant_game(expired=True)
+    transitions[0]["outcome"] = "denied"
     add(case("CS-06", "complete_supported", "lease expiry denies",
              [principal("prin_A", "S_A")], states, "s0", transitions,
              trace_events(transitions), "stit_absent", ["denial", "revocation"]))
@@ -145,7 +158,8 @@ def SCENARIOS():
         trans("s0", "prin_A", "wait", "s0", None, "effect", None, "ev0", {})]
     add(case("CS-08", "complete_supported", "coalition ability vs adversarial env",
              [principal("prin_A", "S_A")], states, "s0", transitions,
-             trace_events(transitions), "atl_holds", ["coalition"]))
+             trace_events(transitions), "atl_holds", ["coalition"],
+             question="atl", environment="adversarial"))
     states = [state("s0", {"grants": grant("g1", "S_A", ["step"])}),
               state("s1", {"grants": grant("g2", "S_A", ["step"])}),
               state("s2", {}, "done")]
@@ -153,11 +167,13 @@ def SCENARIOS():
         trans("s0", "prin_parent", "step", "s1", {"grant_id": "g1"},
               "effect", None, "ev1", {"delegate": "prin_child"}),
         trans("s1", "prin_child", "step", "s2", {"grant_id": "g2"},
-              "effect", None, "ev2", {})]
+              "effect", None, "ev2", {}),
+        trans("s1", "prin_child", "wait", "s1", None,
+              "effect", None, "ev0c", {})]
     add(case("CS-09", "complete_supported", "multi-step delegated chain",
              [principal("prin_parent", "S_A"), principal("prin_child", "S_A")],
              states, "s0", transitions, trace_events(transitions),
-             "stit_holds", ["delegation", "grant"]))
+             "stit_holds", ["delegation", "grant"], focal="prin_child"))
     states = [state("s0", {"grants": grant("g", "S_A", ["derive"])}),
               state("s1", {}, "derived")]
     transitions = [
@@ -166,7 +182,8 @@ def SCENARIOS():
         trans("s0", "prin_A", "wait", "s0", None, "effect", None, "ev0", {})]
     add(case("CS-10", "complete_supported", "derive effect from two sources",
              [principal("prin_A", "S_A")], states, "s0", transitions,
-             trace_events(transitions), "stit_holds", ["grant"]))
+             trace_events(transitions), "stit_holds", ["grant"],
+             objective={"kind": "phase", "phase": "derived"}))
     transitions = [
         trans("s0", "prin_A", "merge", "s1", {"grant_id": "g"},
               "effect", None, "ev1", {"sources": ["a", "b"]}),
@@ -175,7 +192,8 @@ def SCENARIOS():
               state("s1", {}, "merged")]
     add(case("CS-11", "complete_supported", "merge lineage effect",
              [principal("prin_A", "S_A")], states, "s0", transitions,
-             trace_events(transitions), "stit_holds", ["grant"]))
+             trace_events(transitions), "stit_holds", ["grant"],
+             objective={"kind": "phase", "phase": "merged"}))
     states = [state("s0", {"grants": grant("g", "S_A", ["act"])}),
               state("s1", {}, "done")]
     transitions = [
@@ -206,10 +224,12 @@ def SCENARIOS():
              [principal("prin_A", "S_A")], states, "s0", transitions,
              trace_events(transitions), "stit_absent", ["denial"]))
     states, transitions = grant_game(revoked=True, wait=False)
+    transitions[0]["outcome"] = "denied"
     add(case("CN-03", "complete_no_responsibility", "revoked grant attempted",
              [principal("prin_A", "S_A")], states, "s0", transitions,
              trace_events(transitions), "stit_absent", ["revocation"]))
     states, transitions = grant_game(expired=True, wait=False)
+    transitions[0]["outcome"] = "denied"
     add(case("CN-04", "complete_no_responsibility", "expired approval attempted",
              [principal("prin_A", "S_A")], states, "s0", transitions,
              trace_events(transitions), "stit_absent", ["denial", "revocation"]))
@@ -242,7 +262,7 @@ def SCENARIOS():
              "duplicate retry is a single effect",
              [principal("prin_A", "S_A")], states, "s0", transitions,
              trace_events(transitions), "stit_holds", ["grant"]))
-    states = [state("s0", {"grants": grant("g", "S_A", ["read"])}),
+    states = [state("s0", {"grants": grant("g", "S_A", ["read", "override"])}),
               state("s0d", {}, "denied")]
     transitions = [
         trans("s0", "prin_sup", "override", "s0d", {"grant_id": "g"},
@@ -310,7 +330,7 @@ def SCENARIOS():
     add(case("UD-04", "underdetermined", "model disagreement abstains",
              [principal("prin_A", "S_A")], states, "s0", transitions,
              trace_events(transitions), "underdetermined",
-             ["incomplete", "delegation"]))
+             ["incomplete", "delegation"], environment="adversarial"))
     states, transitions = grant_game()
     transitions[0]["outcome"] = "unknown"
     add(case("UD-05", "underdetermined", "unknown after revoke without reconcile",
@@ -366,7 +386,8 @@ def SCENARIOS():
     add(case("UD-10", "underdetermined", "coalition with unknown environment",
              [principal("prin_A", "S_A")], states, "s0", transitions,
              trace_events(transitions), "underdetermined",
-             ["coalition", "unknown", "incomplete"]))
+             ["coalition", "unknown", "incomplete"],
+             question="atl", environment="adversarial"))
     states = [state("s0", {"grants": grant("g", "S_A", ["read"])}),
               state("s1", {}, "done")]
     transitions = [
@@ -391,18 +412,19 @@ def SCENARIOS():
     transitions[0]["authority_required"] = {"grant_id": "missing"}
     transitions[0]["outcome"] = "denied"
     add(case("AX-01", "adversarial_or_invalid",
-             "annotation suggesting allow after DENY changes nothing",
+             "annotation suggesting allow after DENY changes nothing (no attribution)",
              [principal("prin_A", "S_A")], states, "s0", transitions,
-             trace_events(transitions), "invalid",
+             trace_events(transitions), "stit_absent",
              ["denial", "revocation"]))
     states = [state("s0", {"grants": grant("g-child", "S_A", ["read"])}),
               state("s1", {}, "done")]
     transitions = [trans("s0", "prin_child", "read", "s1", {"grant_id": "g-child"},
-                         "effect", None, "ev1", {})]
+                         "effect", None, "ev1", {"delegation": "missing-parent"})]
     add(case("AX-02", "adversarial_or_invalid", "dropped delegator edge abstains",
              [principal("prin_child", "S_A")], states, "s0", transitions,
              trace_events(transitions), "underdetermined", ["delegation"]))
     states, transitions = grant_game()
+    transitions[0]["args"] = {"revoke_removed": "grant1"}
     add(case("AX-03", "adversarial_or_invalid", "revoke removed is detected",
              [principal("prin_A", "S_A")], states, "s0", transitions,
              trace_events(transitions), "invalid", ["revocation"]))
@@ -442,6 +464,7 @@ def SCENARIOS():
              [principal("prin_A", "S_A")], states, "s0", transitions,
              trace_events(transitions), "invalid", ["denial"]))
     states, transitions = grant_game()
+    transitions[0]["args"] = {"mutated": "ev1"}
     add(case("AX-09", "adversarial_or_invalid", "post-hoc audit mutation detected",
              [principal("prin_A", "S_A")], states, "s0", transitions,
              trace_events(transitions), "invalid", ["grant"]))
@@ -458,12 +481,13 @@ def SCENARIOS():
     add(case("AX-11", "adversarial_or_invalid",
              "coalition ability without environment moves is incomplete",
              [principal("prin_A", "S_A")], states, "s0", transitions,
-             trace_events(transitions), "invalid", ["coalition"]))
+             trace_events(transitions), "invalid", ["coalition"],
+             question="atl", environment="adversarial"))
     states, transitions = grant_game()
     add(case("AX-12", "adversarial_or_invalid", "hidden model disagreement fails",
              [principal("prin_A", "S_A")], states, "s0", transitions,
              trace_events(transitions), "underdetermined",
-             ["delegation", "incomplete"]))
+             ["delegation", "incomplete"], environment="adversarial"))
     return scenarios
 
 
@@ -490,10 +514,19 @@ def validate_case(case: dict, known_ids: set | None = None) -> dict:
     return case
 
 
-def build(reference=None):
-    """Build corpus + oracle skeleton; reference fills semantic digests."""
-    sys.path.insert(0, str(HERE))
-    import runner as runner_mod
+ORACLE_CONSTRUCTION_MAP = {
+    "stit_holds": ("ATTRIBUTION", "PROVEN"),
+    "atl_holds": ("ATTRIBUTION", "PROVEN"),
+    "stit_absent": ("NO_ATTRIBUTION", "SUPPORTED"),
+    "atl_absent": ("NO_ATTRIBUTION", "SUPPORTED"),
+    "underdetermined": ("UNDERDETERMINED", "UNDERDETERMINED"),
+    "invalid": ("UNDERDETERMINED", "UNDERDETERMINED"),
+}
+
+
+def build():
+    """Build corpus + oracle from construction intent ONLY (non-circular:
+    the oracle never runs the analyzer; the analyzer never reads hints)."""
     cases = []
     oracle = {}
     seen: set[str] = set()
@@ -508,7 +541,14 @@ def build(reference=None):
         entry = dict(scenario)
         entry["semantic_digest"] = digest
         cases.append(entry)
-        oracle[scenario["scenario_id"]] = runner_mod.oracle_for(scenario)
+        kind = scenario["oracle_hint"]["kind"]
+        verdict, confidence = ORACLE_CONSTRUCTION_MAP[kind]
+        oracle[scenario["scenario_id"]] = {
+            "construction": kind,
+            "expected_class": scenario["class"],
+            "expected_verdict": verdict,
+            "expected_confidence": confidence,
+        }
     ids = [c["scenario_id"] for c in cases]
     assert len(ids) == len(set(ids)) == 48, "scenario ids must be 48 unique"
     assert len({c["semantic_digest"] for c in cases}) == 48
@@ -526,9 +566,9 @@ def build(reference=None):
                          ("incomplete", 4), ("identity", 4)):
         assert tags.get(tag, 0) >= minimum, (tag, tags.get(tag, 0))
     corpus = {"schema": "agentos.s1-017.corpus/v1", "ticket": "S1-017",
-              "phase": "A", "scenario_count": 48, "cases": cases}
+              "phase": "B", "scenario_count": 48, "cases": cases}
     oracle_doc = {"schema": "agentos.s1-017.oracle/v1", "ticket": "S1-017",
-                  "phase": "A", "entries": oracle}
+                  "phase": "B", "entries": oracle}
     return corpus, oracle_doc
 
 
@@ -543,12 +583,14 @@ def main() -> int:
     manifest = {
         "schema": "agentos.s1-017.corpus-manifest/v1",
         "ticket": "S1-017",
-        "phase": "A",
+        "phase": "B",
         "corpus_sha256": sha((HERE / "corpus.json").read_bytes()),
         "oracle_sha256": sha((HERE / "oracle.json").read_bytes()),
         "generator_sha256": sha((HERE / "build_corpus.py").read_bytes()),
         "scenario_count": 48,
         "deterministic": True,
+        "oracle_basis": "construction-intent mapping only; the oracle never "
+                        "runs the analyzer and the analyzer never reads hints",
     }
     (HERE / "corpus-manifest.json").write_text(
         json.dumps(manifest, indent=2) + "\n", encoding="utf-8", newline="\n")

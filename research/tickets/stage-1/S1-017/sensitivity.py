@@ -1,17 +1,28 @@
-"""S1-017 sensitivity math (pure functions, Phase A).
+"""S1-017 sensitivity math (pure, deterministic).
 
 Weight sensitivity over decision dimensions: equal base weights, +-50% per
-dimension, leave-one-dimension-out, and the deterministic 0.5/1.0/1.5 grid
-(>= 200 vectors). Safety gates are never weighted. Phase B runs the full
-analysis over measured per-placement aggregates.
+dimension, leave-one-dimension-out and the deterministic 0.5/1.0/1.5 grid
+(>= 200 vectors). Safety gates are never weighted.
+
+Determinism contract (S1-016 lesson): every dimension is derived from
+deterministic model counts and measured artifact BYTE SIZES only — never
+from wall-clock latencies, which are reported separately in metrics.json
+and never enter the decision inputs.
 """
 from __future__ import annotations
 
+import argparse
 import itertools
+import json
+from pathlib import Path
 
-DIMS = ("utility", "latency_parsimony", "write_parsimony",
+DIMS = ("utility", "steps_parsimony", "write_parsimony",
         "complexity_parsimony", "coverage_parsimony")
 PLACEMENTS = ("A", "B", "C")
+
+# Static complexity proxies from the frozen placement specifications:
+# distinct integration entry points each placement adds to the runtime path.
+STATIC_COMPLEXITY = {"A": 1, "B": 2, "C": 3}
 
 
 def score(scores: dict, weights: dict) -> dict:
@@ -58,3 +69,82 @@ def analyze(scores: dict) -> dict:
     return {"vector_count": len(results), "base_winner": base_winner,
             "flips": len(flips), "flip_examples": flips[:12],
             "winners_distribution": distribution, "stable": not flips}
+
+
+def measured_scores(run_dir: Path, ticket: Path) -> dict:
+    """Deterministic per-placement aggregates from a frozen run.
+
+    - write bytes: mean artifact bytes per observation (A stores nothing at
+      runtime, B stores a recomputable index at export, C stores a runtime
+      annotation record);
+    - runtime steps: deterministic model-enumeration step count
+      (states+transitions per scenario); placements A/B execute it offline/
+      at export (0 runtime steps), C executes it in the request path;
+    - utility/coverage: identical observable contract, verified by the
+      evaluator's 100% oracle-agreement gate for every placement.
+    """
+    doc = json.loads((run_dir / "observations.json").read_text("utf-8"))
+    corpus = json.loads((ticket / "corpus.json").read_text("utf-8"))
+    model_steps = sum(len(c["states"]) + len(c["transitions"])
+                      for c in corpus["cases"])
+    bytes_by: dict[str, list[int]] = {p: [] for p in PLACEMENTS}
+    for observation in doc["observations"]:
+        core = observation["core"]
+        bytes_by[core["placement"]].append(core["artifact"]["bytes"])
+    mean_bytes = {p: (sum(v) / len(v)) if v else 0.0 for p, v in bytes_by.items()}
+    max_write = max(mean_bytes.values()) or 1.0
+    max_complexity = max(STATIC_COMPLEXITY.values())
+    scores = {
+        "utility": {p: 1.0 for p in PLACEMENTS},
+        "steps_parsimony": {"A": 1.0, "B": 1.0, "C": 0.0},
+        "write_parsimony": {p: 1.0 - (mean_bytes[p] / max_write)
+                            for p in PLACEMENTS},
+        "complexity_parsimony": {p: 1.0 - STATIC_COMPLEXITY[p] / max_complexity
+                                 for p in PLACEMENTS},
+        "coverage_parsimony": {p: 1.0 for p in PLACEMENTS},
+    }
+    aggregates = {
+        "mean_artifact_bytes": mean_bytes,
+        "deterministic_model_steps": model_steps,
+        "static_complexity_entry_points": dict(STATIC_COMPLEXITY),
+        "note": ("wall-clock latencies are reported in metrics.json and never "
+                 "enter sensitivity dimensions; all inputs here are "
+                 "deterministic model counts and artifact byte sizes"),
+    }
+    return scores, aggregates
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    for key in ("run", "ticket", "out"):
+        parser.add_argument("--" + key, required=True)
+    args = parser.parse_args()
+    run_dir = Path(args.run).resolve()
+    ticket = Path(args.ticket).resolve()
+    scores, aggregates = measured_scores(run_dir, ticket)
+    analysis = analyze(scores)
+    doc = {"schema": "agentos.s1-017.sensitivity/v1",
+           "synthetic": True,
+           "dimensions": list(DIMS),
+           "per_placement_aggregates": aggregates,
+           "normalized_scores": scores,
+           "base_winner": analysis["base_winner"],
+           "mapped_decision": analysis["base_winner"],
+           "mapping_note": "base argmax over deterministic aggregates",
+           "vector_count": analysis["vector_count"],
+           "winners_distribution": analysis["winners_distribution"],
+           "flips": analysis["flips"],
+           "flip_examples": analysis["flip_examples"],
+           "stable": analysis["stable"],
+           "cap_note": ("any winner flip caps the verdict at INCONCLUSIVE; "
+                        "safety gates are unweighted and enforced separately")}
+    Path(args.out).write_text(json.dumps(doc, indent=2) + "\n",
+                              encoding="utf-8", newline="\n")
+    print(json.dumps({"vector_count": doc["vector_count"],
+                      "base_winner": doc["base_winner"],
+                      "flips": doc["flips"]}))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

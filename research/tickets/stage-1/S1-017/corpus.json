@@ -1,7 +1,7 @@
 {
   "schema": "agentos.s1-017.corpus/v1",
   "ticket": "S1-017",
-  "phase": "A",
+  "phase": "B",
   "scenario_count": 48,
   "cases": [
     {
@@ -100,18 +100,25 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "stit_holds"
       },
       "tags": [
         "grant"
       ],
-      "semantic_digest": "de4ae9694c2925438f26872382b6348f0ca4403fd4ab7091a29ca57d55a71dd5"
+      "semantic_digest": "e7d03bdbc7c64b7b10cef43861a59cfff5a7cb2b536d51eb5fc1278867736a9c"
     },
     {
       "scenario_id": "CS-02",
       "class": "complete_supported",
-      "description": "denial with desired but unauthorised alternative",
+      "description": "denied desired alternative: no attribution for the unachieved write",
       "principals": [
         {
           "principal_id": "prin_A",
@@ -225,13 +232,20 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "written"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "stit_absent"
       },
       "tags": [
         "denial"
       ],
-      "semantic_digest": "3c214010b1cef5496a0ab1df96776f25082b376cf91d94832ab9eae96da0a5cb"
+      "semantic_digest": "51bc87063299de67893474b3b02755f9602e79c857d721c29ff39af4b734f4b8"
     },
     {
       "scenario_id": "CS-03",
@@ -336,6 +350,17 @@
           "outcome": "effect",
           "environment_move": null,
           "audit_ref": "ev2"
+        },
+        {
+          "from": "s1",
+          "actor": "prin_child",
+          "action": "wait",
+          "args": {},
+          "to": "s1",
+          "authority_required": null,
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev0c"
         }
       ],
       "trace": {
@@ -355,6 +380,14 @@
             "action": "read",
             "decision": "ALLOW",
             "ref": "ev2"
+          },
+          {
+            "seq": 2,
+            "kind": "audit",
+            "actor": "prin_child",
+            "action": "wait",
+            "decision": "ALLOW",
+            "ref": "ev0c"
           }
         ],
         "request_scope": {
@@ -364,13 +397,20 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_child",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "stit_holds"
       },
       "tags": [
         "delegation"
       ],
-      "semantic_digest": "eadf8e378b3371ac6109fe3da395c81781807544a0fe5c118fa3ec829634b13b"
+      "semantic_digest": "7c87ddf81aa22d7dd4c44643d6fba63438540b62bf3b3a9ee585da5c75116c4d"
     },
     {
       "scenario_id": "CS-04",
@@ -426,7 +466,7 @@
           "authority_required": {
             "grant_id": "grant1"
           },
-          "outcome": "effect",
+          "outcome": "denied",
           "environment_move": null,
           "audit_ref": "ev1"
         },
@@ -449,7 +489,7 @@
             "kind": "audit",
             "actor": "prin_A",
             "action": "read",
-            "decision": "ALLOW",
+            "decision": "DENY",
             "ref": "ev1"
           },
           {
@@ -468,6 +508,13 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "stit_absent"
       },
@@ -475,7 +522,7 @@
         "denial",
         "revocation"
       ],
-      "semantic_digest": "1389e43ddae3500668ec90602f04b468b0b698612188d2582574515958aae090"
+      "semantic_digest": "bf4f0b54f5c9a4cd9097b5655cac1410e12771f140dfc9fd08fa08b0259640cc"
     },
     {
       "scenario_id": "CS-05",
@@ -596,13 +643,20 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "stit_holds"
       },
       "tags": [
         "denial"
       ],
-      "semantic_digest": "752589af7b4e165fa0ccd5cb423244930e4c683d64f1ede2619c912dafe2eafe"
+      "semantic_digest": "87663170970f7f3c0520969d319476c6ad23cd7beeda686a5cdad6bf7dcb67df"
     },
     {
       "scenario_id": "CS-06",
@@ -658,7 +712,7 @@
           "authority_required": {
             "grant_id": "grant1"
           },
-          "outcome": "effect",
+          "outcome": "denied",
           "environment_move": null,
           "audit_ref": "ev1"
         },
@@ -681,7 +735,7 @@
             "kind": "audit",
             "actor": "prin_A",
             "action": "read",
-            "decision": "ALLOW",
+            "decision": "DENY",
             "ref": "ev1"
           },
           {
@@ -700,6 +754,13 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "stit_absent"
       },
@@ -707,7 +768,7 @@
         "denial",
         "revocation"
       ],
-      "semantic_digest": "6b50b91497b5520c6ea906ea54d06dd887c0382340f9e55085577ee4f3bc43b5"
+      "semantic_digest": "a517884257b526a51cf593994ed4f4c57fe88c8116f56ac7383ada18b84da21e"
     },
     {
       "scenario_id": "CS-07",
@@ -806,13 +867,20 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "stit_holds"
       },
       "tags": [
         "unknown"
       ],
-      "semantic_digest": "9f8e6988a24696423482d3f6c5953803a6c5955dec2e5b0266e7938611ea753f"
+      "semantic_digest": "2ce8bf5d2f6a903ca45c117a864406bffbf8c063d7b21a1748ffebf4fbb1f112"
     },
     {
       "scenario_id": "CS-08",
@@ -927,13 +995,20 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "atl",
+      "environment": "adversarial",
       "oracle_hint": {
         "kind": "atl_holds"
       },
       "tags": [
         "coalition"
       ],
-      "semantic_digest": "3f43b358c3690129491a12f36acbb943cf576d4f480555e8c90b3b31bdf64cd5"
+      "semantic_digest": "61aed0ec889dcba233a52d2623cec1708d78524e651ffc27213a513f4ece978b"
     },
     {
       "scenario_id": "CS-09",
@@ -1033,6 +1108,17 @@
           "outcome": "effect",
           "environment_move": null,
           "audit_ref": "ev2"
+        },
+        {
+          "from": "s1",
+          "actor": "prin_child",
+          "action": "wait",
+          "args": {},
+          "to": "s1",
+          "authority_required": null,
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev0c"
         }
       ],
       "trace": {
@@ -1052,6 +1138,14 @@
             "action": "step",
             "decision": "ALLOW",
             "ref": "ev2"
+          },
+          {
+            "seq": 2,
+            "kind": "audit",
+            "actor": "prin_child",
+            "action": "wait",
+            "decision": "ALLOW",
+            "ref": "ev0c"
           }
         ],
         "request_scope": {
@@ -1061,6 +1155,13 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_child",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "stit_holds"
       },
@@ -1068,7 +1169,7 @@
         "delegation",
         "grant"
       ],
-      "semantic_digest": "6c0864c94616df6a2af88643ff312a52627188e7df87db8d63906d9bb51f7f41"
+      "semantic_digest": "2bfed0dc0c7f8052620e23fda6eb820165194af8dbeb960f4edeaadbf62e143a"
     },
     {
       "scenario_id": "CS-10",
@@ -1169,13 +1270,20 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "derived"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "stit_holds"
       },
       "tags": [
         "grant"
       ],
-      "semantic_digest": "7211170e7dcf24b66cedc343ce441d68c7e220e443dda32811e4321fbb3c7310"
+      "semantic_digest": "f80ff277db57ce637b539f71825317f32d2a68e0e467bb3358176cc1500e2759"
     },
     {
       "scenario_id": "CS-11",
@@ -1276,13 +1384,20 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "merged"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "stit_holds"
       },
       "tags": [
         "grant"
       ],
-      "semantic_digest": "cfbd0626035485e027e51207fb41cd94f2a7852c6f0079682c204315e8659102"
+      "semantic_digest": "d8621c8adfa66239d937421d7bd1cdc90773e679603b2632c18702815bfa9160"
     },
     {
       "scenario_id": "CS-12",
@@ -1390,6 +1505,13 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_svc",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "stit_holds"
       },
@@ -1397,7 +1519,7 @@
         "delegation",
         "identity"
       ],
-      "semantic_digest": "a021649faa83c447c5b9605216fb7339e5de27446089f19d20c72ed9c9d712e2"
+      "semantic_digest": "ee20a615d7f6c459574c28c195996fafb03fa708a88845e639868254b6bbac1c"
     },
     {
       "scenario_id": "CN-01",
@@ -1474,13 +1596,20 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "stit_absent"
       },
       "tags": [
         "grant"
       ],
-      "semantic_digest": "d8665102dd33bf6cb37f712195cf2e5f76f9c60405d1b6f764f5113d00fb38e6"
+      "semantic_digest": "61909d823e2128e51f4fc20e2eea4aab8d8eee1acf7a5d42ec60c628cc6efff3"
     },
     {
       "scenario_id": "CN-02",
@@ -1565,13 +1694,20 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "stit_absent"
       },
       "tags": [
         "denial"
       ],
-      "semantic_digest": "f5ae6f38d5f59a955038863816bdd23678fcafc33d07245f686b365d2317a6f0"
+      "semantic_digest": "c69a4e37b3149f79ac501924bf63cc0140fe192ff789bd5a282ad944d83dce4d"
     },
     {
       "scenario_id": "CN-03",
@@ -1627,7 +1763,7 @@
           "authority_required": {
             "grant_id": "grant1"
           },
-          "outcome": "effect",
+          "outcome": "denied",
           "environment_move": null,
           "audit_ref": "ev1"
         }
@@ -1639,7 +1775,7 @@
             "kind": "audit",
             "actor": "prin_A",
             "action": "read",
-            "decision": "ALLOW",
+            "decision": "DENY",
             "ref": "ev1"
           }
         ],
@@ -1650,13 +1786,20 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "stit_absent"
       },
       "tags": [
         "revocation"
       ],
-      "semantic_digest": "5fe28a1dacf25a41533ecdadf8b822806b01dc27b939e644e7c58071237b7a59"
+      "semantic_digest": "4963841325d64cf19f7ad27b0a30faed851f2a5e0d14ded6746cd5c199825ca4"
     },
     {
       "scenario_id": "CN-04",
@@ -1712,7 +1855,7 @@
           "authority_required": {
             "grant_id": "grant1"
           },
-          "outcome": "effect",
+          "outcome": "denied",
           "environment_move": null,
           "audit_ref": "ev1"
         }
@@ -1724,7 +1867,7 @@
             "kind": "audit",
             "actor": "prin_A",
             "action": "read",
-            "decision": "ALLOW",
+            "decision": "DENY",
             "ref": "ev1"
           }
         ],
@@ -1735,6 +1878,13 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "stit_absent"
       },
@@ -1742,7 +1892,7 @@
         "denial",
         "revocation"
       ],
-      "semantic_digest": "8aeb6053c4a91c821c5ef090559d8ea9f61a3f4f796789a4e96ffb417e93c676"
+      "semantic_digest": "b0575e1ff0cab38661bb2f31117a798b102ffea71f6ef4d1c4f1ca0d349a19e0"
     },
     {
       "scenario_id": "CN-05",
@@ -1841,13 +1991,20 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "stit_absent"
       },
       "tags": [
         "unknown"
       ],
-      "semantic_digest": "118ea5d91e27739043347092e1de58c9d8ae9206db568c304b5147a2b1a1ab27"
+      "semantic_digest": "3a12bd1f3e7d24579aa694e46557763ee113630aac7c737a093690edfcef968b"
     },
     {
       "scenario_id": "CN-06",
@@ -1962,13 +2119,20 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "stit_absent"
       },
       "tags": [
         "coalition"
       ],
-      "semantic_digest": "aae47965395b223a5d0bac101bcbc9bd6bbab74cb9b93ad01740447f867a2f5a"
+      "semantic_digest": "715e2cc995e78b0c4cffbc226486ebc81a55ecb44a463480212a0e6f8ab2e275"
     },
     {
       "scenario_id": "CN-07",
@@ -2066,13 +2230,20 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "stit_absent"
       },
       "tags": [
         "denial"
       ],
-      "semantic_digest": "b097f9bc0318fa8e53d0b3fd4b13966a7c82e5a9e9b8f6c39410577b72638056"
+      "semantic_digest": "f4ed348e50c370f0f526be9b0d151950c00e9f3bdb962fa42596357b888ffe68"
     },
     {
       "scenario_id": "CN-08",
@@ -2170,13 +2341,20 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "stit_holds"
       },
       "tags": [
         "grant"
       ],
-      "semantic_digest": "c0325f5c513e13a258f1e451a9a01f29adebccc25afeedd3fa753e9fd1523a3a"
+      "semantic_digest": "50f3f548380e442a6cfdd4f88e9580d597bee3be9a5997a6686bed1ab16c6790"
     },
     {
       "scenario_id": "CN-09",
@@ -2212,7 +2390,8 @@
                   "goal_id": "g-1"
                 },
                 "actions": [
-                  "read"
+                  "read",
+                  "override"
                 ],
                 "revoked": false,
                 "expired": false
@@ -2284,6 +2463,13 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_sup",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "stit_absent"
       },
@@ -2291,7 +2477,7 @@
         "denial",
         "delegation"
       ],
-      "semantic_digest": "c11943cc5ff755f1309c1f1a29413fe5e83e1b2f8fca50e9e40aef2adb1732f4"
+      "semantic_digest": "2ad80c5fe96aff8d163876ce2b32a997e29a9c5ffc42678daaf26c672a2f722f"
     },
     {
       "scenario_id": "CN-10",
@@ -2370,13 +2556,20 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "stit_absent"
       },
       "tags": [
         "denial"
       ],
-      "semantic_digest": "9f4cdcb080c0ee0fc3ca4bc39c3faf07c547d05288f4e9eb2650c167b3216664"
+      "semantic_digest": "879ecbb2085d57ef2b7e5de7b827af4e85968f8e766e0b85e75024b905e4498b"
     },
     {
       "scenario_id": "CN-11",
@@ -2475,13 +2668,20 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "stit_absent"
       },
       "tags": [
         "grant"
       ],
-      "semantic_digest": "83c00bc501d42f9a646a934e477abd9ef395129dc9e0a0028004b978cfd2c383"
+      "semantic_digest": "1cc1d861b7a330a0404a5a1a45a102e499a0e322f32dc621ed74192a8f44be41"
     },
     {
       "scenario_id": "CN-12",
@@ -2577,13 +2777,20 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "atl_absent"
       },
       "tags": [
         "coalition"
       ],
-      "semantic_digest": "e6e16823fbb39e9518ad59d977ee2aff9fa587903f6ed67f45555261eb8acec9"
+      "semantic_digest": "484b579f073ecc197db1a77c6ef1ea33a2cf81fbdc33ea3e8d4c22ce547bdbba"
     },
     {
       "scenario_id": "UD-01",
@@ -2645,13 +2852,20 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "underdetermined"
       },
       "tags": [
         "incomplete"
       ],
-      "semantic_digest": "f370a11a27d614b8be4083d38d04343372d92f8e147c92beedb81157192d30d0"
+      "semantic_digest": "ef50cff991bff925e227887c7cae8ddb1016b9252581115b708497eb70368ebe"
     },
     {
       "scenario_id": "UD-02",
@@ -2730,13 +2944,20 @@
           "actor"
         ]
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "underdetermined"
       },
       "tags": [
         "incomplete"
       ],
-      "semantic_digest": "3abe3e021f477f19880770de264cfa2622d67326b07ec3f089f7571577a1d165"
+      "semantic_digest": "f9468fa076497973d4a9b1cd126a3691b2f5101c85f07bcf826d1d8e1c9200d7"
     },
     {
       "scenario_id": "UD-03",
@@ -2836,13 +3057,20 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "underdetermined"
       },
       "tags": [
         "incomplete"
       ],
-      "semantic_digest": "084cf4fc41553424efe12d76459a28a0ad99dd951cd936dbd1de5af4faf4f895"
+      "semantic_digest": "764da185faf9fe412bb8638fa5564a2b3b937f0e66059055b0b030c52a047c9e"
     },
     {
       "scenario_id": "UD-04",
@@ -2940,6 +3168,13 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "adversarial",
       "oracle_hint": {
         "kind": "underdetermined"
       },
@@ -2947,7 +3182,7 @@
         "incomplete",
         "delegation"
       ],
-      "semantic_digest": "bd91e251a762c014fc645f25a19518f59e338f0e5a42f6d85c0adcf5eb539590"
+      "semantic_digest": "df597a459a577a7b1fe8aa22221beb1c716bdf88949d1b65a316e01493720310"
     },
     {
       "scenario_id": "UD-05",
@@ -3045,6 +3280,13 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "underdetermined"
       },
@@ -3053,7 +3295,7 @@
         "revocation",
         "incomplete"
       ],
-      "semantic_digest": "cf9d7926759876b215dfcfaf233028ec0afbba1b4ccfdc479275a1c941a1887f"
+      "semantic_digest": "db121f8c4bc3c327288ee31522f9553e7b874a8ea01d3793b4b82ad56924c38b"
     },
     {
       "scenario_id": "UD-06",
@@ -3130,6 +3372,13 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "underdetermined"
       },
@@ -3137,7 +3386,7 @@
         "revocation",
         "incomplete"
       ],
-      "semantic_digest": "e88eaced3dc553c3e7c9a603094bbee040bbd094addaeeb19662d4279eb9fa9d"
+      "semantic_digest": "cd49cd8d504e25f1a9e0d2a12c943b7422c08c2c4f639c10f89b826538d8a6d4"
     },
     {
       "scenario_id": "UD-07",
@@ -3216,6 +3465,13 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_child",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "underdetermined"
       },
@@ -3223,7 +3479,7 @@
         "delegation",
         "incomplete"
       ],
-      "semantic_digest": "368e666a960d0d05b61dff7602861486ceb06a630849b2438bc31f60ad90d695"
+      "semantic_digest": "6f820cde4572368ea0fa2276fa6b37be8a08970963a24b5c489e4670daa5879f"
     },
     {
       "scenario_id": "UD-08",
@@ -3333,6 +3589,13 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "underdetermined"
       },
@@ -3340,7 +3603,7 @@
         "incomplete",
         "identity"
       ],
-      "semantic_digest": "56c96b1d73550e95ec200dd897f59d48260edcbd8a8580c37dc9a44f58e27c88"
+      "semantic_digest": "17c252b4157f419e290705e2c68923fa5d1e05781052ec9ae2016e9b49c13255"
     },
     {
       "scenario_id": "UD-09",
@@ -3419,13 +3682,20 @@
           "content"
         ]
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "underdetermined"
       },
       "tags": [
         "incomplete"
       ],
-      "semantic_digest": "3ff96820181f23627b0ad17569ce596b17dcdab6a213a0e3f680990fc4b41629"
+      "semantic_digest": "9519b422da8effe6f04e0d00aea2a0153f3b0f1e943b5f7063fc5f1abb3cb936"
     },
     {
       "scenario_id": "UD-10",
@@ -3521,6 +3791,13 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "atl",
+      "environment": "adversarial",
       "oracle_hint": {
         "kind": "underdetermined"
       },
@@ -3529,7 +3806,7 @@
         "unknown",
         "incomplete"
       ],
-      "semantic_digest": "9d242bb155aec3100545ef9cb102a7755e688392d15111508dc463a62f5c77bc"
+      "semantic_digest": "069a67f527913d12a8b5509c3f87cde9fdec96d18429c0a5d37f5acaf02cdebe"
     },
     {
       "scenario_id": "UD-11",
@@ -3628,6 +3905,13 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "underdetermined"
       },
@@ -3635,7 +3919,7 @@
         "identity",
         "incomplete"
       ],
-      "semantic_digest": "41eae7096770bf4394774bc90e4f6f3194e8aaf0b61d2730f4e5c339b548a0cc"
+      "semantic_digest": "e654b76e3613f6c30a002465444ab07ea1a4ac0dca1e8c92a3575a078ec2d6a1"
     },
     {
       "scenario_id": "UD-12",
@@ -3714,18 +3998,25 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "underdetermined"
       },
       "tags": [
         "incomplete"
       ],
-      "semantic_digest": "4b0428fb6ab6b0063718d2413486e137af0ab42f198a72d29ffd8a2366b82ed3"
+      "semantic_digest": "334a678fb7023737497296adb11848bebd4ddf1e84714c7048fbb5c73fbe5449"
     },
     {
       "scenario_id": "AX-01",
       "class": "adversarial_or_invalid",
-      "description": "annotation suggesting allow after DENY changes nothing",
+      "description": "annotation suggesting allow after DENY changes nothing (no attribution)",
       "principals": [
         {
           "principal_id": "prin_A",
@@ -3818,14 +4109,21 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
-        "kind": "invalid"
+        "kind": "stit_absent"
       },
       "tags": [
         "denial",
         "revocation"
       ],
-      "semantic_digest": "deaa021bd4dfe26c3a4fde24daf7e7778c58d925d520d64942c14ee708193b27"
+      "semantic_digest": "670b883e08c0a92563759ebe3440fc49082e792dfd72bb2f3fb2a1b45d46ce4c"
     },
     {
       "scenario_id": "AX-02",
@@ -3874,7 +4172,9 @@
           "from": "s0",
           "actor": "prin_child",
           "action": "read",
-          "args": {},
+          "args": {
+            "delegation": "missing-parent"
+          },
           "to": "s1",
           "authority_required": {
             "grant_id": "g-child"
@@ -3902,13 +4202,20 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_child",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "underdetermined"
       },
       "tags": [
         "delegation"
       ],
-      "semantic_digest": "458b215db3208913ffd646e433b0acde51b8024ee3777548a4d15d29c9876f09"
+      "semantic_digest": "a709561a06a993088e1b397de05f53fc05c291ed77738dc71adb0ed710166f58"
     },
     {
       "scenario_id": "AX-03",
@@ -3958,7 +4265,7 @@
           "actor": "prin_A",
           "action": "read",
           "args": {
-            "path": "doc"
+            "revoke_removed": "grant1"
           },
           "to": "s1",
           "authority_required": {
@@ -4006,13 +4313,20 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "invalid"
       },
       "tags": [
         "revocation"
       ],
-      "semantic_digest": "aa0cf364ab07b908b4e9a339fae43e5c5446ce08c9b697d67e6ab9585b077f34"
+      "semantic_digest": "b7abc3b65922e1fdb75777faba2b200632d8471c272b8d89f391bc6e816d4f94"
     },
     {
       "scenario_id": "AX-04",
@@ -4074,13 +4388,20 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "invalid"
       },
       "tags": [
         "denial"
       ],
-      "semantic_digest": "739ff57362ac9ec0b4b51e0b5a8463701efb01a23490831855e8ea16d3aa91d5"
+      "semantic_digest": "9d8308804b3ade6953ec1ccf5ac2620f8859ff33cb2dd2e50ed197065157f457"
     },
     {
       "scenario_id": "AX-05",
@@ -4142,13 +4463,20 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "invalid"
       },
       "tags": [
         "incomplete"
       ],
-      "semantic_digest": "62dbc5a06fac017408e971f0aedc455ed926e40d92a32540d4a883c4e18ae26e"
+      "semantic_digest": "7d1f07fe4f4527df6800889c49bd0de39c3c439b3363ec94b2a5dd517705a986"
     },
     {
       "scenario_id": "AX-06",
@@ -4235,13 +4563,20 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "invalid"
       },
       "tags": [
         "identity"
       ],
-      "semantic_digest": "b8a551bf4b941ffe97baa44ec52baaeb57f4d5473a1224a7306a5433907f39e5"
+      "semantic_digest": "fdf25c0ca8c947a0b18e1cfc7286aebc82b2ac7d7065d070474d05c96b203e56"
     },
     {
       "scenario_id": "AX-07",
@@ -4320,13 +4655,20 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "invalid"
       },
       "tags": [
         "incomplete"
       ],
-      "semantic_digest": "e3ca8e46967bff1605ff5d6083c5c0050c013e76b18d6bd494bec051c2925f42"
+      "semantic_digest": "9cebe5066cda3c7f70c13bbb0d98a7866e557e388a456d1dad32091878fcff16"
     },
     {
       "scenario_id": "AX-08",
@@ -4388,13 +4730,20 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "invalid"
       },
       "tags": [
         "denial"
       ],
-      "semantic_digest": "55d2aa422ded4b8a77396afa651f89c9f188f11f2112e940b092599dd03657d9"
+      "semantic_digest": "0189db8174b26f166ad7dd5d3beb721bbdfadfe59de99570dc930ca9e87035c3"
     },
     {
       "scenario_id": "AX-09",
@@ -4444,7 +4793,7 @@
           "actor": "prin_A",
           "action": "read",
           "args": {
-            "path": "doc"
+            "mutated": "ev1"
           },
           "to": "s1",
           "authority_required": {
@@ -4492,13 +4841,20 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "invalid"
       },
       "tags": [
         "grant"
       ],
-      "semantic_digest": "c5466fdffad8d987b3c31843898ebb8d73f25ff5f1f231388c9c05fb7ad90b5b"
+      "semantic_digest": "86dca09655ac3afdb37318ce13e683ce6013e3e29ea0ca6927ab075af06fb4e4"
     },
     {
       "scenario_id": "AX-10",
@@ -4596,13 +4952,20 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
       "oracle_hint": {
         "kind": "underdetermined"
       },
       "tags": [
         "unknown"
       ],
-      "semantic_digest": "b2e00ccb761699b06276c9840a3b0cf07e4b48eed541fd45bcd12f879430ee2d"
+      "semantic_digest": "ee48e57b018bcec1cbc6855d24acde9fa295122b0e5da5fb8b6cb4a778018640"
     },
     {
       "scenario_id": "AX-11",
@@ -4679,13 +5042,20 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "atl",
+      "environment": "adversarial",
       "oracle_hint": {
         "kind": "invalid"
       },
       "tags": [
         "coalition"
       ],
-      "semantic_digest": "59a28aee394d88e26e9b949d340d7767d730a79737cf0568bba12eb063f7eb2b"
+      "semantic_digest": "43adc77258288885b398b562399e89f34c3b1a8baa24dfc1d35043d6f1793761"
     },
     {
       "scenario_id": "AX-12",
@@ -4783,6 +5153,13 @@
         },
         "redacted": []
       },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "adversarial",
       "oracle_hint": {
         "kind": "underdetermined"
       },
@@ -4790,7 +5167,7 @@
         "delegation",
         "incomplete"
       ],
-      "semantic_digest": "61c20844a127c86eefeb0580fb0aa982a30b5f427857f64ad38b199262269626"
+      "semantic_digest": "c3f5bf9d740ce9df4b64cf0f48b03e00fcd34c0b190340ee886a0a5f74a2b1cb"
     }
   ]
 }
