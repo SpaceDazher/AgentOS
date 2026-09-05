@@ -96,6 +96,29 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--db", required=True)
     args = parser.parse_args(argv)
 
+    evidence_dir = HERE / "results" / "evidence"
+    pre_existing = set(p.name for p in evidence_dir.glob("*.json")) if evidence_dir.is_dir() else set()
+    record_existed = (HERE / "evaluation-record.json").exists()
+    try:
+        return _publish(args)
+    except (OSError, ValueError) as exc:
+        # Remove stale outputs from the failed run only; never user files.
+        if evidence_dir.is_dir():
+            for path in evidence_dir.glob("*.json"):
+                if path.name not in pre_existing:
+                    path.unlink()
+        if not record_existed:
+            _remove_if_present(HERE / "evaluation-record.json")
+        print(f"publication blocked: {exc}", file=sys.stderr)
+        return 1
+
+
+def _remove_if_present(path: Path) -> None:
+    if path.is_file() or path.is_symlink():
+        path.unlink()
+
+
+def _publish(args) -> int:
     publisher = load_module(HERE / "make_bundle.py", "s1015_publication_gate")
     problems, _ = publisher.verify_frozen_manifest(HERE)
     if problems:
