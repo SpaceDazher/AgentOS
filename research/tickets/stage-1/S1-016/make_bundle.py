@@ -18,6 +18,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path, PurePosixPath
 from typing import Any
 
@@ -247,6 +248,64 @@ def run_subprocess(argv: list[str], cwd: Path) -> None:
         raise ValueError(f"command failed {' '.join(argv[-3:])}: {tail}")
 
 
+def _validate_evidence(here: Path, metrics: dict, probe_doc: dict,
+                       comparison: dict, sensitivity_doc: dict) -> None:
+    """Structural hard gates shared by fresh and frozen publication paths."""
+    if metrics.get("observations") != 432:
+        raise ValueError("run-a must hold 432 observations")
+    run_b = _read_json(here / "results" / "run-b" / "observations.json", "run-b")
+    if len(run_b.get("observations", [])) != 432:
+        raise ValueError("run-b must hold 432 observations")
+    if comparison.get("replicated") is not True:
+        raise ValueError("replay did not replicate")
+    if comparison.get("matrix") != ("48 scenarios x 3 representations x 3 seeds "
+                                    "x 2 executors = 864 observations"):
+        raise ValueError("replay matrix mismatch")
+    if any(v != 0 for v in metrics.get("invariant_violations", {}).values()):
+        raise ValueError("invariant violations are not all zero")
+    if metrics.get("safety_verdict") is not True:
+        raise ValueError("safety verdict is not true")
+    if probe_doc.get("all_pass") is not True or len(probe_doc.get("probes", {})) != 16:
+        raise ValueError("probes A-P did not all pass")
+    if sensitivity_doc.get("vector_count", 0) < 200:
+        raise ValueError("sensitivity vector count below 200")
+
+
+def _semantic_metrics(metrics: dict) -> dict:
+    """Latency-free projection: wall-clock ns are not decision content."""
+    return {key: value for key, value in metrics.items() if key != "latencies"}
+
+
+def existing_runs(here: Path) -> dict:
+    """Validate the already-frozen measurement instead of regenerating it.
+
+    The frozen measurement commit is authoritative: regenerating only re-rolls
+    wall-clock latencies (which feed sensitivity parsimony) and can flip the
+    recorded winner distribution. Saved artifacts are validated structurally
+    and the evaluator is re-run fresh over the raw run-a/run-b observations
+    (probe-M style) with semantic equality modulo latencies.
+    """
+    metrics = _read_json(here / "results" / "metrics.json", "metrics")
+    probe_doc = _read_json(here / "results" / "probes.json", "probes")
+    comparison = _read_json(here / "results" / "comparison.json", "comparison")
+    sensitivity_doc = _read_json(here / "results" / "sensitivity.json", "sensitivity")
+    _validate_evidence(here, metrics, probe_doc, comparison, sensitivity_doc)
+    for executor in ("a", "b"):
+        with tempfile.TemporaryDirectory(prefix="s1016-verify-") as tmp:
+            out = Path(tmp) / "metrics.json"
+            probes = Path(tmp) / "probes.json"
+            run_subprocess([sys.executable, str(here / "evaluator.py"), "--run",
+                            str(here / "results" / f"run-{executor}"),
+                            "--protocol", str(here),
+                            "--out", str(out), "--probes", str(probes)], here)
+            fresh = json.loads(out.read_text(encoding="utf-8"))
+        if _semantic_metrics(fresh) != _semantic_metrics(metrics):
+            raise ValueError(
+                f"saved metrics drift from raw run-{executor} observations")
+    return {"metrics": metrics, "probes": probe_doc,
+            "comparison": comparison, "sensitivity": sensitivity_doc}
+
+
 def fresh_runs(here: Path) -> dict:
     for name in ("run-a", "run-b"):
         shutil.rmtree(here / "results" / name, ignore_errors=True)
@@ -272,24 +331,7 @@ def fresh_runs(here: Path) -> dict:
     probe_doc = _read_json(here / "results" / "probes.json", "probes")
     comparison = _read_json(here / "results" / "comparison.json", "comparison")
     sensitivity_doc = _read_json(here / "results" / "sensitivity.json", "sensitivity")
-    if metrics.get("observations") != 432:
-        raise ValueError("run-a must hold 432 observations")
-    run_b = _read_json(here / "results" / "run-b" / "observations.json", "run-b")
-    if len(run_b.get("observations", [])) != 432:
-        raise ValueError("run-b must hold 432 observations")
-    if comparison.get("replicated") is not True:
-        raise ValueError("replay did not replicate")
-    if comparison.get("matrix") != ("48 scenarios x 3 representations x 3 seeds "
-                                    "x 2 executors = 864 observations"):
-        raise ValueError("replay matrix mismatch")
-    if any(v != 0 for v in metrics.get("invariant_violations", {}).values()):
-        raise ValueError("invariant violations are not all zero")
-    if metrics.get("safety_verdict") is not True:
-        raise ValueError("safety verdict is not true")
-    if probe_doc.get("all_pass") is not True or len(probe_doc.get("probes", {})) != 16:
-        raise ValueError("probes A-P did not all pass")
-    if sensitivity_doc.get("vector_count", 0) < 200:
-        raise ValueError("sensitivity vector count below 200")
+    _validate_evidence(here, metrics, probe_doc, comparison, sensitivity_doc)
     return {"metrics": metrics, "probes": probe_doc, "comparison": comparison,
             "sensitivity": sensitivity_doc}
 
@@ -566,6 +608,31 @@ ARTIFACT_TEXTS = {
 }
 
 
+def audit_limitations(verdict: dict, present: bool) -> list[str]:
+    """Honest audit limitations; never claim flips that were not recorded."""
+    limitations = [
+        "tracked-Git dependency evidence; local canonical DB recheck is required before final publication",
+        "no human or production data: all rates are technical model checks",
+        "bounded 48-scenario corpus; no arbitrary distributed execution claims",
+        "same-host replay is called replay, not an external audit",
+        "sensitivity parsimony consumes wall-clock latencies; recorded flips are noise-sensitive and a deterministic latency proxy is deferred",
+    ]
+    if verdict.get("blocking_answers"):
+        limitations.append(
+            "operator answers " + ", ".join(verdict["blocking_answers"]) +
+            " are forbidden and contradict hard invariants; no authorization-"
+            "from-provenance is granted")
+    if verdict.get("sensitivity_flips"):
+        limitations.append(
+            f"recorded sensitivity flips ({verdict['sensitivity_flips']}) cap "
+            f"the verdict; substance leader {verdict.get('substance_leader')}")
+    if present and verdict.get("design_decision") == "INCONCLUSIVE":
+        limitations.append(
+            "operator review recorded; verdict remains INCONCLUSIVE; "
+            "substance leader " + str(verdict.get("substance_leader")))
+    return limitations
+
+
 def build_bundle(here: Path, sources: list[dict], verdict: dict,
                  present: bool, letters: dict | None) -> dict:
     artifacts: dict[str, dict] = {}
@@ -619,25 +686,7 @@ def build_bundle(here: Path, sources: list[dict], verdict: dict,
     for kind, artifact in artifacts.items():
         artifact["claim_refs"] = [c for c in refs_map[kind] if c in claim_by_id]
     artifacts["independent_audit"]["producer"] = AUDITOR
-    limitations = [
-        "tracked-Git dependency evidence; local canonical DB recheck is required before final publication",
-        "no human or production data: all rates are technical model checks",
-        "bounded 48-scenario corpus; no arbitrary distributed execution claims",
-        "same-host replay is called replay, not an external audit",
-    ]
-    if verdict.get("blocking_answers"):
-        limitations.append(
-            "operator answers " + ", ".join(verdict["blocking_answers"]) +
-            " are forbidden and contradict hard invariants; no authorization-"
-            "from-provenance is granted")
-    if verdict.get("sensitivity_flips"):
-        limitations.append(
-            f"recorded sensitivity flips ({verdict['sensitivity_flips']}) cap "
-            f"the verdict; substance leader {verdict.get('substance_leader')}")
-    if present and verdict.get("design_decision") == "INCONCLUSIVE":
-        limitations.append(
-            "recorded sensitivity flips cap the verdict at INCONCLUSIVE; "
-            "substance leader " + str(verdict.get("substance_leader")))
+    limitations = audit_limitations(verdict, present)
     bundle = {
         "artifacts": artifacts,
         "audit": {"auditor": AUDITOR, "producer": PRODUCER,
@@ -713,6 +762,9 @@ def write_results_docs(here: Path, verdict: dict, metrics: dict,
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--ticket", required=False, default=str(HERE))
+    parser.add_argument("--use-existing-results", action="store_true",
+                        help="validate the frozen measurement instead of "
+                             "regenerating wall-clock latencies")
     args = parser.parse_args(argv)
     here = Path(args.ticket).resolve()
     try:
@@ -720,7 +772,10 @@ def main(argv: list[str] | None = None) -> int:
         if problems:
             raise ValueError("frozen manifest invalid: " + "; ".join(problems[:6]))
         check_dependency(here)
-        evidence = fresh_runs(here)
+        if args.use_existing_results:
+            evidence = existing_runs(here)
+        else:
+            evidence = fresh_runs(here)
         present, letters, _ = verify_operator_decision(here)
         blockers, verdict = derive_verdict(
             evidence["metrics"], evidence["comparison"],
