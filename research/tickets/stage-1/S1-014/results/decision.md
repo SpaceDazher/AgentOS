@@ -25,4 +25,17 @@ Synthetic sessions: 5 (ok ×2, timeout, withdrawn, missing_answer scenarios). An
 No comparison between the CARD and GRAPH rows is permitted: they are not human observations.
 
 ## Phase B — operator design review
-_Pending. The 12 questionnaire answers will be recorded in `operator-decision.json` and verified by `publisher.py verify-decision` before any status change._
+Recorded 2026-09-05T02:56:02Z · operator `OPR-7c41d9a2f6` (opaque id, no identity mapping) · operator_review_n=1 · human_study_n=0.
+
+**Answers:** `1A 2A 3A 4A 5A 6A 7A 8A 9A 10B 11B 12A`
+**Outcome (frozen rule, Q1=A):** provisional default **CARD_WITH_GRAPH_DRILLDOWN** — card first, graph via explicit disclosure; graph keeps the mandatory linear keyboard/screen-reader equivalent (Q6=A).
+**Status:** S1-014 **PASS_WITH_LIMITS** — operator approved a design contract only; this is NOT a human-effectiveness finding; `comparative_human_effectiveness=NOT_MEASURED`; no card/graph winner exists.
+
+Bindings: frozen manifest `ebf247de10b5d32992fb009fac7b2b9c5f9a5fd6edf9746e4f23988cd7934d4d` · browser contract `f3013c1cd507384dbd536996ef350474f0ccd4d9eb13bf66d7ff9b60b726fcf2` · reviewed Phase-A bundle `60cd68ddce73644f17d713407c6dbe8452eb59a6edda408682bff31ba94ad9b4` · published bundle `bab3e9a45ee720421f2a15faf4fd99260562205eac317ba34acf81f079a12ff7`.
+Verification: `publisher.py verify-decision` → OK; `publisher.py publish` re-ran the full pipeline (import, probes A–J, two-process replay, fresh evaluation, saved-vs-fresh comparison) — PASS_WITH_LIMITS; `research-plan` on `.agentos-research/platform-stage-1` → exit 0, `chain_fresh=true`, `latest_evaluation_valid=true`, tracked evidence pack payload `9f97ddfe010f71ea0bac7fe6c349c1010af1abde8f56b2c0696740ba803d47c5`; `wiki-check` → ok.
+
+## Deviation log (append-only)
+
+1. 2026-09-05T02:56:02Z — Operator's first answer string contained `6B`. The fail-closed verifier rejected it (`question 6=B violates hard contract`). The operator corrected it to `6A` before any status change. Recorded here instead of silent editing; all other 11 answers unchanged.
+2. 2026-09-05T02:56:02Z — Operator review was a design walkthrough of both variants (CARD, GRAPH) via the delivered prototype and walkthrough page; no operator browser envelope was exported or imported, so no operator trials exist in metrics (by design: operator judgment is never participant data).
+3. 2026-09-05T02:56:02Z — Accessibility accommodations: none requested or reported.
