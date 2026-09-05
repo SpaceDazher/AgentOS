@@ -375,6 +375,17 @@ class TestOperatorVerdict(unittest.TestCase):
         self.assertEqual(verdict["result"], "PASS_WITH_LIMITS")
         self.assertIn("2B", verdict["blocking_answers"])
 
+    def test_canonical_only_bundle_never_claims_display_contract_authorization(self):
+        answers = _all_a_with(**{"2": "B"})
+        blockers, verdict = make_bundle.derive_verdict(
+            copy.deepcopy(GREEN_METRICS), dict(GREEN_COMPARISON), True, answers)
+        self.assertEqual(blockers, [])
+        bundle = make_bundle.build_bundle(
+            S1015, make_bundle.build_sources(S1015), verdict, True, answers)
+        claim_text = "\n".join(claim["text"] for claim in bundle["claims"])
+        self.assertNotIn("authorizes a display contract", claim_text)
+        self.assertEqual(bundle["design_decision"], "CANONICAL_ID_ONLY")
+
     def test_1b_downgrades_to_canonical_only(self):
         blockers, verdict = make_bundle.derive_verdict(
             copy.deepcopy(GREEN_METRICS), dict(GREEN_COMPARISON),

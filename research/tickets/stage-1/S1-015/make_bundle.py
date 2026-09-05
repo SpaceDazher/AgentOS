@@ -483,8 +483,10 @@ CLAIMS = [
     {"id": "CL-L1", "s1_015_class": "limitation", "claim_class": "assumption",
      "text": ("No human data was collected: all rates are technical dry-run "
               "checks over synthetic observations. One operator design review "
-              "authorizes a display contract; recognition improvement is "
-              "NOT_MEASURED and PASS/production rollout are out of scope."),
+              "selects only a bounded product decision under fail-closed rules; "
+              "it does not establish human recognition improvement. Recognition "
+              "improvement is NOT_MEASURED and PASS/production rollout are out "
+              "of scope."),
      "support": []},
 ]
 
