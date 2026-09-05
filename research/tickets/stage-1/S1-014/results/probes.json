@@ -1,0 +1,126 @@
+{
+  "all_detected": true,
+  "control_passed": true,
+  "probes": [
+    {
+      "control_passed": true,
+      "detail": [
+        "GRAPH differs from canonical on evidence",
+        "GRAPH differs from canonical on sources"
+      ],
+      "detected": true,
+      "expected": "provenance gate FAIL",
+      "probe": "A",
+      "title": "graph hides canonical source/independence group"
+    },
+    {
+      "control_passed": true,
+      "detail": [
+        "CARD differs from canonical on claims",
+        "CARD differs from canonical on challenge_visible_level0"
+      ],
+      "detected": true,
+      "expected": "comprehension/challenge gate FAIL",
+      "probe": "B",
+      "title": "card hides challenge behind winning claim"
+    },
+    {
+      "control_passed": true,
+      "detail": [
+        "GRAPH differs from canonical on claims",
+        "GRAPH differs from canonical on task_wording"
+      ],
+      "detected": true,
+      "expected": "equivalence FAIL before measurement",
+      "probe": "C",
+      "title": "variant wording/status drift"
+    },
+    {
+      "control_passed": true,
+      "detail": [
+        "assignment drift: trials differ from bound table",
+        "trial count differs from assignment (denominator drift)"
+      ],
+      "detected": true,
+      "expected": "import FAIL",
+      "probe": "D",
+      "title": "denominator drop of timeout trial"
+    },
+    {
+      "control_passed": true,
+      "detail": "quarantined",
+      "detected": true,
+      "expected": "UNSCORED or FAIL",
+      "probe": "E",
+      "title": "forged adjudicated/self-grade fields"
+    },
+    {
+      "control_passed": true,
+      "detail": {
+        "assignment drift": "rejected",
+        "duplicate session": "rejected",
+        "non-monotonic time": "rejected",
+        "sequence gap": "rejected",
+        "wrong version": "rejected"
+      },
+      "detected": true,
+      "expected": "import FAIL for each fault",
+      "probe": "F",
+      "title": "version/duplicate/sequence/time/assignment faults"
+    },
+    {
+      "control_passed": true,
+      "detail": {
+        "card": [
+          "CARD disclosure is not a keyboard control"
+        ],
+        "graph": [
+          "GRAPH has no linear accessible equivalent"
+        ],
+        "pointer_in_keyboard_mode": "rejected"
+      },
+      "detected": true,
+      "expected": "accessibility gate FAIL",
+      "probe": "G",
+      "title": "graph not keyboard/screen-reader reachable; pointer-only disclosure"
+    },
+    {
+      "control_passed": true,
+      "detail": [
+        "saved winner differs from fresh recomputation",
+        "saved by_variant_task differs from fresh recomputation"
+      ],
+      "detected": true,
+      "expected": "publication FAIL",
+      "probe": "H",
+      "title": "saved metrics/verdict tampered"
+    },
+    {
+      "control_passed": true,
+      "detail": [
+        "winner declared without human study",
+        "human_study_n must be 0"
+      ],
+      "detected": true,
+      "expected": "hard FAIL",
+      "probe": "I",
+      "title": "synthetic output declares winner or human N"
+    },
+    {
+      "control_passed": true,
+      "detail": [
+        [
+          "$.events[64].detail: email pattern"
+        ],
+        [
+          "$.session.consent.form_version: secret pattern"
+        ]
+      ],
+      "detected": true,
+      "expected": "quarantine, no publication",
+      "probe": "J",
+      "title": "PII/secret nested in payload"
+    }
+  ],
+  "schema": "agentos.s1-014.probes/v1"
+}
