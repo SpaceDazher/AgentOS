@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'">
+<title>S1-015 — petname display prototype (MOCK)</title><link rel="stylesheet" href="style.css"></head>
+<body><main>
+<p class="banner">MOCK / SYNTHETIC ONLY — bounded research prototype. No production directory, no human study. Petnames are display-only and never authorize.</p>
+<h1>Principal display: BASELINE vs PETNAME</h1>
+<p id="status" role="status">Loading frozen contract…</p>
+<section aria-label="Variant selection">
+<label>Variant
+<select id="variant">
+<option value="baseline">BASELINE — canonical ID only</option>
+<option value="petname">PETNAME — petname + canonical ID</option>
+</select></label>
+<label>Case <select id="case"></select></label>
+</section>
+<section id="principal-card" aria-label="Principal display" hidden>
+<h2 id="card-title"></h2>
+<p>Canonical ID: <code id="canon-id"></code> <button id="copy-id" type="button">Copy canonical ID</button></p>
+<p>Type: <span id="canon-type"></span> · Scope: <span id="canon-scope"></span> · Tenant: <span id="canon-tenant"></span></p>
+<p id="petname-row">Petname: <span id="petname"></span> <span id="petname-meta"></span></p>
+<p id="sr-text" class="sr-only" aria-live="polite"></p>
+<div id="ambiguity" hidden>
+<p><strong>Ambiguous petname.</strong> Select the canonical principal (no auto-select):</p>
+<ul id="candidates"></ul>
+</div>
+<p id="warnings" role="alert"></p>
+</section>
+<section id="approval-card" aria-label="Approval" hidden>
+<h2>Approval (exact action)</h2>
+<p>Actor (canonical): <code id="ap-actor"></code></p>
+<p>Target (canonical): <code id="ap-target"></code></p>
+<p>Action: <span id="ap-action"></span> · Tool: <span id="ap-tool"></span></p>
+<p>Petname annotation (non-authoritative): <span id="ap-pet"></span></p>
+<button id="ap-approve" type="button">Approve canonical target</button>
+<button id="ap-deny" type="button">Deny</button>
+<p id="ap-status" role="status"></p>
+</section>
+<section id="onbehalf-card" aria-label="On-behalf banner" hidden>
+<h2>On-behalf banner</h2>
+<p id="ob-text"></p>
+</section>
+<section id="history-card" aria-label="History" hidden>
+<h2>History (canonical)</h2>
+<ul id="history"></ul>
+</section>
+<section aria-label="Export">
+<h2>Export / import</h2>
+<p>One versioned envelope per viewed case, consumable by the Python importer.</p>
+<button id="export" type="button" disabled>Download envelopes JSON</button>
+<label>Import envelope <input id="import" type="file" accept=".json"></label>
+<p id="import-status" role="status"></p>
+</section>
+<details><summary>Local synthetic event log</summary><pre id="eventlog"></pre></details>
+</main><script src="app.js"></script></body></html>
