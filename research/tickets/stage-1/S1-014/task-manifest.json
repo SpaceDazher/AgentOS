@@ -1,0 +1,912 @@
+{
+  "contract_schema": "agentos.s1-014.dispute-contract/v1",
+  "contract_version": "1.0.0",
+  "coverage": {
+    "direct_claim_vs_one_challenge": "DSP-25b54a142bae",
+    "independent_corroboration": "DSP-be59b2fe9a5a",
+    "multiple_supports_one_group": "DSP-2b7c82b1e56a",
+    "near_miss_many_nodes": "DSP-dc1ba91a2f9f",
+    "publisher_not_origin": "DSP-69d97b062741",
+    "rejected_revoked_unknown_state": "DSP-3e47e243cd7b",
+    "small_card_complex_logic": "DSP-848fef96d83b",
+    "strong_winner_visible_challenge": "DSP-e3d9d16e4df0"
+  },
+  "disclosure_rule": {
+    "challenge_indicator": 0,
+    "evidence_detail": 1,
+    "focal_claim": 0,
+    "independence_cue": 0,
+    "provenance_detail": 1,
+    "relations_detail": 1,
+    "source_cue": 0,
+    "status": 0
+  },
+  "disputes": [
+    {
+      "answer_choices": [
+        "focal_holds",
+        "challenge_holds",
+        "undetermined",
+        "withheld_cannot_decide"
+      ],
+      "challenge_claim": {
+        "claim_id": "CLM-01B",
+        "status": "candidate",
+        "text": "Agent A-1 was never granted W-2 access."
+      },
+      "challenging_evidence": [
+        "EV-02"
+      ],
+      "complexity_stratum": "simple",
+      "contract_schema": "agentos.s1-014.dispute-contract/v1",
+      "contract_version": "1.0.0",
+      "dispute_id": "DSP-25b54a142bae",
+      "evidence": [
+        {
+          "evidence_id": "EV-01",
+          "evidence_state": "known",
+          "independence_group": "IG-1",
+          "source_id": "SRC-a1",
+          "summary": "Grant record lists A-1 with read scope on W-2."
+        },
+        {
+          "evidence_id": "EV-02",
+          "evidence_state": "known",
+          "independence_group": "IG-2",
+          "source_id": "SRC-a2",
+          "summary": "Colleague recalls no grant being made."
+        }
+      ],
+      "focal_claim": {
+        "claim_id": "CLM-01A",
+        "status": "promoted",
+        "text": "Agent A-1 may read the shared workspace W-2."
+      },
+      "independence_groups": [
+        {
+          "group_id": "IG-1",
+          "independence_basis": "system record",
+          "label": "registry"
+        },
+        {
+          "group_id": "IG-2",
+          "independence_basis": "human report",
+          "label": "colleague"
+        }
+      ],
+      "knowledge_gate_state": "promoted",
+      "ordinal": 1,
+      "relations": [
+        {
+          "from_evidence": "EV-01",
+          "relation": "supports",
+          "to_claim": "CLM-01A"
+        },
+        {
+          "from_evidence": "EV-02",
+          "relation": "supports",
+          "to_claim": "CLM-01B"
+        }
+      ],
+      "renderer_may_change_authority": false,
+      "sources": [
+        {
+          "origin": "Workspace registry",
+          "provenance_state": "known",
+          "publisher": "Workspace registry",
+          "retrieval_boundary": "2026-08-01T00:00:00Z",
+          "source_id": "SRC-a1"
+        },
+        {
+          "origin": "Colleague message",
+          "provenance_state": "known",
+          "publisher": "Colleague message",
+          "retrieval_boundary": "2026-08-02T00:00:00Z",
+          "source_id": "SRC-a2"
+        }
+      ],
+      "supporting_evidence": [
+        "EV-01"
+      ],
+      "task_wording": "Which claim holds given the evidence shown?",
+      "withheld_fields": []
+    },
+    {
+      "answer_choices": [
+        "focal_holds",
+        "challenge_holds",
+        "undetermined",
+        "withheld_cannot_decide"
+      ],
+      "challenge_claim": {
+        "claim_id": "CLM-02B",
+        "status": "candidate",
+        "text": "Build 42 acceptance evidence is not independent."
+      },
+      "challenging_evidence": [
+        "EV-01"
+      ],
+      "complexity_stratum": "medium",
+      "contract_schema": "agentos.s1-014.dispute-contract/v1",
+      "contract_version": "1.0.0",
+      "dispute_id": "DSP-2b7c82b1e56a",
+      "evidence": [
+        {
+          "evidence_id": "EV-01",
+          "evidence_state": "known",
+          "independence_group": "IG-1",
+          "source_id": "SRC-b1",
+          "summary": "CI status green."
+        },
+        {
+          "evidence_id": "EV-02",
+          "evidence_state": "known",
+          "independence_group": "IG-1",
+          "source_id": "SRC-b2",
+          "summary": "CI summary green."
+        },
+        {
+          "evidence_id": "EV-03",
+          "evidence_state": "known",
+          "independence_group": "IG-1",
+          "source_id": "SRC-b3",
+          "summary": "CI badge green."
+        }
+      ],
+      "focal_claim": {
+        "claim_id": "CLM-02A",
+        "status": "candidate",
+        "text": "Build 42 passed the acceptance gate."
+      },
+      "independence_groups": [
+        {
+          "group_id": "IG-1",
+          "independence_basis": "same origin, same pipeline",
+          "label": "single CI cluster"
+        }
+      ],
+      "knowledge_gate_state": "candidate",
+      "ordinal": 2,
+      "relations": [
+        {
+          "from_evidence": "EV-01",
+          "relation": "supports",
+          "to_claim": "CLM-02A"
+        },
+        {
+          "from_evidence": "EV-02",
+          "relation": "supports",
+          "to_claim": "CLM-02A"
+        },
+        {
+          "from_evidence": "EV-03",
+          "relation": "supports",
+          "to_claim": "CLM-02A"
+        },
+        {
+          "from_evidence": "EV-01",
+          "relation": "supports",
+          "to_claim": "CLM-02B"
+        }
+      ],
+      "renderer_may_change_authority": false,
+      "sources": [
+        {
+          "origin": "Vendor CI log",
+          "provenance_state": "known",
+          "publisher": "CI mirror",
+          "retrieval_boundary": "2026-08-03T00:00:00Z",
+          "source_id": "SRC-b1"
+        },
+        {
+          "origin": "Vendor CI log",
+          "provenance_state": "known",
+          "publisher": "CI mirror",
+          "retrieval_boundary": "2026-08-03T00:00:00Z",
+          "source_id": "SRC-b2"
+        },
+        {
+          "origin": "Vendor CI log",
+          "provenance_state": "known",
+          "publisher": "CI mirror",
+          "retrieval_boundary": "2026-08-03T00:00:00Z",
+          "source_id": "SRC-b3"
+        }
+      ],
+      "supporting_evidence": [
+        "EV-01",
+        "EV-02",
+        "EV-03"
+      ],
+      "task_wording": "Is the focal claim corroborated by independent evidence?",
+      "withheld_fields": []
+    },
+    {
+      "answer_choices": [
+        "focal_holds",
+        "challenge_holds",
+        "undetermined",
+        "withheld_cannot_decide"
+      ],
+      "challenge_claim": {
+        "claim_id": "CLM-03B",
+        "status": "candidate",
+        "text": "Release 7 signature is unverified."
+      },
+      "challenging_evidence": [
+        "EV-03"
+      ],
+      "complexity_stratum": "medium",
+      "contract_schema": "agentos.s1-014.dispute-contract/v1",
+      "contract_version": "1.0.0",
+      "dispute_id": "DSP-be59b2fe9a5a",
+      "evidence": [
+        {
+          "evidence_id": "EV-01",
+          "evidence_state": "known",
+          "independence_group": "IG-1",
+          "source_id": "SRC-c1",
+          "summary": "HSM log records signing event."
+        },
+        {
+          "evidence_id": "EV-02",
+          "evidence_state": "known",
+          "independence_group": "IG-2",
+          "source_id": "SRC-c2",
+          "summary": "Transparency log includes matching digest."
+        },
+        {
+          "evidence_id": "EV-03",
+          "evidence_state": "known",
+          "independence_group": "IG-3",
+          "source_id": "SRC-c3",
+          "summary": "Reviewer says signature was not checked."
+        }
+      ],
+      "focal_claim": {
+        "claim_id": "CLM-03A",
+        "status": "candidate",
+        "text": "Release 7 was signed by the release key."
+      },
+      "independence_groups": [
+        {
+          "group_id": "IG-1",
+          "independence_basis": "HSM",
+          "label": "signing"
+        },
+        {
+          "group_id": "IG-2",
+          "independence_basis": "third-party log",
+          "label": "transparency"
+        },
+        {
+          "group_id": "IG-3",
+          "independence_basis": "human review",
+          "label": "reviewer"
+        }
+      ],
+      "knowledge_gate_state": "candidate",
+      "ordinal": 3,
+      "relations": [
+        {
+          "from_evidence": "EV-01",
+          "relation": "supports",
+          "to_claim": "CLM-03A"
+        },
+        {
+          "from_evidence": "EV-02",
+          "relation": "supports",
+          "to_claim": "CLM-03A"
+        },
+        {
+          "from_evidence": "EV-03",
+          "relation": "supports",
+          "to_claim": "CLM-03B"
+        }
+      ],
+      "renderer_may_change_authority": false,
+      "sources": [
+        {
+          "origin": "HSM audit log",
+          "provenance_state": "known",
+          "publisher": "Signing service",
+          "retrieval_boundary": "2026-08-04T00:00:00Z",
+          "source_id": "SRC-c1"
+        },
+        {
+          "origin": "Public log operator",
+          "provenance_state": "known",
+          "publisher": "Transparency log",
+          "retrieval_boundary": "2026-08-04T00:00:00Z",
+          "source_id": "SRC-c2"
+        },
+        {
+          "origin": "Reviewer note",
+          "provenance_state": "known",
+          "publisher": "Reviewer note",
+          "retrieval_boundary": "2026-08-05T00:00:00Z",
+          "source_id": "SRC-c3"
+        }
+      ],
+      "supporting_evidence": [
+        "EV-01",
+        "EV-02"
+      ],
+      "task_wording": "Which claim holds given the evidence shown?",
+      "withheld_fields": []
+    },
+    {
+      "answer_choices": [
+        "focal_holds",
+        "challenge_holds",
+        "undetermined",
+        "withheld_cannot_decide"
+      ],
+      "challenge_claim": {
+        "claim_id": "CLM-04B",
+        "status": "rejected",
+        "text": "Grant G-9 is still active."
+      },
+      "challenging_evidence": [
+        "EV-02"
+      ],
+      "complexity_stratum": "simple",
+      "contract_schema": "agentos.s1-014.dispute-contract/v1",
+      "contract_version": "1.0.0",
+      "dispute_id": "DSP-e3d9d16e4df0",
+      "evidence": [
+        {
+          "evidence_id": "EV-01",
+          "evidence_state": "known",
+          "independence_group": "IG-1",
+          "source_id": "SRC-d1",
+          "summary": "Ledger shows expiry timestamp."
+        },
+        {
+          "evidence_id": "EV-02",
+          "evidence_state": "known",
+          "independence_group": "IG-2",
+          "source_id": "SRC-d2",
+          "summary": "Agent claims grant still valid."
+        }
+      ],
+      "focal_claim": {
+        "claim_id": "CLM-04A",
+        "status": "promoted",
+        "text": "Delegation grant G-9 expired on 2026-08-01."
+      },
+      "independence_groups": [
+        {
+          "group_id": "IG-1",
+          "independence_basis": "system record",
+          "label": "ledger"
+        },
+        {
+          "group_id": "IG-2",
+          "independence_basis": "self report",
+          "label": "agent"
+        }
+      ],
+      "knowledge_gate_state": "promoted",
+      "ordinal": 4,
+      "relations": [
+        {
+          "from_evidence": "EV-01",
+          "relation": "supports",
+          "to_claim": "CLM-04A"
+        },
+        {
+          "from_evidence": "EV-02",
+          "relation": "supports",
+          "to_claim": "CLM-04B"
+        }
+      ],
+      "renderer_may_change_authority": false,
+      "sources": [
+        {
+          "origin": "Grant ledger",
+          "provenance_state": "known",
+          "publisher": "Grant ledger",
+          "retrieval_boundary": "2026-08-06T00:00:00Z",
+          "source_id": "SRC-d1"
+        },
+        {
+          "origin": "Agent A-3",
+          "provenance_state": "known",
+          "publisher": "Agent self-report",
+          "retrieval_boundary": "2026-08-06T00:00:00Z",
+          "source_id": "SRC-d2"
+        }
+      ],
+      "supporting_evidence": [
+        "EV-01"
+      ],
+      "task_wording": "Which claim holds given the evidence shown?",
+      "withheld_fields": []
+    },
+    {
+      "answer_choices": [
+        "focal_holds",
+        "challenge_holds",
+        "undetermined",
+        "withheld_cannot_decide"
+      ],
+      "challenge_claim": {
+        "claim_id": "CLM-05B",
+        "status": "unknown",
+        "text": "Assertion K-12 was withdrawn by its author."
+      },
+      "challenging_evidence": [
+        "EV-01",
+        "EV-02"
+      ],
+      "complexity_stratum": "complex",
+      "contract_schema": "agentos.s1-014.dispute-contract/v1",
+      "contract_version": "1.0.0",
+      "dispute_id": "DSP-3e47e243cd7b",
+      "evidence": [
+        {
+          "evidence_id": "EV-01",
+          "evidence_state": "known",
+          "independence_group": "IG-1",
+          "source_id": "SRC-e1",
+          "summary": "Gate log: K-12 revoked after review."
+        },
+        {
+          "evidence_id": "EV-02",
+          "evidence_state": "withheld",
+          "independence_group": "IG-2",
+          "source_id": "SRC-e2",
+          "summary": "Notice content withheld by policy."
+        }
+      ],
+      "focal_claim": {
+        "claim_id": "CLM-05A",
+        "status": "revoked",
+        "text": "Assertion K-12 is promoted knowledge."
+      },
+      "independence_groups": [
+        {
+          "group_id": "IG-1",
+          "independence_basis": "system record",
+          "label": "gate"
+        },
+        {
+          "group_id": "IG-2",
+          "independence_basis": "human",
+          "label": "author"
+        }
+      ],
+      "knowledge_gate_state": "revoked",
+      "ordinal": 5,
+      "relations": [
+        {
+          "from_evidence": "EV-01",
+          "relation": "challenges",
+          "to_claim": "CLM-05A"
+        },
+        {
+          "from_evidence": "EV-02",
+          "relation": "supports",
+          "to_claim": "CLM-05B"
+        }
+      ],
+      "renderer_may_change_authority": false,
+      "sources": [
+        {
+          "origin": "Knowledge gate",
+          "provenance_state": "known",
+          "publisher": "Knowledge gate",
+          "retrieval_boundary": "2026-08-07T00:00:00Z",
+          "source_id": "SRC-e1"
+        },
+        {
+          "origin": "Author",
+          "provenance_state": "withheld",
+          "publisher": "Author notice",
+          "retrieval_boundary": "2026-08-07T00:00:00Z",
+          "source_id": "SRC-e2"
+        }
+      ],
+      "supporting_evidence": [],
+      "task_wording": "Can the dispute be decided from the evidence shown?",
+      "withheld_fields": [
+        "evidence.EV-02.summary"
+      ]
+    },
+    {
+      "answer_choices": [
+        "focal_holds",
+        "challenge_holds",
+        "undetermined",
+        "withheld_cannot_decide"
+      ],
+      "challenge_claim": {
+        "claim_id": "CLM-06B",
+        "status": "candidate",
+        "text": "Dataset D-3 was republished by a third party without origin."
+      },
+      "challenging_evidence": [
+        "EV-02"
+      ],
+      "complexity_stratum": "medium",
+      "contract_schema": "agentos.s1-014.dispute-contract/v1",
+      "contract_version": "1.0.0",
+      "dispute_id": "DSP-69d97b062741",
+      "evidence": [
+        {
+          "evidence_id": "EV-01",
+          "evidence_state": "known",
+          "independence_group": "IG-1",
+          "source_id": "SRC-f1",
+          "summary": "Mirror copy carries origin attestation."
+        },
+        {
+          "evidence_id": "EV-02",
+          "evidence_state": "known",
+          "independence_group": "IG-2",
+          "source_id": "SRC-f2",
+          "summary": "Second copy lacks origin metadata."
+        }
+      ],
+      "focal_claim": {
+        "claim_id": "CLM-06A",
+        "status": "candidate",
+        "text": "Dataset D-3 originates from the public statistics office."
+      },
+      "independence_groups": [
+        {
+          "group_id": "IG-1",
+          "independence_basis": "origin attested",
+          "label": "office chain"
+        },
+        {
+          "group_id": "IG-2",
+          "independence_basis": "no origin",
+          "label": "mirror only"
+        }
+      ],
+      "knowledge_gate_state": "candidate",
+      "ordinal": 6,
+      "relations": [
+        {
+          "from_evidence": "EV-01",
+          "relation": "supports",
+          "to_claim": "CLM-06A"
+        },
+        {
+          "from_evidence": "EV-02",
+          "relation": "supports",
+          "to_claim": "CLM-06B"
+        }
+      ],
+      "renderer_may_change_authority": false,
+      "sources": [
+        {
+          "origin": "Public statistics office",
+          "provenance_state": "known",
+          "publisher": "Mirror portal",
+          "retrieval_boundary": "2026-08-08T00:00:00Z",
+          "source_id": "SRC-f1"
+        },
+        {
+          "origin": "Mirror portal",
+          "provenance_state": "known",
+          "publisher": "Mirror portal",
+          "retrieval_boundary": "2026-08-08T00:00:00Z",
+          "source_id": "SRC-f2"
+        }
+      ],
+      "supporting_evidence": [
+        "EV-01"
+      ],
+      "task_wording": "Which claim holds given the evidence shown?",
+      "withheld_fields": []
+    },
+    {
+      "answer_choices": [
+        "focal_holds",
+        "challenge_holds",
+        "undetermined",
+        "withheld_cannot_decide"
+      ],
+      "challenge_claim": {
+        "claim_id": "CLM-07B",
+        "status": "candidate",
+        "text": "Rack R-1 exceeds thermal limits."
+      },
+      "challenging_evidence": [
+        "EV-06"
+      ],
+      "complexity_stratum": "complex",
+      "contract_schema": "agentos.s1-014.dispute-contract/v1",
+      "contract_version": "1.0.0",
+      "dispute_id": "DSP-dc1ba91a2f9f",
+      "evidence": [
+        {
+          "evidence_id": "EV-01",
+          "evidence_state": "known",
+          "independence_group": "IG-1",
+          "source_id": "SRC-g1",
+          "summary": "Sensor 1 reports nominal."
+        },
+        {
+          "evidence_id": "EV-02",
+          "evidence_state": "known",
+          "independence_group": "IG-2",
+          "source_id": "SRC-g2",
+          "summary": "Sensor 2 reports nominal."
+        },
+        {
+          "evidence_id": "EV-03",
+          "evidence_state": "known",
+          "independence_group": "IG-3",
+          "source_id": "SRC-g3",
+          "summary": "Sensor 3 reports nominal."
+        },
+        {
+          "evidence_id": "EV-04",
+          "evidence_state": "known",
+          "independence_group": "IG-4",
+          "source_id": "SRC-g4",
+          "summary": "Sensor 4 reports nominal."
+        },
+        {
+          "evidence_id": "EV-05",
+          "evidence_state": "known",
+          "independence_group": "IG-5",
+          "source_id": "SRC-g5",
+          "summary": "Sensor 5 reports nominal."
+        },
+        {
+          "evidence_id": "EV-06",
+          "evidence_state": "known",
+          "independence_group": "IG-6",
+          "source_id": "SRC-g6",
+          "summary": "Sensor 6 reports over limit."
+        }
+      ],
+      "focal_claim": {
+        "claim_id": "CLM-07A",
+        "status": "candidate",
+        "text": "Rack R-1 is within thermal limits."
+      },
+      "independence_groups": [
+        {
+          "group_id": "IG-1",
+          "independence_basis": "independent device",
+          "label": "sensor 1"
+        },
+        {
+          "group_id": "IG-2",
+          "independence_basis": "independent device",
+          "label": "sensor 2"
+        },
+        {
+          "group_id": "IG-3",
+          "independence_basis": "independent device",
+          "label": "sensor 3"
+        },
+        {
+          "group_id": "IG-4",
+          "independence_basis": "independent device",
+          "label": "sensor 4"
+        },
+        {
+          "group_id": "IG-5",
+          "independence_basis": "independent device",
+          "label": "sensor 5"
+        },
+        {
+          "group_id": "IG-6",
+          "independence_basis": "independent device",
+          "label": "sensor 6"
+        }
+      ],
+      "knowledge_gate_state": "candidate",
+      "ordinal": 7,
+      "relations": [
+        {
+          "from_evidence": "EV-01",
+          "relation": "supports",
+          "to_claim": "CLM-07A"
+        },
+        {
+          "from_evidence": "EV-02",
+          "relation": "supports",
+          "to_claim": "CLM-07A"
+        },
+        {
+          "from_evidence": "EV-03",
+          "relation": "supports",
+          "to_claim": "CLM-07A"
+        },
+        {
+          "from_evidence": "EV-04",
+          "relation": "supports",
+          "to_claim": "CLM-07A"
+        },
+        {
+          "from_evidence": "EV-05",
+          "relation": "supports",
+          "to_claim": "CLM-07A"
+        },
+        {
+          "from_evidence": "EV-06",
+          "relation": "supports",
+          "to_claim": "CLM-07B"
+        }
+      ],
+      "renderer_may_change_authority": false,
+      "sources": [
+        {
+          "origin": "Sensor 1",
+          "provenance_state": "known",
+          "publisher": "Sensor hub 1",
+          "retrieval_boundary": "2026-08-09T00:00:00Z",
+          "source_id": "SRC-g1"
+        },
+        {
+          "origin": "Sensor 2",
+          "provenance_state": "known",
+          "publisher": "Sensor hub 2",
+          "retrieval_boundary": "2026-08-09T00:00:00Z",
+          "source_id": "SRC-g2"
+        },
+        {
+          "origin": "Sensor 3",
+          "provenance_state": "known",
+          "publisher": "Sensor hub 3",
+          "retrieval_boundary": "2026-08-09T00:00:00Z",
+          "source_id": "SRC-g3"
+        },
+        {
+          "origin": "Sensor 4",
+          "provenance_state": "known",
+          "publisher": "Sensor hub 4",
+          "retrieval_boundary": "2026-08-09T00:00:00Z",
+          "source_id": "SRC-g4"
+        },
+        {
+          "origin": "Sensor 5",
+          "provenance_state": "known",
+          "publisher": "Sensor hub 5",
+          "retrieval_boundary": "2026-08-09T00:00:00Z",
+          "source_id": "SRC-g5"
+        },
+        {
+          "origin": "Sensor 6",
+          "provenance_state": "known",
+          "publisher": "Sensor hub 6",
+          "retrieval_boundary": "2026-08-09T00:00:00Z",
+          "source_id": "SRC-g6"
+        }
+      ],
+      "supporting_evidence": [
+        "EV-01",
+        "EV-02",
+        "EV-03",
+        "EV-04",
+        "EV-05"
+      ],
+      "task_wording": "Which claim holds given the evidence shown?",
+      "withheld_fields": []
+    },
+    {
+      "answer_choices": [
+        "focal_holds",
+        "challenge_holds",
+        "undetermined",
+        "withheld_cannot_decide"
+      ],
+      "challenge_claim": {
+        "claim_id": "CLM-08B",
+        "status": "candidate",
+        "text": "Message M-5 was relayed by an external agent claiming to be C-2."
+      },
+      "challenging_evidence": [
+        "EV-02"
+      ],
+      "complexity_stratum": "complex",
+      "contract_schema": "agentos.s1-014.dispute-contract/v1",
+      "contract_version": "1.0.0",
+      "dispute_id": "DSP-848fef96d83b",
+      "evidence": [
+        {
+          "evidence_id": "EV-01",
+          "evidence_state": "known",
+          "independence_group": "IG-1",
+          "source_id": "SRC-h1",
+          "summary": "Relay header names C-2 as sender."
+        },
+        {
+          "evidence_id": "EV-02",
+          "evidence_state": "known",
+          "independence_group": "IG-2",
+          "source_id": "SRC-h2",
+          "summary": "Directory shows C-2 has no relay binding to X-9."
+        }
+      ],
+      "focal_claim": {
+        "claim_id": "CLM-08A",
+        "status": "candidate",
+        "text": "Message M-5 came from colleague C-2."
+      },
+      "independence_groups": [
+        {
+          "group_id": "IG-1",
+          "independence_basis": "self-asserted",
+          "label": "relay"
+        },
+        {
+          "group_id": "IG-2",
+          "independence_basis": "system record",
+          "label": "directory"
+        }
+      ],
+      "knowledge_gate_state": "candidate",
+      "ordinal": 8,
+      "relations": [
+        {
+          "from_evidence": "EV-01",
+          "relation": "supports",
+          "to_claim": "CLM-08A"
+        },
+        {
+          "from_evidence": "EV-02",
+          "relation": "supports",
+          "to_claim": "CLM-08B"
+        },
+        {
+          "from_evidence": "EV-02",
+          "relation": "challenges",
+          "to_claim": "CLM-08A"
+        }
+      ],
+      "renderer_may_change_authority": false,
+      "sources": [
+        {
+          "origin": "External agent X-9",
+          "provenance_state": "known",
+          "publisher": "Chat relay",
+          "retrieval_boundary": "2026-08-10T00:00:00Z",
+          "source_id": "SRC-h1"
+        },
+        {
+          "origin": "Identity directory",
+          "provenance_state": "known",
+          "publisher": "Identity directory",
+          "retrieval_boundary": "2026-08-10T00:00:00Z",
+          "source_id": "SRC-h2"
+        }
+      ],
+      "supporting_evidence": [
+        "EV-01"
+      ],
+      "task_wording": "Which claim holds given the evidence shown?",
+      "withheld_fields": []
+    }
+  ],
+  "schema": "agentos.s1-014.task-manifest/v1",
+  "strata": {
+    "complex": [
+      "DSP-3e47e243cd7b",
+      "DSP-dc1ba91a2f9f",
+      "DSP-848fef96d83b"
+    ],
+    "medium": [
+      "DSP-2b7c82b1e56a",
+      "DSP-be59b2fe9a5a",
+      "DSP-69d97b062741"
+    ],
+    "simple": [
+      "DSP-25b54a142bae",
+      "DSP-e3d9d16e4df0"
+    ]
+  },
+  "ticket": "S1-014",
+  "variants": [
+    "CARD",
+    "GRAPH"
+  ]
+}
