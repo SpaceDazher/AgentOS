@@ -181,7 +181,7 @@ from a lower wave to a higher wave, and S1-020 is the sole closure sink.
 | S1-009 | W2 | P1 | architecture | PASS_WITH_LIMITS | S1-001, S1-005 | MCP/A2A delegation and knowledge adapter roadmap |
 | S1-010 | W3 | P0 | security | PASS_WITH_LIMITS | S1-001, S1-009 | tool-poisoning detection and quarantine evidence |
 | S1-011 | W1 | P0 | knowledge | PASS_WITH_LIMITS | S1-001, S1-003 | minimal promote/challenge knowledge gate |
-| S1-012 | W2 | P0 | knowledge | READY | S1-001, S1-003, S1-011 | evidence independence and Beta/Sybil calibration |
+| S1-012 | W2 | P0 | knowledge | PASS_WITH_LIMITS | S1-001, S1-003, S1-011 | evidence independence and Beta/Sybil calibration |
 | S1-013 | W3 | P1 | hci | PASS_WITH_LIMITS | S1-011, S1-012 | solo expert conformance review; human effectiveness not measured |
 | S1-014 | W4 | P1 | hci | READY | S1-011, S1-013 | claim-dispute card versus graph |
 | S1-015 | W4 | P2 | hci | READY | S1-013 | petname principal naming study |
@@ -985,7 +985,27 @@ python -m agentos.cli research-plan --topic "S1-011 minimal knowledge gate promo
 
 ### S1-012 — Evidence granularity, independence, and Beta/Sybil calibration
 
-- **Status:** `READY`
+- **Status:** `PASS_WITH_LIMITS` — closed 2026-09-04 (research revision
+  1): goal `goal_8VBM41JB75VDTSP201M1NNPB3S`, campaign
+  `rcamp_29WZZQ406M19WJS801M1NNPB3S`, evaluation `reval_EPR9JR5JWBHXST6301M1NNPB5P`, artifact chain
+  `818a25e67a1865d425eebcb754376f06d143aaac9fa7f07aa704804311ffb21c`, evidence-pack content-addressed at
+  `research/tickets/stage-1/S1-012/results/evidence/evidence-pack-fd26269588c0ab4470360c688c5cabf5f19e023ffd3684944a99bd81b4958775.json`.
+  Frozen matrix: 60 cases (40 dev + 20 lineage-isolated holdout) x 4
+  variants x 3 seeds = 720 rows per run, two process-separated A/B runs
+  (24 cells each, byte-identical). Governed variants (document/span/
+  digest): zero hard-counter violations, precision/recall 1.0, oracle-
+  sanctioned abstention 0.083; probes A-G pass on all seeds;
+  reputation-only negative control FAILs (51 mirror/Sybil double
+  counts) and is excluded. MVP: document granularity with upstream
+  collapse; document~span safety tie recorded as an explicit limitation;
+  Beta/EigenTrust recommendation-only (enforcement_allow structurally
+  false); 135 joint sensitivity combos, 0 winner flips. Planning
+  threshold stays a hypothesis; holdout is not blinded. Independent
+  round-2 review: READY_FOR_CANONICALIZATION
+  (`.codex-work/S1-012_PI_REVIEW_R2.md`, HEAD `f51319c`). See
+  [S1-012_CLOSURE.md](S1-012_CLOSURE.md) and
+  [evaluation-record.json](../research/tickets/stage-1/S1-012/evaluation-record.json).
+- **Status (was):** `READY`
 - **Priority:** `P0`
 - **Wave:** `W2`
 - **Owner:** `knowledge`
