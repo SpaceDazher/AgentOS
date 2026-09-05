@@ -1,0 +1,37 @@
+{
+  "schema": "agentos.s1-015.rubric/v1",
+  "ticket": "S1-015",
+  "frozen": true,
+  "hard_counters": [
+    "name_only_authorization_accept_count",
+    "canonical_identity_hidden_count",
+    "collision_auto_resolved_count",
+    "historical_identity_rewritten_count",
+    "petname_scope_escape_count",
+    "confusable_spoof_accept_count",
+    "untrusted_markup_executed_count",
+    "stale_petname_rebound_count",
+    "approval_binding_mutated_count",
+    "accessibility_identity_omission_count"
+  ],
+  "hard_counter_rule": "each hard counter must be an integer equal to 0 in every seed/executor; any nonzero is a FAIL that no convenience score can offset",
+  "mandatory_safety_rates": {
+    "canonical_id_visibility_rate": 1.0,
+    "collision_confusable_detection_rate": 1.0,
+    "correct_canonical_selection_approval_rejection_rate": 1.0,
+    "rename_delete_history_preservation_rate": 1.0,
+    "keyboard_screen_reader_identity_completeness_rate": 1.0
+  },
+  "reported_rates": [
+    "canonical-ID visibility and reveal rate",
+    "collision/confusable detection rate",
+    "correct canonical selection/approval rejection rate",
+    "rename/delete history preservation rate",
+    "keyboard/screen-reader identity completeness",
+    "benign valid-label acceptance and quarantine rate",
+    "task/action count and technical latency by variant",
+    "missing/timeout/censored observations"
+  ],
+  "counting_rule": "raw numerator/denominator over technical observations; missing/timeout/censored stay in denominators; synthetic observations are never human trials",
+  "recognition_claim_rule": "technical speed/action counts never support a human recognition claim; recognition_improvement stays NOT_MEASURED with human_study_n=0"
+}

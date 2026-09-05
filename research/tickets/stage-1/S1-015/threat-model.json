@@ -1,0 +1,140 @@
+{
+  "schema": "agentos.s1-015.threat-model/v1",
+  "ticket": "S1-015",
+  "assets": [
+    "canonical principal identity (principal_id + type + scope/tenant)",
+    "exact-action approval binding (actor/target/operation/tool/version/args/expiry)",
+    "historical audit trail keyed by canonical IDs",
+    "owner-local petname projections (versioned display labels)",
+    "on-behalf banners and approval displays",
+    "screen-reader/keyboard identity representations"
+  ],
+  "actors": [
+    "petname owner (creates/renames/deletes own labels)",
+    "second owner (independent petname namespace)",
+    "platform agent (visible system participant)",
+    "external agent (sponsored, least-trust)",
+    "publisher (proposes a label that is not the owner's)",
+    "attacker (supplies confusable/bidi/injection labels, stale caches, forged bindings)",
+    "operator (reviews display contract, never a study participant)",
+    "auditor (recomputes evidence from frozen inputs)"
+  ],
+  "trust_boundaries": [
+    "owner namespace -> canonical directory (petnames never cross without re-binding)",
+    "untrusted label input -> display envelope (validated, never authority)",
+    "display envelope -> approval gateway (canonical tuple only)",
+    "current projection -> historical audit (append-only, rename never rewrites)",
+    "visual UI -> accessibility tree (canonical ID in both)",
+    "producer (importer) -> evaluator/auditor (independent recomputation)"
+  ],
+  "hard_invariants": [
+    "I1: canonical principal ID and scope are the sole authority identity",
+    "I2: petname is an owner-local, versioned, display-only projection",
+    "I3: reverse lookup petname->principal never authorizes an action",
+    "I4: collision returns explicit ambiguity, never auto-selects a principal",
+    "I5: approval binding holds canonical actor/target/operation/tool/version/canonical-args/expiry; petname is not in the authoritative tuple",
+    "I6: audit/history stores canonical IDs; rename/delete changes only the current projection, never past events",
+    "I7: untrusted labels never expand capabilities, policy, knowledge or scope",
+    "I8: canonical identity is available visually and non-visually in every high-impact view, approval and on-behalf banner"
+  ],
+  "threats": [
+    {
+      "id": "T01-same-petname-two-principals",
+      "description": "identical petname assigned to two different principals in one owner namespace or across owners",
+      "violates": ["I4", "I1"],
+      "control": "normalized (NFC+casefold) collision index; ambiguous envelopes list all matching canonical identities and require explicit canonical selection",
+      "probes": ["A", "J"],
+      "cases": ["COL-01", "COL-02"]
+    },
+    {
+      "id": "T02-cross-scope-collision",
+      "description": "petname collision across scopes/owners/tenants treated as one identity",
+      "violates": ["I1", "I7"],
+      "control": "scope-qualified keys (owner, tenant/scope, normalized petname); cross-scope reuse is a mismatch FAIL",
+      "probes": ["G"],
+      "cases": ["COL-04", "COL-05"]
+    },
+    {
+      "id": "T03-unicode-confusable",
+      "description": "Unicode confusable, mixed-script, bidi control, invisible characters, normalization/case/whitespace collision silently accepted",
+      "violates": ["I4", "I1"],
+      "control": "NFC+casefold comparison, confusable/mixed-script/bidi-invisible detectors; flagged or ambiguous, canonical ID always shown",
+      "probes": ["C", "D"],
+      "cases": ["UNI-01", "UNI-02", "UNI-03", "UNI-04", "COL-03", "COL-06"]
+    },
+    {
+      "id": "T04-lifecycle-stale",
+      "description": "rename/delete/reuse and stale cache rebind a label to the wrong principal",
+      "violates": ["I6", "I2"],
+      "control": "versioned projections with supersedes chain + tombstones; stale versions never re-resolve; history stays canonical",
+      "probes": ["B", "F"],
+      "cases": ["LIF-01", "LIF-02", "LIF-03", "LIF-04", "LIF-05"]
+    },
+    {
+      "id": "T05-display-spoof",
+      "description": "forged on-behalf banner or approval display substitutes a friendly label for the canonical actor/target",
+      "violates": ["I5", "I8"],
+      "control": "approval and on-behalf views render canonical actor/beneficiary IDs + scope + action; petname is annotation only",
+      "probes": ["H", "I"],
+      "cases": ["APR-01", "APR-02", "APR-03"]
+    },
+    {
+      "id": "T06-name-only-lookup",
+      "description": "name-only reverse lookup or auto-selection of the first match drives authorization",
+      "violates": ["I3", "I4"],
+      "control": "search returns a candidate set; authorization requires an explicit canonical target; first-match selection is a FAIL",
+      "probes": ["A", "J", "H"],
+      "cases": ["COL-01", "APR-06"]
+    },
+    {
+      "id": "T07-markup-injection",
+      "description": "XSS/HTML/script injection through an untrusted petname executes in the UI",
+      "violates": ["I7"],
+      "control": "safe text API (textContent) only; CSP blocks inline/network execution; injection payloads render inert",
+      "probes": ["E"],
+      "cases": ["UNI-05", "UNI-06"]
+    },
+    {
+      "id": "T08-accessibility-omission",
+      "description": "canonical ID lost in screen-reader/keyboard representation",
+      "violates": ["I8"],
+      "control": "accessibility_text always carries canonical ID/type/scope; keyboard flow + visible focus; copy-ID control",
+      "probes": ["I"],
+      "cases": ["APR-04", "APR-05", "APR-07", "BEN-07", "BEN-08"]
+    },
+    {
+      "id": "T09-history-rewrite",
+      "description": "historical audit rewritten after rename (old events show the new label as identity)",
+      "violates": ["I6"],
+      "control": "audit stores canonical IDs only; rename/delete emits a new projection version; past envelopes immutable",
+      "probes": ["B"],
+      "cases": ["LIF-01", "LIF-02", "APR-03"]
+    },
+    {
+      "id": "T10-external-alias-escalation",
+      "description": "external tool/document proposes an alias and attempts to widen authority",
+      "violates": ["I7", "I1"],
+      "control": "external labels are untrusted data; publisher-vs-owner mismatch is flagged; scope mismatch FAILs",
+      "probes": ["G"],
+      "cases": ["LIF-06", "BEN-05"]
+    }
+  ],
+  "controls_summary": [
+    "single authoritative display-envelope schema shared by UI, fixtures, importer and evaluator",
+    "fail-closed validation: unknown version/enum/field, duplicate JSON keys, NaN/Infinity, remote $ref, traversal, wrong type",
+    "no petname serialization in any field a consumer could mistake for a canonical ID",
+    "deterministic 40-case corpus with separate oracle; UI never sees the oracle"
+  ],
+  "residual_risks": [
+    "synthetic technical observations only (human_study_n=0); recognition improvement NOT_MEASURED",
+    "single-operator design review is not a population study",
+    "confusable detection is heuristic; novel scripts may need corpus extension",
+    "same-host replay is called replay, not an external audit"
+  ],
+  "probe_mapping": {
+    "A": "T01+T06", "B": "T04+T09", "C": "T03", "D": "T03",
+    "E": "T07", "F": "T04", "G": "T02+T10", "H": "T05+T06",
+    "I": "T05+T08", "J": "T06", "K": "publication integrity",
+    "L": "human-claim integrity", "M": "freeze integrity", "N": "privacy quarantine"
+  }
+}

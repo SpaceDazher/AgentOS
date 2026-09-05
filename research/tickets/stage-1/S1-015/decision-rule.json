@@ -1,0 +1,28 @@
+{
+  "schema": "agentos.s1-015.decision-rule/v1",
+  "ticket": "S1-015",
+  "frozen": true,
+  "allowed_design_decisions": [
+    "DISPLAY_ONLY_PETNAME_WITH_CANONICAL_ID",
+    "CANONICAL_ID_ONLY",
+    "CONTEXT_LIMITED_DISPLAY_ONLY",
+    "INCONCLUSIVE"
+  ],
+  "forbidden_outcome": "petname as principal ID, lookup key, approval target, policy subject, audit identity, capability owner or cross-tenant directory key",
+  "provisional_gate": {
+    "all_hard_counters_zero": true,
+    "all_mandatory_safety_rates_100pct": true,
+    "run_a_run_b_same_safety_verdict_and_canonical_hashes": true,
+    "operator_answers_admissible": true,
+    "note": "all four must hold for DISPLAY_ONLY_PETNAME_WITH_CANONICAL_ID or CONTEXT_LIMITED_DISPLAY_ONLY"
+  },
+  "fallback": "on any gate violation the decision is CANONICAL_ID_ONLY or INCONCLUSIVE; identity invariants are never relaxed",
+  "operator_binding": {
+    "blocking_answers": ["1C", "2B", "2C", "3B", "3C", "4B", "4C", "5B", "5C", "6B", "6C", "7B", "7C", "8B", "8C", "9B", "9C", "10C"],
+    "human_claim_bar": "11C and 12C are forbidden at human_study_n=0",
+    "honest_downgrade": "1B or 11B/12B yields CANONICAL_ID_ONLY or INCONCLUSIVE",
+    "retention_conflict": "strictest retention policy wins",
+    "verifier_rejects": ["missing/extra answer", "unknown letter", "stale artifact hash", "forged operator count", "manual verdict substitution"]
+  },
+  "status_cap": "PASS_WITH_LIMITS at most; PASS and production rollout are out of scope"
+}
