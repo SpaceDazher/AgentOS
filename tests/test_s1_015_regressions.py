@@ -35,6 +35,30 @@ runner = _load_ticket_module("runner")
 evaluator = _load_ticket_module("evaluator")
 dependency_gate = _load_ticket_module("dependency_gate")
 build_corpus = _load_ticket_module("build_corpus")
+make_bundle = _load_ticket_module("make_bundle")
+
+GREEN_METRICS = {
+    "hard_counters": {name: 0 for name in (
+        "name_only_authorization_accept_count", "canonical_identity_hidden_count",
+        "collision_auto_resolved_count", "historical_identity_rewritten_count",
+        "petname_scope_escape_count", "confusable_spoof_accept_count",
+        "untrusted_markup_executed_count", "stale_petname_rebound_count",
+        "approval_binding_mutated_count", "accessibility_identity_omission_count")},
+    "mandatory_safety": {"canonical_id_visibility": True,
+                         "collision_confusable_detection": True,
+                         "correct_selection_approval_rejection": True,
+                         "history_preservation": True,
+                         "keyboard_screen_reader_completeness": True},
+    "human_study_n": 0,
+    "recognition_improvement": "NOT_MEASURED",
+}
+GREEN_COMPARISON = {"replicated": True}
+
+
+def _all_a_with(**overrides):
+    base = {str(n): "A" for n in range(1, 13)}
+    base.update(overrides)
+    return base
 
 
 def sha(data: bytes) -> str:
@@ -328,6 +352,45 @@ class TestPrototypeStatic(unittest.TestCase):
         self.assertEqual(len(doc["cases"]), 40)
         manifest = load("corpus-manifest.json")
         self.assertEqual(doc["corpus_sha256"], manifest["corpus_sha256"])
+
+
+class TestOperatorVerdict(unittest.TestCase):
+    def test_all_a_admits_display_only(self):
+        blockers, verdict = make_bundle.derive_verdict(
+            copy.deepcopy(GREEN_METRICS), dict(GREEN_COMPARISON),
+            True, _all_a_with())
+        self.assertEqual(blockers, [])
+        self.assertEqual(verdict["design_decision"],
+                         "DISPLAY_ONLY_PETNAME_WITH_CANONICAL_ID")
+        self.assertEqual(verdict["status"], "CLOSED_WITH_LIMITS")
+
+    def test_2b_blocks_petname_closure_as_inconclusive(self):
+        blockers, verdict = make_bundle.derive_verdict(
+            copy.deepcopy(GREEN_METRICS), dict(GREEN_COMPARISON),
+            True, _all_a_with(**{"2": "B"}))
+        self.assertEqual(blockers, [])
+        self.assertEqual(verdict["design_decision"], "INCONCLUSIVE")
+        self.assertEqual(verdict["status"], "CLOSED_INCONCLUSIVE")
+        self.assertIn("2B", verdict["blocking_answers"])
+
+    def test_1b_downgrades_to_canonical_only(self):
+        blockers, verdict = make_bundle.derive_verdict(
+            copy.deepcopy(GREEN_METRICS), dict(GREEN_COMPARISON),
+            True, _all_a_with(**{"1": "B"}))
+        self.assertEqual(blockers, [])
+        self.assertEqual(verdict["design_decision"], "CANONICAL_ID_ONLY")
+
+    def test_nonzero_counter_blocks(self):
+        metrics = copy.deepcopy(GREEN_METRICS)
+        metrics["hard_counters"]["collision_auto_resolved_count"] = 1
+        blockers, _ = make_bundle.derive_verdict(
+            metrics, dict(GREEN_COMPARISON), True, _all_a_with())
+        self.assertTrue(blockers)
+
+    def test_no_decision_stays_preparation_ready(self):
+        blockers, verdict = make_bundle.derive_verdict(
+            copy.deepcopy(GREEN_METRICS), dict(GREEN_COMPARISON), False, None)
+        self.assertEqual(verdict["status"], "PREPARATION_READY")
 
 
 class TestSourcesFrozen(unittest.TestCase):

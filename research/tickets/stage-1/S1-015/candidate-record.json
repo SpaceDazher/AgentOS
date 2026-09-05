@@ -1,15 +1,15 @@
 {
   "schema": "agentos.s1-015.candidate-record/v1",
   "ticket": "S1-015",
-  "status": "PREPARATION_READY",
+  "status": "CLOSED_INCONCLUSIVE",
   "design_decision": "INCONCLUSIVE",
-  "operator_review": "REQUIRED",
-  "operator_review_n": 0,
+  "operator_review": "COMPLETE",
+  "operator_review_n": 1,
   "human_study_n": 0,
   "human_effectiveness": "NOT_MEASURED",
   "recognition_improvement": "NOT_MEASURED",
   "bundle_path": "research/tickets/stage-1/S1-015/bundle.json",
-  "bundle_sha256": "c6311c6f6c0d99513939f96999b994248bb8bb53574422dc8732965d0a1baaaf",
+  "bundle_sha256": "fb9699d97c49ee900dbf62da93c0251840ffa5a8f9fb76cd9fddfa38ed2564f6",
   "matrix": "40 cases x 2 variants x 3 seeds x 2 executors = 480 observations",
   "hard_counters": {
     "name_only_authorization_accept_count": 0,
@@ -37,9 +37,9 @@
     "dependency_gate.py": "9ea14c7b5d0d85e64c24da53ba6d1f16f8042dffae16517b121a137f5c451c95",
     "display_schema.json": "567103c05c11f88ed744a9d02ca41c1ffb67cf917f1d3c170fd27102eb3d6fb2",
     "evaluator.py": "318cd4d3be11c588344b1eb5a5b02ac18725e27ef906cc4e47dc6f5e17e2a5a3",
-    "finalize_record.py": "7e6ce03c51ac241687981c511c53c0c6fccc234bbb97071583665f292ee47a61",
+    "finalize_record.py": "75eaf1896f0a75011685a2dbda29e615f6e3bffb1cc0fa920f4087a8f3daebb6",
     "freeze.py": "f93e5db1e8e702846adc5ff1448f54130239f2257460c875cdf989b0b11c8b0f",
-    "make_bundle.py": "e60f6fc82d1ddf97699bafb1766c0cb1d10234e1cda72bcbc74c45213f5f7660",
+    "make_bundle.py": "46e1ca0e464e4b6ffd77d03eaf8ceb2db494f0870d1be456b24c8957da15aad7",
     "operator-protocol.md": "149db6eeb3574510d28b032afb17c67ea49387a6a0b7ce424c1cda2a4298ecfb",
     "oracle.json": "95f225d9f802e0274a57be5d01671032189577cc6a7a8f48cd1249ea926c44e7",
     "privacy-plan.md": "6872408a722683ca696f9d65abf6173ae6843001208142e0d6d446f39fccf2b7",
@@ -60,7 +60,10 @@
     "sources/snap-05-nist-digital-identity.md": "3da542670557c9ce4a7ff348211b4eea66de95e5daf3c0fdbfd837e7f2b89258",
     "threat-model.json": "d75fd06ed2f44ef74ea2b18508eede29baddfb5ad2b975c6c1c26072b8a92258"
   },
-  "closure_basis": "preparation_only",
-  "result": "PREPARATION_READY",
-  "note": "technical evidence green; operator review required"
+  "closure_basis": "operator_design_review",
+  "result": "INCONCLUSIVE",
+  "blocking_answers": [
+    "2B"
+  ],
+  "note": "operator answers block a petname closure (2B); no provisional petname contract is granted and no PASS_WITH_LIMITS ticket closure is claimed"
 }

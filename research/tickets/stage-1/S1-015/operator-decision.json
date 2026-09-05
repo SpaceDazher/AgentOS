@@ -1,0 +1,49 @@
+{
+  "schema": "agentos.s1-015.operator-decision/v1",
+  "ticket": "S1-015",
+  "decision_id": "S1-015-OPERATOR-2026-09-05",
+  "decided_at_utc": "2026-09-05T02:00:00Z",
+  "operator_id": "OP-OPERATOR-01",
+  "scope": "single_design_review",
+  "selected_answers": {
+    "1": "A",
+    "2": "B",
+    "3": "A",
+    "4": "A",
+    "5": "A",
+    "6": "A",
+    "7": "A",
+    "8": "A",
+    "9": "A",
+    "10": "A",
+    "11": "A",
+    "12": "A"
+  },
+  "answer_string": "1A 2B 3A 4A 5A 6A 7A 8A 9A 10A 11A 12A",
+  "approved_artifact_hashes": {
+    "contract.py": "2a39b77077d2f3577afd2e80ef980b80377dbdd095d997099eafa32c9af08542",
+    "display_schema.json": "567103c05c11f88ed744a9d02ca41c1ffb67cf917f1d3c170fd27102eb3d6fb2",
+    "corpus.json": "0eca2b7958b3824b0331c4968b12ed7a0372d9a9e564139da666a42b8a765c6b",
+    "oracle.json": "95f225d9f802e0274a57be5d01671032189577cc6a7a8f48cd1249ea926c44e7",
+    "rubric.json": "8cbf3a1157237fddc13c7dd608f09126493290f4087c76f87eef877505997176",
+    "decision-rule.json": "ec5641d5466c4e68a7b7ef0e148a76faf95c33ee39ee4245a60d25d687ef97f8",
+    "prototype/browser-contract.json": "d192cdcd41166bc2d0e98c1a8856317de53f913b82a8b044f310bbfe7bdd4762"
+  },
+  "interpretation": {
+    "mode": "single_operator_design_review",
+    "answer_use": "display_contract_decision_only",
+    "blocking_answers": [
+      "2B"
+    ],
+    "blocking_effect": "petname closure blocked per fail-closed rules; honest outcome INCONCLUSIVE",
+    "human_study": "not_performed",
+    "human_effectiveness": "NOT_MEASURED",
+    "recognition_improvement": "NOT_MEASURED",
+    "raw_policy": "structured_answers_only_no_raw_retained"
+  },
+  "limitations": [
+    "one operator design review is not a participant study",
+    "answer 2B (ID hidden by default) conflicts with invariant I8 and blocks any petname contract",
+    "all recognition and effectiveness claims remain NOT_MEASURED"
+  ]
+}

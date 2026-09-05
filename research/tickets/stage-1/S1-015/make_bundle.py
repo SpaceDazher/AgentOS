@@ -46,13 +46,15 @@ REQUIRED_CLAIM_CLASSES = {
     "spoofing_risk", "accessibility_risk", "decision", "limitation",
 }
 
-ADMISSIBLE = {
-    "1": set("AB"), "2": set("A"), "3": set("A"), "4": set("A"),
-    "5": set("A"), "6": set("A"), "7": set("A"), "8": set("A"),
-    "9": set("A"), "10": set("AB"), "11": set("AB"), "12": set("AB"),
-}
 BLOCKING = {"1C", "2B", "2C", "3B", "3C", "4B", "4C", "5B", "5C", "6B", "6C",
             "7B", "7C", "8B", "8C", "9B", "9C", "10C"}
+# Blocking answers are well-formed but block a PETNAME closure: the honest
+# outcome is INCONCLUSIVE (or CANONICAL_ID_ONLY for 1B). Only malformed,
+# forged or 11C/12C bindings fail publication itself.
+REQUIRED_DECISION_BINDINGS = (
+    "contract.py", "display_schema.json", "corpus.json", "oracle.json",
+    "rubric.json", "decision-rule.json", "prototype/browser-contract.json",
+)
 
 
 def sha(data: bytes) -> str:
@@ -319,7 +321,7 @@ def verify_operator_decision(here: Path):
     if doc.get("ticket") != TICKET:
         raise ValueError("operator decision ticket mismatch")
     answers = doc.get("selected_answers")
-    if not isinstance(answers, dict) or sorted(answers) != [str(n) for n in range(1, 13)]:
+    if not isinstance(answers, dict) or sorted(answers, key=int) != [str(n) for n in range(1, 13)]:
         raise ValueError("operator decision must hold exactly answers 1..12")
     letters = {}
     for num in range(1, 13):
@@ -327,8 +329,6 @@ def verify_operator_decision(here: Path):
         if letter not in ("A", "B", "C"):
             raise ValueError(f"answer {num} has unknown letter {letter!r}")
         letters[str(num)] = letter
-        if f"{num}{letter}" in BLOCKING:
-            raise ValueError(f"answer {num}{letter} blocks petname closure")
     if letters["11"] == "C" or letters["12"] == "C":
         raise ValueError("11C/12C forbidden at human_study_n=0")
     approved = doc.get("approved_artifact_hashes", {})
@@ -338,10 +338,10 @@ def verify_operator_decision(here: Path):
             raise ValueError(f"operator-approved artifact missing: {name}")
         if sha(candidate.read_bytes()) != expected:
             raise ValueError(f"operator-approved artifact drift: {name}")
-    # Required bindings: contract, corpus artifacts, rubric, bundle.
-    for name in ("contract.py", "display_schema.json", "corpus.json", "oracle.json",
-                 "rubric.json", "decision-rule.json", "bundle.json",
-                 "prototype/browser-contract.json"):
+    # Required bindings: contract, corpus artifacts, rubric, UI contract.
+    # (bundle.json is bound separately through the candidate/evaluation
+    # chain because it is regenerated after the review.)
+    for name in REQUIRED_DECISION_BINDINGS:
         if name not in approved:
             raise ValueError(f"operator decision missing binding: {name}")
     return True, letters, doc
@@ -362,16 +362,36 @@ def derive_verdict(metrics: dict, comparison: dict, present: bool,
     if not present:
         return blockers, {"design_decision": "INCONCLUSIVE",
                           "status": "PREPARATION_READY",
+                          "result": "PREPARATION_READY",
                           "operator_review": "REQUIRED",
                           "note": "technical evidence green; operator review required"}
     assert letters is not None
-    if letters["1"] == "B" or letters["11"] == "B" or letters["12"] == "B":
-        decision = "CANONICAL_ID_ONLY" if letters["1"] == "B" else "INCONCLUSIVE"
-        return blockers, {"design_decision": decision, "status": "CLOSED_WITH_LIMITS",
+    blocking_hit = sorted(f"{num}{letters[num]}" for num in
+                          (str(n) for n in range(1, 13))
+                          if f"{num}{letters[num]}" in BLOCKING)
+    if blocking_hit:
+        return blockers, {
+            "design_decision": "INCONCLUSIVE", "status": "CLOSED_INCONCLUSIVE",
+            "result": "INCONCLUSIVE", "operator_review": "COMPLETE",
+            "blocking_answers": blocking_hit,
+            "note": ("operator answers block a petname closure "
+                     f"({', '.join(blocking_hit)}); no provisional petname "
+                     "contract is granted and no PASS_WITH_LIMITS ticket "
+                     "closure is claimed"),
+        }
+    if letters["1"] == "B":
+        return blockers, {"design_decision": "CANONICAL_ID_ONLY",
+                          "status": "CLOSED_WITH_LIMITS", "result": "PASS_WITH_LIMITS",
+                          "operator_review": "COMPLETE",
+                          "note": "honest downgrade: petnames deferred per operator"}
+    if letters["11"] == "B" or letters["12"] == "B":
+        return blockers, {"design_decision": "INCONCLUSIVE",
+                          "status": "CLOSED_INCONCLUSIVE", "result": "INCONCLUSIVE",
                           "operator_review": "COMPLETE",
                           "note": "honest downgrade per operator answers"}
     return blockers, {"design_decision": "DISPLAY_ONLY_PETNAME_WITH_CANONICAL_ID",
-                      "status": "CLOSED_WITH_LIMITS", "operator_review": "COMPLETE",
+                      "status": "CLOSED_WITH_LIMITS", "result": "PASS_WITH_LIMITS",
+                      "operator_review": "COMPLETE",
                       "note": ("provisional display-only contract; human recognition "
                                "improvement remains NOT_MEASURED")}
 
@@ -514,7 +534,7 @@ ARTIFACT_TEXTS = {
 
 
 def build_bundle(here: Path, sources: list[dict], verdict: dict,
-                 present: bool) -> dict:
+                 present: bool, letters: dict | None = None) -> dict:
     artifacts: dict[str, dict] = {}
     for kind in FLOW:
         if kind == "platform_plan":
@@ -565,6 +585,19 @@ def build_bundle(here: Path, sources: list[dict], verdict: dict,
         artifact["claim_refs"] = refs
     artifacts["independent_audit"]["producer"] = AUDITOR
     artifacts["source_registry"]["claim_refs"] = ["CL-H1", "CL-L1"]
+    if verdict.get("design_decision") == "INCONCLUSIVE" and present:
+        review_limit = ("one operator design review recorded "
+                        + " ".join(f"{n}{letters[n]}" for n in sorted(letters, key=int))
+                        + "; blocking answers "
+                        + ", ".join(verdict.get("blocking_answers", []))
+                        + " admit no petname contract; recognition improvement "
+                          "NOT_MEASURED")
+    elif present:
+        review_limit = ("one operator design review authorizes a display contract; "
+                        "recognition improvement NOT_MEASURED")
+    else:
+        review_limit = ("operator review required before any display-contract "
+                        "decision; recognition improvement NOT_MEASURED")
     bundle = {
         "artifacts": artifacts,
         "audit": {
@@ -575,7 +608,7 @@ def build_bundle(here: Path, sources: list[dict], verdict: dict,
                 "tracked-Git dependency evidence; local canonical DB recheck is required before final publication",
                 "no human data: all rates are technical dry-run checks",
                 "source coverage and verification limits remain explicit in the registry",
-                "one operator design review authorizes a display contract; recognition improvement NOT_MEASURED",
+                review_limit,
                 "same-host replay is called replay, not an external audit",
             ],
         },
@@ -588,6 +621,9 @@ def build_bundle(here: Path, sources: list[dict], verdict: dict,
         "operator_review_n": 1 if present else 0,
         "human_study_n": 0,
         "recognition_improvement": "NOT_MEASURED",
+        "operator_answers": dict(letters) if present and letters else {},
+        "design_decision": verdict.get("design_decision", "INCONCLUSIVE"),
+        "blocking_answers": verdict.get("blocking_answers", []),
     }
     classes = {c["s1_015_class"] for c in CLAIMS}
     if not REQUIRED_CLAIM_CLASSES.issubset(classes):
@@ -600,6 +636,19 @@ def build_bundle(here: Path, sources: list[dict], verdict: dict,
 
 def write_results_docs(here: Path, verdict: dict, metrics: dict,
                        present: bool, letters: dict | None) -> None:
+    answers = ("Operator answers `" + " ".join(f"{n}{letters[n]}" for n in
+               sorted(letters, key=int)) + "`. "
+               if present and letters else "No operator decision yet. ")
+    closing = ""
+    if verdict["design_decision"] == "INCONCLUSIVE" and present:
+        closing = (verdict["note"].rstrip() + ". Human recognition improvement "
+                   "remains NOT_MEASURED. " if not verdict["note"].rstrip().endswith(".")
+                   else verdict["note"].rstrip() + " Human recognition improvement "
+                   "remains NOT_MEASURED. ")
+    elif verdict["design_decision"] == "DISPLAY_ONLY_PETNAME_WITH_CANONICAL_ID":
+        closing += (" Operator approved a provisional display-only petname "
+                    "contract; human recognition improvement remains "
+                    "NOT_MEASURED.")
     (here / "results" / "decision.md").write_text(
         "# S1-015 decision: " + verdict["design_decision"] + "\n\n"
         f"Status: `{verdict['status']}` (cap: PASS_WITH_LIMITS at most). "
@@ -610,12 +659,7 @@ def write_results_docs(here: Path, verdict: dict, metrics: dict,
         "in every seed/executor; mandatory safety rates are 100%; probes A-N "
         "pass through the real path with benign controls; the real-browser "
         "probe (Edge/Chromium) walks both variants and round-trips through "
-        "the importer.\n\n"
-        + ("Operator answers `" + " ".join(f"{n}{letters[n]}" for n in sorted(letters)) + "` admit: "
-           if present and letters else "No operator decision yet: ") +
-        verdict["note"] + "\n\n"
-        "Operator approved a provisional display-only petname contract; human "
-        "recognition improvement remains NOT_MEASURED.\n",
+        "the importer.\n\n" + answers + closing + "\n",
         encoding="utf-8", newline="\n")
     (here / "results" / "limitations.md").write_text(
         "# S1-015 limitations\n\n"
@@ -659,7 +703,7 @@ def main(argv: list[str] | None = None) -> int:
         if scan:
             raise ValueError("secret/PII scan failed: " + "; ".join(scan[:6]))
         sources = build_sources(here)
-        bundle = build_bundle(here, sources, verdict, present)
+        bundle = build_bundle(here, sources, verdict, present, letters)
         (here / "bundle.json").write_text(
             json.dumps(bundle, indent=2, ensure_ascii=False) + "\n",
             encoding="utf-8", newline="\n")
@@ -684,7 +728,8 @@ def main(argv: list[str] | None = None) -> int:
             "replicated": evidence["comparison"]["replicated"],
             "frozen_hashes": frozen,
             "closure_basis": "operator_design_review" if present else "preparation_only",
-            "result": "PASS_WITH_LIMITS" if present else "PREPARATION_READY",
+            "result": verdict.get("result", "PREPARATION_READY"),
+            "blocking_answers": verdict.get("blocking_answers", []),
             "note": verdict["note"],
         }
         (here / "candidate-record.json").write_text(

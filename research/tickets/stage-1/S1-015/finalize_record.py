@@ -103,7 +103,9 @@ def main(argv: list[str] | None = None) -> int:
     blockers, verdict = publisher.derive_verdict(
         publisher._read_json(HERE / "results" / "metrics.json", "metrics"),
         publisher._read_json(HERE / "results" / "comparison.json", "comparison"),
-        True, None)
+        False, None)
+    if blockers:
+        raise ValueError("current ticket evidence is invalid: " + "; ".join(blockers))
     # Re-derive with the real operator decision (must exist by now).
     present, letters, _ = publisher.verify_operator_decision(HERE)
     if not present:
@@ -113,8 +115,8 @@ def main(argv: list[str] | None = None) -> int:
     blockers, verdict = publisher.derive_verdict(metrics, comparison, present, letters)
     if blockers:
         raise ValueError("current ticket evidence is invalid: " + "; ".join(blockers))
-    if verdict["status"] != "CLOSED_WITH_LIMITS":
-        raise ValueError("candidate is not closed with limits")
+    if verdict["status"] not in ("CLOSED_WITH_LIMITS", "CLOSED_INCONCLUSIVE"):
+        raise ValueError("candidate is not in a closed state")
 
     db_root = Path(args.db).resolve()
     db_file = db_root / "agentos.db"
@@ -143,7 +145,10 @@ def main(argv: list[str] | None = None) -> int:
     if config_errors or manifest_errors or manifest != series["manifest_sha256"]:
         raise ValueError("bundle is not the canonical revision input")
     candidate = json.loads((HERE / "candidate-record.json").read_text(encoding="utf-8"))
-    if candidate.get("status") != "CLOSED_WITH_LIMITS" or \
+    if candidate.get("status") not in ("CLOSED_WITH_LIMITS", "CLOSED_INCONCLUSIVE") or \
+            candidate.get("design_decision") not in (
+                "DISPLAY_ONLY_PETNAME_WITH_CANONICAL_ID",
+                "CANONICAL_ID_ONLY", "CONTEXT_LIMITED_DISPLAY_ONLY", "INCONCLUSIVE") or \
             candidate.get("human_study_n") != 0 or \
             candidate.get("recognition_improvement") != "NOT_MEASURED" or \
             candidate.get("bundle_sha256") != sha((HERE / "bundle.json").read_bytes()):
