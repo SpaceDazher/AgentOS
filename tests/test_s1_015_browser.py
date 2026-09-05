@@ -8,6 +8,7 @@ Run: $env:PYTHONPATH="src"; py -3.12 -m unittest tests.test_s1_015_browser -v
 """
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -19,22 +20,25 @@ S1015 = ROOT / "research" / "tickets" / "stage-1" / "S1-015"
 
 
 def _writable_tmp() -> Path:
-    for candidate in (os.environ.get("S1015_TMPDIR"), r"D:\Temp-opencode",
-                      tempfile.gettempdir()):
-        if candidate and Path(candidate).is_dir():
-            return Path(candidate)
-    return Path(tempfile.gettempdir())
+    # Only an explicit override may select a non-system temp root.  The old
+    # implicit D:\Temp-opencode preference was writable by the Python parent
+    # but not by Playwright's child process under a restricted host, causing
+    # download.save_as() to fail or leave the test waiting on child cleanup.
+    root = Path(os.environ.get("S1015_TMPDIR") or tempfile.gettempdir()).resolve()
+    root.mkdir(parents=True, exist_ok=True)
+    return root
 
 
 class TestBrowserProbe(unittest.TestCase):
     def test_real_browser_flow_and_import(self):
         tmp = Path(tempfile.mkdtemp(prefix="s1015-bt-", dir=str(_writable_tmp())))
+        self.addCleanup(shutil.rmtree, tmp, True)
         envelopes = tmp / "envelopes.json"
         env = dict(os.environ, TEMP=str(_writable_tmp()), TMP=str(_writable_tmp()))
         proc = subprocess.run(
             [sys.executable, str(S1015 / "prototype" / "browser_probe.py"),
              "--out", str(envelopes)],
-            cwd=str(ROOT), capture_output=True, text=True, env=env, timeout=240)
+            cwd=str(ROOT), capture_output=True, text=True, env=env, timeout=90)
         self.assertEqual(proc.returncode, 0, msg=proc.stderr[-2000:])
         summary = json.loads(proc.stdout.strip().splitlines()[-1])
         self.assertTrue(summary.get("synthetic"))

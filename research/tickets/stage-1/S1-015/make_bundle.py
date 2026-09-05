@@ -48,9 +48,10 @@ REQUIRED_CLAIM_CLASSES = {
 
 BLOCKING = {"1C", "2B", "2C", "3B", "3C", "4B", "4C", "5B", "5C", "6B", "6C",
             "7B", "7C", "8B", "8C", "9B", "9C", "10C"}
-# Blocking answers are well-formed but block a PETNAME closure: the honest
-# outcome is INCONCLUSIVE (or CANONICAL_ID_ONLY for 1B). Only malformed,
-# forged or 11C/12C bindings fail publication itself.
+# Blocking answers are well-formed but prohibit a PETNAME contract.  The
+# fail-closed product decision is therefore CANONICAL_ID_ONLY; the research
+# ticket can still close with explicit limits.  Only malformed, forged or
+# 11C/12C bindings fail publication itself.
 REQUIRED_DECISION_BINDINGS = (
     "contract.py", "display_schema.json", "corpus.json", "oracle.json",
     "rubric.json", "decision-rule.json", "prototype/browser-contract.json",
@@ -245,11 +246,25 @@ def check_dependency(here: Path) -> dict:
 
 
 def run_subprocess(argv: list[str], cwd: Path, env_extra: dict | None = None) -> None:
-    env = dict(os.environ)
-    env["TEMP"] = r"D:\Temp-opencode"
-    env["TMP"] = r"D:\Temp-opencode"
+    passthrough = {
+        "APPDATA", "COMSPEC", "HOMEDRIVE", "HOMEPATH", "LOCALAPPDATA",
+        "PATH", "PATHEXT", "SYSTEMROOT", "USERPROFILE", "WINDIR",
+        "PYTHONPATH",
+    }
+    env = {key: value for key, value in os.environ.items()
+           if key.upper() in passthrough}
+    temp_root = Path(os.environ.get("S1015_TMPDIR") or
+                     tempfile.gettempdir()).resolve()
+    temp_root.mkdir(parents=True, exist_ok=True)
+    env["TEMP"] = str(temp_root)
+    env["TMP"] = str(temp_root)
+    env["PYTHONIOENCODING"] = "utf-8"
+    env["PYTHONDONTWRITEBYTECODE"] = "1"
     if env_extra:
-        env.update(env_extra)
+        for key, value in env_extra.items():
+            if key != "PYTHONPATH" and not key.startswith("S1015_"):
+                raise ValueError(f"subprocess environment key not allowed: {key}")
+            env[key] = value
     proc = subprocess.run(argv, cwd=str(cwd), capture_output=True, text=True, env=env,
                           timeout=PROCESS_TIMEOUT_SECONDS)
     if proc.returncode != 0:
@@ -371,13 +386,12 @@ def derive_verdict(metrics: dict, comparison: dict, present: bool,
                           if f"{num}{letters[num]}" in BLOCKING)
     if blocking_hit:
         return blockers, {
-            "design_decision": "INCONCLUSIVE", "status": "CLOSED_INCONCLUSIVE",
-            "result": "INCONCLUSIVE", "operator_review": "COMPLETE",
+            "design_decision": "CANONICAL_ID_ONLY", "status": "CLOSED_WITH_LIMITS",
+            "result": "PASS_WITH_LIMITS", "operator_review": "COMPLETE",
             "blocking_answers": blocking_hit,
-            "note": ("operator answers block a petname closure "
-                     f"({', '.join(blocking_hit)}); no provisional petname "
-                     "contract is granted and no PASS_WITH_LIMITS ticket "
-                     "closure is claimed"),
+            "note": ("operator answers prohibit a petname contract "
+                     f"({', '.join(blocking_hit)}); the fail-closed product "
+                     "decision is canonical ID only"),
         }
     if letters["1"] == "B":
         return blockers, {"design_decision": "CANONICAL_ID_ONLY",
@@ -592,6 +606,10 @@ def build_bundle(here: Path, sources: list[dict], verdict: dict,
                         + ", ".join(verdict.get("blocking_answers", []))
                         + " admit no petname contract; recognition improvement "
                           "NOT_MEASURED")
+    elif verdict.get("design_decision") == "CANONICAL_ID_ONLY" and present:
+        review_limit = ("one operator design review prohibited a petname "
+                        "contract; CANONICAL_ID_ONLY is the fail-closed product "
+                        "decision; recognition improvement NOT_MEASURED")
     elif present:
         review_limit = ("one operator design review authorizes a display contract; "
                         "recognition improvement NOT_MEASURED")
@@ -649,6 +667,10 @@ def write_results_docs(here: Path, verdict: dict, metrics: dict,
         closing += (" Operator approved a provisional display-only petname "
                     "contract; human recognition improvement remains "
                     "NOT_MEASURED.")
+    elif verdict["design_decision"] == "CANONICAL_ID_ONLY":
+        closing += (" Operator answers prohibit a petname contract; the "
+                    "fail-closed product decision is CANONICAL_ID_ONLY. Human "
+                    "recognition improvement remains NOT_MEASURED.")
     (here / "results" / "decision.md").write_text(
         "# S1-015 decision: " + verdict["design_decision"] + "\n\n"
         f"Status: `{verdict['status']}` (cap: PASS_WITH_LIMITS at most). "

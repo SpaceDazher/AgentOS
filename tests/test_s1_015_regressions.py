@@ -14,6 +14,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 S1015 = ROOT / "research" / "tickets" / "stage-1" / "S1-015"
@@ -364,13 +365,14 @@ class TestOperatorVerdict(unittest.TestCase):
                          "DISPLAY_ONLY_PETNAME_WITH_CANONICAL_ID")
         self.assertEqual(verdict["status"], "CLOSED_WITH_LIMITS")
 
-    def test_2b_blocks_petname_closure_as_inconclusive(self):
+    def test_2b_blocks_petnames_and_closes_with_canonical_id_only(self):
         blockers, verdict = make_bundle.derive_verdict(
             copy.deepcopy(GREEN_METRICS), dict(GREEN_COMPARISON),
             True, _all_a_with(**{"2": "B"}))
         self.assertEqual(blockers, [])
-        self.assertEqual(verdict["design_decision"], "INCONCLUSIVE")
-        self.assertEqual(verdict["status"], "CLOSED_INCONCLUSIVE")
+        self.assertEqual(verdict["design_decision"], "CANONICAL_ID_ONLY")
+        self.assertEqual(verdict["status"], "CLOSED_WITH_LIMITS")
+        self.assertEqual(verdict["result"], "PASS_WITH_LIMITS")
         self.assertIn("2B", verdict["blocking_answers"])
 
     def test_1b_downgrades_to_canonical_only(self):
@@ -391,6 +393,23 @@ class TestOperatorVerdict(unittest.TestCase):
         blockers, verdict = make_bundle.derive_verdict(
             copy.deepcopy(GREEN_METRICS), dict(GREEN_COMPARISON), False, None)
         self.assertEqual(verdict["status"], "PREPARATION_READY")
+
+
+class TestPublisherSubprocessIsolation(unittest.TestCase):
+    def test_host_secrets_are_not_forwarded_and_temp_is_process_writable(self):
+        completed = make_bundle.subprocess.CompletedProcess(["worker"], 0, "", "")
+        with mock.patch.dict(make_bundle.os.environ,
+                             {"GITHUB_TOKEN": "must-not-leak",
+                              "AWS_SECRET_ACCESS_KEY": "must-not-leak"},
+                             clear=False), \
+                mock.patch.object(make_bundle.subprocess, "run",
+                                  return_value=completed) as run:
+            make_bundle.run_subprocess(["worker"], S1015)
+        child_env = run.call_args.kwargs["env"]
+        self.assertNotIn("GITHUB_TOKEN", child_env)
+        self.assertNotIn("AWS_SECRET_ACCESS_KEY", child_env)
+        self.assertNotEqual(child_env["TEMP"].casefold(), r"d:\temp-opencode".casefold())
+        self.assertTrue(Path(child_env["TEMP"]).is_dir())
 
 
 class TestSourcesFrozen(unittest.TestCase):

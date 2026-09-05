@@ -87,10 +87,12 @@ def main() -> int:
             browser = playwright.chromium.launch(headless=True, executable_path=edge)
             try:
                 page = browser.new_page(accept_downloads=True)
+                page.set_default_timeout(10_000)
+                page.set_default_navigation_timeout(15_000)
                 page.on("pageerror", lambda exc: errors.append(str(exc)))
                 page.on("console", lambda msg: errors.append(msg.text) if msg.type == "error" else None)
                 url = f"http://127.0.0.1:{port}/index.html"
-                page.goto(url)
+                page.goto(url, wait_until="domcontentloaded", timeout=15_000)
                 page.get_by_text("Frozen corpus 40 cases loaded").wait_for()
                 checks.append("frozen-contract-loaded")
 
