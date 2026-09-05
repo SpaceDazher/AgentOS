@@ -1,0 +1,178 @@
+{
+  "schema": "agentos.s1-012.comparison/v1",
+  "verdict": "DECIDED",
+  "cells": [
+    "digest-12012",
+    "digest-22022",
+    "digest-33033",
+    "document-12012",
+    "document-22022",
+    "document-33033",
+    "reputation-only-12012",
+    "reputation-only-22022",
+    "reputation-only-33033",
+    "span-12012",
+    "span-22022",
+    "span-33033"
+  ],
+  "pair_results": {
+    "digest-12012": {
+      "admissible": true,
+      "rows_compared": 60,
+      "identical_rows": 60,
+      "fully_reproducible": true
+    },
+    "digest-22022": {
+      "admissible": true,
+      "rows_compared": 60,
+      "identical_rows": 60,
+      "fully_reproducible": true
+    },
+    "digest-33033": {
+      "admissible": true,
+      "rows_compared": 60,
+      "identical_rows": 60,
+      "fully_reproducible": true
+    },
+    "document-12012": {
+      "admissible": true,
+      "rows_compared": 60,
+      "identical_rows": 60,
+      "fully_reproducible": true
+    },
+    "document-22022": {
+      "admissible": true,
+      "rows_compared": 60,
+      "identical_rows": 60,
+      "fully_reproducible": true
+    },
+    "document-33033": {
+      "admissible": true,
+      "rows_compared": 60,
+      "identical_rows": 60,
+      "fully_reproducible": true
+    },
+    "reputation-only-12012": {
+      "admissible": true,
+      "rows_compared": 60,
+      "identical_rows": 60,
+      "fully_reproducible": true
+    },
+    "reputation-only-22022": {
+      "admissible": true,
+      "rows_compared": 60,
+      "identical_rows": 60,
+      "fully_reproducible": true
+    },
+    "reputation-only-33033": {
+      "admissible": true,
+      "rows_compared": 60,
+      "identical_rows": 60,
+      "fully_reproducible": true
+    },
+    "span-12012": {
+      "admissible": true,
+      "rows_compared": 60,
+      "identical_rows": 60,
+      "fully_reproducible": true
+    },
+    "span-22022": {
+      "admissible": true,
+      "rows_compared": 60,
+      "identical_rows": 60,
+      "fully_reproducible": true
+    },
+    "span-33033": {
+      "admissible": true,
+      "rows_compared": 60,
+      "identical_rows": 60,
+      "fully_reproducible": true
+    }
+  },
+  "commits": [
+    "f43217c53b89403b8868090f0509282d7845298d"
+  ],
+  "trees": [
+    "0e853b9907a3aba23cbad4fc95bf6e18cf7b7de0"
+  ],
+  "design_values": {
+    "digest": {
+      "safety_no_double_count": 1.0,
+      "safety_no_bad_accept": 1.0,
+      "safety_no_authority_change": 1.0,
+      "unit_count_accuracy": 1.0,
+      "split_merge_correctness": 0.966667,
+      "provenance_binding": 1.0,
+      "cost_separation": 1.0,
+      "explainability": 0.6,
+      "calibration_honesty": 1.0,
+      "_basis_note": "qualitative basis in decision.md; measured dims from counters"
+    },
+    "document": {
+      "safety_no_double_count": 1.0,
+      "safety_no_bad_accept": 1.0,
+      "safety_no_authority_change": 1.0,
+      "unit_count_accuracy": 1.0,
+      "split_merge_correctness": 1.0,
+      "provenance_binding": 1.0,
+      "cost_separation": 1.0,
+      "explainability": 0.8,
+      "calibration_honesty": 1.0,
+      "_basis_note": "qualitative basis in decision.md; measured dims from counters"
+    },
+    "reputation-only": {
+      "safety_no_double_count": 0.0,
+      "safety_no_bad_accept": 1.0,
+      "safety_no_authority_change": 1.0,
+      "unit_count_accuracy": 1.0,
+      "split_merge_correctness": 1.0,
+      "provenance_binding": 1.0,
+      "cost_separation": 1.0,
+      "explainability": 0.3,
+      "calibration_honesty": 0.5,
+      "_basis_note": "qualitative basis in decision.md; measured dims from counters"
+    },
+    "span": {
+      "safety_no_double_count": 1.0,
+      "safety_no_bad_accept": 1.0,
+      "safety_no_authority_change": 1.0,
+      "unit_count_accuracy": 1.0,
+      "split_merge_correctness": 1.0,
+      "provenance_binding": 1.0,
+      "cost_separation": 1.0,
+      "explainability": 0.8,
+      "calibration_honesty": 1.0,
+      "_basis_note": "qualitative basis in decision.md; measured dims from counters"
+    }
+  },
+  "eligible_designs": [
+    "digest",
+    "document",
+    "span"
+  ],
+  "excluded_designs": [
+    "reputation-only"
+  ],
+  "sensitivity_winner": "TIE",
+  "sensitivity_flips": 0,
+  "unknown_dependent": true,
+  "tie_limitation": {
+    "tied": [
+      "document",
+      "span"
+    ],
+    "all_eligible": true,
+    "note": "Safety tie among hard-passing variants; MVP chosen on measured cost grounds (see decision.md), not by reweighting."
+  },
+  "probe_h": {
+    "schema": "agentos.s1-012.probe-h/v1",
+    "passed": true,
+    "checks": {
+      "cell_sets_equal": true,
+      "no_null_hashes": true,
+      "no_duplicate_rows": true,
+      "ab_identities_distinct": true,
+      "verdicts_match": true
+    }
+  }
+}

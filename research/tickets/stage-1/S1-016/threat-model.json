@@ -1,0 +1,50 @@
+{
+  "schema": "agentos.s1-016.threat-model/v1",
+  "ticket": "S1-016",
+  "assets": [
+    "canonical runtime scope triple per ArtifactVersion",
+    "immutable ArtifactVersion content and version chain",
+    "append-only operation and lineage event log",
+    "collection membership intervals",
+    "derived PROV export projection",
+    "audit reconstruction capability"
+  ],
+  "actors": [
+    "scope owner (creates/updates within own scope)",
+    "second scope owner (independent tenant/workspace)",
+    "platform operator (runs export/audit reconstruction)",
+    "attacker (forges scope, mutates history, injects orphan/cyclic edges, tampers metrics)",
+    "auditor (rebuilds chains from canonical events only)"
+  ],
+  "trust_boundaries": [
+    "caller scope claim -> canonical auth context (caller strings never widen scope)",
+    "runtime state -> export projection (projection never flows back as authority)",
+    "producer (simulator) -> evaluator/auditor (independent recomputation from events)",
+    "visible scope -> redacted foreign scope (no content/IDs cross)"
+  ],
+  "invariant_catalog": ["L1", "L2", "L3", "L4", "L5", "L6", "L7", "L8", "L9", "L10", "L11", "L12"],
+  "threats": [
+    { "id": "T-copy-mutate", "description": "cross-scope copy mutates the source located_in", "violates": ["L1", "L3"], "probes": ["A"] },
+    { "id": "T-removal-wipe", "description": "removal erases insertion/history", "violates": ["L2", "L5"], "probes": ["B"] },
+    { "id": "T-orphan", "description": "lineage edge points at a missing entity/member", "violates": ["L7"], "probes": ["C"] },
+    { "id": "T-prov-auth", "description": "provenance relation grants read/write", "violates": ["L6"], "probes": ["D"] },
+    { "id": "T-dual-scope", "description": "one ArtifactVersion carries two authoritative scopes", "violates": ["L1"], "probes": ["E"] },
+    { "id": "T-causal", "description": "forged/cyclic/out-of-order causal graph accepted without explicit policy", "violates": ["L8"], "probes": ["F"] },
+    { "id": "T-stale-rebind", "description": "stale ID or reused member silently binds to a new entity", "violates": ["L2", "L7"], "probes": ["G"] },
+    { "id": "T-export-loss", "description": "PROV export loses a removal or membership interval", "violates": ["L5", "L9"], "probes": ["H"] },
+    { "id": "T-import-collapse", "description": "importer collapses immutable versions or rewrites scope", "violates": ["L1", "L2"], "probes": ["I"] },
+    { "id": "T-partial-move", "description": "partial cross-scope move presents as completed", "violates": ["L4", "L10"], "probes": ["J"] },
+    { "id": "T-redact-leak", "description": "redacted export reveals hidden scope/content/identifier", "violates": ["L11"], "probes": ["K"] },
+    { "id": "T-parser", "description": "unknown version, duplicate key, NaN, remote ref or traversal accepted", "violates": ["L7"], "probes": ["L"] },
+    { "id": "T-forged-metrics", "description": "producer forges all_safe/metrics/engine marker/verdict", "violates": ["L10"], "probes": ["M"] },
+    { "id": "T-mixed-provenance", "description": "result mixes commits/manifests/executors", "violates": ["L8", "L10"], "probes": ["N"] },
+    { "id": "T-frozen-drift", "description": "extra/missing fixture or changed frozen hash accepted", "violates": ["L8"], "probes": ["O"] },
+    { "id": "T-secret", "description": "raw secret/credential/private content in artifact/trace", "violates": ["L11"], "probes": ["P"] }
+  ],
+  "residual_risks": [
+    "bounded corpus: 48 scenarios cannot cover arbitrary distributed executions",
+    "same-host process separation is called replay, not an external audit",
+    "wall-clock latencies are same-host model evidence, not production SLOs",
+    "redaction receipts expose foreign-entity counts by design (L11 permits counts)"
+  ]
+}

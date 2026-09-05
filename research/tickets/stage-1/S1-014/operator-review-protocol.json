@@ -1,0 +1,37 @@
+{
+  "assignment": "deterministic counterbalanced table (assignment-table.json); operator uses seed/executor shown in UI",
+  "banner": "OPERATOR DESIGN REVIEW — NOT A USER STUDY",
+  "flow": [
+    "consent checkbox (design review, no PII)",
+    "practice task (not recorded)",
+    "8 trials: presentation = focus on first answer control; submit or 180 s timeout",
+    "pause/resume allowed; withdraw keeps remaining trials as missing",
+    "export envelope; run importer/evaluator locally",
+    "answer 12-question questionnaire as `1A 2A ... 12A`"
+  ],
+  "human_study_n": 0,
+  "inherits_limits_from": [
+    "S1-013"
+  ],
+  "mode": "owner/reviewer walkthrough of one operator as design conformance review",
+  "operator_review_n": 1,
+  "privacy": {
+    "forbidden_in_git": [
+      "PII",
+      "secrets",
+      "raw consent",
+      "free text",
+      "re-identification keys",
+      "raw browser event logs of the operator"
+    ],
+    "ids": "opaque session/participant ids without identity mapping"
+  },
+  "rules": [
+    "operator judgment never becomes a participant score",
+    "accessibility accommodations disclosed, results never excluded",
+    "protocol deviations appended, never edited"
+  ],
+  "schema": "agentos.s1-014.operator-review-protocol/v1",
+  "telemetry": "none",
+  "ticket": "S1-014"
+}

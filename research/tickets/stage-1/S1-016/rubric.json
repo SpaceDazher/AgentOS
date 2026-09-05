@@ -1,0 +1,28 @@
+{
+  "schema": "agentos.s1-016.rubric/v1",
+  "ticket": "S1-016",
+  "frozen": true,
+  "hard_gates": {
+    "invariant_violations_L1_L12": 0,
+    "orphan_dangling_links": 0,
+    "authority_expansions": 0,
+    "supported_roundtrip_semantic_match_rate": 1.0,
+    "audit_reconstruction_rate": 1.0,
+    "required_invalid_rejection_rate": 1.0
+  },
+  "hard_gate_rule": "every hard gate must hold in each representation/seed/executor; any violation is FAIL uncompensated by latency, storage or score",
+  "reported_metrics": [
+    "invariant violations L1-L12 per representation/operation/seed/executor",
+    "orphan/dangling links",
+    "exact audit reconstruction rate",
+    "valid round-trip semantic match rate",
+    "invalid/unsupported input rejection rate with exact reasons",
+    "cross-scope leak/authority expansion count",
+    "operation/state rows and serialized bytes per scenario",
+    "export/import/reconstruction technical latency p50/p95/max (same-host ns)",
+    "schema/constraint count and implementation complexity proxy",
+    "failure/recovery completeness at crash points"
+  ],
+  "counting_rule": "raw numerator/denominator; a missing metric/case/seed/CI field is not zero and fails closed",
+  "performance_note": "performance/storage numbers are same-host model evidence, not production SLOs"
+}

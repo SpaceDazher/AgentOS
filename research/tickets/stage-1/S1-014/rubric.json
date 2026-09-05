@@ -1,0 +1,42 @@
+{
+  "free_text": "never collected in this round; if ever collected requires two raters else UNSCORED",
+  "measures": {
+    "M1_answer_correctness": {
+      "oracle": "oracle/oracle.json",
+      "scale": "correct/incorrect/unscored_missing",
+      "type": "deterministic"
+    },
+    "M2_provenance_recall": {
+      "scale": "exact/partial/none",
+      "type": "deterministic set match"
+    },
+    "M3_challenge_seen": {
+      "scale": "seen/not_seen/missing",
+      "type": "deterministic"
+    },
+    "M4_task_time_ms": {
+      "censoring": "timeout kept as censored; missing kept as missing",
+      "end": "task_submitted or task_timeout",
+      "start": "task_presented (focus lands on first answer control)",
+      "type": "interval"
+    },
+    "M5_disclosure_actions": {
+      "type": "count"
+    },
+    "M6_keyboard_steps": {
+      "type": "count"
+    },
+    "M7_overload": {
+      "inference": "descriptive only",
+      "type": "single-item ordinal low/medium/high/not_reported"
+    },
+    "M8_accessibility_failures": {
+      "type": "list"
+    },
+    "M9_missingness_and_deviations": {
+      "type": "counts + append-only list"
+    }
+  },
+  "operator_answers": "descriptive single observation; never converted to participant score",
+  "schema": "agentos.s1-014.rubric/v1"
+}

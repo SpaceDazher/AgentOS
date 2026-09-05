@@ -1,0 +1,55 @@
+{
+  "$id": "agentos.s1-016.lineage-contract/v1",
+  "title": "S1-016 workspace lineage invariant contract (authoritative, versioned)",
+  "schema_version": "s1-016.lineage/v1",
+  "ticket": "S1-016",
+  "concepts": {
+    "runtime_scope": "one canonical (tenant_id, workspace_id, goal_id) tuple per ArtifactVersion; the sole authorization filter",
+    "artifact_identity": "immutable (id, version); content addressed by digest; correction = new version + supersedes",
+    "lineage_operation": "append-only typed operation row with idempotency key, causal parents and scope auth context",
+    "export_representation": "derived deterministic projection (PROV subset + AgentOS extension); never authority"
+  },
+  "hard_invariants": {
+    "L1": "single scope: every runtime ArtifactVersion has exactly one canonical (tenant_id, workspace_id, goal_id) scope",
+    "L2": "immutable history: content, scope and provenance of an existing version never change; correction creates a new version + supersedes",
+    "L3": "copy: cross-scope copy creates a new target version/object plus an explicit copy operation; the source is unchanged",
+    "L4": "move: move is explicit create/copy-to-target plus source withdrawal/tombstone membership event; partial execution stays visible",
+    "L5": "membership deletion: removal closes a membership interval or creates a deletion event, never erases insertion/provenance",
+    "L6": "no provenance authority: a lineage edge never widens read, write, capability, approval or policy scope",
+    "L7": "referential integrity: no orphan artifact/member/operation links; unknown references fail closed",
+    "L8": "causal integrity: operation ordering is checkable, cycle/duplicate semantics explicit, timestamps never the sole order source",
+    "L9": "round trip: canonical model, PROV export, validated import yield the same semantic digest over the supported subset",
+    "L10": "audit reconstruction: the auditor rebuilds create/insert/remove/copy/move/supersede chains from canonical events, not summaries",
+    "L11": "no hidden leakage: export carries no content/IDs from scopes the export request may not see; redaction stays explainable",
+    "L12": "atomic evidence: transition and audit/lineage event commit atomically or not at all"
+  },
+  "operations": [
+    "create", "insert", "remove", "update_supersede", "copy_same_scope",
+    "copy_cross_scope", "move_cross_scope", "rename", "derive",
+    "merge", "fork", "withdraw", "export", "roundtrip_import"
+  ],
+  "failure_semantics": {
+    "unknown_reference": "reject with reason unknown_reference",
+    "forged_scope": "reject with reason forged_scope",
+    "duplicate_idempotent": "single effect; replay returns the original outcome digest",
+    "unknown_outcome": "reconciliation required; blind retry refused",
+    "partial_move": "observable PARTIAL state with explicit pending endpoint",
+    "unsupported_prov": "explicit UNSUPPORTED listing, never silent drop"
+  },
+  "forbidden": [
+    "multiple simultaneous authoritative scopes on one object",
+    "mutation of a historical ArtifactVersion",
+    "authorization derived from a provenance edge",
+    "lineage deletion on removal",
+    "export hiding a cross-scope operation"
+  ],
+  "compatibility": {
+    "allow_unknown_fields": false,
+    "allow_unknown_operation": false,
+    "allow_duplicate_json_keys": false,
+    "allow_nan_infinity": false,
+    "allow_remote_ref": false,
+    "allow_traversal_in_ids": false,
+    "rule": "any compatibility violation fails closed (reject input)"
+  }
+}

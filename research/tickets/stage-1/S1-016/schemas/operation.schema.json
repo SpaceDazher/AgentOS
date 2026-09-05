@@ -1,0 +1,27 @@
+{
+  "$id": "agentos.s1-016.operation/v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "S1-016 canonical lineage operation input",
+  "type": "object",
+  "required": ["op_id", "op_type", "actor", "scope", "args", "idempotency_key", "causal_parents"],
+  "properties": {
+    "op_id": { "type": "string", "minLength": 1 },
+    "op_type": { "type": "string", "enum": ["create", "insert", "remove", "update_supersede", "copy_same_scope", "copy_cross_scope", "move_cross_scope", "rename", "derive", "merge", "fork", "withdraw", "export", "roundtrip_import", "reconcile"] },
+    "actor": { "type": "string", "minLength": 1 },
+    "scope": {
+      "type": "object",
+      "required": ["tenant_id", "workspace_id", "goal_id"],
+      "properties": {
+        "tenant_id": { "type": "string", "minLength": 1 },
+        "workspace_id": { "type": "string", "minLength": 1 },
+        "goal_id": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "args": { "type": "object" },
+    "idempotency_key": { "type": "string", "minLength": 1 },
+    "causal_parents": { "type": "array", "items": { "type": "integer", "minimum": 0 } },
+    "crash_point": { "type": ["string", "null"], "enum": ["none", "before_commit", "after_state_before_event", null], "default": null }
+  },
+  "additionalProperties": false
+}

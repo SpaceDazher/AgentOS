@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'none'; font-src 'none'; form-action 'none'; base-uri 'none'">
+<title>S1-014 claim dispute review — card versus graph</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <p id="banner" role="status" aria-live="polite">OPERATOR DESIGN REVIEW — NOT A USER STUDY</p>
+  <p id="contract-state">Loading frozen contract…</p>
+</header>
+<main id="main">
+  <section id="setup" aria-labelledby="setup-h">
+    <h1 id="setup-h">Session setup</h1>
+    <p>Static offline mock. No network telemetry, no oracle, no self-grading. Export is a versioned envelope only.</p>
+    <div class="row">
+      <label for="seed">Seed</label><select id="seed"></select>
+      <label for="executor">Executor</label><select id="executor"></select>
+      <label for="role">Role</label>
+      <select id="role"><option value="synthetic_technical_replay">synthetic_technical_replay</option><option value="operator_design_reviewer">operator_design_reviewer</option></select>
+      <label for="a11y">Mode</label>
+      <select id="a11y"><option value="keyboard_only">keyboard_only</option><option value="pointer">pointer</option><option value="screen_reader_linear">screen_reader_linear</option></select>
+    </div>
+    <p><label><input type="checkbox" id="consent"> I consent to this design review session (no PII is recorded; opaque IDs only)</label></p>
+    <button id="start" type="button">Start practice</button>
+  </section>
+
+  <section id="trial" hidden aria-labelledby="task-h">
+    <h1 id="task-h">Task</h1>
+    <p id="progress"></p>
+    <p id="wording" class="wording"></p>
+    <div id="view" aria-live="off"></div>
+    <fieldset id="answer-set"><legend>Your answer</legend><div id="answers"></div></fieldset>
+    <fieldset id="prov-set"><legend>Which source IDs did you rely on? (provenance recall)</legend><div id="prov"></div></fieldset>
+    <fieldset id="chal-set"><legend>Did you see a challenging claim?</legend>
+      <label><input type="radio" name="chal" value="challenge_seen"> yes</label>
+      <label><input type="radio" name="chal" value="challenge_not_seen"> no</label>
+    </fieldset>
+    <fieldset id="ovl-set"><legend>Mental effort / overload</legend>
+      <label><input type="radio" name="ovl" value="low"> low</label>
+      <label><input type="radio" name="ovl" value="medium"> medium</label>
+      <label><input type="radio" name="ovl" value="high"> high</label>
+    </fieldset>
+    <div class="row">
+      <button id="submit" type="button">Submit answer</button>
+      <button id="pause" type="button">Pause</button>
+      <button id="resume" type="button" disabled>Resume</button>
+      <button id="withdraw" type="button">Withdraw</button>
+    </div>
+  </section>
+
+  <section id="done" hidden aria-labelledby="done-h">
+    <h1 id="done-h">Session finished</h1>
+    <p id="summary"></p>
+    <button id="export" type="button">Export envelope</button>
+    <label>Check an envelope (schema/bindings only): <input type="file" id="import" accept="application/json"></label>
+    <p id="import-result" role="status"></p>
+  </section>
+</main>
+<script src="app.js"></script>
+</body>
+</html>

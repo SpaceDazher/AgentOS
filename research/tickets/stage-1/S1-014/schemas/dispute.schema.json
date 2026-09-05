@@ -1,0 +1,321 @@
+{
+  "$id": "agentos.s1-014.dispute-contract/v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "answer_choices": {
+      "items": {
+        "enum": [
+          "focal_holds",
+          "challenge_holds",
+          "undetermined",
+          "withheld_cannot_decide"
+        ],
+        "type": "string"
+      },
+      "maxItems": 4,
+      "minItems": 4,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "challenge_claim": {
+      "additionalProperties": false,
+      "properties": {
+        "claim_id": {
+          "pattern": "^[A-Z]{2,4}-[A-Za-z0-9]{1,16}$",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "promoted",
+            "candidate",
+            "rejected",
+            "revoked",
+            "unknown",
+            "withheld"
+          ],
+          "type": "string"
+        },
+        "text": {
+          "maxLength": 240,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "claim_id",
+        "text",
+        "status"
+      ],
+      "type": "object"
+    },
+    "challenging_evidence": {
+      "items": {
+        "pattern": "^[A-Z]{2,4}-[A-Za-z0-9]{1,16}$",
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "complexity_stratum": {
+      "enum": [
+        "simple",
+        "medium",
+        "complex"
+      ],
+      "type": "string"
+    },
+    "contract_schema": {
+      "const": "agentos.s1-014.dispute-contract/v1",
+      "type": "string"
+    },
+    "contract_version": {
+      "pattern": "^1\\.0\\.\\d+$",
+      "type": "string"
+    },
+    "dispute_id": {
+      "pattern": "^DSP-[0-9a-f]{12}$",
+      "type": "string"
+    },
+    "evidence": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "evidence_id": {
+            "pattern": "^[A-Z]{2,4}-[A-Za-z0-9]{1,16}$",
+            "type": "string"
+          },
+          "evidence_state": {
+            "enum": [
+              "known",
+              "unknown",
+              "withheld"
+            ],
+            "type": "string"
+          },
+          "independence_group": {
+            "pattern": "^[A-Z]{2,4}-[A-Za-z0-9]{1,16}$",
+            "type": "string"
+          },
+          "source_id": {
+            "pattern": "^[A-Z]{2,4}-[A-Za-z0-9]{1,16}$",
+            "type": "string"
+          },
+          "summary": {
+            "maxLength": 240,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "evidence_id",
+          "source_id",
+          "independence_group",
+          "summary",
+          "evidence_state"
+        ],
+        "type": "object"
+      },
+      "maxItems": 32,
+      "minItems": 1,
+      "type": "array"
+    },
+    "focal_claim": {
+      "additionalProperties": false,
+      "properties": {
+        "claim_id": {
+          "pattern": "^[A-Z]{2,4}-[A-Za-z0-9]{1,16}$",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "promoted",
+            "candidate",
+            "rejected",
+            "revoked",
+            "unknown",
+            "withheld"
+          ],
+          "type": "string"
+        },
+        "text": {
+          "maxLength": 240,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "claim_id",
+        "text",
+        "status"
+      ],
+      "type": "object"
+    },
+    "independence_groups": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "group_id": {
+            "pattern": "^[A-Z]{2,4}-[A-Za-z0-9]{1,16}$",
+            "type": "string"
+          },
+          "independence_basis": {
+            "maxLength": 120,
+            "minLength": 1,
+            "type": "string"
+          },
+          "label": {
+            "maxLength": 80,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "group_id",
+          "label",
+          "independence_basis"
+        ],
+        "type": "object"
+      },
+      "maxItems": 16,
+      "minItems": 1,
+      "type": "array"
+    },
+    "knowledge_gate_state": {
+      "enum": [
+        "promoted",
+        "candidate",
+        "rejected",
+        "revoked",
+        "unknown",
+        "withheld"
+      ],
+      "type": "string"
+    },
+    "ordinal": {
+      "maximum": 64,
+      "minimum": 1,
+      "type": "integer"
+    },
+    "relations": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "from_evidence": {
+            "pattern": "^[A-Z]{2,4}-[A-Za-z0-9]{1,16}$",
+            "type": "string"
+          },
+          "relation": {
+            "enum": [
+              "supports",
+              "challenges"
+            ],
+            "type": "string"
+          },
+          "to_claim": {
+            "pattern": "^[A-Z]{2,4}-[A-Za-z0-9]{1,16}$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "from_evidence",
+          "to_claim",
+          "relation"
+        ],
+        "type": "object"
+      },
+      "maxItems": 64,
+      "minItems": 1,
+      "type": "array"
+    },
+    "renderer_may_change_authority": {
+      "const": false,
+      "type": "boolean"
+    },
+    "sources": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "origin": {
+            "maxLength": 80,
+            "minLength": 1,
+            "type": "string"
+          },
+          "provenance_state": {
+            "enum": [
+              "known",
+              "unknown",
+              "withheld"
+            ],
+            "type": "string"
+          },
+          "publisher": {
+            "maxLength": 80,
+            "minLength": 1,
+            "type": "string"
+          },
+          "retrieval_boundary": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
+            "type": "string"
+          },
+          "source_id": {
+            "pattern": "^[A-Z]{2,4}-[A-Za-z0-9]{1,16}$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source_id",
+          "publisher",
+          "origin",
+          "retrieval_boundary",
+          "provenance_state"
+        ],
+        "type": "object"
+      },
+      "maxItems": 16,
+      "minItems": 1,
+      "type": "array"
+    },
+    "supporting_evidence": {
+      "items": {
+        "pattern": "^[A-Z]{2,4}-[A-Za-z0-9]{1,16}$",
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "task_wording": {
+      "maxLength": 200,
+      "minLength": 1,
+      "type": "string"
+    },
+    "withheld_fields": {
+      "items": {
+        "maxLength": 80,
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "contract_schema",
+    "contract_version",
+    "dispute_id",
+    "ordinal",
+    "complexity_stratum",
+    "task_wording",
+    "answer_choices",
+    "focal_claim",
+    "challenge_claim",
+    "knowledge_gate_state",
+    "sources",
+    "independence_groups",
+    "evidence",
+    "relations",
+    "supporting_evidence",
+    "challenging_evidence",
+    "withheld_fields",
+    "renderer_may_change_authority"
+  ],
+  "title": "S1-014 canonical claim dispute",
+  "type": "object"
+}

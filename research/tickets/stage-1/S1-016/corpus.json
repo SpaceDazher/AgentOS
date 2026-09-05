@@ -1,0 +1,3042 @@
+{
+  "schema": "agentos.s1-016.corpus/v1",
+  "ticket": "S1-016",
+  "scenario_count": 48,
+  "cases": [
+    {
+      "id": "V-01",
+      "class": "valid",
+      "desc": "create artifact version",
+      "expect": "committed",
+      "versions": [],
+      "collections": [],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "create",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "obj_id": "doc1",
+            "content": "hello",
+            "scope": {
+              "tenant_id": "t-a",
+              "workspace_id": "w-1",
+              "goal_id": "g-1"
+            }
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ]
+      ],
+      "terminal_digest": "1c2dcf9a001012b654393dc011e16df7240fdf946f4e507ccf121d87f22a7613",
+      "lineage_digest": "8068a398a15e8b9005db9061a074a6dc5017d4c852cdbe2747a379e5ebc2557a",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "committed",
+          "reason": null
+        }
+      ],
+      "flags": {},
+      "semantic_digest": "c1f8bfe667dee2dc8b71dd3cbbf7d4bfdf02605026b6a19d6bcceb6f1a19dfc1"
+    },
+    {
+      "id": "V-02",
+      "class": "valid",
+      "desc": "create two artifacts and a collection",
+      "expect": "committed",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": ""
+        },
+        {
+          "obj": "d2",
+          "content": "c2",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [
+        {
+          "id": "col1",
+          "scope": "S_A",
+          "members": []
+        }
+      ],
+      "ops": [],
+      "groups": [],
+      "terminal_digest": "bad60a2950863c90fad741913adcc840b7b0d7c6d5b73eab6444702d458fb48f",
+      "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "op_outcomes": [],
+      "flags": {},
+      "semantic_digest": "48d102fdbb19d245e232eaec206ad8f4c14ed626004602ad38fc5440183eeae9"
+    },
+    {
+      "id": "V-03",
+      "class": "valid",
+      "desc": "insert member into collection",
+      "expect": "committed",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [
+        {
+          "id": "col1",
+          "scope": "S_A",
+          "members": []
+        }
+      ],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "insert",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "collection": "col1",
+            "member_obj": "d1",
+            "member_ver": 1,
+            "key": "k1"
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ]
+      ],
+      "terminal_digest": "23a2619a3aec25ae593313ee999da6db5f7119eb846c41e03c6319468aa1875d",
+      "lineage_digest": "f0590ea76e684def2d4228366c2e2bb92f4fb1feb60d01ff4df7041c45473527",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "committed",
+          "reason": null
+        }
+      ],
+      "flags": {},
+      "semantic_digest": "e075fc99a092e6ba450732ca6ad60e405ec5d9ed7d92ed752377f18301005382"
+    },
+    {
+      "id": "V-04",
+      "class": "valid",
+      "desc": "insert multiple members",
+      "expect": "committed",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": ""
+        },
+        {
+          "obj": "d2",
+          "content": "c2",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [
+        {
+          "id": "col1",
+          "scope": "S_A",
+          "members": []
+        }
+      ],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "insert",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "collection": "col1",
+            "member_obj": "d1",
+            "member_ver": 1,
+            "key": "k1"
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        },
+        {
+          "op_id": "o2",
+          "op_type": "insert",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "collection": "col1",
+            "member_obj": "d2",
+            "member_ver": 1,
+            "key": "k2"
+          },
+          "idempotency_key": "k-o2",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0,
+          1
+        ]
+      ],
+      "terminal_digest": "e91953f6a3fac0a19bdf6be4a2e603ad212638c41a4c0c81bd6cc6e35bc83963",
+      "lineage_digest": "90a97601054397f1ae910ea93cc2428df8a5685f5c509a45a9fa93a058a5f65e",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "committed",
+          "reason": null
+        },
+        {
+          "op": "o2",
+          "outcome": "committed",
+          "reason": null
+        }
+      ],
+      "flags": {},
+      "semantic_digest": "1971e9a031524771f7f5be0ee36775141f93ce1c47d717cf15e09a45af313615"
+    },
+    {
+      "id": "V-05",
+      "class": "valid",
+      "desc": "remove membership keeps insertion history",
+      "expect": "committed",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [
+        {
+          "id": "col1",
+          "scope": "S_A",
+          "members": [
+            {
+              "member": [
+                "d1",
+                1
+              ],
+              "key": "k1"
+            }
+          ]
+        }
+      ],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "remove",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "collection": "col1",
+            "key": "k1"
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ]
+      ],
+      "terminal_digest": "15f3d1a521b38fc4d16a8914f6ff4470b7eccc924f540eb8500b01d01a483a76",
+      "lineage_digest": "951d05fb21d0c187e3ff1940c46b210c92a75a8e60d9918e5b13555b37e1b409",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "committed",
+          "reason": null
+        }
+      ],
+      "flags": {},
+      "semantic_digest": "d556b0ebab75888d1006c3dd374c646617f5ea9b425de55ea96f2d58e1a2177a"
+    },
+    {
+      "id": "V-06",
+      "class": "valid",
+      "desc": "same-scope update with supersedes chain",
+      "expect": "committed",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "update_supersede",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "obj_id": "d1",
+            "content": "c2"
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        },
+        {
+          "op_id": "o2",
+          "op_type": "update_supersede",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "obj_id": "d1",
+            "content": "c3"
+          },
+          "idempotency_key": "k-o2",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ],
+        [
+          1
+        ]
+      ],
+      "terminal_digest": "2401a1b7d2c4f175c6174c0ccde54f7dc9622c404e3563752ed23788c4cfc1cd",
+      "lineage_digest": "4eb852bb24055182566bde135c57a7fc905331dec85ba88113b2d9aa36b62cca",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "committed",
+          "reason": null
+        },
+        {
+          "op": "o2",
+          "outcome": "committed",
+          "reason": null
+        }
+      ],
+      "flags": {},
+      "semantic_digest": "829a80fe2f5675ef21daf44697709ad23ffa4b5d0c31deaf9da8dbaabcba5050"
+    },
+    {
+      "id": "V-07",
+      "class": "valid",
+      "desc": "same-scope copy",
+      "expect": "committed",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "copy_same_scope",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "src_obj": "d1",
+            "src_ver": 1,
+            "new_obj": "d1copy"
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ]
+      ],
+      "terminal_digest": "7ff8a0ad313efeca7cdf75bb01198ee5ea5ff1c9765ce48c5b8f67073e9a7822",
+      "lineage_digest": "f03e7cf9d7c7c5dbd68b9b7f0c3b8e26bd5d2fea8502a08dda79288efcc859a5",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "committed",
+          "reason": null
+        }
+      ],
+      "flags": {},
+      "semantic_digest": "c821729403157d6f0fa71fc1347a7e86a2ff9805b0c3461c15eadb103a0fd5d5"
+    },
+    {
+      "id": "V-08",
+      "class": "valid",
+      "desc": "cross-scope copy A to B",
+      "expect": "committed",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "copy_cross_scope",
+          "actor": "actor@S_B",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-2",
+            "goal_id": "g-2"
+          },
+          "args": {
+            "src_obj": "d1",
+            "src_ver": 1,
+            "new_obj": "d1b",
+            "target_scope": {
+              "tenant_id": "t-a",
+              "workspace_id": "w-2",
+              "goal_id": "g-2"
+            }
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ]
+      ],
+      "terminal_digest": "a42080bbf01107eb79aeccc068ccf0582e5beefe05fad4a207db2e07400cec2a",
+      "lineage_digest": "ba24d51ca3ade1d02f10a3cef9af546dc932f963f6f054f13cd62fe39a629b4b",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "committed",
+          "reason": null
+        }
+      ],
+      "flags": {},
+      "semantic_digest": "f5b66bc9415683a538663a2e86780bdb7b77f6885cb09d821e5e213756a894ab"
+    },
+    {
+      "id": "V-09",
+      "class": "valid",
+      "desc": "cross-tenant copy A to C",
+      "expect": "committed",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "copy_cross_scope",
+          "actor": "actor@S_C",
+          "scope": {
+            "tenant_id": "t-b",
+            "workspace_id": "w-1",
+            "goal_id": "g-3"
+          },
+          "args": {
+            "src_obj": "d1",
+            "src_ver": 1,
+            "new_obj": "d1c",
+            "target_scope": {
+              "tenant_id": "t-b",
+              "workspace_id": "w-1",
+              "goal_id": "g-3"
+            }
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ]
+      ],
+      "terminal_digest": "aac357c2dd99921ef63920b051c49a07abefad5a115ec4c462e833a619d7e2e1",
+      "lineage_digest": "1bcf8bcb283bf91dec194e734ac098f2c85f63aef5e631275ffb273017abd8b8",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "committed",
+          "reason": null
+        }
+      ],
+      "flags": {},
+      "semantic_digest": "06cc2f285d2d73f2820230b8ee89ea946daa9fcbdc13f391f4bae7b7b5f79d32"
+    },
+    {
+      "id": "V-10",
+      "class": "valid",
+      "desc": "cross-scope move complete with tombstone",
+      "expect": "committed",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [
+        {
+          "id": "colA",
+          "scope": "S_A",
+          "members": [
+            {
+              "member": [
+                "d1",
+                1
+              ],
+              "key": "k1"
+            }
+          ]
+        }
+      ],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "move_cross_scope",
+          "actor": "actor@S_B",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-2",
+            "goal_id": "g-2"
+          },
+          "args": {
+            "src_obj": "d1",
+            "src_ver": 1,
+            "new_obj": "d1b",
+            "target_scope": {
+              "tenant_id": "t-a",
+              "workspace_id": "w-2",
+              "goal_id": "g-2"
+            }
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ]
+      ],
+      "terminal_digest": "b58602435893111f98fdd5bcbb98a8fbebe09a593cd5074a3ebb2b6a13159b30",
+      "lineage_digest": "fb7ecd2be8cb6d90905aba4929301b9540f9fa00a5b9a0a9e6c8fc67a21b5f66",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "committed",
+          "reason": null
+        }
+      ],
+      "flags": {},
+      "semantic_digest": "6777ed270ed2839174ec16d66d9e1d6627a3ca4462ad9f418be9a379f22c1ea8"
+    },
+    {
+      "id": "V-11",
+      "class": "valid",
+      "desc": "rename without identity change",
+      "expect": "committed",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": "old"
+        }
+      ],
+      "collections": [],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "rename",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "obj_id": "d1",
+            "new_label": "new"
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ]
+      ],
+      "terminal_digest": "65ab79b3a7014d1c56353832c3bea75b551adefea1767362c6d3588c48b210ae",
+      "lineage_digest": "1eaa7c88eab957f7fa1311fb9dd3192ea4399a3a0d6e0552e31fca18e2d75b3e",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "committed",
+          "reason": null
+        }
+      ],
+      "flags": {},
+      "semantic_digest": "e44d84892d6123f697a1ee139930a742c9fc675f63b32e00852fb6d82b86aeb6"
+    },
+    {
+      "id": "V-12",
+      "class": "valid",
+      "desc": "derive from one source",
+      "expect": "committed",
+      "versions": [
+        {
+          "obj": "s1",
+          "content": "a",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "derive",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "sources": [
+              [
+                "s1",
+                1
+              ]
+            ],
+            "new_obj": "d1",
+            "content": "b",
+            "scope": {
+              "tenant_id": "t-a",
+              "workspace_id": "w-1",
+              "goal_id": "g-1"
+            }
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ]
+      ],
+      "terminal_digest": "c18838a80f9f11dfabefb59d0afd229ec7d8efef204ef175ee1b38e1a090f42d",
+      "lineage_digest": "8b5055ab0f6de6a560dfaefd622e7401c7b1fda40425aa5d7799db62e1770bde",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "committed",
+          "reason": null
+        }
+      ],
+      "flags": {},
+      "semantic_digest": "2c17f0ec502faa9d86176144d9aafd3b06c1ba51aaaf28e2a1a21286d83dc0e8"
+    },
+    {
+      "id": "V-13",
+      "class": "valid",
+      "desc": "derive from many sources",
+      "expect": "committed",
+      "versions": [
+        {
+          "obj": "s1",
+          "content": "a",
+          "scope": "S_A",
+          "label": ""
+        },
+        {
+          "obj": "s2",
+          "content": "b",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "derive",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "sources": [
+              [
+                "s1",
+                1
+              ],
+              [
+                "s2",
+                1
+              ]
+            ],
+            "new_obj": "d1",
+            "content": "c",
+            "scope": {
+              "tenant_id": "t-a",
+              "workspace_id": "w-1",
+              "goal_id": "g-1"
+            }
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ]
+      ],
+      "terminal_digest": "3e9e4d36872e3b3dea1d282ce91127ff18b28ee4df160cb4d4925a7d0eeaad1f",
+      "lineage_digest": "12412ba45cb9f1cbe525af834bbe9c0f2255891dc969226ec3409bb911d97b46",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "committed",
+          "reason": null
+        }
+      ],
+      "flags": {},
+      "semantic_digest": "931c8c12ec1d93fd7581b114391476fa2cbded72b9ba7ee61b3e0c1fca6e5b83"
+    },
+    {
+      "id": "V-14",
+      "class": "valid",
+      "desc": "merge lineage",
+      "expect": "committed",
+      "versions": [
+        {
+          "obj": "s1",
+          "content": "a",
+          "scope": "S_A",
+          "label": ""
+        },
+        {
+          "obj": "s2",
+          "content": "b",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "merge",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "sources": [
+              [
+                "s1",
+                1
+              ],
+              [
+                "s2",
+                1
+              ]
+            ],
+            "new_obj": "m1",
+            "content": "m",
+            "scope": {
+              "tenant_id": "t-a",
+              "workspace_id": "w-1",
+              "goal_id": "g-1"
+            }
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ]
+      ],
+      "terminal_digest": "65061d5835b814a8e183324c4e227b4f14a789149f59f59bd1acc0f38d1eddb8",
+      "lineage_digest": "5379e009d7a4132542b119aa9d5c35ee5243eea549bf0f78feef4618d5bc9811",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "committed",
+          "reason": null
+        }
+      ],
+      "flags": {},
+      "semantic_digest": "113f38ace6425754380854574d084792c67a2196866e0de33c9ad39667dfdb8a"
+    },
+    {
+      "id": "V-15",
+      "class": "valid",
+      "desc": "fork lineage",
+      "expect": "committed",
+      "versions": [
+        {
+          "obj": "s1",
+          "content": "a",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "fork",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "src_obj": "s1",
+            "src_ver": 1,
+            "new_objs": [
+              "f1",
+              "f2"
+            ],
+            "scope": {
+              "tenant_id": "t-a",
+              "workspace_id": "w-1",
+              "goal_id": "g-1"
+            }
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ]
+      ],
+      "terminal_digest": "c5d362570959959e669f9dc561af1e2e7fe4de522c769afa1ba9b9cdb6b7da19",
+      "lineage_digest": "0bc08ce400c7adb17b0cad2f8ee150728d986e0bd41b9a3909cbeb5d127b030f",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "committed",
+          "reason": null
+        }
+      ],
+      "flags": {},
+      "semantic_digest": "0a568b812a44df9f50f03501c6f52ae240c6a5fd256868b10da2060282ee457f"
+    },
+    {
+      "id": "V-16",
+      "class": "valid",
+      "desc": "withdraw visibility retains content",
+      "expect": "committed",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "withdraw",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "obj_id": "d1",
+            "obj_ver": 1,
+            "reason": "revoked"
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ]
+      ],
+      "terminal_digest": "0bcf937b6684862caefa4e2c6516ae876c24c23b383bd7166ba3c804267a5128",
+      "lineage_digest": "f892e3a86fcf6472269f990204f63fab609c58418368d63b366eaa4bb1480bdb",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "committed",
+          "reason": null
+        }
+      ],
+      "flags": {},
+      "semantic_digest": "b8dcbd2dc52bdbd546ebb7b449105193dc6bddabaf7f7d031ef521d08793a0e3"
+    },
+    {
+      "id": "V-17",
+      "class": "valid",
+      "desc": "export and round-trip supported subset",
+      "expect": "committed",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [
+        {
+          "id": "col1",
+          "scope": "S_A",
+          "members": [
+            {
+              "member": [
+                "d1",
+                1
+              ],
+              "key": "k1"
+            }
+          ]
+        }
+      ],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "export",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "request_scope": {
+              "tenant_id": "t-a",
+              "workspace_id": "w-1",
+              "goal_id": "g-1"
+            }
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ]
+      ],
+      "terminal_digest": "e0735fde116b5528e8345e837d87b1d8fa58e93c35fdd0b2715d1adec03000ce",
+      "lineage_digest": "05500f7782f50a221697d8f2c2b9095194d754838b78a43738dcbb14f480280b",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "committed",
+          "reason": null
+        }
+      ],
+      "flags": {
+        "roundtrip": true
+      },
+      "semantic_digest": "ecbc09fcc97ca29d24f58461d4f04b771dbfaa153a64c148c33a640d14f5f869"
+    },
+    {
+      "id": "V-18",
+      "class": "valid",
+      "desc": "empty collection create and export",
+      "expect": "committed",
+      "versions": [],
+      "collections": [
+        {
+          "id": "empty",
+          "scope": "S_A",
+          "members": []
+        }
+      ],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "export",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "request_scope": {
+              "tenant_id": "t-a",
+              "workspace_id": "w-1",
+              "goal_id": "g-1"
+            }
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ]
+      ],
+      "terminal_digest": "73075214f7849b91ba7bfb6226222e3d820ff0aab9773556b2052562143c39e2",
+      "lineage_digest": "05500f7782f50a221697d8f2c2b9095194d754838b78a43738dcbb14f480280b",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "committed",
+          "reason": null
+        }
+      ],
+      "flags": {
+        "roundtrip": true
+      },
+      "semantic_digest": "49334055220e73d92b60893e478f4cbaf19367afc8be0cf562f4747208f34e71"
+    },
+    {
+      "id": "V-19",
+      "class": "valid",
+      "desc": "legacy version readable after supersede chain",
+      "expect": "committed",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "update_supersede",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "obj_id": "d1",
+            "content": "c2"
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        },
+        {
+          "op_id": "o2",
+          "op_type": "update_supersede",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "obj_id": "d1",
+            "content": "c3"
+          },
+          "idempotency_key": "k-o2",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ],
+        [
+          1
+        ]
+      ],
+      "terminal_digest": "2401a1b7d2c4f175c6174c0ccde54f7dc9622c404e3563752ed23788c4cfc1cd",
+      "lineage_digest": "4eb852bb24055182566bde135c57a7fc905331dec85ba88113b2d9aa36b62cca",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "committed",
+          "reason": null
+        },
+        {
+          "op": "o2",
+          "outcome": "committed",
+          "reason": null
+        }
+      ],
+      "flags": {
+        "legacy_read": [
+          "d1",
+          1
+        ]
+      },
+      "semantic_digest": "9e2836acab04c57ea95be2269a6247412549f228cc2f0011bc268cf857a1272d"
+    },
+    {
+      "id": "V-20",
+      "class": "valid",
+      "desc": "move with crash before commit reconciles once",
+      "expect": "committed",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "move_cross_scope",
+          "actor": "actor@S_B",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-2",
+            "goal_id": "g-2"
+          },
+          "args": {
+            "src_obj": "d1",
+            "src_ver": 1,
+            "new_obj": "d1b",
+            "target_scope": {
+              "tenant_id": "t-a",
+              "workspace_id": "w-2",
+              "goal_id": "g-2"
+            }
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": "before_commit"
+        }
+      ],
+      "groups": [
+        [
+          0
+        ]
+      ],
+      "terminal_digest": "dde4954a08374408fa28a948d995aa6a30d0d316ff9517ddb9f5bef9c318cc47",
+      "lineage_digest": "fb7ecd2be8cb6d90905aba4929301b9540f9fa00a5b9a0a9e6c8fc67a21b5f66",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "committed",
+          "reason": null
+        }
+      ],
+      "flags": {
+        "crash": "before_commit"
+      },
+      "semantic_digest": "e79cf700d2d75cceed902649c358e27388753ae0a0c20371786500dfc9c3ae84"
+    },
+    {
+      "id": "V-21",
+      "class": "valid",
+      "desc": "move with crash after state reconciles events",
+      "expect": "committed",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "move_cross_scope",
+          "actor": "actor@S_B",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-2",
+            "goal_id": "g-2"
+          },
+          "args": {
+            "src_obj": "d1",
+            "src_ver": 1,
+            "new_obj": "d1b",
+            "target_scope": {
+              "tenant_id": "t-a",
+              "workspace_id": "w-2",
+              "goal_id": "g-2"
+            }
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": "after_state_before_event"
+        }
+      ],
+      "groups": [
+        [
+          0
+        ]
+      ],
+      "terminal_digest": "dde4954a08374408fa28a948d995aa6a30d0d316ff9517ddb9f5bef9c318cc47",
+      "lineage_digest": "fb7ecd2be8cb6d90905aba4929301b9540f9fa00a5b9a0a9e6c8fc67a21b5f66",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "committed",
+          "reason": "reconciled"
+        }
+      ],
+      "flags": {
+        "crash": "after_state_before_event"
+      },
+      "semantic_digest": "3c694cc7a85b1c92ecb3d37148e4398082280c77a6723bf1535f8996a4d6ebd9"
+    },
+    {
+      "id": "V-22",
+      "class": "valid",
+      "desc": "copy crash with idempotent retry, no duplicate",
+      "expect": "committed",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "copy_cross_scope",
+          "actor": "actor@S_B",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-2",
+            "goal_id": "g-2"
+          },
+          "args": {
+            "src_obj": "d1",
+            "src_ver": 1,
+            "new_obj": "d1b",
+            "target_scope": {
+              "tenant_id": "t-a",
+              "workspace_id": "w-2",
+              "goal_id": "g-2"
+            }
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": "before_commit"
+        }
+      ],
+      "groups": [
+        [
+          0
+        ]
+      ],
+      "terminal_digest": "a42080bbf01107eb79aeccc068ccf0582e5beefe05fad4a207db2e07400cec2a",
+      "lineage_digest": "ba24d51ca3ade1d02f10a3cef9af546dc932f963f6f054f13cd62fe39a629b4b",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "committed",
+          "reason": null
+        }
+      ],
+      "flags": {
+        "crash": "before_commit"
+      },
+      "semantic_digest": "8e25b4df3dfe40998ac60d639c34074e3a6ba37069acffe1d1e026f46f83dd5f"
+    },
+    {
+      "id": "V-23",
+      "class": "valid",
+      "desc": "removal then export shows tombstone interval",
+      "expect": "committed",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [
+        {
+          "id": "col1",
+          "scope": "S_A",
+          "members": [
+            {
+              "member": [
+                "d1",
+                1
+              ],
+              "key": "k1"
+            }
+          ]
+        }
+      ],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "remove",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "collection": "col1",
+            "key": "k1"
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        },
+        {
+          "op_id": "o2",
+          "op_type": "export",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "request_scope": {
+              "tenant_id": "t-a",
+              "workspace_id": "w-1",
+              "goal_id": "g-1"
+            }
+          },
+          "idempotency_key": "k-o2",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ],
+        [
+          1
+        ]
+      ],
+      "terminal_digest": "15f3d1a521b38fc4d16a8914f6ff4470b7eccc924f540eb8500b01d01a483a76",
+      "lineage_digest": "4a47181b524552fa5c1315d4d2a9e6f03773f03a8dbb398bbd651cd8b792c5c5",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "committed",
+          "reason": null
+        },
+        {
+          "op": "o2",
+          "outcome": "committed",
+          "reason": null
+        }
+      ],
+      "flags": {
+        "roundtrip": true
+      },
+      "semantic_digest": "bee3f24caf384d4de6a6c619c9b9203ac282fdfe8673d8b5232165f50599e197"
+    },
+    {
+      "id": "V-24",
+      "class": "valid",
+      "desc": "redacted export explains omission",
+      "expect": "committed",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": ""
+        },
+        {
+          "obj": "e1",
+          "content": "x",
+          "scope": "S_C",
+          "label": ""
+        }
+      ],
+      "collections": [
+        {
+          "id": "colA",
+          "scope": "S_A",
+          "members": [
+            {
+              "member": [
+                "d1",
+                1
+              ],
+              "key": "k1"
+            }
+          ]
+        }
+      ],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "export",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "request_scope": {
+              "tenant_id": "t-a",
+              "workspace_id": "w-1",
+              "goal_id": "g-1"
+            }
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ]
+      ],
+      "terminal_digest": "f2ee8bcf1e1cc0f90ba8630e1d9876eae65981a2ab52153309ab533e6b6daf4e",
+      "lineage_digest": "05500f7782f50a221697d8f2c2b9095194d754838b78a43738dcbb14f480280b",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "committed",
+          "reason": null
+        }
+      ],
+      "flags": {
+        "roundtrip": true,
+        "redacted": true
+      },
+      "semantic_digest": "360173ce49923cc632748e7502f41dfae916a88f51c0deee71928b1bba1ce498"
+    },
+    {
+      "id": "N-01",
+      "class": "near_miss",
+      "desc": "duplicate insertion rejected",
+      "expect": "rejected:duplicate_insertion",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [
+        {
+          "id": "col1",
+          "scope": "S_A",
+          "members": [
+            {
+              "member": [
+                "d1",
+                1
+              ],
+              "key": "k1"
+            }
+          ]
+        }
+      ],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "insert",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "collection": "col1",
+            "member_obj": "d1",
+            "member_ver": 1,
+            "key": "k1"
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ]
+      ],
+      "terminal_digest": "e0735fde116b5528e8345e837d87b1d8fa58e93c35fdd0b2715d1adec03000ce",
+      "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "rejected:duplicate_insertion",
+          "reason": "duplicate_insertion"
+        }
+      ],
+      "flags": {},
+      "semantic_digest": "fe9402ebc71f6d7d947773f72524f645e4e6c502407ff4cbaca01a52d0d4a685"
+    },
+    {
+      "id": "N-02",
+      "class": "near_miss",
+      "desc": "repeated deletion rejected",
+      "expect": "mixed",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [
+        {
+          "id": "col1",
+          "scope": "S_A",
+          "members": [
+            {
+              "member": [
+                "d1",
+                1
+              ],
+              "key": "k1"
+            }
+          ]
+        }
+      ],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "remove",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "collection": "col1",
+            "key": "k1"
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        },
+        {
+          "op_id": "o2",
+          "op_type": "remove",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "collection": "col1",
+            "key": "k1"
+          },
+          "idempotency_key": "k-o2",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ],
+        [
+          1
+        ]
+      ],
+      "terminal_digest": "15f3d1a521b38fc4d16a8914f6ff4470b7eccc924f540eb8500b01d01a483a76",
+      "lineage_digest": "951d05fb21d0c187e3ff1940c46b210c92a75a8e60d9918e5b13555b37e1b409",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "committed",
+          "reason": null
+        },
+        {
+          "op": "o2",
+          "outcome": "rejected:already_removed",
+          "reason": "already_removed"
+        }
+      ],
+      "flags": {},
+      "semantic_digest": "15474be074388eb5065320cb208707b254ef7040b88cc7cce7c1a79883ed27fc"
+    },
+    {
+      "id": "N-03",
+      "class": "near_miss",
+      "desc": "stale ID resolves to legacy version",
+      "expect": "committed",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "update_supersede",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "obj_id": "d1",
+            "content": "c2"
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ]
+      ],
+      "terminal_digest": "18b8866fc313645dd2dedd7736930afc30d4700f5ad426c109b37860e6f10d3d",
+      "lineage_digest": "581332183bd78f459957ded79d28088878aa35bec9f31c793e2d8e717c315f26",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "committed",
+          "reason": null
+        }
+      ],
+      "flags": {
+        "legacy_read": [
+          "d1",
+          1
+        ]
+      },
+      "semantic_digest": "f74a2b53922300dcd80ff70c7893334a59d991a4c41c04575b901bd57087251a"
+    },
+    {
+      "id": "N-04",
+      "class": "near_miss",
+      "desc": "derive from missing source rejected",
+      "expect": "rejected:unknown_reference",
+      "versions": [],
+      "collections": [],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "derive",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "sources": [
+              [
+                "ghost",
+                9
+              ]
+            ],
+            "new_obj": "d1",
+            "content": "c",
+            "scope": {
+              "tenant_id": "t-a",
+              "workspace_id": "w-1",
+              "goal_id": "g-1"
+            }
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ]
+      ],
+      "terminal_digest": "1fa13f36bc3492063a857fd763fc8c3ba354517bb1fc50748e7c93850dd24ef2",
+      "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "rejected:unknown_reference",
+          "reason": "unknown_reference"
+        }
+      ],
+      "flags": {},
+      "semantic_digest": "61d053e886ca39446c2ce99fac7ce4fdefb78381777182f811c172d0cafaa3cd"
+    },
+    {
+      "id": "N-05",
+      "class": "near_miss",
+      "desc": "cross-tenant near-miss copy with wrong auth rejected",
+      "expect": "rejected:forged_scope",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "copy_cross_scope",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "src_obj": "d1",
+            "src_ver": 1,
+            "new_obj": "d1c",
+            "target_scope": {
+              "tenant_id": "t-b",
+              "workspace_id": "w-1",
+              "goal_id": "g-3"
+            }
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ]
+      ],
+      "terminal_digest": "a95c7dc9a00a15fdc683bad7c2b76b034199a981587383794d6a646ae10aaa58",
+      "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "rejected:forged_scope",
+          "reason": "forged_scope"
+        }
+      ],
+      "flags": {},
+      "semantic_digest": "257cd04f3fdfbdfda8c8308f37e4d719008a2e1ee013f46fde1fad0f5fb6b259"
+    },
+    {
+      "id": "N-06",
+      "class": "near_miss",
+      "desc": "operation retry with same key is single effect",
+      "expect": "mixed",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "copy_same_scope",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "src_obj": "d1",
+            "src_ver": 1,
+            "new_obj": "d2"
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        },
+        {
+          "op_id": "o1b",
+          "op_type": "copy_same_scope",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "src_obj": "d1",
+            "src_ver": 1,
+            "new_obj": "d2"
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ],
+        [
+          1
+        ]
+      ],
+      "terminal_digest": "187038cd7ae05ba0fc49028b2995c24504756062997c87da3facdca17688db09",
+      "lineage_digest": "5f71b376777a8466684212b5f10f7a61bcd3a583b00947e11136a8a921fc8093",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "committed",
+          "reason": null
+        },
+        {
+          "op": "o1b",
+          "outcome": "duplicate_replay",
+          "reason": null
+        }
+      ],
+      "flags": {},
+      "semantic_digest": "562d1bd83f7de9c68229b02bf38f42a56c0688a6a6c6d6fa554aa24d8df26f31"
+    },
+    {
+      "id": "N-07",
+      "class": "near_miss",
+      "desc": "out-of-order causal parent rejected",
+      "expect": "rejected:causal_order",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "copy_same_scope",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "src_obj": "d1",
+            "src_ver": 1,
+            "new_obj": "d2"
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [
+            5
+          ],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ]
+      ],
+      "terminal_digest": "a95c7dc9a00a15fdc683bad7c2b76b034199a981587383794d6a646ae10aaa58",
+      "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "rejected:causal_order",
+          "reason": "causal_order"
+        }
+      ],
+      "flags": {},
+      "semantic_digest": "e16a963a8a7043c4d72db183b21318cf6dc439f6c126438ab50169eca0a03663"
+    },
+    {
+      "id": "N-08",
+      "class": "near_miss",
+      "desc": "legacy chain integrity across three versions",
+      "expect": "committed",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "update_supersede",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "obj_id": "d1",
+            "content": "c2"
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        },
+        {
+          "op_id": "o2",
+          "op_type": "update_supersede",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "obj_id": "d1",
+            "content": "c3"
+          },
+          "idempotency_key": "k-o2",
+          "causal_parents": [],
+          "crash_point": null
+        },
+        {
+          "op_id": "o3",
+          "op_type": "update_supersede",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "obj_id": "d1",
+            "content": "c4"
+          },
+          "idempotency_key": "k-o3",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "terminal_digest": "d0ffb2d595e6d77ad1b9740bb9ca71d717c4f38c84de72e9ddb7102c9108e47d",
+      "lineage_digest": "2f78596417ffcffbc437f038b3db2a53c2d13f525598e0dbb388ac6082a4e407",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "committed",
+          "reason": null
+        },
+        {
+          "op": "o2",
+          "outcome": "committed",
+          "reason": null
+        },
+        {
+          "op": "o3",
+          "outcome": "committed",
+          "reason": null
+        }
+      ],
+      "flags": {},
+      "semantic_digest": "6ca1c68eb94274492779e5e467f98c1c8dc89e2154c72c936a38b21d6960bb41"
+    },
+    {
+      "id": "N-09",
+      "class": "near_miss",
+      "desc": "redacted export keeps cross-scope op as redacted ref",
+      "expect": "committed",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "copy_cross_scope",
+          "actor": "actor@S_B",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-2",
+            "goal_id": "g-2"
+          },
+          "args": {
+            "src_obj": "d1",
+            "src_ver": 1,
+            "new_obj": "d1b",
+            "target_scope": {
+              "tenant_id": "t-a",
+              "workspace_id": "w-2",
+              "goal_id": "g-2"
+            }
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        },
+        {
+          "op_id": "o2",
+          "op_type": "export",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "request_scope": {
+              "tenant_id": "t-a",
+              "workspace_id": "w-1",
+              "goal_id": "g-1"
+            }
+          },
+          "idempotency_key": "k-o2",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ],
+        [
+          1
+        ]
+      ],
+      "terminal_digest": "a42080bbf01107eb79aeccc068ccf0582e5beefe05fad4a207db2e07400cec2a",
+      "lineage_digest": "5f099ca72151c1c66432ac63227b0441837fab3727cfa677c7b812128aecec4d",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "committed",
+          "reason": null
+        },
+        {
+          "op": "o2",
+          "outcome": "committed",
+          "reason": null
+        }
+      ],
+      "flags": {
+        "roundtrip": true,
+        "redacted": true
+      },
+      "semantic_digest": "ba961c930317ec8f23cd73b578ff4dc82f9f03c5d206b2bdc6d74973f69af495"
+    },
+    {
+      "id": "N-10",
+      "class": "near_miss",
+      "desc": "partial move without reconcile stays visible PARTIAL",
+      "expect": "unknown",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "move_cross_scope",
+          "actor": "actor@S_B",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-2",
+            "goal_id": "g-2"
+          },
+          "args": {
+            "src_obj": "d1",
+            "src_ver": 1,
+            "new_obj": "d1b",
+            "target_scope": {
+              "tenant_id": "t-a",
+              "workspace_id": "w-2",
+              "goal_id": "g-2"
+            }
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": "after_state_before_event"
+        }
+      ],
+      "groups": [
+        [
+          0
+        ]
+      ],
+      "terminal_digest": "dde4954a08374408fa28a948d995aa6a30d0d316ff9517ddb9f5bef9c318cc47",
+      "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "unknown",
+          "reason": "crash_after_state_before_event"
+        }
+      ],
+      "flags": {
+        "crash": "after_state_before_event",
+        "no_reconcile": true
+      },
+      "semantic_digest": "d3b2ad6efc7c19b07018fd030332e504ea989be941aa5f2b8f75e217eef11069"
+    },
+    {
+      "id": "N-11",
+      "class": "near_miss",
+      "desc": "rename label collision keeps distinct identity",
+      "expect": "committed",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": "shared"
+        },
+        {
+          "obj": "d2",
+          "content": "c2",
+          "scope": "S_A",
+          "label": "other"
+        }
+      ],
+      "collections": [],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "rename",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "obj_id": "d2",
+            "new_label": "shared"
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ]
+      ],
+      "terminal_digest": "3e68bc337fe389ae221fc40a075f3e70d38cfa6aa194ec795252e374050d71e5",
+      "lineage_digest": "3099509f578424f39b0e78e9da77ea8f14ec03eb9d4d4f3a80b65d215c8daf36",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "committed",
+          "reason": null
+        }
+      ],
+      "flags": {},
+      "semantic_digest": "b2aa8f97c205853121e8c7c02df6394f256c3233bf4a9e7b973c343f4197bc12"
+    },
+    {
+      "id": "N-12",
+      "class": "near_miss",
+      "desc": "scope-narrowed export sees subset",
+      "expect": "committed",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": ""
+        },
+        {
+          "obj": "d2",
+          "content": "c2",
+          "scope": "S_B",
+          "label": ""
+        }
+      ],
+      "collections": [
+        {
+          "id": "colA",
+          "scope": "S_A",
+          "members": [
+            {
+              "member": [
+                "d1",
+                1
+              ],
+              "key": "k1"
+            }
+          ]
+        },
+        {
+          "id": "colB",
+          "scope": "S_B",
+          "members": [
+            {
+              "member": [
+                "d2",
+                1
+              ],
+              "key": "k1"
+            }
+          ]
+        }
+      ],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "export",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "request_scope": {
+              "tenant_id": "t-a",
+              "workspace_id": "w-1",
+              "goal_id": "g-1"
+            }
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ]
+      ],
+      "terminal_digest": "16a39829be88c9b1144a86d803a7954dc4a4afc9339f553deab5d371f05b34e2",
+      "lineage_digest": "05500f7782f50a221697d8f2c2b9095194d754838b78a43738dcbb14f480280b",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "committed",
+          "reason": null
+        }
+      ],
+      "flags": {
+        "roundtrip": true,
+        "redacted": true
+      },
+      "semantic_digest": "a1e4e4cbb2c7d5526354077bcf0914bd251e0459447513159bc3399289a7aa4f"
+    },
+    {
+      "id": "X-01",
+      "class": "adversarial",
+      "desc": "forged scope copy rejected",
+      "expect": "rejected:forged_scope",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "copy_cross_scope",
+          "actor": "actor@S_B",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-2",
+            "goal_id": "g-2"
+          },
+          "args": {
+            "src_obj": "d1",
+            "src_ver": 1,
+            "new_obj": "d1b",
+            "target_scope": {
+              "tenant_id": "t-a",
+              "workspace_id": "w-2",
+              "goal_id": "g-2"
+            }
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ]
+      ],
+      "terminal_digest": "a95c7dc9a00a15fdc683bad7c2b76b034199a981587383794d6a646ae10aaa58",
+      "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "rejected:forged_scope",
+          "reason": "forged_scope"
+        }
+      ],
+      "flags": {
+        "forge_auth": "S_C"
+      },
+      "semantic_digest": "91fbeb7e30d39f5291e006da2becff06ee85f1dd769d5448e23200e3c9ee5f48"
+    },
+    {
+      "id": "X-02",
+      "class": "adversarial",
+      "desc": "cyclic derivation rejected",
+      "expect": "rejected:duplicate_version",
+      "versions": [
+        {
+          "obj": "loop",
+          "content": "a",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "derive",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "sources": [
+              [
+                "loop",
+                1
+              ]
+            ],
+            "new_obj": "loop",
+            "content": "b",
+            "scope": {
+              "tenant_id": "t-a",
+              "workspace_id": "w-1",
+              "goal_id": "g-1"
+            }
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ]
+      ],
+      "terminal_digest": "5b751f911058cd6f5435761aafbeb0b587a6bae653cbccd40e8db590d5325d86",
+      "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "rejected:duplicate_version",
+          "reason": "duplicate_version"
+        }
+      ],
+      "flags": {},
+      "semantic_digest": "f171f7fb12ef98afe490d81d7290020bdbae01cd78bf34ba713b0792b0fdac79"
+    },
+    {
+      "id": "X-03",
+      "class": "adversarial",
+      "desc": "history wipe attempt fails, insertion kept",
+      "expect": "mixed",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [
+        {
+          "id": "col1",
+          "scope": "S_A",
+          "members": [
+            {
+              "member": [
+                "d1",
+                1
+              ],
+              "key": "k1"
+            }
+          ]
+        }
+      ],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "remove",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "collection": "col1",
+            "key": "k1"
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        },
+        {
+          "op_id": "o2",
+          "op_type": "remove",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "collection": "col1",
+            "key": "k1"
+          },
+          "idempotency_key": "k-o2",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ],
+        [
+          1
+        ]
+      ],
+      "terminal_digest": "15f3d1a521b38fc4d16a8914f6ff4470b7eccc924f540eb8500b01d01a483a76",
+      "lineage_digest": "951d05fb21d0c187e3ff1940c46b210c92a75a8e60d9918e5b13555b37e1b409",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "committed",
+          "reason": null
+        },
+        {
+          "op": "o2",
+          "outcome": "rejected:already_removed",
+          "reason": "already_removed"
+        }
+      ],
+      "flags": {},
+      "semantic_digest": "bc059c8a375f956e75c1fdc9e2d0d1471f1cb46bc1144355b8b976f0bba28569"
+    },
+    {
+      "id": "X-04",
+      "class": "adversarial",
+      "desc": "provenance edge grants nothing",
+      "expect": "rejected:forged_scope",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "copy_cross_scope",
+          "actor": "actor@S_C",
+          "scope": {
+            "tenant_id": "t-b",
+            "workspace_id": "w-1",
+            "goal_id": "g-3"
+          },
+          "args": {
+            "src_obj": "d1",
+            "src_ver": 1,
+            "new_obj": "d1c",
+            "target_scope": {
+              "tenant_id": "t-b",
+              "workspace_id": "w-1",
+              "goal_id": "g-3"
+            }
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ]
+      ],
+      "terminal_digest": "a95c7dc9a00a15fdc683bad7c2b76b034199a981587383794d6a646ae10aaa58",
+      "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "rejected:forged_scope",
+          "reason": "forged_scope"
+        }
+      ],
+      "flags": {
+        "forge_auth": "S_A"
+      },
+      "semantic_digest": "c67f447c263e473d2098e9623cd4017bf792b0a7bfb457f4565c64458b5ff315"
+    },
+    {
+      "id": "X-05",
+      "class": "adversarial",
+      "desc": "dual authoritative scopes rejected",
+      "expect": "rejected:duplicate_version",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "copy_cross_scope",
+          "actor": "actor@S_B",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-2",
+            "goal_id": "g-2"
+          },
+          "args": {
+            "src_obj": "d1",
+            "src_ver": 1,
+            "new_obj": "d1",
+            "target_scope": {
+              "tenant_id": "t-a",
+              "workspace_id": "w-2",
+              "goal_id": "g-2"
+            }
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ]
+      ],
+      "terminal_digest": "a95c7dc9a00a15fdc683bad7c2b76b034199a981587383794d6a646ae10aaa58",
+      "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "rejected:duplicate_version",
+          "reason": "duplicate_version"
+        }
+      ],
+      "flags": {},
+      "semantic_digest": "adaa336b3d4c5a7881ec5f1285541337165e7ef16b6dcae0af3c48c7eac59f08"
+    },
+    {
+      "id": "X-06",
+      "class": "adversarial",
+      "desc": "orphan edge rejected",
+      "expect": "rejected:unknown_reference",
+      "versions": [],
+      "collections": [
+        {
+          "id": "col1",
+          "scope": "S_A",
+          "members": []
+        }
+      ],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "insert",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "collection": "col1",
+            "member_obj": "ghost",
+            "member_ver": 3,
+            "key": "k9"
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ]
+      ],
+      "terminal_digest": "eb3436298c4d78871cd1d32b202e3411115418fcdcb87898ad95f2ff5e537596",
+      "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "rejected:unknown_reference",
+          "reason": "unknown_reference"
+        }
+      ],
+      "flags": {},
+      "semantic_digest": "52ae5771edd0c99e200d933f4d73cded95a18c4daa229337bc7ad5b6b2381cc2"
+    },
+    {
+      "id": "X-07",
+      "class": "adversarial",
+      "desc": "export with forged request scope denied",
+      "expect": "rejected:forged_scope",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [
+        {
+          "id": "col1",
+          "scope": "S_A",
+          "members": [
+            {
+              "member": [
+                "d1",
+                1
+              ],
+              "key": "k1"
+            }
+          ]
+        }
+      ],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "export",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "request_scope": {
+              "tenant_id": "t-b",
+              "workspace_id": "w-1",
+              "goal_id": "g-3"
+            }
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ]
+      ],
+      "terminal_digest": "e0735fde116b5528e8345e837d87b1d8fa58e93c35fdd0b2715d1adec03000ce",
+      "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "rejected:forged_scope",
+          "reason": "forged_scope"
+        }
+      ],
+      "flags": {
+        "forge_auth": "S_A",
+        "export_deny": true
+      },
+      "semantic_digest": "1b4b0d98b75df176eeb1bb60c376d33ef69869427bf29a9ba5cab1fb500c9345"
+    },
+    {
+      "id": "X-08",
+      "class": "adversarial",
+      "desc": "importer rejects unknown profile version",
+      "expect": "committed",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [],
+      "ops": [],
+      "groups": [],
+      "terminal_digest": "a95c7dc9a00a15fdc683bad7c2b76b034199a981587383794d6a646ae10aaa58",
+      "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "op_outcomes": [],
+      "flags": {
+        "import_attack": "unknown_profile"
+      },
+      "semantic_digest": "c1e95fa0de4c3e6b757cc6efaa20275c4c2951e34a1fda6a839c74971d5c0c2b"
+    },
+    {
+      "id": "X-09",
+      "class": "adversarial",
+      "desc": "importer rejects scope rewrite",
+      "expect": "committed",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [],
+      "ops": [],
+      "groups": [],
+      "terminal_digest": "a95c7dc9a00a15fdc683bad7c2b76b034199a981587383794d6a646ae10aaa58",
+      "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "op_outcomes": [],
+      "flags": {
+        "import_attack": "scope_rewrite"
+      },
+      "semantic_digest": "66ce37ee353395020e99486f72a81e84d9afa7bc5d8b206608972dd140b99a78"
+    },
+    {
+      "id": "X-10",
+      "class": "adversarial",
+      "desc": "mixed-manifest replay detected",
+      "expect": "committed",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "create",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "obj_id": "d2",
+            "content": "z",
+            "scope": {
+              "tenant_id": "t-a",
+              "workspace_id": "w-1",
+              "goal_id": "g-1"
+            }
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ]
+      ],
+      "terminal_digest": "903b55e818926df0727d39b828cc7c75391f4ee96e8f8545d86f961e77e1c4e2",
+      "lineage_digest": "58ec7dcdb28a48decbe9b588eac6b03b894ed7dfc1142e2774f558423c714cf1",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "committed",
+          "reason": null
+        }
+      ],
+      "flags": {
+        "provenance_attack": "mixed_executors"
+      },
+      "semantic_digest": "29180144c3a4112266e825b1db716299997d5384a25fe57583c6251d8cfbb4ce"
+    },
+    {
+      "id": "X-11",
+      "class": "adversarial",
+      "desc": "secret content quarantined",
+      "expect": "quarantined",
+      "versions": [],
+      "collections": [],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "create",
+          "actor": "actor@S_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "args": {
+            "obj_id": "sek",
+            "content": "token sk-proj-abcdefgh12345678",
+            "scope": {
+              "tenant_id": "t-a",
+              "workspace_id": "w-1",
+              "goal_id": "g-1"
+            }
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ]
+      ],
+      "terminal_digest": "6f14294f708bae86f3ae9330e0532be2c90d4909beaa97bbbcd044d91ed4a6eb",
+      "lineage_digest": "30a307fd23ebfc474d54c3b4b9ef7603776325066263465c1172c7131ff9cc88",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "committed",
+          "reason": null
+        }
+      ],
+      "flags": {},
+      "semantic_digest": "301a9941e25b9dda050b33a424513073f90aa38203f77608d1487982a69793c8"
+    },
+    {
+      "id": "X-12",
+      "class": "adversarial",
+      "desc": "move retry after commit is single effect",
+      "expect": "mixed",
+      "versions": [
+        {
+          "obj": "d1",
+          "content": "c1",
+          "scope": "S_A",
+          "label": ""
+        }
+      ],
+      "collections": [],
+      "ops": [
+        {
+          "op_id": "o1",
+          "op_type": "move_cross_scope",
+          "actor": "actor@S_B",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-2",
+            "goal_id": "g-2"
+          },
+          "args": {
+            "src_obj": "d1",
+            "src_ver": 1,
+            "new_obj": "d1b",
+            "target_scope": {
+              "tenant_id": "t-a",
+              "workspace_id": "w-2",
+              "goal_id": "g-2"
+            }
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        },
+        {
+          "op_id": "o1r",
+          "op_type": "move_cross_scope",
+          "actor": "actor@S_B",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-2",
+            "goal_id": "g-2"
+          },
+          "args": {
+            "src_obj": "d1",
+            "src_ver": 1,
+            "new_obj": "d1b",
+            "target_scope": {
+              "tenant_id": "t-a",
+              "workspace_id": "w-2",
+              "goal_id": "g-2"
+            }
+          },
+          "idempotency_key": "k-o1",
+          "causal_parents": [],
+          "crash_point": null
+        }
+      ],
+      "groups": [
+        [
+          0
+        ],
+        [
+          1
+        ]
+      ],
+      "terminal_digest": "dde4954a08374408fa28a948d995aa6a30d0d316ff9517ddb9f5bef9c318cc47",
+      "lineage_digest": "fb7ecd2be8cb6d90905aba4929301b9540f9fa00a5b9a0a9e6c8fc67a21b5f66",
+      "op_outcomes": [
+        {
+          "op": "o1",
+          "outcome": "committed",
+          "reason": null
+        },
+        {
+          "op": "o1r",
+          "outcome": "duplicate_replay",
+          "reason": null
+        }
+      ],
+      "flags": {},
+      "semantic_digest": "03158c9afdb74b1ddb2ec4a93c490bccf8ccf93cbeb62789f3b615968408f0fd"
+    }
+  ]
+}

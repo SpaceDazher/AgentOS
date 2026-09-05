@@ -1,0 +1,66 @@
+{
+  "compatibility": {
+    "accept_versions": "1.0.x",
+    "duplicate_keys": "fail_closed",
+    "nan_infinity": "fail_closed",
+    "remote_ref": "fail_closed",
+    "unexpected_field": "fail_closed",
+    "unknown_enum": "fail_closed",
+    "unknown_version": "fail_closed"
+  },
+  "contract_schema": "agentos.s1-014.dispute-contract/v1",
+  "contract_version": "1.0.0",
+  "disclosure_rule": {
+    "challenge_indicator": 0,
+    "evidence_detail": 1,
+    "focal_claim": 0,
+    "independence_cue": 0,
+    "provenance_detail": 1,
+    "relations_detail": 1,
+    "source_cue": 0,
+    "status": 0
+  },
+  "invariants": [
+    "both variants consume the identical canonical document",
+    "renderer never changes knowledge status, policy, authority or evidence",
+    "withheld/unknown shown as explicit state",
+    "progressive disclosure never removes information",
+    "no innerHTML for data, no external script/font/telemetry, no oracle access, no self-grading"
+  ],
+  "schema": "agentos.s1-014.renderer-contract/v1",
+  "variants": {
+    "CARD": {
+      "controls": "button with aria-expanded",
+      "disclosures": {
+        "evidence_detail": 1,
+        "provenance_detail": 1,
+        "relations_detail": 1
+      },
+      "level0": [
+        "focal_claim",
+        "status",
+        "knowledge_gate_state",
+        "challenge_indicator",
+        "source_cue(publisher+origin+state)",
+        "independence_cue",
+        "withheld_fields"
+      ]
+    },
+    "GRAPH": {
+      "controls": "button with aria-expanded; nodes tabindex=0",
+      "disclosures": {
+        "evidence_detail": 1,
+        "provenance_detail": 1,
+        "relations_detail": 1
+      },
+      "level0": [
+        "claim nodes with status/role",
+        "evidence nodes with source/publisher/origin/group/state",
+        "support/challenge edges",
+        "independence groups",
+        "knowledge_gate_state",
+        "linear_equivalent list"
+      ]
+    }
+  }
+}

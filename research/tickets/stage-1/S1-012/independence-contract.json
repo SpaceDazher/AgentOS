@@ -1,0 +1,22 @@
+{
+  "schema": "agentos.s1-012.independence-contract/v1",
+  "contract_version": "1.0.0",
+  "unit_schema": "agentos.s1-012.evidence-unit-schema/v1",
+  "counting_rule": "Independent weight counts distinct ALLOWED independence groups with at least one admitted unit each, never raw units, digests, URLs or accounts.",
+  "collapse_rules": [
+    {"pattern": "mirror", "rule": "Same content digest under distinct URLs/accounts collapses to the provenance lineage group."},
+    {"pattern": "reprint", "rule": "Retelling with the same upstream lineage collapses even with a distinct publisher label."},
+    {"pattern": "shared-upstream", "rule": "Common publisher/upstream lineage collapses regardless of surface diversity."},
+    {"pattern": "split-span", "rule": "Spans partitioned from one document without new observation collapse to the document group."},
+    {"pattern": "overlap-span", "rule": "Overlapping spans of one document collapse unless disjoint observation is proven."},
+    {"pattern": "reformat", "rule": "Reformatting, renaming or re-encoding without new observation collapses."}
+  ],
+  "lexical_similarity_rule": "Transparent content match alone never merges groups with disjoint provenance, and never splits one lineage into two. Benign near-miss (independent primaries, same text, transparent origin) keeps full weight.",
+  "unresolved_rule": "Unresolvable independence is explicit UNKNOWN with outcome abstain. UNKNOWN is allowed per oracle where declared, but never counted as a correct classification and never given independent weight. An invented group id is a violation, not a resolution.",
+  "self_declaration_rule": "A group/publisher string self-declared by an external source is not evidence of independence. Provenance laundering (distinct labels, shared source), missing/null provenance and lineage substitution fail as non-gold.",
+  "correlation_cap": "At most cap_independent_groups distinct groups contribute weight per claim (cap value frozen in calibration-plan.json). Excess correlated copies add zero weight, never independent trials.",
+  "reputation_boundary": "Beta/EigenTrust outputs may rank the review queue or emit an explicitly flagged recommendation. They NEVER create enforcement ALLOW, capability, approval, budget, PROMOTED or ACCEPTED.",
+  "policy_firewall": "A high reputation score never compensates a failed policy, approval or evidence gate. An external assertion that a source is independent or trusted changes no canonical authority.",
+  "reason_codes": ["ADMITTED", "REJECTED_CORRELATED", "REJECTED_UNVERIFIED", "REJECTED_STALE", "REJECTED_REVOKED", "REJECTED_CROSS_SCOPE", "REJECTED_VERSION_MISMATCH", "REJECTED_PROVENANCE", "REJECTED_POLICY", "ABSTAIN_UNKNOWN", "RECOMMENDATION_ONLY", "FIREWALL_BLOCKED", "MISSING_REQUIRED_FIELD", "INVALID_BINDING", "UNKNOWN_VARIANT", "TAMPERED_INPUT"],
+  "lifecycle": "Revoke, supersede, scope change or claim-version change excludes prior evidence; replay and cache never resurrect it and never erase its history (S1-011 semantics preserved)."
+}

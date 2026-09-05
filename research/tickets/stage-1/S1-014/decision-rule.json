@@ -1,0 +1,47 @@
+{
+  "denominator": "n_assigned per variant x task; missing/timeout/withdrawn never removed; time distribution keeps censored trials",
+  "forbidden": [
+    "PASS",
+    "statistical superiority claim",
+    "human N > 0 from synthetic or operator sessions",
+    "using trial means as participant-clustered evidence",
+    "false power computation"
+  ],
+  "frozen_before_results": true,
+  "hard_gate_violation": "forbids selecting the violating variant regardless of time or accuracy",
+  "hard_gates": {
+    "accessibility": "graph linear equivalent present; all disclosures keyboard-operable; keyboard_only run records zero pointer use",
+    "challenge_visible_level0": "challenge claim visible without action in both variants",
+    "content_parity": "information_set(CARD)==information_set(GRAPH)==canonical for every task",
+    "disclosure_symmetry": "identical action counts per cue between variants (rule table)",
+    "provenance_visible_level0": "both variants show source id + publisher + origin + independence group without action"
+  },
+  "inconclusive_if": [
+    "operator answers missing or outside grammar",
+    "any hard contract answer (2B,3B,4B,4C,6B,7B,8B,9C)",
+    "any hard gate red",
+    "parity or replay failure",
+    "missingness or quarantine hides trials"
+  ],
+  "provisional_rule": {
+    "A": "CARD_WITH_GRAPH_DRILLDOWN",
+    "B": "GRAPH_WITH_LINEAR_FALLBACK",
+    "C": "TASK_DEPENDENT_SPLIT (simple/medium -> CARD default, complex -> GRAPH offered first; frozen by stratum table)",
+    "D": "NO_DEFAULT -> INCONCLUSIVE",
+    "source": "operator questionnaire Q1 under all hard gates green"
+  },
+  "schema": "agentos.s1-014.decision-rule/v1",
+  "status_ceiling": "PASS_WITH_LIMITS",
+  "technical_replay": {
+    "executors": [
+      "EXEC-RUN-A",
+      "EXEC-RUN-B"
+    ],
+    "requirement": "process-separated runs match on observation+metric digests",
+    "seeds": [
+      "seed-0001",
+      "seed-0002",
+      "seed-0003"
+    ]
+  }
+}

@@ -1,0 +1,271 @@
+{
+  "artifacts": {
+    "research_plan": {
+      "content": "Decide the workspace lineage representation (flat scope vs PROV dictionary vs minimal hybrid) through a frozen 48-scenario corpus, three executable models, real pySHACL runs, 864-observation replay, sensitivity analysis and one operator architecture decision.",
+      "producer": "agentos-s1-016-producer",
+      "claim_refs": [
+        "CL-C1",
+        "CL-L1"
+      ]
+    },
+    "source_registry": {
+      "content": "The source registry binds each locally authorized snapshot to its URI, role, verification status and SHA-256. The PROV Dictionary Note is never presented as Recommendation force.",
+      "producer": "agentos-s1-016-producer",
+      "claim_refs": [
+        "CL-O1",
+        "CL-L1"
+      ]
+    },
+    "feature_catalog": {
+      "content": "Single canonical scope; immutable versions with supersedes; append-only operations with idempotency and crash reconciliation; membership intervals with tombstones; derived PROV export with redaction receipts; validated import; semantic round-trip; event-only audit reconstruction.",
+      "producer": "agentos-s1-016-producer",
+      "claim_refs": [
+        "CL-O1",
+        "CL-P1"
+      ]
+    },
+    "architecture_models": {
+      "content": "Stdlib simulator with one commit core shared by three representations differing in auxiliary runtime structures; exporter/importer around a declared PROV profile; pySHACL sidecar; replicator and bundle publisher on frozen inputs; synthetic observations strictly separate from (nonexistent) production data.",
+      "producer": "agentos-s1-016-producer",
+      "claim_refs": [
+        "CL-D1",
+        "CL-T1"
+      ]
+    },
+    "mental_model": {
+      "content": "Scope is authority; lineage is evidence. Users see one canonical scope per artifact; history is append-only; partial moves stay visible; redaction explains itself.",
+      "producer": "agentos-s1-016-producer",
+      "claim_refs": [
+        "CL-O1"
+      ]
+    },
+    "ontology": {
+      "content": "ArtifactVersion identity, canonical scope triple, typed operations, membership intervals, derivation edges and dictionary snapshots across 48 deterministic scenarios with a separate oracle.",
+      "producer": "agentos-s1-016-producer",
+      "claim_refs": [
+        "CL-O1",
+        "CL-D1"
+      ]
+    },
+    "mathematical_model": {
+      "content": "Twelve hard invariants at zero tolerance; numerator/denominator rates with missing fields failing closed; 748-vector weight sensitivity with unweighted safety gates; same-host latency percentiles as model evidence only.",
+      "producer": "agentos-s1-016-producer",
+      "claim_refs": [
+        "CL-M1",
+        "CL-L1"
+      ]
+    },
+    "synthesis_and_gaps": {
+      "content": "Technical preparation and (after review) one operator architecture decision are complete. Production conformance, arbitrary distributed executions and population claims remain unproven. Same-host replay limits stay explicit.",
+      "producer": "agentos-s1-016-producer",
+      "claim_refs": [
+        "CL-D1",
+        "CL-L1"
+      ]
+    },
+    "independent_audit": {
+      "content": "Producer path (simulator/runner) and audit path (evaluator plus process-separated replication and real pySHACL runs) are independent code reading only frozen inputs. An independent process replicates the 864-observation matrix byte-identical; sensitivity flips, if any, cap the verdict. This never replaces a production audit.",
+      "producer": "agentos-s1-016-independent-verifier",
+      "claim_refs": [
+        "CL-M1",
+        "CL-L1"
+      ]
+    },
+    "platform_plan": {
+      "content": {
+        "Scope": "Bounded lineage-representation decision; no production store, population or distributed claims.",
+        "Architecture": "Stdlib simulator plus pySHACL sidecar, exporter/importer, replicator and publisher on one frozen definition set.",
+        "Workstreams": "Freeze sources; sign lineage contract; build three models; build corpus; run SHACL; score 864 observations; replicate; sensitivity; operator review; publish canonical bundle.",
+        "Milestones": "PREPARATION_READY after technical gates; bounded closure after admissible operator review and canonicalization.",
+        "Verification": "Targeted suites, RED-verified gates, real pySHACL runs, probes A-P, replication record, sensitivity, native normalizer pass, wiki-check.",
+        "Risks": "Bounded corpus, heuristic-free but profile-bound subset, same-host replay, single-operator review limits.",
+        "Open decisions": "No production rollout remains in scope; implementation conformance needs a future ticket."
+      },
+      "producer": "agentos-s1-016-producer",
+      "claim_refs": [
+        "CL-D1",
+        "CL-L1"
+      ]
+    },
+    "progress": {
+      "content": "Bounded preparation complete: dependency proof, frozen sources, lineage contract, three representations, 48-case corpus, exporter/importer, SHACL shapes, evaluator with probes A-P, 864-observation replay, 748-vector sensitivity, native FLOW-11 bundle and derived candidate record.",
+      "producer": "agentos-s1-016-producer",
+      "claim_refs": [
+        "CL-M1"
+      ]
+    }
+  },
+  "audit": {
+    "auditor": "agentos-s1-016-independent-verifier",
+    "producer": "agentos-s1-016-producer",
+    "verdict": "pass_with_limits",
+    "limitations": [
+      "tracked-Git dependency evidence; local canonical DB recheck is required before final publication",
+      "no human or production data: all rates are technical model checks",
+      "bounded 48-scenario corpus; no arbitrary distributed execution claims",
+      "same-host replay is called replay, not an external audit",
+      "sensitivity parsimony consumes wall-clock latencies; recorded flips are noise-sensitive and a deterministic latency proxy is deferred",
+      "recorded sensitivity flips (1) cap the verdict; substance leader FLAT_RUNTIME_PROV_EXPORT",
+      "operator review recorded; verdict remains INCONCLUSIVE; substance leader FLAT_RUNTIME_PROV_EXPORT"
+    ]
+  },
+  "auditor": "agentos-s1-016-independent-verifier",
+  "claims": [
+    {
+      "id": "CL-O1",
+      "s1_016_class": "ontology_fact",
+      "claim_class": "fact",
+      "text": "One canonical scope triple per ArtifactVersion, immutable versions with supersedes chains, and atomic transition+audit commits hold across 48 scenarios x 3 representations x 3 seeds x 2 executors with zero invariant violations.",
+      "support": [
+        "SRC-S1-016-01",
+        "SRC-S1-016-02"
+      ]
+    },
+    {
+      "id": "CL-P1",
+      "s1_016_class": "provenance_invariant",
+      "claim_class": "fact",
+      "text": "Lineage edges never authorize; cross-scope copy/move preserve source identity; removal closes intervals without erasing history; redacted exports carry no foreign content or IDs.",
+      "support": [
+        "SRC-S1-016-02",
+        "SRC-S1-016-04"
+      ]
+    },
+    {
+      "id": "CL-T1",
+      "s1_016_class": "tradeoff",
+      "claim_class": "fact",
+      "text": "Measured complexity ordering is B > C > A on static tables/constraints/entry points while canonical state, bytes and safety outcomes agree; query steps favor B, latency differences are same-host microseconds.",
+      "support": [
+        "SRC-S1-016-03",
+        "SRC-S1-016-04"
+      ]
+    },
+    {
+      "id": "CL-D1",
+      "s1_016_class": "design_inference",
+      "claim_class": "inference",
+      "text": "One observable operation contract across A/B/C with a frozen oracle, independent SHACL validation and event-only audit reconstruction lets deviations fail closed at import, replay and publication.",
+      "support": [
+        "SRC-S1-016-01",
+        "SRC-S1-016-05"
+      ]
+    },
+    {
+      "id": "CL-M1",
+      "s1_016_class": "measurement",
+      "claim_class": "fact",
+      "text": "Supported PROV round-trip matches 100% on flagged scenarios; audit reconstruction matches 100%; invalid inputs are rejected 100% with exact reasons; 144/144 SHACL runs match the frozen oracle with zero unclassified violations.",
+      "support": [
+        "SRC-S1-016-05",
+        "SRC-S1-016-06"
+      ]
+    },
+    {
+      "id": "CL-C1",
+      "s1_016_class": "decision",
+      "claim_class": "inference",
+      "text": "The substance leader from equal base weights is recorded with its 748-vector sensitivity distribution; any recorded flip caps the verdict at INCONCLUSIVE per the frozen rule.",
+      "support": [
+        "SRC-S1-016-04"
+      ]
+    },
+    {
+      "id": "CL-L1",
+      "s1_016_class": "limitation",
+      "claim_class": "assumption",
+      "text": "Bounded corpus, same-host replay (not an external audit), same-host microsecond latencies (not SLOs), heuristic-free but profile-bound PROV subset, and no production conformance.",
+      "support": []
+    }
+  ],
+  "config": {
+    "min_source_count": 4,
+    "min_verified_ratio": 1.0,
+    "required_artifacts": [
+      "research_plan",
+      "source_registry",
+      "feature_catalog",
+      "architecture_models",
+      "mental_model",
+      "ontology",
+      "mathematical_model",
+      "synthesis_and_gaps",
+      "independent_audit",
+      "platform_plan",
+      "progress"
+    ]
+  },
+  "producer": "agentos-s1-016-producer",
+  "sources": [
+    {
+      "id": "SRC-S1-016-01",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-016/sources/snap-01-src05-ontology-q1.md",
+      "title": "SRC-05 ontology sections 4/9, question Q1",
+      "source_type": "ontology",
+      "verification_status": "verified",
+      "verifier": "s1-016-source-review-2026-09-05",
+      "verification_method": "tracked-file-hash-review",
+      "content": "# SRC-05 ontology input, sections 4/9, question Q1 (S1-016 evidence role: ontology)\n\nProvenance: no standalone SRC-05 file exists in this repository (searched\n`research/**`, 2026-09-05). This snapshot freezes the locally available\nformulation of the ontology question Q1 plus the repo ontology it constrains.\nAbsence of a separate SRC-05 document is recorded here, not hidden.\n\nCanonical URI: https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-016/sources/snap-01-src05-ontology-q1.md\nPublisher: AgentOS research (local ontology formulation)\nVersion: freeze 2026-09-05 (base commit 091ade2)\nRetrieved at: 2026-09-05T00:00:00Z\nEvidence role: ontology (Q1 lineage representation question)\nAccess/license: internal design input, full-text excerpt authorized locally\n\n## Q1 (workspace lineage representation question, verbatim from ticket lineage)\n\nS1-016 QM (ontology Q1): should the runtime keep workspace lineage as one\nflat canonical scope with PROV-Dictionary insertion/deletion derived only in\nexport; is a rich PROV-Dictionary runtime needed; or is a minimal hybrid\njustified?\n\nS1-007 (QA3, same ontology family): per-scope index/projection versus shared\nindex with row-level retrieval filtering; canonical scope id composition\n`tenant_id + '/' + workspace_id + '/' + goal_id` (frozen in\n`research/tickets/stage-1/S1-007/isolation-contract.json`).\n\n## Repo ontology constrained by Q1 (spec/SPEC.md sections 2-3, verbatim)\n\n\"ArtifactVersion: DRAFT → CURRENT → SUPERSEDED (by newer version, never\ndeleted). Immutable content: (goal_id, kind, version) unique; content\naddressed by SHA-256. Any correction = new row + relation\nSUPERSEDES(new→old).\"\n\n\"Transition + audit event commit atomically or not at all.\"\n(get_evidence_pack fails loudly if any ACCEPTED goal lacks its goal.accepted\nevent; chain integrity walks prev_event_sha256.)\n\n\"Memory records carry provenance and scope; cross-goal/cross-tenant reads are\ndenied.\" Memory scoping is enforced at SQL level\n(`WHERE scope_goal_id = ?`).\n\nS1-016 use: Q1 asks which runtime representation of lineage satisfies L1-L12.\nThe ontology above fixes the non-negotiables (single scope per version,\nimmutable history, atomic audit). No recognition or population claim is\nsourced here.\n",
+      "content_sha256": "b707f1781ab146677aef893d391324f9df965925d068febaec64bece9f3d9b14"
+    },
+    {
+      "id": "SRC-S1-016-02",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-016/sources/snap-02-audit-datamodel.md",
+      "title": "SRC-01 F7-F9 / SRC-03 s4 / SRC-08 s4 audit data model",
+      "source_type": "audit-model",
+      "verification_status": "verified",
+      "verifier": "s1-016-source-review-2026-09-05",
+      "verification_method": "tracked-file-hash-review",
+      "content": "# Data-model / audit sources: SRC-01 F7-F9, SRC-03 section 4, SRC-08 section 4 (S1-016 evidence role: audit-model)\n\nProvenance: excerpts of tracked repo files at base commit 091ade2\n(`spec/SPEC.md`, `src/agentos/journal.py`, `src/agentos/migrations/`,\n`tests/test_invariants_audit.py`). Internal design inputs; full files remain\nin the repo. Role labels SRC-01/SRC-03/SRC-08 follow the ticket's source map;\nthe excerpts below are the locally inspectable substance.\n\nCanonical URI: https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-016/sources/snap-02-audit-datamodel.md\nPublisher: AgentOS repo (spec + reference implementation + invariant suite)\nVersion: SPEC v1.0, journal/machines at 091ade2, freeze 2026-09-05\nRetrieved at: 2026-09-05T00:00:00Z\nEvidence role: audit-model (atomic transition+audit, version chains)\nAccess/license: local repo files, full-text excerpt authorized\n\n## SRC-01 F7-F9 (fencing/reconciliation/audit fixes, 2026-08-22 review)\n\n- F5: mutating intents record an EXECUTING activity BEFORE the effect; repeats\n  with the same key and no recorded outcome return UNKNOWN_OUTCOME +\n  reconciliation_required instead of re-executing (no blind retry).\n- F7: mutating ops require run.status='RUNNING' AND unexpired lease, verified\n  in SQL against the persisted row; fence tokens come from a monotonic\n  persisted counter.\n- F8: reconcile() distinguishes RECONCILED_SUCCEEDED / RECONCILED_FAILED and\n  requires rowcount=1. Gate blocks RECONCILED_FAILED.\n\n## SRC-03 section 4 (lifecycle/state semantics, paraphrased with identifiers)\n\nTask lifecycle PENDING → READY → RUNNING → DONE with FAILED retry budget\n(`attempts <= retry_budget`), BLOCKED on missing dependencies, CANCELLED on\ngoal cancel. Run resume only from the latest consistent Checkpoint (SHA\nverified). Approval lifecycle GRANTED → CONSUMED | EXPIRED | REVOKED with\nexactly-once conditional-UPDATE consumption over the full binding tuple.\n\n## SRC-08 section 4 (audit/evidence expectations, paraphrased)\n\nAudit events are append-only and hash-chained (`prev_event_sha256`); the\njournal commits object mutation + audit event in ONE sqlite transaction\n(test T14). Evidence packs are machine-readable JSON over every transition,\nevaluation, approval and effect; tamper-evidence in MVP relies on filesystem\nACLs (explicit residual risk, SPEC section 1).\n\nS1-016 use: L12 (atomic transition+audit/lineage event) and L2 (immutable\nversions + SUPERSEDES) restate these contracts for the lineage layer. Crash\nsemantics (UNKNOWN_OUTCOME → reconciliation, no blind retry) are inherited\nfor copy/move/removal/export crash points.\n",
+      "content_sha256": "bac3db46a1f89d60dbd75a1273ac9bef01a0c9582d17d7569efefa64ccd888be"
+    },
+    {
+      "id": "SRC-S1-016-03",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-003/results/decision-evidence",
+      "title": "S1-003 SHACL/ontology decision and executable artifacts",
+      "source_type": "formal-semantics",
+      "verification_status": "verified",
+      "verifier": "s1-016-source-review-2026-09-05",
+      "verification_method": "tracked-file-hash-review",
+      "content": "# S1-003 SHACL/ontology decision and executable artifacts (S1-016 evidence role: formal-semantics)\n\nProvenance: excerpts of `origin/main` tracked bytes (evaluation record,\nengine results, shapes). Record: result `pass`, revision 24,\ngoal `goal_RVX89EP2SEQ94MSZ01M0VAVECK`,\ncampaign `rcamp_6FTDN1FMJ9BNV65501M0VAVECK`,\nevaluation `reval_KHXH2JAY5JFW8YJM01M0VAVEEM`,\nchain `b9c9e2fbbac5db994e584a24669f0f5475e0f6942fe3d5347fad8592fbf83157`.\n\nCanonical URI: https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-003/results/decision-evidence\nPublisher: AgentOS S1-003 (canonical rev 24)\nVersion: branch codex/s1-003-executable-shacl (frozen shapes-v3), retrieved 2026-09-05\nRetrieved at: 2026-09-05T00:00:00Z\nEvidence role: formal-semantics (real pySHACL execution precedent)\nAccess/license: local repo bytes, excerpt authorized\n\n## Engine evidence (engine-results.json, origin/main bytes)\n\n- `pyshacl_executed: true`, verdict `pass`.\n- Coverage: 24 fixtures / 26 profile runs, 26 matched (open + promoted_only).\n- Runtime identity: rdflib 7.6.0, pyshacl 0.40.1 (S1-016 reuses these exact\n  engine versions and executes its own runs; S1-003 runs are precedent, not\n  S1-016 proof).\n\n## Lifecycle/scope/provenance vocabulary (shapes-v3.ttl, 9209 bytes)\n\n- `hubs:locatedIn` split into `sh:minCount 1` (missing_effective_scope) and\n  `sh:maxCount 1` (multiple_effective_scopes): exactly one effective scope\n  per subject — the single-scope precedent for lineage invariant L1.\n- Evidence bindings: canonicalSourceId, publisherId, independenceGroup,\n  resolverVersion, metadataFrozenAt (the provenance tuple S1-007 ISO5 and\n  S1-016 lineage provenance reuse).\n- SPARQL-backed cross-checks bind evidence scope to subject scope\n  (`?ev hubs:locatedIn ?evScope`), subject scope to actor scope, and budgets.\n\n## Honest limits carried\n\n- v1 record carries no limitations list; engine evidence is bounded to the\n  frozen 24-fixture corpus (no arbitrary-graph proof).\n- pySHACL runtime is optional/isolated (ADR-0009); core AgentOS stays\n  stdlib-only.\n",
+      "content_sha256": "c5418a8d24dc2ecf32175d9226e75e316c4e3853b4ee11ee10abb48d4b453ba4"
+    },
+    {
+      "id": "SRC-S1-016-04",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-007/results/decision-evidence",
+      "title": "S1-007 scope-isolation decision and evidence",
+      "source_type": "scope-isolation",
+      "verification_status": "verified",
+      "verifier": "s1-016-source-review-2026-09-05",
+      "verification_method": "tracked-file-hash-review",
+      "content": "# S1-007 scope-isolation decision and evidence (S1-016 evidence role: scope-isolation)\n\nProvenance: excerpts of `origin/main` tracked bytes (evaluation record,\nisolation contract, decision matrix, probes). Record: result\n`pass_with_limits`, revision 7,\ngoal `goal_5FX22ZHCEAW0G2B501M1DDTYSA`,\ncampaign `rcamp_9AGA2BWAQ70FQQ5401M1DDTYSA`,\nevaluation `reval_6BH3G062B38G3WHH01M1DDTYW2`,\nchain `4c344ab2e83b231e4cd14c2f69f9eb95b9b0f374f7fab3bf8651eda682390692`.\n\nCanonical URI: https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-007/results/decision-evidence\nPublisher: AgentOS S1-007 (canonical rev 7)\nVersion: branch codex/s1-007-qa3-isolation (frozen contract v1), retrieved 2026-09-05\nRetrieved at: 2026-09-05T00:00:00Z\nEvidence role: scope-isolation (single-scope decision precedent)\nAccess/license: local repo bytes, excerpt authorized\n\n## Single-scope isolation decision\n\n- Canonical scope id composition: `tenant_id + '/' + workspace_id + '/' +\n  goal_id` (S1-016 reuses this exact tuple as the lineage scope).\n- Decision matrix winner with sensitivity analysis precedent (dimensions\n  D1-D11, normalized scores, score margins, near-tie analysis).\n- Zero-tolerance contract ISO1-ISO8: no foreign content/metadata/counts,\n  byte-identical deny bodies, epoch-bound invalidation, provenance survival.\n- Run matrix: `results/run-a` + `results/run-b` run manifests with per-case\n  run records across 3 seeds (101/202/303); probes file with fault-injection\n  and equivalence-class evidence.\n\n## Same-host/model limits carried\n\n- All results are local-model measurements from a deterministic simulation;\n  no production latency, storage or privacy certification.\n- Timing probe is bounded same-host paired-interleaved wall-clock evidence,\n  not absence-of-side-channel proof.\n- Storage overhead uses a declared per-index constant (model assumption).\n- Producer/verifier labels are process-separated roles in one local\n  environment, not external human auditors.\n- S1-003/S1-005 evidence reused only within stated limits.\n",
+      "content_sha256": "4c133221c4692c0e8a5fe1fdf018552cdaabef4d4d30edfb559a5965ab768604"
+    },
+    {
+      "id": "SRC-S1-016-05",
+      "canonical_uri": "https://www.w3.org/TR/prov-dm/",
+      "title": "W3C PROV-DM and PROV-O Recommendations",
+      "source_type": "prov-standard",
+      "verification_status": "verified",
+      "verifier": "s1-016-source-review-2026-09-05",
+      "verification_method": "tracked-file-hash-review",
+      "content": "# Bibliographic / availability records: W3C PROV-DM and PROV-O (S1-016 evidence role: prov-standard)\n\nFull-text status: BIBLIOGRAPHIC RECORDS ONLY (not full-text snapshots).\nW3C Recommendations are copyrighted by W3C under the W3C Document License.\nNo normative text is reproduced here. Unit tests run offline and never fetch\nthese sources. Normative status is stated exactly as published.\n\nCanonical URI (PROV-DM): https://www.w3.org/TR/prov-dm/\nPublisher: World Wide Web Consortium (W3C)\nVersion: PROV-DM: The PROV Data Model, W3C Recommendation 30 April 2013\nRetrieved at: 2026-09-05T00:00:00Z\nEvidence role: prov-standard (Entity/Activity/Agent, derivation/generation)\nAccess/license: public Recommendation under W3C Document License (not vendored)\nAvailability: canonical URI resolvable 2026-09-05 (Overview + DM + constraints)\n\nCanonical URI (PROV-O): https://www.w3.org/TR/prov-o/\nPublisher: World Wide Web Consortium (W3C)\nVersion: PROV-O: The PROV Ontology, W3C Recommendation 30 April 2013\nRetrieved at: 2026-09-05T00:00:00Z\nEvidence role: prov-standard (OWL2 ontology mapping for RDF export)\nAccess/license: public Recommendation under W3C Document License (not vendored)\nAvailability: canonical URI resolvable 2026-09-05 (ontology + examples)\n\n## Concepts relied upon (identifiers, not copied text)\n\n- prov:Entity (ArtifactVersion), prov:Activity (operation/run),\n  prov:Agent (actor); prov:wasGeneratedBy, prov:wasDerivedFrom,\n  prov:wasAttributedTo, prov:wasInvalidatedBy, prov:actedOnBehalfOf.\n- PROV constraints (uniqueness, ordering, impossibility): identifiers denote\n  one thing; generation precedes invalidation; derivation implies provenance.\n- PROV-O classes/properties mirror the DM for RDF; S1-016 exports a declared\n  subset plus an AgentOS extension namespace for scope/version fields.\n\n## S1-016 interpretation (design inference, not W3C text)\n\n- wasInvalidatedBy models membership closure/tombstones, never history edits.\n- Derivation edges never authorize (L6); scope remains a separate mandatory\n  property on every Entity (L1).\n- AgentOS scope/version/interval fields live in the extension namespace so a\n  PROV-only consumer still sees valid core PROV.\n\nNo W3C conformance claim is made.\n",
+      "content_sha256": "51e170cde8bee08d2a9cff8d26e7062b2669d8efcf23d300f8d0a58cd71ae8ce"
+    },
+    {
+      "id": "SRC-S1-016-06",
+      "canonical_uri": "https://www.w3.org/TR/prov-dictionary/",
+      "title": "W3C PROV Dictionary Working Group Note",
+      "source_type": "prov-dictionary",
+      "verification_status": "verified",
+      "verifier": "s1-016-source-review-2026-09-05",
+      "verification_method": "tracked-file-hash-review",
+      "content": "# Bibliographic / availability record: W3C PROV Dictionary (S1-016 evidence role: prov-dictionary)\n\nFull-text status: BIBLIOGRAPHIC RECORD ONLY (not a full-text snapshot).\nThis document is a W3C Working Group Note — it is explicitly NOT a W3C\nRecommendation and carries no normative endorsement beyond its informative\ncontent. This status is stated exactly and never upgraded. Unit tests run\noffline and never fetch this source.\n\nCanonical URI: https://www.w3.org/TR/prov-dictionary/\nPublisher: World Wide Web Consortium (W3C Provenance Working Group)\nVersion: PROV Dictionary, W3C Working Group Note 30 April 2013\nStatus: Working Group Note (NOT a Recommendation)\nRetrieved at: 2026-09-05T00:00:00Z\nEvidence role: prov-dictionary (insertion/deletion membership pattern)\nAccess/license: public Note under W3C Document License (not vendored)\nAvailability: canonical URI resolvable 2026-09-05 (Note + worked examples)\n\n## Concepts relied upon (identifiers, not copied text)\n\n- prov:Dictionary, prov:EmptyDictionary; prov:hadDictionaryMember /\n  prov:hadMember; prov:DerivedByInsertionFrom, prov:DerivedByRemovalFrom.\n- Insertion/removal derive a NEW dictionary entity; the prior entity and its\n  memberships persist (the Note's worked newspaper/phone-book examples derive\n  successive snapshots rather than mutating).\n- Key/Entity-pair membership with pair ordering; removal closes membership\n  without deleting the inserted history.\n\n## S1-016 interpretation (design inference, not W3C text)\n\n- Dictionary insertion/removal is the export pattern for collection\n  membership; runtime authority stays with the flat scope + append-only\n  operation log (representations A/C) or explicit runtime relations (B).\n- Removal yields a tombstone/closed interval, never a history rewrite (L5).\n- Unsupported PROV constructs in import map to explicit UNSUPPORTED, never\n  silent drops (L9 gate).\n\nNo conformance claim is made; the Note status is never presented as\nRecommendation force.\n",
+      "content_sha256": "43c4edc9596a117250c23fec5104eee4ccd4f33bfa29944d52fcaf01b30469de"
+    }
+  ],
+  "operator_review_n": 1,
+  "design_decision": "INCONCLUSIVE",
+  "substance_leader": "FLAT_RUNTIME_PROV_EXPORT",
+  "sensitivity_flips": 1
+}

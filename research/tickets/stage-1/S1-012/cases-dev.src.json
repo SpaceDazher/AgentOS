@@ -1,0 +1,2943 @@
+{
+  "schema": "agentos.s1-012.cases-src/v1",
+  "split": "dev",
+  "note": "Human-authored oracle. Defaults: claim version 1, scope SCOPE-1, policy current, challenge null, ratings [], anchor null, source status ACTIVE. Digests and case_sha256 filled by canonicalize_corpus.py (digest rule s1-012:content:).",
+  "cases": [
+    {
+      "case_id": "S1-012-D01",
+      "family": "gold",
+      "cluster": "GOLD-A",
+      "severity": "high",
+      "claim": {
+        "claim_id": "CL-D01"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-A",
+          "upstream": "UP-A",
+          "uri": "https://example.test/gold-a/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-B",
+          "upstream": "UP-B",
+          "uri": "https://example.test/gold-a/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "alpha report",
+          "label": "support",
+          "spans": [
+            {
+              "span_id": "D1s1",
+              "text": "alpha one",
+              "disjoint": true
+            },
+            {
+              "span_id": "D1s2",
+              "text": "alpha two",
+              "disjoint": true
+            }
+          ]
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "beta report",
+          "label": "support",
+          "spans": [
+            {
+              "span_id": "D2s1",
+              "text": "beta one",
+              "disjoint": true
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Two distinct primary observations; disjoint spans add no new groups."
+    },
+    {
+      "case_id": "S1-012-D02",
+      "family": "gold",
+      "cluster": "GOLD-B",
+      "severity": "high",
+      "claim": {
+        "claim_id": "CL-D02"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-C",
+          "upstream": "UP-C",
+          "uri": "https://example.test/gold-b/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-D",
+          "upstream": "UP-D",
+          "uri": "https://example.test/gold-b/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "identical finding wording",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "identical finding wording",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Benign identical text, disjoint provenance: document/span admit; naive digest-keying collapses (documented digest-view limit)."
+    },
+    {
+      "case_id": "S1-012-D03",
+      "family": "gold",
+      "cluster": "GOLD-C",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-D03"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-E",
+          "upstream": "UP-E",
+          "uri": "https://example.test/gold-c/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-F",
+          "upstream": "UP-F",
+          "uri": "https://example.test/gold-c/2"
+        },
+        {
+          "source_id": "S3",
+          "publisher": "PUB-G",
+          "upstream": "UP-G",
+          "uri": "https://example.test/gold-c/3"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "gamma support",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "delta support",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D3",
+          "source_id": "S3",
+          "text": "epsilon refute",
+          "label": "refute",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 3,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 3,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 3,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 3,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Three independents; refuting trial enters Beta as failure."
+    },
+    {
+      "case_id": "S1-012-D04",
+      "family": "gold",
+      "cluster": "GOLD-D",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-D04"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-H",
+          "upstream": "UP-H",
+          "uri": "https://example.test/gold-d/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-I",
+          "upstream": "UP-I",
+          "uri": "https://example.test/gold-d/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "zeta support",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "eta support",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "ratings": [
+        {
+          "from": "S1",
+          "to": "S2",
+          "value": 0.9
+        },
+        {
+          "from": "S2",
+          "to": "S1",
+          "value": 0.8
+        }
+      ],
+      "anchor": [
+        "S1"
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Anchored trust graph: EigenTrust converges, recommendation allowed, never enforcement."
+    },
+    {
+      "case_id": "S1-012-D05",
+      "family": "gold",
+      "cluster": "GOLD-E",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-D05"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-J",
+          "upstream": "UP-J",
+          "uri": "https://example.test/gold-e/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-K",
+          "upstream": "UP-K",
+          "uri": "https://example.test/gold-e/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "theta full",
+          "label": "support",
+          "spans": [
+            {
+              "span_id": "D1s1",
+              "text": "theta part one",
+              "disjoint": true
+            },
+            {
+              "span_id": "D1s2",
+              "text": "theta part two",
+              "disjoint": true
+            }
+          ]
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "iota full",
+          "label": "support",
+          "spans": [
+            {
+              "span_id": "D2s1",
+              "text": "iota part one",
+              "disjoint": true
+            },
+            {
+              "span_id": "D2s2",
+              "text": "iota part two",
+              "disjoint": true
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Disjoint spans are separate observations but share groups: no weight inflation."
+    },
+    {
+      "case_id": "S1-012-D06",
+      "family": "gold",
+      "cluster": "GOLD-F",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-D06",
+        "version": 2
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-L",
+          "upstream": "UP-L",
+          "uri": "https://example.test/gold-f/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-M",
+          "upstream": "UP-M",
+          "uri": "https://example.test/gold-f/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "kappa v2",
+          "label": "support",
+          "version": 2,
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "lambda v2",
+          "label": "support",
+          "version": 2,
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Claim version 2 with matching v2 evidence."
+    },
+    {
+      "case_id": "S1-012-D07",
+      "family": "gold",
+      "cluster": "GOLD-G",
+      "severity": "low",
+      "claim": {
+        "claim_id": "CL-D07"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-N",
+          "upstream": "UP-N",
+          "uri": "https://example.test/gold-g/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-O",
+          "upstream": "UP-O",
+          "uri": "https://example.test/gold-g/2"
+        },
+        {
+          "source_id": "S3",
+          "publisher": "PUB-P",
+          "upstream": "UP-P",
+          "uri": "https://example.test/gold-g/3"
+        },
+        {
+          "source_id": "S4",
+          "publisher": "PUB-Q",
+          "upstream": "UP-Q",
+          "uri": "https://example.test/gold-g/4"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "mu one",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "mu two",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D3",
+          "source_id": "S3",
+          "text": "mu three",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D4",
+          "source_id": "S4",
+          "text": "mu four",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 4,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 4,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 4,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 4,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Four independents; correlation cap binds weight at 2 without changing the count."
+    },
+    {
+      "case_id": "S1-012-D08",
+      "family": "gold",
+      "cluster": "GOLD-H",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-D08"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-R",
+          "upstream": "UP-R",
+          "uri": "https://example.test/gold-h/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-S",
+          "upstream": "UP-S",
+          "uri": "https://example.test/gold-h/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "nu support supersedes nu-old",
+          "label": "support",
+          "supersedes": "D0",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "xi support",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Supersession link resolved to the current version; old version excluded, history kept."
+    },
+    {
+      "case_id": "S1-012-D09",
+      "family": "correlation",
+      "cluster": "MIR-A",
+      "severity": "critical",
+      "probe": "A",
+      "claim": {
+        "claim_id": "CL-D09"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-T",
+          "upstream": "UP-T",
+          "uri": "https://example.test/mir-a/orig"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-T",
+          "upstream": "UP-T",
+          "uri": "https://example.test/mir-a/copy"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "omicron original",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "omicron original",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Probe A: mirror pair collapses to one; reputation-only double-counts (negative control)."
+    },
+    {
+      "case_id": "S1-012-D10",
+      "family": "correlation",
+      "cluster": "MIR-B",
+      "severity": "critical",
+      "probe": "A",
+      "claim": {
+        "claim_id": "CL-D10"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-U",
+          "upstream": "UP-U",
+          "uri": "https://example.test/mir-b/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-U",
+          "upstream": "UP-U",
+          "uri": "https://example.test/mir-b/2"
+        },
+        {
+          "source_id": "S3",
+          "publisher": "PUB-U",
+          "upstream": "UP-U",
+          "uri": "https://example.test/mir-b/3"
+        },
+        {
+          "source_id": "S4",
+          "publisher": "PUB-U",
+          "upstream": "UP-U",
+          "uri": "https://example.test/mir-b/4"
+        },
+        {
+          "source_id": "S5",
+          "publisher": "PUB-U",
+          "upstream": "UP-U",
+          "uri": "https://example.test/mir-b/5"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "pi farm",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "pi farm",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D3",
+          "source_id": "S3",
+          "text": "pi farm",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D4",
+          "source_id": "S4",
+          "text": "pi farm",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D5",
+          "source_id": "S5",
+          "text": "pi farm",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 5,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Mass replication adds zero independent weight in every governed view."
+    },
+    {
+      "case_id": "S1-012-D11",
+      "family": "correlation",
+      "cluster": "MIR-C",
+      "severity": "high",
+      "probe": "A",
+      "claim": {
+        "claim_id": "CL-D11"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-V",
+          "upstream": "UP-V",
+          "uri": "https://example.test/mir-c/orig"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-W",
+          "upstream": "UP-V",
+          "uri": "https://example.test/mir-c/retell"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "rho origin wording here",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "rho retold differently",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Reprint: distinct digests and labels, one upstream. Digest view sees 2 digests but upstream collapse still rejects (n=1)."
+    },
+    {
+      "case_id": "S1-012-D12",
+      "family": "correlation",
+      "cluster": "MIR-D",
+      "severity": "high",
+      "claim": {
+        "claim_id": "CL-D12"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-X",
+          "upstream": "UP-X",
+          "uri": "https://example.test/mir-d/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-Y",
+          "upstream": "UP-X",
+          "uri": "https://example.test/mir-d/2"
+        },
+        {
+          "source_id": "S3",
+          "publisher": "PUB-Z",
+          "upstream": "UP-X",
+          "uri": "https://example.test/mir-d/3"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "sigma one",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "sigma two",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D3",
+          "source_id": "S3",
+          "text": "sigma three",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 3,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Shared upstream under three publisher labels collapses."
+    },
+    {
+      "case_id": "S1-012-D13",
+      "family": "correlation",
+      "cluster": "MIR-E",
+      "severity": "high",
+      "probe": "C",
+      "claim": {
+        "claim_id": "CL-D13"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-AA",
+          "upstream": "UP-AA",
+          "uri": "https://example.test/mir-e/1"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "tau whole observation",
+          "label": "support",
+          "spans": [
+            {
+              "span_id": "D1s1",
+              "text": "tau part a",
+              "disjoint": false
+            },
+            {
+              "span_id": "D1s2",
+              "text": "tau part b",
+              "disjoint": false
+            },
+            {
+              "span_id": "D1s3",
+              "text": "tau part c",
+              "disjoint": false
+            },
+            {
+              "span_id": "D1s4",
+              "text": "tau part d",
+              "disjoint": false
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 1,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Probe C: one document split into four spans is one observation in every view."
+    },
+    {
+      "case_id": "S1-012-D14",
+      "family": "correlation",
+      "cluster": "MIR-F",
+      "severity": "high",
+      "probe": "C",
+      "claim": {
+        "claim_id": "CL-D14"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-AB",
+          "upstream": "UP-AB",
+          "uri": "https://example.test/mir-f/1"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "upsilon overlapping report",
+          "label": "support",
+          "spans": [
+            {
+              "span_id": "D1s1",
+              "text": "upsilon overlapping report head",
+              "disjoint": false
+            },
+            {
+              "span_id": "D1s2",
+              "text": "overlapping report head tail",
+              "disjoint": false
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 1,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Probe C: overlapping spans share text and upstream; no double count."
+    },
+    {
+      "case_id": "S1-012-D15",
+      "family": "correlation",
+      "cluster": "MIR-G",
+      "severity": "medium",
+      "probe": "C",
+      "claim": {
+        "claim_id": "CL-D15"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-AC",
+          "upstream": "UP-AC",
+          "uri": "https://example.test/mir-g/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-AC2",
+          "upstream": "UP-AC",
+          "uri": "https://example.test/mir-g/renamed"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "phi Original Case",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "phi original case",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Probe C: reformat plus rename without new observation collapses."
+    },
+    {
+      "case_id": "S1-012-D16",
+      "family": "correlation",
+      "cluster": "MIR-H",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-D16"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-AD",
+          "upstream": "UP-AD",
+          "uri": "https://example.test/mir-h/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-AD",
+          "upstream": "UP-AD",
+          "uri": "https://example.test/mir-h/1?copy=2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "chi duplicate",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "chi duplicate",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Exact duplicate under a query-string URL is one unit."
+    },
+    {
+      "case_id": "S1-012-D17",
+      "family": "sybil",
+      "cluster": "SYB-A",
+      "severity": "critical",
+      "probe": "A",
+      "claim": {
+        "claim_id": "CL-D17"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "FARM",
+          "upstream": "UP-FARM",
+          "uri": "https://example.test/syb-a/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "FARM",
+          "upstream": "UP-FARM",
+          "uri": "https://example.test/syb-a/2"
+        },
+        {
+          "source_id": "S3",
+          "publisher": "FARM",
+          "upstream": "UP-FARM",
+          "uri": "https://example.test/syb-a/3"
+        },
+        {
+          "source_id": "S4",
+          "publisher": "FARM",
+          "upstream": "UP-FARM",
+          "uri": "https://example.test/syb-a/4"
+        },
+        {
+          "source_id": "S5",
+          "publisher": "FARM",
+          "upstream": "UP-FARM",
+          "uri": "https://example.test/syb-a/5"
+        },
+        {
+          "source_id": "S6",
+          "publisher": "FARM",
+          "upstream": "UP-FARM",
+          "uri": "https://example.test/syb-a/6"
+        },
+        {
+          "source_id": "S7",
+          "publisher": "FARM",
+          "upstream": "UP-FARM",
+          "uri": "https://example.test/syb-a/7"
+        },
+        {
+          "source_id": "S8",
+          "publisher": "FARM",
+          "upstream": "UP-FARM",
+          "uri": "https://example.test/syb-a/8"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "psi farmed",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "psi farmed",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D3",
+          "source_id": "S3",
+          "text": "psi farmed",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D4",
+          "source_id": "S4",
+          "text": "psi farmed",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D5",
+          "source_id": "S5",
+          "text": "psi farmed",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D6",
+          "source_id": "S6",
+          "text": "psi farmed",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D7",
+          "source_id": "S7",
+          "text": "psi farmed",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D8",
+          "source_id": "S8",
+          "text": "psi farmed",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 8,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "T1 mirror-farm: eight identities, one upstream, one unit."
+    },
+    {
+      "case_id": "S1-012-D18",
+      "family": "sybil",
+      "cluster": "SYB-B",
+      "severity": "high",
+      "claim": {
+        "claim_id": "CL-D18"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "RING-A",
+          "upstream": "UP-RING",
+          "uri": "https://example.test/syb-b/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "RING-B",
+          "upstream": "UP-RING",
+          "uri": "https://example.test/syb-b/2"
+        },
+        {
+          "source_id": "S3",
+          "publisher": "RING-C",
+          "upstream": "UP-RING",
+          "uri": "https://example.test/syb-b/3"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "omega ring alpha",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "omega ring beta",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D3",
+          "source_id": "S3",
+          "text": "omega ring gamma",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 3,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "T1 reprint ring: distinct texts and labels, one upstream."
+    },
+    {
+      "case_id": "S1-012-D19",
+      "family": "sybil",
+      "cluster": "SYB-C",
+      "severity": "critical",
+      "probe": "B",
+      "claim": {
+        "claim_id": "CL-D19"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "CLQ-1",
+          "upstream": "UP-CLQ",
+          "uri": "https://example.test/syb-c/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "CLQ-2",
+          "upstream": "UP-CLQ",
+          "uri": "https://example.test/syb-c/2"
+        },
+        {
+          "source_id": "S3",
+          "publisher": "CLQ-3",
+          "upstream": "UP-CLQ",
+          "uri": "https://example.test/syb-c/3"
+        },
+        {
+          "source_id": "S4",
+          "publisher": "CLQ-4",
+          "upstream": "UP-CLQ",
+          "uri": "https://example.test/syb-c/4"
+        },
+        {
+          "source_id": "S5",
+          "publisher": "CLQ-5",
+          "upstream": "UP-CLQ",
+          "uri": "https://example.test/syb-c/5"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "clique praise one",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "clique praise two",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D3",
+          "source_id": "S3",
+          "text": "clique praise three",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D4",
+          "source_id": "S4",
+          "text": "clique praise four",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D5",
+          "source_id": "S5",
+          "text": "clique praise five",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "ratings": [
+        {
+          "from": "S1",
+          "to": "S2",
+          "value": 0.95
+        },
+        {
+          "from": "S1",
+          "to": "S3",
+          "value": 0.95
+        },
+        {
+          "from": "S2",
+          "to": "S1",
+          "value": 0.95
+        },
+        {
+          "from": "S2",
+          "to": "S4",
+          "value": 0.95
+        },
+        {
+          "from": "S3",
+          "to": "S1",
+          "value": 0.95
+        },
+        {
+          "from": "S3",
+          "to": "S5",
+          "value": 0.95
+        },
+        {
+          "from": "S4",
+          "to": "S2",
+          "value": 0.95
+        },
+        {
+          "from": "S4",
+          "to": "S5",
+          "value": 0.95
+        },
+        {
+          "from": "S5",
+          "to": "S3",
+          "value": 0.95
+        },
+        {
+          "from": "S5",
+          "to": "S4",
+          "value": 0.95
+        }
+      ],
+      "anchor": null,
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 5,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Probe B T2: anchorless mutual-praise cluster. EigenTrust abstains; no enforcement in any view."
+    },
+    {
+      "case_id": "S1-012-D20",
+      "family": "sybil",
+      "cluster": "SYB-D",
+      "severity": "high",
+      "probe": "B",
+      "claim": {
+        "claim_id": "CL-D20"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "CLQ-A",
+          "upstream": "UP-CLQ2",
+          "uri": "https://example.test/syb-d/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "CLQ-B",
+          "upstream": "UP-CLQ2",
+          "uri": "https://example.test/syb-d/2"
+        },
+        {
+          "source_id": "S3",
+          "publisher": "OUT-X",
+          "upstream": "UP-OUT",
+          "uri": "https://example.test/syb-d/3"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "duo praise a",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "duo praise b",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D3",
+          "source_id": "S3",
+          "text": "outside view",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "ratings": [
+        {
+          "from": "S1",
+          "to": "S2",
+          "value": 0.99
+        },
+        {
+          "from": "S2",
+          "to": "S1",
+          "value": 0.99
+        }
+      ],
+      "anchor": null,
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 3,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "T2 variant: pair shares upstream (one group) plus one genuine outside source: n=2 admits. Ratings stay anchorless so trust abstains."
+    },
+    {
+      "case_id": "S1-012-D21",
+      "family": "sybil",
+      "cluster": "SYB-E",
+      "severity": "high",
+      "probe": "D",
+      "claim": {
+        "claim_id": "CL-D21"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "FRONT-A",
+          "upstream": "UP-HIDDEN",
+          "uri": "https://example.test/syb-e/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "FRONT-B",
+          "upstream": "UP-HIDDEN",
+          "uri": "https://example.test/syb-e/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "laundered alpha report",
+          "label": "support",
+          "spans": [
+            {
+              "span_id": "D1s1",
+              "text": "laundered alpha one",
+              "disjoint": false
+            },
+            {
+              "span_id": "D1s2",
+              "text": "laundered alpha two",
+              "disjoint": false
+            }
+          ]
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "laundered beta report",
+          "label": "support",
+          "spans": [
+            {
+              "span_id": "D2s1",
+              "text": "laundered beta one",
+              "disjoint": false
+            },
+            {
+              "span_id": "D2s2",
+              "text": "laundered beta two",
+              "disjoint": false
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Probe D T3: distinct front labels, one hidden upstream; span-split adds no groups."
+    },
+    {
+      "case_id": "S1-012-D22",
+      "family": "sybil",
+      "cluster": "SYB-F",
+      "severity": "high",
+      "probe": "D",
+      "claim": {
+        "claim_id": "CL-D22"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "RENAME-A",
+          "upstream": "UP-RENAME",
+          "uri": "https://example.test/syb-f/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "RENAME-B",
+          "upstream": "UP-RENAME",
+          "uri": "https://example.test/syb-f/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "Renamed Source Alpha",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "renamed source alpha",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Probe D: rename plus reformat ring, one upstream."
+    },
+    {
+      "case_id": "S1-012-D23",
+      "family": "sybil",
+      "cluster": "SYB-G",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-D23"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "ANCH-A",
+          "upstream": "UP-ANCH",
+          "uri": "https://example.test/syb-g/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "ANCH-B",
+          "upstream": "UP-ANCH2",
+          "uri": "https://example.test/syb-g/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "anchored alpha",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "anchored beta",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "ratings": [
+        {
+          "from": "S1",
+          "to": "S2",
+          "value": 1.0
+        },
+        {
+          "from": "S2",
+          "to": "S1",
+          "value": 1.0
+        }
+      ],
+      "anchor": [
+        "S1"
+      ],
+      "eigentrust_reference": {
+        "trust": [
+          0.5405405405,
+          0.4594594595
+        ],
+        "tolerance": 1e-06
+      },
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Anchored control: two independents admit; EigenTrust fixed point must equal 20/37, 17/37 (exact fractions)."
+    },
+    {
+      "case_id": "S1-012-D24",
+      "family": "sybil",
+      "cluster": "SYB-H",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-D24"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "OVL-A",
+          "upstream": "UP-OVL",
+          "uri": "https://example.test/syb-h/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "OVL-B",
+          "upstream": "UP-OVL",
+          "uri": "https://example.test/syb-h/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "overlap farm head segment",
+          "label": "support",
+          "spans": [
+            {
+              "span_id": "D1s1",
+              "text": "overlap farm head",
+              "disjoint": false
+            }
+          ]
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "farm head segment tail",
+          "label": "support",
+          "spans": [
+            {
+              "span_id": "D2s1",
+              "text": "head segment tail",
+              "disjoint": false
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Overlapping-span farm across two front docs, one upstream."
+    },
+    {
+      "case_id": "S1-012-D25",
+      "family": "invalid",
+      "cluster": "INV-A",
+      "severity": "critical",
+      "probe": "E",
+      "claim": {
+        "claim_id": "CL-D25"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-BA",
+          "upstream": "UP-BA",
+          "uri": "https://example.test/inv-a/1",
+          "status": "REVOKED"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-BB",
+          "upstream": "UP-BB",
+          "uri": "https://example.test/inv-a/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "revoked evidence",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "lone survivor",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_REVOKED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_REVOKED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_REVOKED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Probe E: revoked source excluded; one survivor is not enough."
+    },
+    {
+      "case_id": "S1-012-D26",
+      "family": "invalid",
+      "cluster": "INV-B",
+      "severity": "high",
+      "probe": "E",
+      "claim": {
+        "claim_id": "CL-D26"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-BC",
+          "upstream": "UP-BC",
+          "uri": "https://example.test/inv-b/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-BD",
+          "upstream": "UP-BD",
+          "uri": "https://example.test/inv-b/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "superseded version one",
+          "label": "support",
+          "superseded_by": "D1v2",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "current corroboration",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_STALE"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_STALE"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_STALE"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Probe E: superseded evidence excluded without successor in corpus."
+    },
+    {
+      "case_id": "S1-012-D27",
+      "family": "invalid",
+      "cluster": "INV-C",
+      "severity": "high",
+      "claim": {
+        "claim_id": "CL-D27"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-BE",
+          "upstream": "UP-BE",
+          "uri": "https://example.test/inv-c/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-BF",
+          "upstream": "UP-BF",
+          "uri": "https://example.test/inv-c/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "aged observation",
+          "label": "support",
+          "temporal": "stale",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "fresh observation",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_STALE"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_STALE"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_STALE"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Stale temporal status excludes the aged unit."
+    },
+    {
+      "case_id": "S1-012-D28",
+      "family": "invalid",
+      "cluster": "INV-D",
+      "severity": "high",
+      "claim": {
+        "claim_id": "CL-D28",
+        "scope": "SCOPE-1"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-BG",
+          "upstream": "UP-BG",
+          "uri": "https://example.test/inv-d/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-BH",
+          "upstream": "UP-BH",
+          "uri": "https://example.test/inv-d/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "foreign scope note",
+          "label": "support",
+          "scope": "SCOPE-9",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "local scope note",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CROSS_SCOPE"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CROSS_SCOPE"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CROSS_SCOPE"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Cross-scope unit excluded; one in-scope survivor is not enough."
+    },
+    {
+      "case_id": "S1-012-D29",
+      "family": "invalid",
+      "cluster": "INV-E",
+      "severity": "high",
+      "claim": {
+        "claim_id": "CL-D29",
+        "version": 2
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-BI",
+          "upstream": "UP-BI",
+          "uri": "https://example.test/inv-e/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-BJ",
+          "upstream": "UP-BJ",
+          "uri": "https://example.test/inv-e/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "old version text",
+          "label": "support",
+          "version": 1,
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "new version text",
+          "label": "support",
+          "version": 2,
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_VERSION_MISMATCH"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_VERSION_MISMATCH"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_VERSION_MISMATCH"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Claim-version mismatch excludes the stale unit."
+    },
+    {
+      "case_id": "S1-012-D30",
+      "family": "invalid",
+      "cluster": "INV-F",
+      "severity": "high",
+      "probe": "D",
+      "claim": {
+        "claim_id": "CL-D30"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "upstream": "UP-BK",
+          "uri": "https://example.test/inv-f/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-BL",
+          "upstream": "UP-BL",
+          "uri": "https://example.test/inv-f/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "publisherless note",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "solid note",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "abstain",
+          "reason": "ABSTAIN_UNKNOWN"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "abstain",
+          "reason": "ABSTAIN_UNKNOWN"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "abstain",
+          "reason": "ABSTAIN_UNKNOWN"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Probe D: missing publisher means unresolved independence: abstain, not invent-a-group. Abstain allowed by oracle."
+    },
+    {
+      "case_id": "S1-012-D31",
+      "family": "invalid",
+      "cluster": "INV-G",
+      "severity": "high",
+      "claim": {
+        "claim_id": "CL-D31"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-BM",
+          "upstream": "UP-BM",
+          "uri": "https://example.test/inv-g/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-BN",
+          "upstream": "UP-BN",
+          "uri": "https://example.test/inv-g/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "unverified tip",
+          "label": "support",
+          "verified": false,
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "verified backup",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_UNVERIFIED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_UNVERIFIED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_UNVERIFIED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Unverified unit excluded; unverified is not a group."
+    },
+    {
+      "case_id": "S1-012-D32",
+      "family": "invalid",
+      "cluster": "INV-H",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-D32"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-BO",
+          "upstream": "UP-BO",
+          "uri": "https://example.test/inv-h/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-BP",
+          "upstream": "UP-BP",
+          "uri": "https://example.test/inv-h/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "null group item",
+          "label": "support",
+          "group": null,
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "grouped item",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "abstain",
+          "reason": "ABSTAIN_UNKNOWN"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "abstain",
+          "reason": "ABSTAIN_UNKNOWN"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "abstain",
+          "reason": "ABSTAIN_UNKNOWN"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Null independence group is unresolved: abstain per oracle."
+    },
+    {
+      "case_id": "S1-012-D33",
+      "family": "nearmiss",
+      "cluster": "NEAR-A",
+      "severity": "high",
+      "probe": "G",
+      "claim": {
+        "claim_id": "CL-D33"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-CA",
+          "upstream": "UP-CA",
+          "uri": "https://example.test/near-a/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-CB",
+          "upstream": "UP-CB",
+          "uri": "https://example.test/near-a/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "word for word same sentence here",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "word for word same sentence here",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Probe G: lexical identity with disjoint transparent provenance keeps full weight in document/span views; digest view documents its keying limit."
+    },
+    {
+      "case_id": "S1-012-D34",
+      "family": "nearmiss",
+      "cluster": "NEAR-B",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-D34"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-CC",
+          "upstream": "UP-CC",
+          "uri": "https://example.test/near-b/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-CD",
+          "upstream": "UP-CD",
+          "uri": "https://example.test/near-b/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "the result holds under condition x",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "condition x implies the result holds",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Paraphrase independents: distinct digests, disjoint provenance, full weight everywhere."
+    },
+    {
+      "case_id": "S1-012-D35",
+      "family": "nearmiss",
+      "cluster": "NEAR-C",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-D35"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-CE",
+          "upstream": "UP-CE",
+          "uri": "https://example.test/near-c/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-CE",
+          "upstream": "UP-CF",
+          "uri": "https://example.test/near-c/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "desk alpha memo",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "desk beta memo",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Same publisher, disjoint upstreams (separate desks): two groups. Publisher label alone never decides."
+    },
+    {
+      "case_id": "S1-012-D36",
+      "family": "nearmiss",
+      "cluster": "NEAR-D",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-D36"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-CF",
+          "upstream": "UP-CG",
+          "uri": "https://example.test/near-d/1"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "lone but solid",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 1,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Single primary is insufficient everywhere; reputation-only admits on raw score (control shows the gap)."
+    },
+    {
+      "case_id": "S1-012-D37",
+      "family": "nearmiss",
+      "cluster": "NEAR-E",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-D37"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-CG",
+          "upstream": "UP-CH",
+          "uri": "https://example.test/near-e/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-CH",
+          "upstream": "UP-CI",
+          "uri": "https://example.test/near-e/2"
+        },
+        {
+          "source_id": "S3",
+          "publisher": "PUB-CI",
+          "upstream": "UP-CJ",
+          "uri": "https://example.test/near-e/3"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "keep alpha",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "keep beta revoked",
+          "label": "support",
+          "revoked": true,
+          "spans": []
+        },
+        {
+          "doc_id": "D3",
+          "source_id": "S3",
+          "text": "keep gamma",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 3,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Partial revocation: revoked unit excluded, two survivors admit."
+    },
+    {
+      "case_id": "S1-012-D38",
+      "family": "nearmiss",
+      "cluster": "NEAR-F",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-D38"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-CJ",
+          "upstream": "UP-CK",
+          "uri": "https://example.test/near-f/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-CK",
+          "upstream": "UP-CL",
+          "uri": "https://example.test/near-f/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "split decision head",
+          "label": "support",
+          "spans": [
+            {
+              "span_id": "D1s1",
+              "text": "split decision head alpha",
+              "disjoint": true
+            }
+          ]
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "split decision tail",
+          "label": "support",
+          "spans": [
+            {
+              "span_id": "D2s1",
+              "text": "split decision tail beta",
+              "disjoint": true
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Disjoint spans across disjoint upstreams: no merge anywhere."
+    },
+    {
+      "case_id": "S1-012-D39",
+      "family": "nearmiss",
+      "cluster": "NEAR-G",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-D39"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-CL",
+          "upstream": "UP-CM",
+          "uri": "https://example.test/near-g/1"
+        },
+        {
+          "source_id": "S2",
+          "upstream": "UP-CN",
+          "uri": "https://example.test/near-g/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "half known good",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "half unknown origin",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "abstain",
+          "reason": "ABSTAIN_UNKNOWN"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "abstain",
+          "reason": "ABSTAIN_UNKNOWN"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "abstain",
+          "reason": "ABSTAIN_UNKNOWN"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Ambiguous independence (unknown origin on one side): abstain allowed, not scored correct."
+    },
+    {
+      "case_id": "S1-012-D40",
+      "family": "nearmiss",
+      "cluster": "NEAR-H",
+      "severity": "low",
+      "claim": {
+        "claim_id": "CL-D40"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-CM",
+          "upstream": "UP-CO",
+          "uri": "https://example.test/near-h/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-CN",
+          "upstream": "UP-CP",
+          "uri": "https://example.test/near-h/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "alternate reading one",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "alternate reading two",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Alternate-correct: two valid readings from disjoint origins admit without artificial FAIL."
+    }
+  ]
+}

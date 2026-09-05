@@ -1,0 +1,1414 @@
+{
+  "schema": "agentos.s1-012.cases-src/v1",
+  "split": "holdout",
+  "note": "Holdout oracle. Lineage/attack-family isolated from dev by construction (disjoint cluster ids). Thresholds are chosen on dev only; this set opens once after candidate freeze. The authoring agent has seen the full synthetic set, so it is NOT claimed as blinded (recorded limitation).",
+  "cases": [
+    {
+      "case_id": "S1-012-H01",
+      "family": "gold",
+      "cluster": "GOLD-I",
+      "severity": "high",
+      "claim": {
+        "claim_id": "CL-H01"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-HA",
+          "upstream": "UP-HA",
+          "uri": "https://example.test/h-gold-i/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-HB",
+          "upstream": "UP-HB",
+          "uri": "https://example.test/h-gold-i/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout gold alpha",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "holdout gold beta",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout gold pair."
+    },
+    {
+      "case_id": "S1-012-H02",
+      "family": "gold",
+      "cluster": "GOLD-J",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-H02"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-HC",
+          "upstream": "UP-HC",
+          "uri": "https://example.test/h-gold-j/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-HD",
+          "upstream": "UP-HD",
+          "uri": "https://example.test/h-gold-j/2"
+        },
+        {
+          "source_id": "S3",
+          "publisher": "PUB-HE",
+          "upstream": "UP-HE",
+          "uri": "https://example.test/h-gold-j/3"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout trio one",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "holdout trio two",
+          "label": "refute",
+          "spans": []
+        },
+        {
+          "doc_id": "D3",
+          "source_id": "S3",
+          "text": "holdout trio three",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 3,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 3,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 3,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 3,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout trio with one refuting trial."
+    },
+    {
+      "case_id": "S1-012-H03",
+      "family": "gold",
+      "cluster": "GOLD-K",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-H03"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-HF",
+          "upstream": "UP-HF",
+          "uri": "https://example.test/h-gold-k/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-HG",
+          "upstream": "UP-HG",
+          "uri": "https://example.test/h-gold-k/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "same words twice holdout",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "same words twice holdout",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout identical-text benign pair; digest view documents its limit."
+    },
+    {
+      "case_id": "S1-012-H04",
+      "family": "gold",
+      "cluster": "GOLD-L",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-H04"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-HH",
+          "upstream": "UP-HH",
+          "uri": "https://example.test/h-gold-l/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-HI",
+          "upstream": "UP-HI",
+          "uri": "https://example.test/h-gold-l/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout rated one",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "holdout rated two",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "ratings": [
+        {
+          "from": "S1",
+          "to": "S2",
+          "value": 0.7
+        },
+        {
+          "from": "S2",
+          "to": "S1",
+          "value": 0.6
+        }
+      ],
+      "anchor": [
+        "S2"
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout anchored pair."
+    },
+    {
+      "case_id": "S1-012-H05",
+      "family": "correlation",
+      "cluster": "MIR-I",
+      "severity": "critical",
+      "probe": "A",
+      "claim": {
+        "claim_id": "CL-H05"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-HJ",
+          "upstream": "UP-HJ",
+          "uri": "https://example.test/h-mir-i/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-HJ",
+          "upstream": "UP-HJ",
+          "uri": "https://example.test/h-mir-i/2"
+        },
+        {
+          "source_id": "S3",
+          "publisher": "PUB-HJ",
+          "upstream": "UP-HJ",
+          "uri": "https://example.test/h-mir-i/3"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout mirror chant",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "holdout mirror chant",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D3",
+          "source_id": "S3",
+          "text": "holdout mirror chant",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 3,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout mirror trio collapses."
+    },
+    {
+      "case_id": "S1-012-H06",
+      "family": "correlation",
+      "cluster": "MIR-J",
+      "severity": "high",
+      "claim": {
+        "claim_id": "CL-H06"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-HK",
+          "upstream": "UP-HK",
+          "uri": "https://example.test/h-mir-j/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-HL",
+          "upstream": "UP-HK",
+          "uri": "https://example.test/h-mir-j/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout upstream prime",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "holdout upstream restated",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout shared-upstream pair."
+    },
+    {
+      "case_id": "S1-012-H07",
+      "family": "correlation",
+      "cluster": "MIR-K",
+      "severity": "high",
+      "probe": "C",
+      "claim": {
+        "claim_id": "CL-H07"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-HM",
+          "upstream": "UP-HM",
+          "uri": "https://example.test/h-mir-k/1"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout overlap solo",
+          "label": "support",
+          "spans": [
+            {
+              "span_id": "D1s1",
+              "text": "holdout overlap",
+              "disjoint": false
+            },
+            {
+              "span_id": "D1s2",
+              "text": "overlap solo",
+              "disjoint": false
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 1,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout overlap pair collapses."
+    },
+    {
+      "case_id": "S1-012-H08",
+      "family": "correlation",
+      "cluster": "MIR-L",
+      "severity": "medium",
+      "probe": "C",
+      "claim": {
+        "claim_id": "CL-D16"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-HN",
+          "upstream": "UP-HN",
+          "uri": "https://example.test/h-mir-l/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-HN",
+          "upstream": "UP-HN",
+          "uri": "https://example.test/h-mir-l/2"
+        },
+        {
+          "source_id": "S3",
+          "publisher": "PUB-HN",
+          "upstream": "UP-HN",
+          "uri": "https://example.test/h-mir-l/3"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout split one",
+          "label": "support",
+          "spans": [
+            {
+              "span_id": "D1s1",
+              "text": "holdout split one a",
+              "disjoint": false
+            },
+            {
+              "span_id": "D1s2",
+              "text": "holdout split one b",
+              "disjoint": false
+            },
+            {
+              "span_id": "D1s3",
+              "text": "holdout split one c",
+              "disjoint": false
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 1,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout split trio collapses to one."
+    },
+    {
+      "case_id": "S1-012-H09",
+      "family": "sybil",
+      "cluster": "SYB-I",
+      "severity": "critical",
+      "probe": "A",
+      "claim": {
+        "claim_id": "CL-H09"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "HFARM",
+          "upstream": "UP-HFARM",
+          "uri": "https://example.test/h-syb-i/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "HFARM",
+          "upstream": "UP-HFARM",
+          "uri": "https://example.test/h-syb-i/2"
+        },
+        {
+          "source_id": "S3",
+          "publisher": "HFARM",
+          "upstream": "UP-HFARM",
+          "uri": "https://example.test/h-syb-i/3"
+        },
+        {
+          "source_id": "S4",
+          "publisher": "HFARM",
+          "upstream": "UP-HFARM",
+          "uri": "https://example.test/h-syb-i/4"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout farmed chant",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "holdout farmed chant",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D3",
+          "source_id": "S3",
+          "text": "holdout farmed chant",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D4",
+          "source_id": "S4",
+          "text": "holdout farmed chant",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 4,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout T1 farm collapses."
+    },
+    {
+      "case_id": "S1-012-H10",
+      "family": "sybil",
+      "cluster": "SYB-J",
+      "severity": "critical",
+      "probe": "B",
+      "claim": {
+        "claim_id": "CL-H10"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "HCLQ-1",
+          "upstream": "UP-HCLQ",
+          "uri": "https://example.test/h-syb-j/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "HCLQ-2",
+          "upstream": "UP-HCLQ",
+          "uri": "https://example.test/h-syb-j/2"
+        },
+        {
+          "source_id": "S3",
+          "publisher": "HCLQ-3",
+          "upstream": "UP-HCLQ",
+          "uri": "https://example.test/h-syb-j/3"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout clique a",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "holdout clique b",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D3",
+          "source_id": "S3",
+          "text": "holdout clique c",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "ratings": [
+        {
+          "from": "S1",
+          "to": "S2",
+          "value": 1.0
+        },
+        {
+          "from": "S1",
+          "to": "S3",
+          "value": 1.0
+        },
+        {
+          "from": "S2",
+          "to": "S1",
+          "value": 1.0
+        },
+        {
+          "from": "S2",
+          "to": "S3",
+          "value": 1.0
+        },
+        {
+          "from": "S3",
+          "to": "S1",
+          "value": 1.0
+        },
+        {
+          "from": "S3",
+          "to": "S2",
+          "value": 1.0
+        }
+      ],
+      "anchor": null,
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 3,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout T2 anchorless trio: no enforcement anywhere."
+    },
+    {
+      "case_id": "S1-012-H11",
+      "family": "sybil",
+      "cluster": "SYB-K",
+      "severity": "high",
+      "probe": "D",
+      "claim": {
+        "claim_id": "CL-H11"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "HFRONT-A",
+          "upstream": "UP-HHID",
+          "uri": "https://example.test/h-syb-k/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "HFRONT-B",
+          "upstream": "UP-HHID",
+          "uri": "https://example.test/h-syb-k/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout launder one",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "holdout launder two",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout T3 laundered pair collapses."
+    },
+    {
+      "case_id": "S1-012-H12",
+      "family": "sybil",
+      "cluster": "SYB-L",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-H12"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "HANCH-A",
+          "upstream": "UP-HANCH",
+          "uri": "https://example.test/h-syb-l/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "HANCH-B",
+          "upstream": "UP-HANCH2",
+          "uri": "https://example.test/h-syb-l/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout anchored one",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "holdout anchored two",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "ratings": [
+        {
+          "from": "S1",
+          "to": "S2",
+          "value": 1.0
+        },
+        {
+          "from": "S2",
+          "to": "S1",
+          "value": 1.0
+        }
+      ],
+      "anchor": [
+        "S1"
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout anchored control admits (recommendation only for trust)."
+    },
+    {
+      "case_id": "S1-012-H13",
+      "family": "invalid",
+      "cluster": "INV-I",
+      "severity": "high",
+      "probe": "E",
+      "claim": {
+        "claim_id": "CL-H13"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-HO",
+          "upstream": "UP-HO",
+          "uri": "https://example.test/h-inv-i/1",
+          "status": "REVOKED"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-HP",
+          "upstream": "UP-HP",
+          "uri": "https://example.test/h-inv-i/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout revoked",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "holdout lone",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_REVOKED"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_REVOKED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_REVOKED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout revoked pair rejects."
+    },
+    {
+      "case_id": "S1-012-H14",
+      "family": "invalid",
+      "cluster": "INV-J",
+      "severity": "high",
+      "claim": {
+        "claim_id": "CL-H14",
+        "scope": "SCOPE-1"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-HQ",
+          "upstream": "UP-HQ",
+          "uri": "https://example.test/h-inv-j/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-HR",
+          "upstream": "UP-HR",
+          "uri": "https://example.test/h-inv-j/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout foreign",
+          "label": "support",
+          "scope": "SCOPE-7",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "holdout local",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CROSS_SCOPE"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CROSS_SCOPE"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CROSS_SCOPE"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout cross-scope pair rejects."
+    },
+    {
+      "case_id": "S1-012-H15",
+      "family": "invalid",
+      "cluster": "INV-K",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-H15"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "upstream": "UP-HS",
+          "uri": "https://example.test/h-inv-k/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-HT",
+          "upstream": "UP-HT",
+          "uri": "https://example.test/h-inv-k/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout originless",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "holdout solid",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "abstain",
+          "reason": "ABSTAIN_UNKNOWN"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "abstain",
+          "reason": "ABSTAIN_UNKNOWN"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "abstain",
+          "reason": "ABSTAIN_UNKNOWN"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout missing-publisher abstains."
+    },
+    {
+      "case_id": "S1-012-H16",
+      "family": "invalid",
+      "cluster": "INV-L",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-H16",
+        "version": 3
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-HU",
+          "upstream": "UP-HU",
+          "uri": "https://example.test/h-inv-l/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-HV",
+          "upstream": "UP-HV",
+          "uri": "https://example.test/h-inv-l/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout v2 text",
+          "label": "support",
+          "version": 2,
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "holdout v3 text",
+          "label": "support",
+          "version": 3,
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_VERSION_MISMATCH"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_VERSION_MISMATCH"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_VERSION_MISMATCH"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout version-mismatch pair rejects."
+    },
+    {
+      "case_id": "S1-012-H17",
+      "family": "nearmiss",
+      "cluster": "NEAR-I",
+      "severity": "high",
+      "probe": "G",
+      "claim": {
+        "claim_id": "CL-H17"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-HW",
+          "upstream": "UP-HW",
+          "uri": "https://example.test/h-near-i/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-HX",
+          "upstream": "UP-HX",
+          "uri": "https://example.test/h-near-i/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout same sentence twice",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "holdout same sentence twice",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "reject",
+          "reason": "REJECTED_CORRELATED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout benign identical-text pair; digest limit documented."
+    },
+    {
+      "case_id": "S1-012-H18",
+      "family": "nearmiss",
+      "cluster": "NEAR-J",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-H18"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-HY",
+          "upstream": "UP-HY",
+          "uri": "https://example.test/h-near-j/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-HY",
+          "upstream": "UP-HZ",
+          "uri": "https://example.test/h-near-j/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout desk one",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "holdout desk two",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout same-publisher disjoint-upstream pair admits."
+    },
+    {
+      "case_id": "S1-012-H19",
+      "family": "nearmiss",
+      "cluster": "NEAR-K",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-H19"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "publisher": "PUB-IA",
+          "upstream": "UP-IA",
+          "uri": "https://example.test/h-near-k/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-IB",
+          "upstream": "UP-IB",
+          "uri": "https://example.test/h-near-k/2"
+        },
+        {
+          "source_id": "S3",
+          "publisher": "PUB-IC",
+          "upstream": "UP-IC",
+          "uri": "https://example.test/h-near-k/3"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout keep one",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "holdout drop revoked",
+          "label": "support",
+          "revoked": true,
+          "spans": []
+        },
+        {
+          "doc_id": "D3",
+          "source_id": "S3",
+          "text": "holdout keep three",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "span": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "digest": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "ADMITTED"
+        },
+        "reputation-only": {
+          "n_independent": 3,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout partial revocation admits on survivors."
+    },
+    {
+      "case_id": "S1-012-H20",
+      "family": "nearmiss",
+      "cluster": "NEAR-L",
+      "severity": "medium",
+      "claim": {
+        "claim_id": "CL-H20"
+      },
+      "sources": [
+        {
+          "source_id": "S1",
+          "upstream": "UP-ID",
+          "uri": "https://example.test/h-near-l/1"
+        },
+        {
+          "source_id": "S2",
+          "publisher": "PUB-IE",
+          "upstream": "UP-IE",
+          "uri": "https://example.test/h-near-l/2"
+        }
+      ],
+      "documents": [
+        {
+          "doc_id": "D1",
+          "source_id": "S1",
+          "text": "holdout known half",
+          "label": "support",
+          "spans": []
+        },
+        {
+          "doc_id": "D2",
+          "source_id": "S2",
+          "text": "holdout unknown half",
+          "label": "support",
+          "spans": []
+        }
+      ],
+      "expected": {
+        "document": {
+          "n_independent": 1,
+          "outcome": "abstain",
+          "reason": "ABSTAIN_UNKNOWN"
+        },
+        "span": {
+          "n_independent": 1,
+          "outcome": "abstain",
+          "reason": "ABSTAIN_UNKNOWN"
+        },
+        "digest": {
+          "n_independent": 1,
+          "outcome": "abstain",
+          "reason": "ABSTAIN_UNKNOWN"
+        },
+        "reputation-only": {
+          "n_independent": 2,
+          "outcome": "admit",
+          "reason": "RECOMMENDATION_ONLY"
+        }
+      },
+      "truth_note": "Holdout ambiguous pair abstains."
+    }
+  ]
+}
