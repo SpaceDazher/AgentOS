@@ -1,0 +1,303 @@
+{
+  "$id": "agentos.s1-014.browser-envelope/v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "banner": {
+      "const": "OPERATOR DESIGN REVIEW \u2014 NOT A USER STUDY",
+      "type": "string"
+    },
+    "contract_schema": {
+      "const": "agentos.s1-014.dispute-contract/v1",
+      "type": "string"
+    },
+    "contract_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "contract_version": {
+      "pattern": "^1\\.0\\.\\d+$",
+      "type": "string"
+    },
+    "envelope_schema": {
+      "const": "agentos.s1-014.browser-envelope/v1",
+      "type": "string"
+    },
+    "events": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "detail": {
+            "maxLength": 64,
+            "type": "string"
+          },
+          "dispute_id": {
+            "pattern": "^DSP-[0-9a-f]{12}$",
+            "type": "string"
+          },
+          "seq": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "t_ms": {
+            "maximum": 86400000,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "type": {
+            "enum": [
+              "consent_given",
+              "practice_start",
+              "practice_end",
+              "task_presented",
+              "disclosure_opened",
+              "keyboard_step",
+              "node_focus",
+              "answer_selected",
+              "provenance_marked",
+              "challenge_marked",
+              "overload_reported",
+              "task_submitted",
+              "task_timeout",
+              "pause",
+              "resume",
+              "withdraw",
+              "session_complete"
+            ],
+            "type": "string"
+          },
+          "variant": {
+            "enum": [
+              "CARD",
+              "GRAPH"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "seq",
+          "t_ms",
+          "type"
+        ],
+        "type": "object"
+      },
+      "maxItems": 5000,
+      "minItems": 1,
+      "type": "array"
+    },
+    "payload_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "session": {
+      "additionalProperties": false,
+      "properties": {
+        "accessibility_mode": {
+          "enum": [
+            "pointer",
+            "keyboard_only",
+            "screen_reader_linear"
+          ],
+          "type": "string"
+        },
+        "assignment_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "consent": {
+          "additionalProperties": false,
+          "properties": {
+            "form_version": {
+              "maxLength": 32,
+              "type": "string"
+            },
+            "given": {
+              "type": "boolean"
+            },
+            "t_ms": {
+              "maximum": 86400000,
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "given",
+            "form_version",
+            "t_ms"
+          ],
+          "type": "object"
+        },
+        "executor": {
+          "pattern": "^EXEC-[A-Z0-9-]{3,24}$",
+          "type": "string"
+        },
+        "lifecycle": {
+          "enum": [
+            "complete",
+            "withdrawn",
+            "incomplete"
+          ],
+          "type": "string"
+        },
+        "participant_id": {
+          "pattern": "^[A-Z]{2,4}-[0-9a-f]{8,32}$",
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "synthetic_technical_replay",
+            "operator_design_reviewer"
+          ],
+          "type": "string"
+        },
+        "seed": {
+          "pattern": "^seed-\\d{4}$",
+          "type": "string"
+        },
+        "session_id": {
+          "pattern": "^[A-Z]{2,4}-[0-9a-f]{8,32}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "session_id",
+        "participant_id",
+        "role",
+        "seed",
+        "executor",
+        "assignment_sha256",
+        "consent",
+        "accessibility_mode",
+        "lifecycle"
+      ],
+      "type": "object"
+    },
+    "trials": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "answer": {
+            "enum": [
+              "focal_holds",
+              "challenge_holds",
+              "undetermined",
+              "withheld_cannot_decide",
+              "__MISSING__"
+            ],
+            "type": "string"
+          },
+          "challenge_choice": {
+            "enum": [
+              "challenge_seen",
+              "challenge_not_seen",
+              "__MISSING__"
+            ],
+            "type": "string"
+          },
+          "disclosure_actions": {
+            "maximum": 999,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "dispute_id": {
+            "pattern": "^DSP-[0-9a-f]{12}$",
+            "type": "string"
+          },
+          "keyboard_steps": {
+            "maximum": 9999,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "outcome": {
+            "enum": [
+              "submitted",
+              "timeout",
+              "missing",
+              "withdrawn"
+            ],
+            "type": "string"
+          },
+          "overload": {
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "not_reported"
+            ],
+            "type": "string"
+          },
+          "pointer_used": {
+            "type": "boolean"
+          },
+          "position": {
+            "maximum": 63,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "presented_t_ms": {
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "provenance_recall": {
+            "items": {
+              "pattern": "^[A-Z]{2,4}-[A-Za-z0-9]{1,16}$",
+              "type": "string"
+            },
+            "maxItems": 16,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "submitted_t_ms": {
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "variant": {
+            "enum": [
+              "CARD",
+              "GRAPH"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "position",
+          "dispute_id",
+          "variant",
+          "presented_t_ms",
+          "submitted_t_ms",
+          "outcome",
+          "answer",
+          "provenance_recall",
+          "challenge_choice",
+          "overload",
+          "disclosure_actions",
+          "keyboard_steps",
+          "pointer_used"
+        ],
+        "type": "object"
+      },
+      "maxItems": 64,
+      "minItems": 1,
+      "type": "array"
+    }
+  },
+  "required": [
+    "envelope_schema",
+    "contract_schema",
+    "contract_version",
+    "contract_sha256",
+    "banner",
+    "session",
+    "trials",
+    "events",
+    "payload_sha256"
+  ],
+  "title": "S1-014 browser export envelope",
+  "type": "object"
+}

@@ -183,7 +183,7 @@ from a lower wave to a higher wave, and S1-020 is the sole closure sink.
 | S1-011 | W1 | P0 | knowledge | PASS_WITH_LIMITS | S1-001, S1-003 | minimal promote/challenge knowledge gate |
 | S1-012 | W2 | P0 | knowledge | PASS_WITH_LIMITS | S1-001, S1-003, S1-011 | evidence independence and Beta/Sybil calibration |
 | S1-013 | W3 | P1 | hci | PASS_WITH_LIMITS | S1-011, S1-012 | solo expert conformance review; human effectiveness not measured |
-| S1-014 | W4 | P1 | hci | READY | S1-011, S1-013 | claim-dispute card versus graph |
+| S1-014 | W4 | P1 | hci | PASS_WITH_LIMITS | S1-011, S1-013 | claim-dispute card versus graph |
 | S1-015 | W4 | P2 | hci | READY | S1-013 | petname principal naming study |
 | S1-016 | W3 | P1 | formal | READY | S1-003, S1-007 | flat workspace scope versus PROV-Dictionary lineage |
 | S1-017 | W4 | P2 | formal | READY | S1-004, S1-016 | STIT/ATL responsibility analytics placement |
@@ -1126,7 +1126,12 @@ python -m agentos.cli research-plan --topic "S1-013 solo expert comprehension an
 
 ### S1-014 — Claim-dispute visualization: card versus graph
 
-- **Status:** `READY`
+- **Status:** `PASS_WITH_LIMITS` — operator design review recorded: provisional
+  default `CARD_WITH_GRAPH_DRILLDOWN` (`operator_review_n=1`);
+  `human_study_n=0`, `comparative_human_effectiveness=NOT_MEASURED`; no
+  card/graph winner was established by a human study. Canonical research-plan
+  evaluation record is still required before S1-014 can satisfy a downstream
+  dependency gate.
 - **Priority:** `P1`
 - **Wave:** `W4`
 - **Owner:** `hci`
