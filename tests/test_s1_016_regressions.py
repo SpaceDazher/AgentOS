@@ -30,6 +30,7 @@ def _load_ticket_module(name: str):
 
 
 contract = _load_ticket_module("contract")
+make_bundle = _load_ticket_module("make_bundle")
 models = _load_ticket_module("models")
 runner = _load_ticket_module("runner")
 evaluator = _load_ticket_module("evaluator")
@@ -433,6 +434,70 @@ class TestEvaluatorGates(unittest.TestCase):
         import itertools
         self.assertGreaterEqual(
             len(list(itertools.product((0.5, 1.0, 1.5), repeat=6))), 200)
+
+
+class TestOperatorVerdict(unittest.TestCase):
+    GREEN_METRICS = {
+        "invariant_violations": {f"L{i}": 0 for i in range(1, 13)},
+        "mandatory": {"invariants_zero": True, "orphans_zero": True,
+                      "expansions_zero": True, "leaks_zero": True,
+                      "roundtrip_100": True, "reconstruction_100": True,
+                      "rejection_100": True, "replay_consistent": True,
+                      "shacl_exact": True},
+        "human_study_n": 0,
+    }
+    GREEN_COMPARISON = {"replicated": True}
+    GREEN_SENSITIVITY = {"vector_count": 748, "mapped_decision": "A", "flips": 0}
+
+    def _letters(self, **overrides):
+        base = {str(n): "A" for n in range(1, 11)}
+        base.update(overrides)
+        return base
+
+    def test_all_a_no_flip_closes_flat(self):
+        blockers, verdict = make_bundle.derive_verdict(
+            copy.deepcopy(self.GREEN_METRICS), dict(self.GREEN_COMPARISON),
+            dict(self.GREEN_SENSITIVITY), True, self._letters())
+        self.assertEqual(blockers, [])
+        self.assertEqual(verdict["design_decision"], "FLAT_RUNTIME_PROV_EXPORT")
+        self.assertEqual(verdict["status"], "CLOSED_WITH_LIMITS")
+
+    def test_6b_forbidden_yields_inconclusive(self):
+        blockers, verdict = make_bundle.derive_verdict(
+            copy.deepcopy(self.GREEN_METRICS), dict(self.GREEN_COMPARISON),
+            dict(self.GREEN_SENSITIVITY), True, self._letters(**{"6": "B"}))
+        self.assertEqual(blockers, [])
+        self.assertEqual(verdict["design_decision"], "INCONCLUSIVE")
+        self.assertEqual(verdict["status"], "CLOSED_INCONCLUSIVE")
+        self.assertIn("6B", verdict["blocking_answers"])
+
+    def test_flip_caps_despite_admissible_answers(self):
+        sens = dict(self.GREEN_SENSITIVITY, flips=1)
+        blockers, verdict = make_bundle.derive_verdict(
+            copy.deepcopy(self.GREEN_METRICS), dict(self.GREEN_COMPARISON),
+            sens, True, self._letters())
+        self.assertEqual(blockers, [])
+        self.assertEqual(verdict["design_decision"], "INCONCLUSIVE")
+
+    def test_10b_leaves_open(self):
+        blockers, verdict = make_bundle.derive_verdict(
+            copy.deepcopy(self.GREEN_METRICS), dict(self.GREEN_COMPARISON),
+            dict(self.GREEN_SENSITIVITY), True, self._letters(**{"10": "B"}))
+        self.assertEqual(verdict["status"], "OPEN_INCONCLUSIVE")
+
+    def test_no_decision_stays_preparation_ready(self):
+        blockers, verdict = make_bundle.derive_verdict(
+            copy.deepcopy(self.GREEN_METRICS), dict(self.GREEN_COMPARISON),
+            dict(self.GREEN_SENSITIVITY), False, None)
+        self.assertEqual(verdict["status"], "PREPARATION_READY")
+
+    def test_violation_blocks(self):
+        metrics = copy.deepcopy(self.GREEN_METRICS)
+        metrics["invariant_violations"]["L1"] = 1
+        blockers, _ = make_bundle.derive_verdict(
+            metrics, dict(self.GREEN_COMPARISON),
+            dict(self.GREEN_SENSITIVITY), True, self._letters())
+        self.assertTrue(blockers)
 
 
 class TestSourcesFrozen(unittest.TestCase):

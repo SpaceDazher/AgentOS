@@ -310,9 +310,8 @@ def verify_operator_decision(here: Path):
         if letter not in ("A", "B", "C"):
             raise ValueError(f"answer {num} has unknown letter {letter!r}")
         letters[str(num)] = letter
-    for num, letter in letters.items():
-        if f"{num}{letter}" in FORBIDDEN_ANSWERS:
-            raise ValueError(f"answer {num}{letter} is forbidden and blocks closure")
+    if letters.get("10") == "C":
+        raise ValueError("answer 10C (PASS) is forbidden and can never be granted")
     approved = doc.get("approved_artifact_hashes", {})
     for name, expected in approved.items():
         candidate = here / name
@@ -349,13 +348,29 @@ def derive_verdict(metrics: dict, comparison: dict, sensitivity_doc: dict,
                           "result": "PREPARATION_READY",
                           "operator_review": "REQUIRED",
                           "sensitivity_flips": flips,
+                          "blocking_answers": [],
                           "note": "technical evidence green; operator review required"}
     assert letters is not None
+    blocking_hit = sorted(f"{num}{letters[num]}" for num in
+                          (str(n) for n in range(1, 11))
+                          if f"{num}{letters[num]}" in FORBIDDEN_ANSWERS)
+    if blocking_hit:
+        return blockers, {
+            "design_decision": "INCONCLUSIVE", "substance_leader": decision,
+            "status": "CLOSED_INCONCLUSIVE", "result": "INCONCLUSIVE",
+            "operator_review": "COMPLETE", "sensitivity_flips": flips,
+            "blocking_answers": blocking_hit,
+            "note": (f"operator answers {', '.join(blocking_hit)} are forbidden "
+                     f"and contradict hard invariants; no authorization-from-"
+                     f"provenance is granted; no PASS_WITH_LIMITS ticket "
+                     f"closure is claimed"),
+        }
     if flips > 0:
         return blockers, {
             "design_decision": "INCONCLUSIVE", "substance_leader": decision,
             "status": "CLOSED_INCONCLUSIVE", "result": "INCONCLUSIVE",
             "operator_review": "COMPLETE", "sensitivity_flips": flips,
+            "blocking_answers": [],
             "note": (f"recorded sensitivity flips ({flips}) cap the verdict at "
                      f"INCONCLUSIVE; substance leader {decision}; no "
                      f"PASS_WITH_LIMITS ticket closure is claimed"),
@@ -365,6 +380,7 @@ def derive_verdict(metrics: dict, comparison: dict, sensitivity_doc: dict,
                           "substance_leader": decision,
                           "status": "OPEN_INCONCLUSIVE", "result": "INCONCLUSIVE",
                           "operator_review": "COMPLETE", "sensitivity_flips": flips,
+                          "blocking_answers": [],
                           "note": "operator left the ticket open"}
     expected_q2 = Q2_BY_MAPPED.get(mapped)
     if letters.get("2") != expected_q2:
@@ -374,16 +390,19 @@ def derive_verdict(metrics: dict, comparison: dict, sensitivity_doc: dict,
                           "substance_leader": decision,
                           "status": "CLOSED_INCONCLUSIVE", "result": "INCONCLUSIVE",
                           "operator_review": "COMPLETE", "sensitivity_flips": flips,
+                          "blocking_answers": [],
                           "note": "operator answers contradict frozen evidence"}
     if decision == "INCONCLUSIVE":
         return blockers, {"design_decision": "INCONCLUSIVE",
                           "substance_leader": decision,
                           "status": "CLOSED_INCONCLUSIVE", "result": "INCONCLUSIVE",
                           "operator_review": "COMPLETE", "sensitivity_flips": flips,
+                          "blocking_answers": [],
                           "note": "evidence supports no provisional model"}
     return blockers, {"design_decision": decision, "substance_leader": decision,
                       "status": "CLOSED_WITH_LIMITS", "result": "PASS_WITH_LIMITS",
                       "operator_review": "COMPLETE", "sensitivity_flips": flips,
+                      "blocking_answers": [],
                       "note": (f"bounded evidence supports {decision} for the declared "
                                f"profile; production implementation conformance and "
                                f"arbitrary distributed executions remain unproven")}
@@ -606,6 +625,15 @@ def build_bundle(here: Path, sources: list[dict], verdict: dict,
         "bounded 48-scenario corpus; no arbitrary distributed execution claims",
         "same-host replay is called replay, not an external audit",
     ]
+    if verdict.get("blocking_answers"):
+        limitations.append(
+            "operator answers " + ", ".join(verdict["blocking_answers"]) +
+            " are forbidden and contradict hard invariants; no authorization-"
+            "from-provenance is granted")
+    if verdict.get("sensitivity_flips"):
+        limitations.append(
+            f"recorded sensitivity flips ({verdict['sensitivity_flips']}) cap "
+            f"the verdict; substance leader {verdict.get('substance_leader')}")
     if present and verdict.get("design_decision") == "INCONCLUSIVE":
         limitations.append(
             "recorded sensitivity flips cap the verdict at INCONCLUSIVE; "
@@ -726,6 +754,7 @@ def main(argv: list[str] | None = None) -> int:
                        "= 864 observations"),
             "safety_verdict": evidence["metrics"]["safety_verdict"],
             "replicated": evidence["comparison"]["replicated"],
+            "blocking_answers": verdict.get("blocking_answers", []),
             "frozen_hashes": frozen,
             "closure_basis": "operator_architecture_decision" if present else "preparation_only",
             "note": verdict["note"],

@@ -1,0 +1,45 @@
+{
+  "schema": "agentos.s1-016.operator-decision/v1",
+  "ticket": "S1-016",
+  "decision_id": "S1-016-OPERATOR-2026-09-05",
+  "decided_at_utc": "2026-09-05T03:00:00Z",
+  "operator_id": "OP-OPERATOR-01",
+  "scope": "single_architecture_decision",
+  "selected_answers": {
+    "1": "A",
+    "2": "A",
+    "3": "A",
+    "4": "A",
+    "5": "A",
+    "6": "B",
+    "7": "A",
+    "8": "A",
+    "9": "A",
+    "10": "A"
+  },
+  "answer_string": "1A 2A 3A 4A 5A 6B 7A 8A 9A 10A",
+  "approved_artifact_hashes": {
+    "lineage-contract.json": "beb589d3e0cdf2b3da6798a08ad7131ca89ab56ac4d7cb2a819a013c520a31cc",
+    "corpus.json": "00064b46cd5e2119d36960a00532e7dc4ef6caf355ddf24138c23ea961fa1feb",
+    "oracle.json": "6fc043254dd9215e78fb75b7c9c91a7ba1be0ef0825f76efe4651e1387ce5774",
+    "rubric.json": "a259215272c5abe46a106ada51f13319680e3b850e4db08caf446b84df02b5ed",
+    "decision-rule.json": "c7db2ae1d1bc1f0274f7c5e13cb7bbaf0fef028799ad9daf032a3aa12e479d9f",
+    "mapping-profile.json": "a608d40115a49472e8ba6cbe738d26a89a6295d6268bb4ea50af2c05dcbf5954",
+    "threat-model.json": "a1b0f97a94c56aa609feebf3029f5597ae9e10f2a320b380b870535aa48daea4"
+  },
+  "interpretation": {
+    "mode": "single_operator_architecture_review",
+    "answer_use": "architecture_decision_only",
+    "blocking_answers": [
+      "6B"
+    ],
+    "blocking_effect": "answer 6B (provenance edge inherits access) is forbidden and contradicts hard invariant L6; petname-style closure impossible; honest outcome INCONCLUSIVE",
+    "sensitivity_cap": "recorded flips cap the verdict at INCONCLUSIVE regardless",
+    "raw_policy": "structured_answers_only_no_raw_retained"
+  },
+  "limitations": [
+    "one operator architecture review is not a production audit",
+    "answer 6B contradicts invariant L6 enforced by all technical evidence",
+    "production conformance and arbitrary executions remain unproven"
+  ]
+}
