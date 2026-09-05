@@ -1,0 +1,85 @@
+{
+  "schema": "agentos.s1-016.dependency-gate/v1",
+  "ticket": "S1-016",
+  "dependencies": [
+    {
+      "ticket": "S1-003",
+      "origin_main_ref": "origin/main",
+      "schema": "agentos.ticket-evaluation-record/v1",
+      "verdict": "pass",
+      "research_revision": 24,
+      "goal_id": "goal_RVX89EP2SEQ94MSZ01M0VAVECK",
+      "campaign_id": "rcamp_6FTDN1FMJ9BNV65501M0VAVECK",
+      "evaluation_id": "reval_KHXH2JAY5JFW8YJM01M0VAVEEM",
+      "artifact_chain_hash": "b9c9e2fbbac5db994e584a24669f0f5475e0f6942fe3d5347fad8592fbf83157",
+      "evidence_pack": {
+        "label": "evidence-pack",
+        "path": "research/tickets/stage-1/S1-003/results/evidence/evidence-pack-f8ab24ab17b2db9eab6c8da378c6808f8f0f1c631eff881aa3f31b812de6ac20.json",
+        "proven": true,
+        "file_sha256": "f8ab24ab17b2db9eab6c8da378c6808f8f0f1c631eff881aa3f31b812de6ac20",
+        "payload_sha256": "9ac3c416eb6c68e2f4d8712c46ea63c216809df9d44058f58297317a237fef2a"
+      },
+      "findings": {
+        "pyshacl_executed": true,
+        "engine_runs": 26,
+        "scope_vocabulary": true
+      },
+      "inherited_limits": [
+        "S1-003 v1 record carries no limitations list; engine evidence is bounded to the frozen fixture corpus (24 fixtures / 26 profile runs, verdict pass), not arbitrary graphs.",
+        "S1-003 pySHACL runtime is optional and isolated (ADR-0009); core AgentOS stays stdlib-only. S1-016 executes its own engine runs and never cites S1-003 runs as its own proof."
+      ],
+      "canonical_db_recheck_required": true,
+      "problems": [],
+      "status": "PROVEN"
+    },
+    {
+      "ticket": "S1-007",
+      "origin_main_ref": "origin/main",
+      "schema": "agentos.ticket-evaluation-record/v1",
+      "verdict": "pass_with_limits",
+      "research_revision": 7,
+      "goal_id": "goal_5FX22ZHCEAW0G2B501M1DDTYSA",
+      "campaign_id": "rcamp_9AGA2BWAQ70FQQ5401M1DDTYSA",
+      "evaluation_id": "reval_6BH3G062B38G3WHH01M1DDTYW2",
+      "artifact_chain_hash": "4c344ab2e83b231e4cd14c2f69f9eb95b9b0f374f7fab3bf8651eda682390692",
+      "evidence_pack": {
+        "label": "evidence-pack",
+        "path": "research/tickets/stage-1/S1-007/results/evidence/evidence-pack-b4da835f8b41a5ebf2ef622dc998a4cebfa1ed6370e58cbe4f3551c727929217.json",
+        "proven": true,
+        "file_sha256": "b4da835f8b41a5ebf2ef622dc998a4cebfa1ed6370e58cbe4f3551c727929217",
+        "payload_sha256": "cd688ed0662183563945d633bc55c5a0058d98b8f441f2f6b9a6991bf77bb590"
+      },
+      "findings": {
+        "single_scope_tuple": true,
+        "probes_present": true
+      },
+      "inherited_limits": [
+        "All results are local-model measurements from a deterministic stdlib-only simulation; no production latency, storage or privacy certification is claimed.",
+        "The timing probe is a bounded same-host paired-interleaved wall-clock measurement (200 paired samples x 32 inner repeats x 3 seeds per variant, tolerance max(10% of control median, 2000ns) recomputed by the evaluator from raw samples); it cannot prove absence of all side channels.",
+        "D9 (operational complexity/migration) and D11 (profile compatibility) are inference-type cells derived from the frozen contract, the current implementation and documented profiles.",
+        "Storage overhead uses a declared fixed per-index constant (256 bytes) - a model assumption, not a measurement of a production index engine.",
+        "S1-003 and S1-005 evidence is reused only within its stated limits (see dependency-gate.json).",
+        "Producer and verifier labels are process-separated roles in one local environment, not external human auditors."
+      ],
+      "canonical_db_recheck_required": true,
+      "problems": [],
+      "status": "PROVEN"
+    }
+  ],
+  "dependencies_proven": true,
+  "formal_semantics_available": true,
+  "scope_isolation_available": true,
+  "population_human_claims_proven": false,
+  "inherited_limits": [
+    "[S1-003] S1-003 v1 record carries no limitations list; engine evidence is bounded to the frozen fixture corpus (24 fixtures / 26 profile runs, verdict pass), not arbitrary graphs.",
+    "[S1-003] S1-003 pySHACL runtime is optional and isolated (ADR-0009); core AgentOS stays stdlib-only. S1-016 executes its own engine runs and never cites S1-003 runs as its own proof.",
+    "[S1-007] All results are local-model measurements from a deterministic stdlib-only simulation; no production latency, storage or privacy certification is claimed.",
+    "[S1-007] The timing probe is a bounded same-host paired-interleaved wall-clock measurement (200 paired samples x 32 inner repeats x 3 seeds per variant, tolerance max(10% of control median, 2000ns) recomputed by the evaluator from raw samples); it cannot prove absence of all side channels.",
+    "[S1-007] D9 (operational complexity/migration) and D11 (profile compatibility) are inference-type cells derived from the frozen contract, the current implementation and documented profiles.",
+    "[S1-007] Storage overhead uses a declared fixed per-index constant (256 bytes) - a model assumption, not a measurement of a production index engine.",
+    "[S1-007] S1-003 and S1-005 evidence is reused only within its stated limits (see dependency-gate.json).",
+    "[S1-007] Producer and verifier labels are process-separated roles in one local environment, not external human auditors."
+  ],
+  "canonical_db_recheck_required": true,
+  "note": "Tracked-Git proof from origin/main bytes incl. git archive; no population claim is proven; status is never upgraded."
+}

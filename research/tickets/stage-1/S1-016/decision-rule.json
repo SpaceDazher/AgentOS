@@ -1,0 +1,32 @@
+{
+  "schema": "agentos.s1-016.decision-rule/v1",
+  "ticket": "S1-016",
+  "frozen": true,
+  "allowed_decisions": [
+    "FLAT_RUNTIME_PROV_EXPORT",
+    "RICH_RUNTIME_PROV_DICTIONARY",
+    "HYBRID_MINIMAL_LINEAGE",
+    "INCONCLUSIVE"
+  ],
+  "forbidden": [
+    "multiple simultaneous authoritative scopes on one object",
+    "mutated historical ArtifactVersion",
+    "authorization from a provenance edge",
+    "lineage deletion on removal",
+    "export hiding a cross-scope operation"
+  ],
+  "selection": {
+    "A_wins": "B/C show no necessary correctness benefit and add state/constraint complexity",
+    "B_wins": "only if executable evidence shows a necessary runtime query/reconstruction capability unreachable by A/C, without relaxing L1-L12",
+    "C_wins": "only if minimal runtime relations show proven B-utility at lower complexity while staying non-authoritative",
+    "otherwise": "INCONCLUSIVE on unstable winner, unsupported round-trip or close tradeoff"
+  },
+  "safety_gates_unweighted": true,
+  "sensitivity": {
+    "weight_perturbation": "±50%",
+    "leave_one_dimension_out": true,
+    "min_weight_vectors": 200,
+    "rule": "any winner flip is recorded and caps the verdict at INCONCLUSIVE"
+  },
+  "status_cap": "PASS_WITH_LIMITS at most; production implementation conformance unproven"
+}
