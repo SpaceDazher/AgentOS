@@ -1,0 +1,186 @@
+{
+  "artifacts": {
+    "research_plan": {
+      "content": "Answer ontology Q2: where STIT/ATL responsibility analytics must live so it never becomes a second authorization mechanism. Evidence-first cycle with frozen corpus, three placements, adversarial probes and process-separated replay.",
+      "producer": "agentos-s1-017-producer"
+    },
+    "source_registry": {
+      "content": "Eight evidence roles: local ontology Q2, audit/runtime boundaries, formal constraints, S1-004 formal execution, S1-016 lineage binding, primary STIT semantics (Belnap/Horty), primary ATL semantics (Alur/Henzinger/Kupferman), causality/accountability limits (Halpern).",
+      "producer": "agentos-s1-017-producer"
+    },
+    "feature_catalog": {
+      "content": "Analyzer features: bounded STIT deliberative evaluation, ATL coalition ability with explicit environment moves, fail-closed defeaters (missing authority, redaction, identity, unreconciled unknowns, adversarial markers), annotation envelope with authority=false.",
+      "producer": "agentos-s1-017-producer"
+    },
+    "architecture_models": {
+      "content": "Placements A/B/C over one observable contract: A offline analysis of immutable export (baseline), B derived export annotation with recomputable index, C bounded runtime annotation never read by the gateway. Gateway ownership is machine-checked (R1).",
+      "producer": "agentos-s1-017-producer"
+    },
+    "mental_model": {
+      "content": "Responsibility is an explanation over a bounded model, never an authority: actor/authority/action/choice/alternative/attribution are separate terms; absence of an event is not proof of absence of ability; incomplete traces abstain.",
+      "producer": "agentos-s1-017-producer"
+    },
+    "ontology": {
+      "content": "Terms: actor (canonical principal), authority (gateway-verified grant/approval/lease), action, choice point, available alternative, attempt, causal contribution, STIT attribution, ATL ability, operational accountability, responsibility annotation (authority=false), legal/moral blame (OUT_OF_SCOPE).",
+      "producer": "agentos-s1-017-producer"
+    },
+    "mathematical_model": {
+      "content": "Bounded concurrent-game model: full state enumeration, deterministic STIT (guarantee + difference-making over authorised alternatives) and ATL (forcing strategies under modeled environment moves); underdetermination is a first-class outcome.",
+      "producer": "agentos-s1-017-producer"
+    },
+    "synthesis_and_gaps": {
+      "content": "Gaps: no human-subject validation, no production conformance, bounded state space, single-operator review; counterfactual policy and observability assumptions are recorded per annotation.",
+      "producer": "agentos-s1-017-producer"
+    },
+    "independent_audit": {
+      "content": "Auditor recomputes every observation from corpus bytes, checks R1-R14, compares verdicts against a construction-intent oracle that never ran the analyzer, and replicates the 864-observation matrix across two processes.",
+      "producer": "agentos-s1-017-independent-verifier"
+    },
+    "platform_plan": {
+      "content": {
+        "Scope": "Bounded responsibility analytics placement decision; no production rollout, no legal or moral attribution, no second authorization path.",
+        "Architecture": "Stdlib bounded game engine, shared analyzer, evaluator/comparator, publisher; one frozen corpus and oracle.",
+        "Workstreams": "Freeze; final semantics; matrix; probes; replay; sensitivity; operator decision; canonical publication.",
+        "Milestones": "PREPARATION_READY after technical gates; bounded closure after admissible operator review and canonicalization.",
+        "Verification": "Targeted suites, real recomputation, probes A-P with controls, replication record, native normalizer pass, wiki-check.",
+        "Risks": "Bounded corpus, model assumptions, single-operator review limits.",
+        "Open decisions": "Production implementation conformance needs a future ticket."
+      },
+      "producer": "agentos-s1-017-producer"
+    },
+    "progress": {
+      "content": "Phase A frozen fixtures; Phase B final semantics, full matrix, probes A-P, replay, sensitivity and operator decision.",
+      "producer": "agentos-s1-017-producer"
+    }
+  },
+  "audit": {
+    "auditor": "agentos-s1-017-independent-verifier",
+    "producer": "agentos-s1-017-producer",
+    "verdict": "pass_with_limits",
+    "limitations": [
+      "tracked-Git dependency evidence; local canonical DB recheck is required before final publication",
+      "no human, legal, moral or production data: all rates are technical model checks",
+      "bounded 48-scenario corpus; no arbitrary-system attribution claims",
+      "same-host process separation is called replay, not an external audit",
+      "sensitivity inputs are deterministic model counts and artifact byte sizes only; wall-clock latencies are reported separately and never enter the decision"
+    ]
+  },
+  "auditor": "agentos-s1-017-independent-verifier",
+  "claims": [
+    {
+      "id": "CL-F1",
+      "s1_017_class": "formal_semantics",
+      "text": "Deliberative STIT and bounded ATL are evaluated over a fully enumerated bounded model with explicit choice partitions and environment moves."
+    },
+    {
+      "id": "CL-A1",
+      "s1_017_class": "audit_explanation",
+      "text": "Annotations explain who could have done what under declared alternatives; absence of an event is never treated as proof of absence of ability."
+    },
+    {
+      "id": "CL-D1",
+      "s1_017_class": "design_inference",
+      "text": "Placement evidence is compared over one observable contract with unweighted safety gates and deterministic sensitivity dimensions."
+    },
+    {
+      "id": "CL-R1",
+      "s1_017_class": "runtime_boundary",
+      "text": "Gateway owns 100% of authorization decisions; annotations are accepted and ignored by the decision path, which is machine-checked."
+    },
+    {
+      "id": "CL-M1",
+      "s1_017_class": "measurement",
+      "text": "864 technical observations: R1-R14 zero, oracle agreement 100%, abstention correctness 100%, probes A-P detected with controls."
+    },
+    {
+      "id": "CL-C1",
+      "s1_017_class": "decision",
+      "text": "Placement decision recorded with operator review; no legal, moral or production-conformance claim is made."
+    },
+    {
+      "id": "CL-L1",
+      "s1_017_class": "limitation",
+      "text": "Bounded scenarios, single-operator review, same-host replay; recognition/effectiveness and arbitrary-system correctness remain unmeasured."
+    }
+  ],
+  "config": {
+    "min_source_count": 6,
+    "min_verified_ratio": 1.0,
+    "required_artifacts": [
+      "research_plan",
+      "source_registry",
+      "feature_catalog",
+      "architecture_models",
+      "mental_model",
+      "ontology",
+      "mathematical_model",
+      "synthesis_and_gaps",
+      "independent_audit",
+      "platform_plan",
+      "progress"
+    ]
+  },
+  "producer": "agentos-s1-017-producer",
+  "sources": [
+    {
+      "id": "SRC-S1-017-01",
+      "role": "ontology",
+      "uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-017/sources/snap-01-src05-ontology-q2.md",
+      "status": "internal-design-input",
+      "sha256": "ee1901e0a525de63e664d40ed5720a8c90fe823c1f46e577333d1d5107f9953a"
+    },
+    {
+      "id": "SRC-S1-017-02",
+      "role": "audit-boundary",
+      "uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-017/sources/snap-02-audit-runtime-boundaries.md",
+      "status": "internal-contract-excerpt",
+      "sha256": "e79d4ba9cc4763c63b849e8fc021333f3e18b68a5e7684f23ae441f3953a9cf4"
+    },
+    {
+      "id": "SRC-S1-017-03",
+      "role": "formal-constraints",
+      "uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-004/formal-program",
+      "status": "internal-design-input",
+      "sha256": "830f084d781e4da34bb292c808b10cdc1b2c9a830e56b74a5b754665b20eb8ae"
+    },
+    {
+      "id": "SRC-S1-017-04",
+      "role": "formal-execution",
+      "uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-004/results/formal-evidence",
+      "status": "internal-result",
+      "sha256": "74c2b4ddcdd19fd670de8c8ed36ca215eaa73d95779e8d6c435c066df96dd90d"
+    },
+    {
+      "id": "SRC-S1-017-05",
+      "role": "lineage-binding",
+      "uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-017/sources/snap-05-s1-016-expected-binding.md",
+      "status": "preparation-note",
+      "sha256": "ec38c7b89b94ad6591320ae25386166bf7dde132a2305eb9f9ef215a2e29e4fa"
+    },
+    {
+      "id": "SRC-S1-017-06",
+      "role": "stit-primary",
+      "uri": "https://global.oup.com/academic/product/facing-the-future-9780198240119",
+      "status": "bibliographic-record",
+      "sha256": "fd98829f824efd16a4ed1776330063e74732ba4d165cb30224d45ac92efcb0d7"
+    },
+    {
+      "id": "SRC-S1-017-07",
+      "role": "atl-primary",
+      "uri": "https://doi.org/10.1145/646836.646878",
+      "status": "bibliographic-record",
+      "sha256": "d1b3ab38a4b809c63ecd4dd65090bd8f92c4c61ac4da31d8db4b2b3dd22e989a"
+    },
+    {
+      "id": "SRC-S1-017-08",
+      "role": "causality-limits",
+      "uri": "https://mitpress.mit.edu/9780262035026/actual-causality/",
+      "status": "bibliographic-record",
+      "sha256": "1148bbcb9799b644ff41a4920f8454eb17c420b32f7a52e37713aaf842288f95"
+    }
+  ],
+  "operator_review_n": 0,
+  "design_decision": "INCONCLUSIVE",
+  "placement": null,
+  "sensitivity_flips": 0
+}

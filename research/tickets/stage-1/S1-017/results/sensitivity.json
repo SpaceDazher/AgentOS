@@ -1,0 +1,63 @@
+{
+  "schema": "agentos.s1-017.sensitivity/v1",
+  "synthetic": true,
+  "dimensions": [
+    "utility",
+    "steps_parsimony",
+    "write_parsimony",
+    "complexity_parsimony",
+    "coverage_parsimony"
+  ],
+  "per_placement_aggregates": {
+    "mean_artifact_bytes": {
+      "A": 0.0,
+      "B": 463.75,
+      "C": 304.1041666666667
+    },
+    "deterministic_model_steps": 183,
+    "static_complexity_entry_points": {
+      "A": 1,
+      "B": 2,
+      "C": 3
+    },
+    "note": "wall-clock latencies are reported in metrics.json and never enter sensitivity dimensions; all inputs here are deterministic model counts and artifact byte sizes"
+  },
+  "normalized_scores": {
+    "utility": {
+      "A": 1.0,
+      "B": 1.0,
+      "C": 1.0
+    },
+    "steps_parsimony": {
+      "A": 1.0,
+      "B": 1.0,
+      "C": 0.0
+    },
+    "write_parsimony": {
+      "A": 1.0,
+      "B": 0.0,
+      "C": 0.34424977538185086
+    },
+    "complexity_parsimony": {
+      "A": 0.6666666666666667,
+      "B": 0.33333333333333337,
+      "C": 0.0
+    },
+    "coverage_parsimony": {
+      "A": 1.0,
+      "B": 1.0,
+      "C": 1.0
+    }
+  },
+  "base_winner": "A",
+  "mapped_decision": "A",
+  "mapping_note": "base argmax over deterministic aggregates",
+  "vector_count": 259,
+  "winners_distribution": {
+    "A": 259
+  },
+  "flips": 0,
+  "flip_examples": [],
+  "stable": true,
+  "cap_note": "any winner flip caps the verdict at INCONCLUSIVE; safety gates are unweighted and enforced separately"
+}
