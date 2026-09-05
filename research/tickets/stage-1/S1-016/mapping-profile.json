@@ -1,0 +1,60 @@
+{
+  "$id": "agentos.s1-016.prov-mapping/v1",
+  "title": "S1-016 canonical model to PROV mapping profile (declared subset)",
+  "profile": "agentos.prov-export/v1",
+  "mappings": {
+    "ArtifactVersion": "prov:Entity",
+    "operation_run": "prov:Activity",
+    "actor": "prov:Agent",
+    "create": "prov:wasGeneratedBy + prov:wasAttributedTo",
+    "derive": "prov:wasDerivedFrom (+ prov:wasGeneratedBy on the output)",
+    "supersede": "prov:wasRevisionOf (chained prov:wasDerivedFrom)",
+    "copy": "prov:wasDerivedFrom with agentos:copyOperation reference",
+    "copy_out_redacted": "JSON-only redacted derivation receipt (counterparty scope in redacted_refs); no RDF triple, never silent",
+    "insert": "prov:DerivedByInsertionFrom on the collection dictionary entity",
+    "remove": "prov:DerivedByRemovalFrom on the collection dictionary entity (tombstone, never history edit)",
+    "withdraw": "prov:wasInvalidatedBy on the membership (entity history retained)",
+    "scope": "agentos:scopeTenant / agentos:scopeWorkspace / agentos:scopeGoal (extension, mandatory on every Entity)",
+    "version": "agentos:version + agentos:supersedes (extension)",
+    "membership_interval": "agentos:memberInsertedBy / agentos:memberRemovedBy operation references (extension)"
+  },
+  "supported_subset": [
+    "Entity", "Activity", "Agent", "wasGeneratedBy", "wasDerivedFrom",
+    "wasRevisionOf", "wasAttributedTo", "wasInvalidatedBy", "actedOnBehalfOf",
+    "Dictionary", "EmptyDictionary", "hadDictionaryMember",
+    "DerivedByInsertionFrom", "DerivedByRemovalFrom",
+    "agentos:scopeTenant", "agentos:scopeWorkspace", "agentos:scopeGoal",
+    "agentos:version", "agentos:supersedes",
+    "agentos:memberInsertedBy", "agentos:memberRemovedBy",
+    "agentos:copyOperation", "agentos:redacted"
+  ],
+  "unsupported_constructs": [
+    "prov:Bundle (multi-graph documents)",
+    "prov:wasInfluencedBy without a typed sub-relation",
+    "prov:alternateOf / prov:specializationOf identity aliasing",
+    "prov:Collection without dictionary semantics",
+    "prov:hadMember with unordered non-keyed membership",
+    "prov:atLocation / prov:atTime as ordering evidence"
+  ],
+  "unsupported_policy": "import maps any construct outside supported_subset to an explicit UNSUPPORTED entry with its identifier; silent drops are forbidden",
+  "normalization": {
+    "json": "canonical JSON (sorted keys, no whitespace) over the export document",
+    "rdf": "deterministic Turtle: stable IRIs only, no blank nodes in canonical output, triples sorted by (subject, predicate, object)",
+    "blank_node_policy": "exporter never emits blank nodes; importer rejects documents containing blank nodes with reason blank_node",
+    "stable_ids": "agentos:<ticket>/<case>/<kind>/<local-id> IRIs derived from canonical IDs only",
+    "ordering": "operations ordered by (seq, op_id); membership pairs ordered by (key, member IRI)",
+    "semantic_digest": "SHA-256 over the normalized supported-subset projection (redaction receipts included, redacted content excluded)"
+  },
+  "redaction": {
+    "request_scope": "single requesting (tenant, workspace, goal); export is computed for that scope only",
+    "foreign_entity": "omitted entirely except cross-scope operations touching the requesting scope, whose foreign endpoint is a redacted reference {scope triple, redacted: true}",
+    "receipt": "redaction: {mode: scope_filtered, omitted_entities: <count>} stays explainable; counts are the only foreign-scope signal",
+    "rule": "no foreign content bytes, digests, object IDs, member labels or timestamps leave the export"
+  },
+  "import_rules": {
+    "accepts": "declared profile agentos.prov-export/v1 documents only",
+    "authority": "import creates no authority and restores no content from digests (content_unrestorable flag)",
+    "scope_binding": "imported entities keep their extension scope triple; entities without a valid triple are rejected",
+    "version_chain": "supersedes references must resolve inside the imported document or a declared base; dangling references reject"
+  }
+}

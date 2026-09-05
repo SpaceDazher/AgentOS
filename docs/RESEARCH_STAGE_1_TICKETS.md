@@ -185,7 +185,7 @@ from a lower wave to a higher wave, and S1-020 is the sole closure sink.
 | S1-013 | W3 | P1 | hci | PASS_WITH_LIMITS | S1-011, S1-012 | solo expert conformance review; human effectiveness not measured |
 | S1-014 | W4 | P1 | hci | PASS_WITH_LIMITS | S1-011, S1-013 | claim-dispute card versus graph |
 | S1-015 | W4 | P2 | hci | READY | S1-013 | petname principal naming study |
-| S1-016 | W3 | P1 | formal | READY | S1-003, S1-007 | flat workspace scope versus PROV-Dictionary lineage |
+| S1-016 | W3 | P1 | formal | PASS_WITH_LIMITS | S1-003, S1-007 | bounded lineage evidence complete; design decision remains INCONCLUSIVE |
 | S1-017 | W4 | P2 | formal | READY | S1-004, S1-016 | STIT/ATL responsibility analytics placement |
 | S1-018 | W4 | P1 | privacy | READY | S1-007, S1-008, S1-009 | profile-C MLS + TEE attested-indexer PoC research |
 | S1-019 | W5 | P0 | synthesis | READY | S1-004, S1-005, S1-006, S1-007, S1-008, S1-009, S1-010, S1-011, S1-012, S1-013, S1-014, S1-015, S1-016, S1-017, S1-018 | P0 architecture decision synthesis/prototype evidence |
@@ -1231,7 +1231,9 @@ python -m agentos.cli research-plan --topic "S1-015 petname principal naming stu
 
 ### S1-016 — Workspace lineage: flat scope versus PROV-Dictionary
 
-- **Status:** `READY`
+- **Status:** `PASS_WITH_LIMITS` (canonical revision 2; bounded research
+  execution complete, while the design decision remains `INCONCLUSIVE`)
+- **Result:** operator review `1A 2A 3A 4A 5A 6A 7A 8A 9A 10A` (the initially recorded `6B` was an operator slip, corrected to `6A` with a deviation log; no forbidden answers remain). The frozen measurement recorded one sensitivity flip (`lodo_implementation_parsimony` → B, driven by wall-clock latency noise feeding latency parsimony), which caps the verdict at INCONCLUSIVE per the frozen rule; a deterministic latency proxy is deferred. Substance leader `FLAT_RUNTIME_PROV_EXPORT` (base winner 747/748 vectors). Revision 2 restored the frozen measurement after the closure regeneration had re-rolled wall-clock latencies (flips 1→0) and hardened the publisher with frozen-measurement validation. Technical evidence: 48 scenarios x 3 representations x 3 seeds x 2 executors = 864 observations, L1–L12 zero, round-trip/reconstruction/rejection 100%, probes A–P pass, 144/144 SHACL exact, replay byte-identical.
 - **Priority:** `P1`
 - **Wave:** `W3`
 - **Owner:** `formal`

@@ -1,0 +1,63 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix agentos: <https://local.agentos.invalid/ns/lineage#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# Every violation message IS the normalized reason string (S1-003 pattern).
+
+agentos:EntityScopeShape a sh:NodeShape ;
+  sh:targetClass prov:Entity ;
+  sh:property [ sh:path agentos:scopeTenant ; sh:minCount 1 ; sh:maxCount 1 ;
+    sh:datatype xsd:string ; sh:message "scope_cardinality" ] ;
+  sh:property [ sh:path agentos:scopeWorkspace ; sh:minCount 1 ; sh:maxCount 1 ;
+    sh:datatype xsd:string ; sh:message "scope_cardinality" ] ;
+  sh:property [ sh:path agentos:scopeGoal ; sh:minCount 1 ; sh:maxCount 1 ;
+    sh:datatype xsd:string ; sh:message "scope_cardinality" ] ;
+  sh:property [ sh:path agentos:version ; sh:minCount 1 ; sh:maxCount 1 ;
+    sh:datatype xsd:integer ; sh:message "missing_version" ] ;
+  sh:property [ sh:path agentos:contentDigest ; sh:minCount 1 ; sh:maxCount 1 ;
+    sh:datatype xsd:string ; sh:message "missing_content_digest" ] .
+
+agentos:SupersedesTargetShape a sh:NodeShape ;
+  sh:targetSubjectsOf agentos:supersedes ;
+  sh:sparql [
+    sh:message "dangling_supersedes" ;
+    sh:select """
+      SELECT $this WHERE {
+        $this agentos:supersedes ?target .
+        FILTER NOT EXISTS { ?target a prov:Entity . }
+      }""" ] .
+
+agentos:DictionaryMemberShape a sh:NodeShape ;
+  sh:targetClass prov:Dictionary ;
+  sh:sparql [
+    sh:message "orphan_member" ;
+    sh:select """
+      SELECT $this WHERE {
+        $this prov:hadDictionaryMember ?member .
+        FILTER NOT EXISTS { ?member a prov:Entity . }
+      }""" ] .
+
+agentos:OpSeqUniqueShape a sh:NodeShape ;
+  sh:targetClass prov:Activity ;
+  sh:sparql [
+    sh:message "duplicate_seq" ;
+    sh:select """
+      SELECT $this WHERE {
+        $this agentos:opSeq ?seq .
+        ?other agentos:opSeq ?seq .
+        FILTER ($this != ?other)
+      }""" ] .
+
+agentos:MembershipIntegrityShape a sh:NodeShape ;
+  sh:targetSubjectsOf agentos:memberKey ;
+  sh:property [ sh:path agentos:insertedByOp ; sh:minCount 1 ; sh:maxCount 1 ;
+    sh:message "orphan_removal" ] ;
+  sh:sparql [
+    sh:message "orphan_removal" ;
+    sh:select """
+      SELECT $this WHERE {
+        $this agentos:memberKey ?key .
+        $this agentos:removedByOp ?rm .
+        FILTER NOT EXISTS { $this agentos:insertedByOp ?ins . }
+      }""" ] .
