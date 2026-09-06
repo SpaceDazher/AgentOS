@@ -1,0 +1,273 @@
+{
+  "artifacts": {
+    "research_plan": {
+      "content": "Decide Profile-C MLS+TEE indexer placement through a frozen 48-case corpus, three executable architectures, 864-observation replay, leakage accounting, sensitivity and one operator decision.",
+      "producer": "agentos-s1-018-producer",
+      "claim_refs": [
+        "CL-R1",
+        "CL-L1"
+      ]
+    },
+    "source_registry": {
+      "content": "The source registry binds each locally authorized snapshot to its URI, role, verification status and SHA-256. RFC status is never upgraded; the SEV-SNP choice is explicit and singular.",
+      "producer": "agentos-s1-018-producer",
+      "claim_refs": [
+        "CL-P1",
+        "CL-L1"
+      ]
+    },
+    "feature_catalog": {
+      "content": "MLS epochs and key handles; exact-scope index partitions; mock-quote appraisal with fresh nonces; scope/epoch-bound sessions; revocation-dominates-cache; rollback detection; idempotent reconciliation; per-channel leakage ledgers.",
+      "producer": "agentos-s1-018-producer",
+      "claim_refs": [
+        "CL-P2",
+        "CL-D1"
+      ]
+    },
+    "architecture_models": {
+      "content": "Stdlib bounded model with one Gateway and three indexer topologies sharing one observable contract; leakage collectors per channel; replicator and publisher on frozen inputs.",
+      "producer": "agentos-s1-018-producer",
+      "claim_refs": [
+        "CL-D1",
+        "CL-T1"
+      ]
+    },
+    "mental_model": {
+      "content": "Plaintext stays with its owner; the server proves nothing by badges; attestation informs, the gateway decides; revocation wins over caches; unknown fails closed.",
+      "producer": "agentos-s1-018-producer",
+      "claim_refs": [
+        "CL-P1"
+      ]
+    },
+    "ontology": {
+      "content": "Tenant/Goal/Scope/MLSGroup/Member/epochs, documents and partitions, challenges/evidence/sessions, queries/tokens/results, revocations, audit events and leakage observations across 48 deterministic cases.",
+      "producer": "agentos-s1-018-producer",
+      "claim_refs": [
+        "CL-P1",
+        "CL-D1"
+      ]
+    },
+    "mathematical_model": {
+      "content": "Fifteen hard invariants at zero tolerance; Wilson intervals with NO_DATA discipline; separate leakage channels; 200+ vector sensitivity with unweighted hard gates; same-host latency percentiles as model evidence.",
+      "producer": "agentos-s1-018-producer",
+      "claim_refs": [
+        "CL-M1",
+        "CL-L1"
+      ]
+    },
+    "synthesis_and_gaps": {
+      "content": "Technical preparation and (after review) one operator architecture decision are complete. Hardware evidence, side-channel absence and production qualification remain unproven.",
+      "producer": "agentos-s1-018-producer",
+      "claim_refs": [
+        "CL-D1",
+        "CL-L1"
+      ]
+    },
+    "independent_audit": {
+      "content": "Producer path (model/runner) and audit path (evaluator plus process-separated replication) are independent code reading only frozen inputs. An independent process replicates the 864-cell matrix byte-identical. This never replaces a security certification.",
+      "producer": "agentos-s1-018-independent-verifier",
+      "claim_refs": [
+        "CL-M1",
+        "CL-L1"
+      ]
+    },
+    "platform_plan": {
+      "content": {
+        "Scope": "Bounded Profile-C research; no production store, rollout, secrets or qualification.",
+        "Architecture": "Stdlib bounded model plus replicator and publisher on one frozen definition set; no vendor SDK.",
+        "Workstreams": "Freeze sources; sign Profile-C contract; build three architectures; build corpus; score 864 observations; replicate; sensitivity; operator review; publish canonical bundle.",
+        "Milestones": "PREPARATION_READY after technical gates; bounded closure after admissible operator review and canonicalization.",
+        "Verification": "Targeted suites, RED-verified gates, probes A-P, replication record, sensitivity, native normalizer pass, wiki-check.",
+        "Risks": "Bounded corpus, mock-quote limits, same-host replay, single-operator review limits.",
+        "Open decisions": "PARK-04/production re-entry needs a future ticket with hardware evidence."
+      },
+      "producer": "agentos-s1-018-producer",
+      "claim_refs": [
+        "CL-D1",
+        "CL-R1"
+      ]
+    },
+    "progress": {
+      "content": "Bounded preparation complete: dependency proof, frozen sources, Profile-C contract, three architectures, 48-case corpus, evaluator with probes A-P, 864-observation replay, sensitivity, native FLOW-11 bundle and derived candidate.",
+      "producer": "agentos-s1-018-producer",
+      "claim_refs": [
+        "CL-M1"
+      ]
+    }
+  },
+  "audit": {
+    "auditor": "agentos-s1-018-independent-verifier",
+    "producer": "agentos-s1-018-producer",
+    "verdict": "pass_with_limits",
+    "limitations": [
+      "tracked-Git dependency evidence; local canonical DB recheck is required before final publication",
+      "no hardware, human or production data: all rates are bounded-model checks",
+      "bounded 48-case corpus; mock quotes carry zero hardware force",
+      "same-host replay is called replay, not an external audit",
+      "hardware_tee_evidence=NOT_MEASURED always"
+    ]
+  },
+  "auditor": "agentos-s1-018-independent-verifier",
+  "claims": [
+    {
+      "id": "CL-P1",
+      "s1_018_class": "privacy_invariant",
+      "claim_class": "fact",
+      "text": "Plaintext and key material never leave declared boundaries: server artifacts carry ciphertext/digests only, audit and errors carry no content, across 864 model observations.",
+      "support": [
+        "SRC-S1-018-01",
+        "SRC-S1-018-06"
+      ]
+    },
+    {
+      "id": "CL-P2",
+      "s1_018_class": "protocol_fact",
+      "claim_class": "fact",
+      "text": "Attestation appraisal enforces complete inputs, fresh nonces, reference values and expiry; stale/replayed/forged evidence denies with exact reasons; the gateway decides alone.",
+      "support": [
+        "SRC-S1-018-03",
+        "SRC-S1-018-04"
+      ]
+    },
+    {
+      "id": "CL-M1",
+      "s1_018_class": "PoC_measurement",
+      "claim_class": "fact",
+      "text": "Query correctness and revocation dominance measured per architecture/seed/executor with raw numerators; latencies are same-host PoC numbers with p50/p95/p99, never SLOs.",
+      "support": [
+        "SRC-S1-018-01"
+      ]
+    },
+    {
+      "id": "CL-T1",
+      "s1_018_class": "threat_model",
+      "claim_class": "inference",
+      "text": "Sixteen threat classes map to probes A-P through the production evaluator path with benign controls; TCB and unknowns stay explicit with no default scores.",
+      "support": [
+        "SRC-S1-018-06"
+      ]
+    },
+    {
+      "id": "CL-D1",
+      "s1_018_class": "design_inference",
+      "claim_class": "inference",
+      "text": "One observable contract across A/B/C with frozen oracles and independent recomputation lets deviations fail closed at import, replay and publication.",
+      "support": [
+        "SRC-S1-018-01",
+        "SRC-S1-018-02"
+      ]
+    },
+    {
+      "id": "CL-R1",
+      "s1_018_class": "rollout_condition",
+      "claim_class": "inference",
+      "text": "No hardware evidence exists, so the ceiling is a research-only PoC at most; production re-entry needs PARK-04 conditions outside this ticket.",
+      "support": [
+        "SRC-S1-018-05"
+      ]
+    },
+    {
+      "id": "CL-L1",
+      "s1_018_class": "limitation",
+      "claim_class": "assumption",
+      "text": "Bounded corpus, same-host replay (not an external audit), mock quotes with zero hardware force, NO_DATA leakage cells excluded from scoring, no production qualification.",
+      "support": []
+    },
+    {
+      "id": "CL-N1",
+      "s1_018_class": "non_goal",
+      "claim_class": "assumption",
+      "text": "Legal classification, moral blame, vendor security verdicts and production authorization are explicit non-goals; the model is never a legal, moral or production-conformance oracle.",
+      "support": []
+    }
+  ],
+  "config": {
+    "min_source_count": 4,
+    "min_verified_ratio": 1.0,
+    "required_artifacts": [
+      "research_plan",
+      "source_registry",
+      "feature_catalog",
+      "architecture_models",
+      "mental_model",
+      "ontology",
+      "mathematical_model",
+      "synthesis_and_gaps",
+      "independent_audit",
+      "platform_plan",
+      "progress"
+    ]
+  },
+  "producer": "agentos-s1-018-producer",
+  "sources": [
+    {
+      "id": "SRC-S1-018-01",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-018/sources/snap-01-local-profilec-basis.md",
+      "title": "Local Profile-C basis (SRC-01/02/03/07/08/09)",
+      "source_type": "local-basis",
+      "verification_status": "verified",
+      "verifier": "s1-018-source-review-2026-09-05",
+      "verification_method": "tracked-file-hash-review",
+      "content": "# Local Profile-C/architecture basis: SRC-01/02/03/07/08/09 sections (S1-018 evidence role: local-basis)\n\nProvenance: excerpts of tracked repo files at base commit b8eeddd\n(`spec/SPEC.md`, S1-007 `isolation-contract.json`, S1-009\n`adapter-contract.json` + FU-01/FU-02 contracts). Internal design inputs;\nfull files remain in the repo.\n\nCanonical URI: https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-018/sources/snap-01-local-profilec-basis.md\nPublisher: AgentOS repo (spec + S1-007/S1-009 canonical decisions)\nVersion: SPEC v1.0 + S1-007 contract v1 + S1-009 adapter contracts at b8eeddd, freeze 2026-09-05\nRetrieved at: 2026-09-05T00:00:00Z\nEvidence role: local-basis (scope isolation, adapter boundary, audit substrate)\nAccess/license: local repo files, full-text excerpt authorized\n\n## SRC-01/02/03 (isolation + lifecycle substrate, paraphrased with identifiers)\n\n- Canonical scope id composition `tenant_id + '/' + workspace_id + '/' +\n  goal_id` (S1-007 frozen contract); per-scope index projections; deny bodies\n  byte-identical across miss/forged/unknown classes; epoch-bound cache\n  invalidation on revoke/move/supersede.\n- Artifact versions immutable with SUPERSEDES chains; transition + audit event\n  commit atomically (journal); approvals bind actor/operation/canonical\n  args/expiry and are consumed exactly once.\n\n## SRC-07/08/09 (adapter + provenance substrate, paraphrased)\n\n- S1-009 provider-neutral envelope: hub boundary enforced by eight hard\n  rules; capability rows with explicit lossless/lossy-safe mappings; SM6\n  (delegation grants/child scope), SM8 (budget), SM11 (promotion/challenge)\n  remain ABSENT/UNDERSPECIFIED under FU-01/FU-02 — never invented.\n- S1-009 FU-01 delegation-grant contract and FU-02 budget-conservation\n  contract bound what an adapter may carry; anything outside is unsupported.\n\n## S1-018 separation rule (design inference, not source text)\n\nMLS group/key semantics, attestation evidence semantics and the AgentOS\nindex/search overlay are three different layers. Nothing in these sources\nauthorizes a server-side plaintext index, an attestation-gated capability,\nor production deployment.\n",
+      "content_sha256": "22e6885d71f28457ead18f418f41ad3feab9798eb466464947a51346a9e9d0d6"
+    },
+    {
+      "id": "SRC-S1-018-02",
+      "canonical_uri": "https://www.rfc-editor.org/info/rfc9420",
+      "title": "RFC 9420 MLS primary standard",
+      "source_type": "mls-standard",
+      "verification_status": "verified",
+      "verifier": "s1-018-source-review-2026-09-05",
+      "verification_method": "tracked-file-hash-review",
+      "content": "# Bibliographic record: MLS primary standard (S1-018 evidence role: mls-standard)\n\nFull-text status: BIBLIOGRAPHIC RECORD ONLY (not a full-text snapshot).\nIETF documents are covered by the IETF Trust Legal Provisions / BCP 78; no\nnormative text is reproduced here. Tests run offline and never fetch this\nsource. MLS group/key semantics are separated from any AgentOS index/search\noverlay; the standard defines no search index.\n\nCanonical URI: https://www.rfc-editor.org/info/rfc9420\nPublisher: Internet Engineering Task Force (IETF)\nVersion: RFC 9420, \"The Messaging Layer Security (MLS) Protocol\",\nStandards Track, July 2023 (Barnes et al.)\nRetrieved at: 2026-09-05T00:00:00Z\nEvidence role: mls-standard (group lifecycle, epochs, key schedule)\nAccess/license: IETF Trust Legal Provisions (not vendored)\nAvailability: RFC Editor page resolvable 2026-09-05 (status, authors, formats)\n\n## Concepts relied upon (identifiers, not copied text)\n\n- MLS groups with epochs: Add/Update/Remove/Commit proposals advance the\n  group epoch; each epoch has fresh key material via the key schedule.\n- Removed members must not access post-removal epochs (forward secrecy /\n  post-compromise security design goals).\n- Security Considerations section: the standard's own statement of what it\n  does and does not guarantee (delivery, authentication service, group\n  agreement assumptions).\n\n## S1-018 interpretation (design inference, not RFC text)\n\n- MLS epochs model the S1-018 group/index epoch monotonicity (PC7) and the\n  removed-member-gets-no-new-keys rule (PC9).\n- MLS says nothing about searchable indexes, access-pattern leakage, or\n  attestation; those overlays need their own evidence and must not borrow\n  MLS authority.\n\nNo conformance claim to MLS is made.\n",
+      "content_sha256": "44fb8aa76ab9e7821cffb26d5669eac64f1d7b5944490e7bc953d9dd7ca21f55"
+    },
+    {
+      "id": "SRC-S1-018-03",
+      "canonical_uri": "https://www.rfc-editor.org/info/rfc9334",
+      "title": "RFC 9334 RATS architecture (Informational)",
+      "source_type": "rats-architecture",
+      "verification_status": "verified",
+      "verifier": "s1-018-source-review-2026-09-05",
+      "verification_method": "tracked-file-hash-review",
+      "content": "# Bibliographic record: RATS architecture material (S1-018 evidence role: rats-architecture)\n\nFull-text status: BIBLIOGRAPHIC RECORD ONLY (not a full-text snapshot).\nIETF documents are covered by the IETF Trust Legal Provisions; no normative\ntext is reproduced. Tests run offline and never fetch this source. Status is\nstated exactly: this RFC is Informational, NOT Standards Track.\n\nCanonical URI: https://www.rfc-editor.org/info/rfc9334\nPublisher: Internet Engineering Task Force (IETF)\nVersion: RFC 9334, \"Remote ATtestation procedureS (RATS) Architecture\",\nInformational, January 2023 (Birkholz et al.)\nRetrieved at: 2026-09-05T00:00:00Z\nEvidence role: rats-architecture (roles, conceptual messages, appraisal)\nAccess/license: IETF Trust Legal Provisions (not vendored)\nAvailability: RFC Editor page resolvable 2026-09-05\n\n## Concepts relied upon (identifiers, not copied text)\n\n- Roles: Attester (produces Evidence), Verifier (appraises Evidence against\n  Reference Values + Endorsements via an Appraisal Policy, produces\n  Attestation Results), Relying Party (appraises Results for\n  application-specific decisions), Endorser, Reference Value Provider.\n- Conceptual messages: Evidence, Attestation Results, Endorsements,\n  Reference Values, Appraisal Policy.\n- Freshness via nonces/epoch IDs; the RATS passport model and background-check model topologies;\n  trust anchors in a trust-anchor store.\n- Security Considerations: architecture only, no wire protocol; threats are\n  listed as unmitigated without a concrete proposal to compare against.\n\n## S1-018 interpretation (design inference, not RFC text)\n\n- S1-018 attestation appraisal mirrors RATS role separation: Evidence ≠\n  Results; the Verifier's appraisal policy is host-owned and versioned;\n  the Relying Party (AgentOS Gateway side) NEVER delegates ALLOW/DENY to\n  attestation output (PC2).\n- Attestation evidence is never policy authorization (explicit RATS-level\n  separation the ticket enforces as a hard invariant).\n\nNo conformance claim is made; Informational status is never upgraded.\n",
+      "content_sha256": "be670abb85f52f94463f054d41497147058b73985dcf01ba6fb1b46cda88adc1"
+    },
+    {
+      "id": "SRC-S1-018-04",
+      "canonical_uri": "https://www.rfc-editor.org/info/rfc9711",
+      "title": "RFC 9711 EAT claims format",
+      "source_type": "eat-format",
+      "verification_status": "verified",
+      "verifier": "s1-018-source-review-2026-09-05",
+      "verification_method": "tracked-file-hash-review",
+      "content": "# Bibliographic record: evidence/claims format (EAT) (S1-018 evidence role: eat-format)\n\nFull-text status: BIBLIOGRAPHIC RECORD ONLY (not a full-text snapshot).\nIETF documents are covered by the IETF Trust Legal Provisions; no normative\ntext is reproduced. Tests run offline and never fetch this source.\n\nCanonical URI: https://www.rfc-editor.org/info/rfc9711\nPublisher: Internet Engineering Task Force (IETF)\nVersion: RFC 9711, \"The Entity Attestation Token (EAT)\", Standards Track,\nApril 2025 (Lundblade et al.)\nRetrieved at: 2026-09-05T00:00:00Z\nEvidence role: eat-format (attested claims-set envelope shape)\nAccess/license: IETF Trust Legal Provisions (not vendored)\nAvailability: RFC Editor page resolvable 2026-09-05\n\n## Concepts relied upon (identifiers, not copied text)\n\n- EAT as a claims-set envelope (CWT/JWT) carrying attestation-oriented\n  claims from attester to relying party/verifier; authenticity + integrity\n  protection required; nonce/freshness claims for replay resistance.\n- EAT profiles specialize the base format per use case; verification is\n  profile-bound (a token verifies only against its declared profile).\n\n## S1-018 interpretation (design inference, not RFC text)\n\n- S1-018 mock evidence envelopes mirror the EAT shape discipline (claims\n  set + nonce + profile id) WITHOUT claiming EAT conformance, hardware\n  backing, or cross-system acceptance.\n- Profile binding in the PoC (declared profile/version checked on every\n  appraisal) follows the same principle at model scale.\n\nNo EAT conformance claim is made; mock quotes are never presented as EATs.\n",
+      "content_sha256": "23f1b25d4e4b210cf5ddcf303a00c7065a71dc28739995d08716a15b6c22cf1d"
+    },
+    {
+      "id": "SRC-S1-018-05",
+      "canonical_uri": "https://www.amd.com/content/dam/amd/en/documents/epyc-technical-docs/specifications/56860.pdf",
+      "title": "AMD SEV-SNP ABI (chosen TEE platform material)",
+      "source_type": "tee-platform",
+      "verification_status": "verified",
+      "verifier": "s1-018-source-review-2026-09-05",
+      "verification_method": "tracked-file-hash-review",
+      "content": "# Bibliographic record: TEE platform TCB/quote material — AMD SEV-SNP, explicitly chosen (S1-018 evidence role: tee-platform)\n\nFull-text status: BIBLIOGRAPHIC RECORD ONLY (not a full-text snapshot, no\ntest vectors vendored). AMD documents are AMD-copyrighted technical\npublications; nothing is reproduced. Tests run offline and never fetch this\nsource. Exactly ONE platform is chosen below; no claim covers any other TEE.\n\nCanonical URI: https://www.amd.com/content/dam/amd/en/documents/epyc-technical-docs/specifications/56860.pdf\nPublisher: Advanced Micro Devices, Inc. (AMD)\nVersion: \"SEV Secure Nested Paging Firmware ABI Specification\",\nAMD Publication #56860; Revision 1.55, September 2023 as normatively cited\nby the IETF SEV-SNP CoRIM profile draft; AMD portal lists newer revisions\n(up to Rev 1.59, August 2026). Snapshot pins the cited revision only.\nRetrieved at: 2026-09-05T00:00:00Z\nEvidence role: tee-platform (report structure, TCB versioning, VCEK model)\nAccess/license: AMD technical publication, public PDF (not vendored)\nAvailability: AMD portal + IETF draft citation resolvable 2026-09-05\n\n## Concepts relied upon (identifiers, not copied text)\n\n- SNP_GUEST_REQUEST attestation flow: guest supplies 512 bits of arbitrary\n  data (nonce binding); the report carries launch identity, TCB version,\n  migration policy and is signed by the chip-unique VCEK for the TCB.\n- ReportedTcb vs CurrentTcb decoupling; VCEK certificate chain for verifier\n  appraisal; ATTESTATION_REPORT structure with measurement fields.\n- SEV-SNP CoRIM profile draft (IETF, deeglaze): normative translation of\n  report fields into reference-triple records for appraisal — cited as a\n  DRAFT, never as a standard.\n\n## S1-018 interpretation and hard boundary (design inference, not AMD text)\n\n- Mock quotes in the PoC mirror the FIELD SHAPE discipline (measurement,\n  TCB version, nonce, signer id) WITHOUT hardware backing, VCEK chain, or\n  report-byte compatibility; `hardware_tee_evidence=NOT_MEASURED` always.\n- Public attestation test vectors were NOT executed in this ticket (no\n  offline vector bundle was frozen); all appraisal runs are protocol\n  validation over mock evidence. A software-emulated quote proves nothing\n  about any hardware TEE.\n\nNo platform security claim is made; no other TEE is covered.\n",
+      "content_sha256": "0bab7a1b0982a90c2d95d8c6f751f2ab6a8f4f009be17c771cdad7aaa5df878b"
+    },
+    {
+      "id": "SRC-S1-018-06",
+      "canonical_uri": "https://www.ndss-symposium.org/ndss2012/ndss-2012-programme/access-pattern-disclosure-searchable-encryption-ramification-attack-and-mitigation/",
+      "title": "Islam/Kuzu/Kantarcioglu access-pattern leakage (NDSS 2012)",
+      "source_type": "leakage-analysis",
+      "verification_status": "verified",
+      "verifier": "s1-018-source-review-2026-09-05",
+      "verification_method": "tracked-file-hash-review",
+      "content": "# Bibliographic record: confidential-computing / encrypted-search / access-pattern leakage analysis (S1-018 evidence role: leakage-analysis)\n\nFull-text status: BIBLIOGRAPHIC RECORD ONLY (not a full-text snapshot).\nThe paper below is NDSS-copyrighted scholarship; no text is reproduced.\nTests run offline and never fetch this source.\n\nCanonical URI: https://www.ndss-symposium.org/ndss2012/ndss-2012-programme/access-pattern-disclosure-searchable-encryption-ramification-attack-and-mitigation/\nPublisher: NDSS Symposium 2012 (Internet Society)\nVersion: Mohammad Saiful Islam, Mehmet Kuzu, Murat Kantarcioglu —\n\"Access Pattern disclosure on Searchable Encryption: Ramification, Attack\nand Mitigation\", NDSS 2012 (6 February 2012)\nRetrieved at: 2026-09-05T00:00:00Z\nEvidence role: leakage-analysis (access-pattern inference discipline)\nAccess/license: NDSS proceedings (not vendored)\nAvailability: NDSS programme page resolvable 2026-09-05 (title, authors, date)\n\n## Findings relied upon (citations, not copied text)\n\n- Searchable-encryption protocols that reveal access patterns leak\n  significant confidential information to modest prior-knowledge attackers,\n  demonstrated empirically on a real dataset with high accuracy.\n- Oblivious-RAM-class hiding is computationally heavy and scales poorly;\n  noise-based mitigation raises cost and only makes inference harder.\n- Consequence for any encrypted index: content confidentiality NEVER implies\n  metadata/access-pattern confidentiality; the channels must be measured\n  separately.\n\n## S1-018 interpretation (design inference, not the paper's text)\n\n- S1-018 leakage accounting separates content/scope/query-equality/result-\n  size/access-pattern/timing channels; each cell reports measured or\n  NO_DATA, never a blended `secure=true`.\n- TEE memory confidentiality (even if it held) would not cover the\n  observer-visible query equality, result sizes or access patterns of the\n  index protocol — the PoC measures exactly these channels at model scale.\n\nNo deployment-security claim is made.\n",
+      "content_sha256": "77d73dca8763c5a8e0906c4b512086896cabbaebdef36bc508791e3dd18f2fea"
+    }
+  ],
+  "operator_review_n": 0,
+  "hardware_tee_evidence": "NOT_MEASURED",
+  "design_decision": "INCONCLUSIVE"
+}

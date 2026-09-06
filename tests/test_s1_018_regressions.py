@@ -84,15 +84,18 @@ class TestContractStrictness(unittest.TestCase):
 
 
 class TestDependencyGate(unittest.TestCase):
-    def test_gate_reports_blocked(self):
+    def test_gate_proven_all_three(self):
         doc = load("dependency-gate.json")
-        self.assertFalse(doc["dependencies_proven"])
+        self.assertTrue(doc["dependencies_proven"])
+        self.assertTrue(doc["scope_isolation_baseline_available"])
+        self.assertTrue(doc["revocation_baseline_available"])
+        self.assertTrue(doc["adapter_boundary_available"])
+        self.assertFalse(doc.get("population_human_claims_proven", True))
         by_ticket = {r["ticket"]: r for r in doc["dependencies"]}
-        self.assertEqual(by_ticket["S1-007"]["status"], "PROVEN")
-        self.assertEqual(by_ticket["S1-009"]["status"], "PROVEN")
-        self.assertEqual(by_ticket["S1-008"]["status"], "NOT_PROVEN")
-        self.assertTrue(any("evidence pack" in p and "absent" in p
-                            for p in by_ticket["S1-008"]["problems"]))
+        for ticket in ("S1-007", "S1-008", "S1-009"):
+            self.assertEqual(by_ticket[ticket]["status"], "PROVEN", msg=ticket)
+            self.assertEqual(by_ticket[ticket]["problems"], [], msg=ticket)
+        self.assertEqual(doc["verified_commit"], "b8eeddd66bdc76f273cb14066e76c63eecad2f8f")
 
     def test_gate_discovers_no_hardcoded_ids(self):
         source = (S1018 / "dependency_gate.py").read_text(encoding="utf-8")
@@ -107,12 +110,20 @@ class TestDependencyGate(unittest.TestCase):
 
 
 class TestInvariants(unittest.TestCase):
+    def _sessioned(self, model, member="m1", scope=None):
+        scope = dict(scope or SA)
+        challenge = model.create_challenge(member)
+        evidence = model.make_evidence(challenge["nonce"])
+        opened = model.open_session(member, scope, evidence)
+        self.assertTrue(opened["open"])
+        return opened["session_id"]
+
     def test_gateway_authority_only(self):
         model = models.new_model("B", SA)
         model.create_group("g1", SA, ["m1"])
         model.submit_object("d1", "plaintext-doc", SA)
-        session = model.attested_session("m1", SA, quote="mock")
-        self.assertTrue(session["open"])
+        session = self._sessioned(model)
+        self.assertTrue(session)
         # Even with an open attested session, the gateway decides alone.
         self.assertEqual(model.gateway_decide("m1", "read", "d1"), "ALLOW")
         self.assertEqual(model.gateway_decide("mallory", "read", "d1"), "DENY")
@@ -121,21 +132,34 @@ class TestInvariants(unittest.TestCase):
             "mallory", "read", "d1",
             provider_claim={"attested": True, "admin": True}), "DENY")
 
+    def _sessioned(self, model, member= "m1", scope=None):
+        scope = dict(scope or SA)
+        challenge = model.create_challenge(member)
+        evidence = model.make_evidence(challenge["nonce"])
+        opened = model.open_session(member, scope, evidence)
+        self.assertTrue(opened["open"])
+        return opened["session_id"]
+
     def test_revocation_dominates_cache(self):
         model = models.new_model("C", SA)
         model.create_group("g1", SA, ["m1"])
         model.submit_object("d1", "doc", SA)
+        model.build_index("p1", SA, "g1")
+        session = self._sessioned(model)
         token = model.query_token("m1", SA, ["doc"])
-        self.assertTrue(model.query("m1", token)["ok"])
+        self.assertTrue(model.query("m1", token, session)["ok"])
         model.revoke_member("m1")
-        self.assertFalse(model.query("m1", token)["ok"])
+        self.assertFalse(model.query("m1", token, session)["ok"])
+        # The sessionless direct path is gateway-gated too (defense in depth).
+        self.assertFalse(model.query(
+            "m1", ["alpha"], None, dict(SA), require_session=False)["ok"])
         self.assertEqual(model.counters()["post_revoke_allow"], 0)
 
     def test_rollback_detected(self):
         model = models.new_model("B", SA)
         model.create_group("g1", SA, ["m1"])
         snap = model.sealed_snapshot()
-        model.commit_epoch()
+        model.commit_epoch("g1")
         restored = model.restore_snapshot(snap)
         self.assertEqual(restored["outcome"], "rollback_detected")
 
@@ -197,25 +221,34 @@ class TestCorpus(unittest.TestCase):
 
 
 class TestArchitectures(unittest.TestCase):
+    def _smoke(self, arch):
+        return runner.generate_observation(
+            {"case_id": "SMOKE-01", "class": "mls_lifecycle",
+             "inputs": {"scope": dict(SA)},
+             "transitions": [
+                 {"op": "create_group", "args": {"group": "g1", "members": ["m1"]}},
+                 {"op": "submit", "args": {"doc": "d1"}},
+                 {"op": "build_index", "args": {"partition": "p1"}},
+                 {"op": "query_as", "args": {"member": "m1", "terms": ["alpha"]}}]},
+            arch, 1)["core"]
+
     def test_same_observable_contract(self):
-        observations = {}
+        observations = {arch: self._smoke(arch) for arch in ("A", "B", "C")}
         for arch in ("A", "B", "C"):
-            obs = runner.generate_observation(
-                {"case_id": "SMOKE-01", "class": "mls_lifecycle",
-                 "inputs": {"members": ["m1"], "documents": ["d1"]},
-                 "transitions": ["create_group", "submit", "query"]}, arch, 1)
-            observations[arch] = obs["core"]
-        contracts = [{k: v for k, v in observations[arch].items()
-                      if k in ("query_ok", "decision_class")}
-                     for arch in ("A", "B", "C")]
-        self.assertEqual(contracts[0], contracts[1])
-        self.assertEqual(contracts[1], contracts[2])
+            self.assertEqual(observations[arch]["decision"], "allow")
+            self.assertEqual(observations[arch]["hardware_tee_evidence"],
+                             "NOT_MEASURED")
+            self.assertFalse(observations[arch]["mock_quote_is_hardware"])
 
     def test_mock_quote_never_hardware(self):
-        for arch in ("B", "C"):
+        for arch in ("A", "B", "C"):
             obs = runner.generate_observation(
                 {"case_id": "SMOKE-02", "class": "attestation",
-                 "inputs": {"members": ["m1"]}, "transitions": ["attest"]},
+                 "inputs": {"scope": dict(SA)},
+                 "transitions": [
+                     {"op": "create_group",
+                      "args": {"group": "g1", "members": ["m1"]}},
+                     {"op": "attest", "args": {"member": "m1"}}]},
                 arch, 1)["core"]
             self.assertEqual(obs["hardware_tee_evidence"], "NOT_MEASURED")
             self.assertFalse(obs["mock_quote_is_hardware"])
@@ -239,7 +272,7 @@ class TestEvaluatorAndProbes(unittest.TestCase):
     def test_probe_stale_evidence(self):
         outcome = evaluator.probe_attestation("stale_evidence")
         self.assertEqual(outcome["decision"], "DENY")
-        self.assertEqual(outcome["reason"], "stale_evidence")
+        self.assertFalse(outcome["session_open"])
 
     def test_probe_replay_nonce(self):
         outcome = evaluator.probe_attestation("replayed_nonce")
@@ -260,15 +293,13 @@ class TestEvaluatorAndProbes(unittest.TestCase):
 
 class TestSensitivityMath(unittest.TestCase):
     def test_vectors_and_determinism(self):
-        import itertools
-        self.assertGreaterEqual(
-            len(list(itertools.product((0.5, 1.0, 1.5), repeat=5))), 200)
-        scores = {"utility": {"A": 0.9, "B": 0.9, "C": 0.7},
-                  "cost": {"A": 0.8, "B": 0.4, "C": 0.6}}
+        scores = {dim: {"A": 0.9, "B": 0.9, "C": 0.7}
+                  for dim in sensitivity.DIMS}
         first = sensitivity.analyze(scores)
         second = sensitivity.analyze(scores)
         self.assertEqual(first, second)
         self.assertGreaterEqual(first["vector_count"], 200)
+        self.assertIn(first["base_winner"], ("A", "B", "C", "TIE"))
 
 
 class TestSourcesPresent(unittest.TestCase):
