@@ -1337,7 +1337,8 @@ python -m agentos.cli research-plan --topic "S1-017 STIT ATL responsibility anal
 
 ### S1-018 — Profile-C MLS + TEE attested-indexer PoC research
 
-- **Status:** `READY`
+- **Status:** `INCONCLUSIVE` (canonical revision 1; design decision INCONCLUSIVE, research execution `pass_with_limits` with limits)
+- **Result:** operator review `1A 2A 3A 4A 5A 6A 7A 8A 9A 10A` (all safety-compatible, consistent with substance leader A); one recorded sensitivity flip (`lodo_complexity_parsimony` → exact A/C tie) caps the verdict per the frozen rule, so no provisional placement is granted and no `PASS_WITH_LIMITS` ticket closure is claimed. Technical evidence: 48 cases x 3 architectures x 3 seeds x 2 executors = 864 observations, PC1–PC15 zero, probes A–P pass, replay byte-identical, 260 sensitivity vectors. `hardware_tee_evidence=NOT_MEASURED` always.
 - **Priority:** `P1`
 - **Wave:** `W4`
 - **Owner:** `privacy`
