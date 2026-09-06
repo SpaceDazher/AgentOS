@@ -242,6 +242,78 @@ def run_subprocess(argv: list[str], cwd: Path) -> None:
         raise ValueError(f"command failed {' '.join(argv[-3:])}: {tail}")
 
 
+def _semantic_metrics(metrics: dict) -> dict:
+    """Wall-clock/executor-free projection: those fields are not decision
+    content (S1-016/S1-018 lesson)."""
+    return {key: value for key, value in metrics.items()
+            if key not in ("latencies", "executor", "latency_stats")}
+
+
+def existing_runs(here: Path) -> dict:
+    """Validate the already-frozen measurement instead of regenerating it.
+
+    The frozen measurement commit is authoritative: regeneration only
+    re-rolls wall-clock latencies and previously re-rolled the sensitivity
+    outcome (flips 56/84/0/1 across closure history). Saved artifacts are
+    validated structurally, the evaluator is re-run fresh over the raw
+    run-a/run-b observations (semantic equality modulo latencies) and the
+    sensitivity is recomputed deterministically and must match the saved
+    document exactly.
+    """
+    import tempfile
+    metrics = _read_json(here / "results" / "metrics.json", "metrics")
+    probe_doc = _read_json(here / "results" / "probes.json", "probes")
+    comparison = _read_json(here / "results" / "comparison.json", "comparison")
+    sensitivity_doc = _read_json(here / "results" / "sensitivity.json",
+                                 "sensitivity")
+    _validate_evidence(here, metrics, probe_doc, comparison)
+    for executor in ("a", "b"):
+        with tempfile.TemporaryDirectory(prefix="s1018-verify-") as tmp:
+            out = Path(tmp) / "metrics.json"
+            probes = Path(tmp) / "probes.json"
+            run_subprocess([sys.executable, str(here / "evaluator.py"), "--run",
+                            str(here / "results" / ("run-" + executor)),
+                            "--protocol", str(here),
+                            "--out", str(out), "--probes", str(probes)], here)
+            fresh = _read_json(out, "fresh metrics")
+        if _semantic_metrics(fresh) != _semantic_metrics(metrics):
+            raise ValueError(
+                "saved metrics drift from raw run-" + executor + " observations")
+    sensitivity_mod = load_module(here / "sensitivity.py",
+                                  "s1018_sensitivity_verify")
+    analysis = sensitivity_mod.analyze(_per_arch_scores(here))
+    keys = ("vector_count", "base_winner", "flips",
+            "winners_distribution", "flip_examples")
+    saved_core = {k: sensitivity_doc.get(k) for k in keys}
+    fresh_core = {k: analysis.get(k) for k in keys}
+    if saved_core != fresh_core:
+        raise ValueError("saved sensitivity does not reproduce deterministically")
+    if sensitivity_doc.get("vector_count", 0) < 200:
+        raise ValueError("sensitivity vector count below 200")
+    return {"metrics": metrics, "probes": probe_doc, "comparison": comparison,
+            "sensitivity": sensitivity_doc}
+
+
+def _validate_evidence(here: Path, metrics: dict, probe_doc: dict,
+                       comparison: dict) -> None:
+    if metrics.get("observations") != 432:
+        raise ValueError("run-a must hold 432 observations")
+    run_b = _read_json(here / "results" / "run-b" / "observations.json", "run-b")
+    if len(run_b.get("observations", [])) != 432:
+        raise ValueError("run-b must hold 432 observations")
+    if any(v != 0 for v in metrics.get("pc_violations", {}).values()):
+        raise ValueError("PC violations are not all zero")
+    if metrics.get("safety_verdict") is not True:
+        raise ValueError("safety verdict is not true")
+    if probe_doc.get("all_pass") is not True or len(probe_doc.get("probes", {})) != 16:
+        raise ValueError("probes A-P did not all pass")
+    if comparison.get("replicated") is not True:
+        raise ValueError("replay did not replicate")
+    if comparison.get("matrix") != ("48 cases x 3 architectures x 3 seeds "
+                                    "x 2 executors = 864 observations"):
+        raise ValueError("replay matrix mismatch")
+
+
 def fresh_runs(here: Path) -> dict:
     for name in ("run-a", "run-b"):
         shutil.rmtree(here / "results" / name, ignore_errors=True)
@@ -261,25 +333,16 @@ def fresh_runs(here: Path) -> dict:
     metrics = _read_json(here / "results" / "metrics.json", "metrics")
     probe_doc = _read_json(here / "results" / "probes.json", "probes")
     comparison = _read_json(here / "results" / "comparison.json", "comparison")
-    if metrics.get("observations") != 432:
-        raise ValueError("run-a must hold 432 observations")
-    run_b = _read_json(here / "results" / "run-b" / "observations.json", "run-b")
-    if len(run_b.get("observations", [])) != 432:
-        raise ValueError("run-b must hold 432 observations")
-    if any(v != 0 for v in metrics.get("pc_violations", {}).values()):
-        raise ValueError("PC violations are not all zero")
-    if metrics.get("safety_verdict") is not True:
-        raise ValueError("safety verdict is not true")
-    if probe_doc.get("all_pass") is not True or len(probe_doc.get("probes", {})) != 16:
-        raise ValueError("probes A-P did not all pass")
-    if comparison.get("replicated") is not True:
-        raise ValueError("replay did not replicate")
-    if comparison.get("matrix") != ("48 cases x 3 architectures x 3 seeds "
-                                    "x 2 executors = 864 observations"):
-        raise ValueError("replay matrix mismatch")
+    _validate_evidence(here, metrics, probe_doc, comparison)
     sensitivity_mod = load_module(here / "sensitivity.py", "s1018_sensitivity_pub")
     per_arch = _per_arch_scores(here)
     analysis = sensitivity_mod.analyze(per_arch)
+    analysis["dimensions"] = list(sensitivity_mod.DIMS)
+    analysis["deterministic_inputs"] = {
+        "note": ("dimensions are deterministic model counts and canonical "
+                 "artifact byte sizes only; wall-clock latencies are reported "
+                 "separately in metrics.json and never enter the decision"),
+    }
     (here / "results" / "sensitivity.json").write_text(
         json.dumps(analysis, indent=2) + "\n", encoding="utf-8", newline="\n")
     if analysis.get("vector_count", 0) < 200:
@@ -303,24 +366,20 @@ def _per_arch_scores(here: Path) -> dict:
             if o.get("decision") == oracle.get(o.get("scenario_id"), {})
             .get(arch, {}).get("expected_decision"))
         writes = sum(len(o.get("steps", [])) for o in cells)
-        latencies = [o for o in observations
-                     if o["core"].get("placement") == arch]
-        ns = [o.get("latencies", {}).get("run_ns", 0) for o in latencies]
-        ns.sort()
-        p95 = ns[min(len(ns) - 1, int(0.95 * len(ns)))] if ns else 0
+        nbytes = sum(len(canonical(o)) for o in cells)
         by_arch[arch] = {"recall": (matches / len(cells)) if cells else 0.0,
-                         "latency_p95": p95, "writes": writes,
+                         "bytes": nbytes, "writes": writes,
                          "cells": len(cells)}
     top_recall = max(v["recall"] for v in by_arch.values()) or 1.0
-    top_lat = max(v["latency_p95"] for v in by_arch.values()) or 1
+    top_bytes = max(v["bytes"] for v in by_arch.values()) or 1
     top_writes = max(v["writes"] for v in by_arch.values()) or 1
     static = {"A": 1, "B": 3, "C": 2}
     top_static = max(static.values())
     coverage = {arch: by_arch[arch]["cells"] / 144.0 for arch in by_arch}
     return {
         "utility": {arch: by_arch[arch]["recall"] / top_recall for arch in by_arch},
-        "latency_parsimony": {arch: 1.0 - by_arch[arch]["latency_p95"] / top_lat
-                              for arch in by_arch},
+        "bytes_parsimony": {arch: 1.0 - by_arch[arch]["bytes"] / top_bytes
+                            for arch in by_arch},
         "write_parsimony": {arch: 1.0 - by_arch[arch]["writes"] / top_writes
                             for arch in by_arch},
         "complexity_parsimony": {arch: 1.0 - static[arch] / (top_static + 1)
@@ -743,6 +802,9 @@ def write_results_docs(here: Path, verdict: dict, present: bool,
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
+    parser.add_argument("--use-existing-results", action="store_true",
+                        help="validate the frozen measurement instead of "
+                             "regenerating wall-clock latencies")
     parser.add_argument("--ticket", required=False, default=str(HERE))
     args = parser.parse_args(argv)
     here = Path(args.ticket).resolve()
@@ -751,7 +813,10 @@ def main(argv: list[str] | None = None) -> int:
         if problems:
             raise ValueError("frozen manifest invalid: " + "; ".join(problems[:6]))
         check_dependency(here)
-        evidence = fresh_runs(here)
+        if args.use_existing_results:
+            evidence = existing_runs(here)
+        else:
+            evidence = fresh_runs(here)
         present, answers, _ = verify_operator_decision(here)
         blockers, verdict = derive_verdict(
             evidence["metrics"], evidence["comparison"],

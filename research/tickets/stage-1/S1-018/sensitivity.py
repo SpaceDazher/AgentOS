@@ -9,9 +9,14 @@ from __future__ import annotations
 
 import itertools
 
-DIMS = ("utility", "latency_parsimony", "write_parsimony",
+DIMS = ("utility", "bytes_parsimony", "write_parsimony",
         "complexity_parsimony", "coverage_parsimony")
 PLACEMENTS = ("A", "B", "C")
+
+# Determinism contract (S1-016/S1-018 lesson): every dimension is derived
+# from deterministic model counts and canonical artifact byte sizes only —
+# never from wall-clock latencies, which are reported separately in
+# metrics.json and never enter the decision inputs.
 
 
 def score(scores: dict, weights: dict) -> dict:
