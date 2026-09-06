@@ -1,0 +1,61 @@
+{
+  "$id": "agentos.s1-018.profile-c-contract/v1",
+  "title": "S1-018 Profile-C MLS + attested indexer contract (authoritative, versioned)",
+  "schema_version": "s1-018.profile-c/v1",
+  "ticket": "S1-018",
+  "entities": [
+    "Tenant", "Goal", "Scope", "MLSGroup", "Member", "GroupEpoch",
+    "Document", "EncryptedObject", "IndexPartition", "IndexEpoch",
+    "AttestationChallenge", "AttestationEvidence", "ReferenceValue",
+    "AppraisalPolicy", "AttestedSession",
+    "QueryRequest", "QueryToken", "QueryResult", "RevocationRecord",
+    "AuditEvent", "EvidenceBinding", "LeakageObservation"
+  ],
+  "hard_invariants": {
+    "PC1": "no plaintext outside boundary: plaintext/keys never reach host storage, logs, errors, bundle, trace or network payload outside the declared boundary",
+    "PC2": "gateway authority only: attestation and MLS membership never widen capability; final ALLOW/DENY belongs to the Gateway",
+    "PC3": "exact scope: tenant/goal/scope/member/query/result bindings exact; cross-scope reuse forbidden",
+    "PC4": "attestation complete: evidence checked against host-owned trust anchors, measurement/reference values, signer/product/security version, TCB status, appraisal-policy version and challenge nonce",
+    "PC5": "fresh non-replay: stale/replayed evidence or reused nonce never opens a session; unknown freshness fails closed",
+    "PC6": "session binding: attested session binds exact scope, member, group epoch, index epoch, measurement, policy version and expiry",
+    "PC7": "monotonic epoch: MLS/index/revocation epochs never roll back; sealed-state rollback and snapshot resurrection are detected",
+    "PC8": "revocation dominates cache: revoked member/token/session reads no new data even with warm cache/restart; S1-008 bound applies in the measured environment only",
+    "PC9": "key lifecycle: join/update/remove/rekey/expiry carry observable history; removed members get no new epoch/index keys",
+    "PC10": "result integrity: results bind exact query, partition, index epoch and corpus digest; forged/mixed/stale results denied",
+    "PC11": "unknown fails closed: malformed, unsupported, timeout, crash, missing endorsement/reference value yield DENY/QUARANTINE, never ALLOW",
+    "PC12": "no blind retry: unknown side effects reconcile first; retries are idempotent or compensated",
+    "PC13": "audit atomicity: security-relevant transition and audit evidence commit atomically or not at all",
+    "PC14": "leakage honesty: content/scope/query-equality/access-pattern/size/timing leakage measured separately; NO_DATA never becomes zero",
+    "PC15": "non-production: PoC output is not production qualification"
+  },
+  "time_model": {
+    "clock": "monotonic logical milliseconds owned by the simulator; UTC wall labels for audit only",
+    "t_commit": "sole zero point of the revocation bound: durable commit of canonical revoked state + matching audit event",
+    "revocation_bound_ms": 5000,
+    "bound_scope": "model-only bound in the measured simulator environment; never a production SLO"
+  },
+  "mock_quote_discipline": {
+    "shape": "measurement, TCB version, nonce, signer id, profile id (EAT-shape discipline, no EAT conformance)",
+    "hardware_tee_evidence": "NOT_MEASURED always; a mock quote is never called hardware attestation",
+    "vectors": "no public attestation test vectors executed; appraisal runs are protocol validation only"
+  },
+  "forbidden": [
+    "attested=true granting access",
+    "attestation replacing policy/capability/approval/tenant/scope/MLS-membership checks",
+    "emulated quotes proving hardware properties",
+    "MLS defining index semantics",
+    "encrypted index implying no metadata/access-pattern leakage",
+    "no found leak implying universal confidentiality",
+    "local latency called a production SLO",
+    "research verdict used as production approval or Goal ACCEPTED"
+  ],
+  "compatibility": {
+    "allow_unknown_fields": false,
+    "allow_duplicate_json_keys": false,
+    "allow_nan_infinity": false,
+    "allow_remote_ref": false,
+    "allow_traversal": false,
+    "max_input_bytes": 1048576,
+    "rule": "any compatibility violation fails closed"
+  }
+}

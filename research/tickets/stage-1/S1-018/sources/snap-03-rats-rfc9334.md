@@ -22,7 +22,7 @@ Availability: RFC Editor page resolvable 2026-09-05
   application-specific decisions), Endorser, Reference Value Provider.
 - Conceptual messages: Evidence, Attestation Results, Endorsements,
   Reference Values, Appraisal Policy.
-- Freshness via nonces/epoch IDs; Passport vs Background-Check models;
+- Freshness via nonces/epoch IDs; the RATS passport model and background-check model topologies;
   trust anchors in a trust-anchor store.
 - Security Considerations: architecture only, no wire protocol; threats are
   listed as unmitigated without a concrete proposal to compare against.

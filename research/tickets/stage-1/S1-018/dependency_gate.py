@@ -550,6 +550,8 @@ def main() -> int:
         "adapter_boundary_available": proven and any(
             r["ticket"] == "S1-009" and r.get("adapter_boundary_present")
             for r in results),
+        "population_human_claims_proven": False,
+        "hardware_tee_evidence": "NOT_MEASURED",
         "inherited_limits": inherited,
         "canonical_db_recheck_required": True,
         "note": ("Discovery-based proof from origin/main bytes incl. git "
