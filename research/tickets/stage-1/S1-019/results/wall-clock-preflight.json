@@ -1,0 +1,363 @@
+{
+  "clock_inventory": [
+    {
+      "calls": [
+        {
+          "call": "time.time",
+          "line": 133
+        },
+        {
+          "call": "time.time",
+          "line": 135
+        }
+      ],
+      "path": "simulator/run_acceptance.py",
+      "registered": true,
+      "ticket": "S1-004"
+    },
+    {
+      "calls": [
+        {
+          "call": "time.time",
+          "line": 227
+        },
+        {
+          "call": "time.time",
+          "line": 234
+        },
+        {
+          "call": "time.time",
+          "line": 288
+        },
+        {
+          "call": "time.time",
+          "line": 292
+        }
+      ],
+      "path": "simulator/run_formal.py",
+      "registered": true,
+      "ticket": "S1-004"
+    },
+    {
+      "calls": [
+        {
+          "call": "time.perf_counter",
+          "line": 160
+        },
+        {
+          "call": "time.perf_counter",
+          "line": 166
+        },
+        {
+          "call": "time.perf_counter",
+          "line": 198
+        },
+        {
+          "call": "time.perf_counter",
+          "line": 201
+        },
+        {
+          "call": "time.perf_counter",
+          "line": 225
+        },
+        {
+          "call": "time.perf_counter",
+          "line": 235
+        },
+        {
+          "call": "time.perf_counter",
+          "line": 318
+        },
+        {
+          "call": "time.perf_counter",
+          "line": 324
+        },
+        {
+          "call": "time.perf_counter",
+          "line": 390
+        },
+        {
+          "call": "time.perf_counter",
+          "line": 396
+        },
+        {
+          "call": "time.perf_counter",
+          "line": 412
+        },
+        {
+          "call": "time.perf_counter",
+          "line": 417
+        }
+      ],
+      "path": "experiments.py",
+      "registered": true,
+      "ticket": "S1-005"
+    },
+    {
+      "calls": [
+        {
+          "call": "time.perf_counter_ns",
+          "line": 1055
+        },
+        {
+          "call": "time.perf_counter_ns",
+          "line": 1058
+        },
+        {
+          "call": "time.perf_counter_ns",
+          "line": 1060
+        },
+        {
+          "call": "time.perf_counter_ns",
+          "line": 1063
+        }
+      ],
+      "path": "runner.py",
+      "registered": true,
+      "ticket": "S1-007"
+    },
+    {
+      "calls": [
+        {
+          "call": "time.perf_counter_ns",
+          "line": 81
+        }
+      ],
+      "path": "runner.py",
+      "registered": true,
+      "ticket": "S1-008"
+    },
+    {
+      "calls": [
+        {
+          "call": "time.perf_counter_ns",
+          "line": 501
+        },
+        {
+          "call": "time.perf_counter_ns",
+          "line": 503
+        }
+      ],
+      "path": "evaluator.py",
+      "registered": true,
+      "ticket": "S1-016"
+    },
+    {
+      "calls": [
+        {
+          "call": "time.perf_counter_ns",
+          "line": 147
+        },
+        {
+          "call": "time.perf_counter_ns",
+          "line": 150
+        },
+        {
+          "call": "time.perf_counter_ns",
+          "line": 152
+        },
+        {
+          "call": "time.perf_counter_ns",
+          "line": 154
+        }
+      ],
+      "path": "runner.py",
+      "registered": true,
+      "ticket": "S1-016"
+    },
+    {
+      "calls": [
+        {
+          "call": "perf_counter_ns",
+          "line": 340
+        },
+        {
+          "call": "perf_counter_ns",
+          "line": 342
+        },
+        {
+          "call": "perf_counter_ns",
+          "line": 357
+        }
+      ],
+      "path": "runner.py",
+      "registered": true,
+      "ticket": "S1-017"
+    },
+    {
+      "calls": [
+        {
+          "call": "time.perf_counter_ns",
+          "line": 353
+        },
+        {
+          "call": "time.perf_counter_ns",
+          "line": 361
+        },
+        {
+          "call": "time.perf_counter_ns",
+          "line": 363
+        }
+      ],
+      "path": "runner.py",
+      "registered": true,
+      "ticket": "S1-018"
+    }
+  ],
+  "limitations": [
+    "S1-005 and S1-007 are admitted by tracked counterfactual containment",
+    "S1-016 architecture winner is quarantined",
+    "S1-008 wall-clock evidence is scoped to its native revocation SLO"
+  ],
+  "missing_tickets": [],
+  "policy_sha256": "73e491db7b5b3dffc9464ff3f96e42180f65928cb2c37cabb3b6cea20442a007",
+  "required_tickets": [
+    "S1-004",
+    "S1-005",
+    "S1-006",
+    "S1-007",
+    "S1-008",
+    "S1-009",
+    "S1-010",
+    "S1-011",
+    "S1-012",
+    "S1-013",
+    "S1-014",
+    "S1-015",
+    "S1-016",
+    "S1-017",
+    "S1-018"
+  ],
+  "schema": "agentos.s1-019.wall-clock-preflight/v1",
+  "semantic_checks": [
+    {
+      "baseline_winner": "monolith",
+      "counterfactual_scores": {
+        "containers": 2.0732,
+        "monolith": 3.7021
+      },
+      "counterfactual_winner": "monolith",
+      "passed": true,
+      "recorded_winner": "monolith",
+      "rule": "latency-free counterfactual preserves recorded winner",
+      "ticket": "S1-005"
+    },
+    {
+      "d1": {
+        "per_scope": 4.0,
+        "shared_rls": 4.0
+      },
+      "passed": true,
+      "recorded_winner": "per_scope",
+      "rule": "wall-clock timing is directionally neutral",
+      "ticket": "S1-007",
+      "timing_verdicts": {
+        "per_scope": "WITHIN_TOLERANCE",
+        "shared_rls": "WITHIN_TOLERANCE"
+      }
+    },
+    {
+      "admissible_outputs": [
+        "INCONCLUSIVE",
+        "safety_findings"
+      ],
+      "architecture_decision": "INCONCLUSIVE",
+      "passed": true,
+      "rule": "noise-sensitive architecture winner is quarantined",
+      "sensitivity_flips": 1,
+      "ticket": "S1-016",
+      "wall_clock_limitation": true
+    },
+    {
+      "dimensions": [
+        "utility",
+        "steps_parsimony",
+        "write_parsimony",
+        "complexity_parsimony",
+        "coverage_parsimony"
+      ],
+      "passed": true,
+      "rule": "wall-clock excluded from semantic projection and sensitivity",
+      "scoring_function": "measured_scores",
+      "ticket": "S1-017"
+    },
+    {
+      "dimensions": [
+        "utility",
+        "bytes_parsimony",
+        "write_parsimony",
+        "complexity_parsimony",
+        "coverage_parsimony"
+      ],
+      "passed": true,
+      "rule": "wall-clock excluded from semantic projection and sensitivity",
+      "scoring_function": "_per_arch_scores",
+      "ticket": "S1-018"
+    }
+  ],
+  "status": "PASS_WITH_LIMITS",
+  "synthesis_import_policy": {
+    "S1-004": {
+      "architecture_decision": "allow",
+      "wall_clock": "deny"
+    },
+    "S1-005": {
+      "architecture_decision": "allow",
+      "wall_clock": "deny"
+    },
+    "S1-006": {
+      "architecture_decision": "allow",
+      "wall_clock": "deny"
+    },
+    "S1-007": {
+      "architecture_decision": "allow",
+      "wall_clock": "deny"
+    },
+    "S1-008": {
+      "architecture_decision": "not_applicable",
+      "wall_clock": "native_slo_only"
+    },
+    "S1-009": {
+      "architecture_decision": "allow",
+      "wall_clock": "deny"
+    },
+    "S1-010": {
+      "architecture_decision": "allow",
+      "wall_clock": "deny"
+    },
+    "S1-011": {
+      "architecture_decision": "allow",
+      "wall_clock": "deny"
+    },
+    "S1-012": {
+      "architecture_decision": "allow",
+      "wall_clock": "deny"
+    },
+    "S1-013": {
+      "architecture_decision": "allow",
+      "wall_clock": "deny"
+    },
+    "S1-014": {
+      "architecture_decision": "allow",
+      "wall_clock": "deny"
+    },
+    "S1-015": {
+      "architecture_decision": "allow",
+      "wall_clock": "deny"
+    },
+    "S1-016": {
+      "admissible": "INCONCLUSIVE and safety findings only",
+      "architecture_decision": "deny",
+      "wall_clock": "deny"
+    },
+    "S1-017": {
+      "architecture_decision": "allow",
+      "wall_clock": "deny"
+    },
+    "S1-018": {
+      "architecture_decision": "allow",
+      "wall_clock": "deny"
+    }
+  },
+  "violations": []
+}
