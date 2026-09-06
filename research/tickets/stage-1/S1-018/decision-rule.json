@@ -1,0 +1,40 @@
+{
+  "schema": "agentos.s1-018.decision-rule/v1",
+  "ticket": "S1-018",
+  "frozen": true,
+  "allowed_decisions": [
+    "CLIENT_SIDE_INDEX_ONLY",
+    "ATTESTED_SCOPE_INDEXER_POC",
+    "DEFER_PROFILE_C",
+    "INCONCLUSIVE"
+  ],
+  "forbidden": [
+    "attested=true granting access",
+    "attestation replacing policy/capability/approval/tenant/scope/MLS-membership checks",
+    "emulated quotes proving hardware properties",
+    "MLS defining index semantics",
+    "encrypted index implying no metadata/access-pattern leakage",
+    "no found leak implying universal confidentiality",
+    "local latency called a production SLO",
+    "research verdict used as production approval or Goal ACCEPTED"
+  ],
+  "selection": {
+    "A_wins": "offline latency acceptable and B/C show no proven needed audit capability",
+    "B_wins": "derived export materially improves query/reconstruction with no runtime authority and no canonical duplication",
+    "C_wins": "only on proven operational need plus machine-checked absence of any authorization dependency",
+    "otherwise": "INCONCLUSIVE on close/unstable tradeoff, model disagreement or insufficient audit data"
+  },
+  "operator_mapping": {
+    "Q1": {"A": "A", "B": "B", "C": "C", "D": "INCONCLUSIVE"},
+    "compatible_rest": ["2A", "3A", "4A", "5A", "6A", "7A", "8A", "9A"],
+    "status": {"A": "PASS_WITH_LIMITS maximum", "B": "forbidden production PASS", "C": "INCONCLUSIVE remains open"}
+  },
+  "safety_gates_unweighted": true,
+  "sensitivity": {
+    "weight_perturbation": "±50%",
+    "min_seeded_compositions": 200,
+    "rule": "any winner flip or unknown-dependent cell caps the verdict at INCONCLUSIVE; publish all vectors, winners, flips and tolerance, never summary alone"
+  },
+  "evidence_ceiling": "no hardware evidence caps the maximum at ATTESTED_SCOPE_INDEXER_POC with PASS_WITH_LIMITS; operator answers cannot lift the ceiling",
+  "status_cap": "PASS_WITH_LIMITS at most; PASS only for bounded-research-contract completeness, never for production or universal attribution"
+}
