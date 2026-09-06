@@ -30,6 +30,7 @@ def _load_ticket_module(name: str):
 
 
 contract = _load_ticket_module("contract")
+make_bundle = _load_ticket_module("make_bundle")
 models = _load_ticket_module("models")
 runner = _load_ticket_module("runner")
 evaluator = _load_ticket_module("evaluator")
@@ -300,6 +301,54 @@ class TestSensitivityMath(unittest.TestCase):
         self.assertEqual(first, second)
         self.assertGreaterEqual(first["vector_count"], 200)
         self.assertIn(first["base_winner"], ("A", "B", "C", "TIE"))
+
+
+class TestVerdictDerivation(unittest.TestCase):
+    GREEN_METRICS = {"pc_violations": {}, "safety_verdict": True,
+                     "hardware_tee_evidence": "NOT_MEASURED"}
+    GREEN_COMPARISON = {"replicated": True}
+    GREEN_SENSITIVITY = {"vector_count": 260, "base_winner": "A", "flips": 0}
+
+    def _letters(self, **overrides):
+        base = {str(n): "A" for n in range(1, 11)}
+        base.update(overrides)
+        return base
+
+    def test_no_decision_stays_preparation_ready(self):
+        blockers, verdict = make_bundle.derive_verdict(
+            dict(self.GREEN_METRICS), dict(self.GREEN_COMPARISON),
+            dict(self.GREEN_SENSITIVITY), False, None)
+        self.assertEqual(verdict["status"], "PREPARATION_READY")
+
+    def test_flip_caps_despite_admissible_answers(self):
+        sens = dict(self.GREEN_SENSITIVITY, flips=84)
+        blockers, verdict = make_bundle.derive_verdict(
+            dict(self.GREEN_METRICS), dict(self.GREEN_COMPARISON),
+            sens, True, self._letters())
+        self.assertEqual(blockers, [])
+        self.assertEqual(verdict["design_decision"], "INCONCLUSIVE")
+        self.assertEqual(verdict["status"], "CLOSED_INCONCLUSIVE")
+
+    def test_clean_run_closes_matching_arch(self):
+        blockers, verdict = make_bundle.derive_verdict(
+            dict(self.GREEN_METRICS), dict(self.GREEN_COMPARISON),
+            dict(self.GREEN_SENSITIVITY), True, self._letters())
+        self.assertEqual(blockers, [])
+        self.assertEqual(verdict["design_decision"], "CLIENT_SIDE_INDEX_ONLY")
+        self.assertEqual(verdict["status"], "CLOSED_WITH_LIMITS")
+
+    def test_contradicting_arch_stays_inconclusive(self):
+        blockers, verdict = make_bundle.derive_verdict(
+            dict(self.GREEN_METRICS), dict(self.GREEN_COMPARISON),
+            dict(self.GREEN_SENSITIVITY), True, self._letters(**{"1": "B"}))
+        self.assertEqual(verdict["design_decision"], "INCONCLUSIVE")
+
+    def test_violation_blocks(self):
+        metrics = dict(self.GREEN_METRICS, pc_violations={"PC1": 1})
+        blockers, _ = make_bundle.derive_verdict(
+            metrics, dict(self.GREEN_COMPARISON),
+            dict(self.GREEN_SENSITIVITY), True, self._letters())
+        self.assertTrue(blockers)
 
 
 class TestSourcesPresent(unittest.TestCase):

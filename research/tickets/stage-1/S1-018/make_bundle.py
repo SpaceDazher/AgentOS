@@ -292,21 +292,24 @@ def _per_arch_scores(here: Path) -> dict:
     """Measured per-architecture dimension scores (higher is better)."""
     observations = _read_json(here / "results" / "run-a" / "observations.json",
                               "run-a observations")["observations"]
-    metrics = _read_json(here / "results" / "metrics.json", "metrics")
-    recall = metrics.get("recall", {})
-    lat = metrics.get("latencies", {})
+    oracle = _read_json(here / "oracle.json", "oracle")["entries"]
     by_arch: dict[str, dict] = {}
     for arch in ("A", "B", "C"):
         cells = [o["core"] for o in observations
                  if o["core"].get("placement") == arch
                  and o["core"].get("status") == "ok"]
+        matches = sum(
+            1 for o in cells
+            if o.get("decision") == oracle.get(o.get("scenario_id"), {})
+            .get(arch, {}).get("expected_decision"))
         writes = sum(len(o.get("steps", [])) for o in cells)
         latencies = [o for o in observations
                      if o["core"].get("placement") == arch]
         ns = [o.get("latencies", {}).get("run_ns", 0) for o in latencies]
         ns.sort()
         p95 = ns[min(len(ns) - 1, int(0.95 * len(ns)))] if ns else 0
-        by_arch[arch] = {"recall": 1.0, "latency_p95": p95, "writes": writes,
+        by_arch[arch] = {"recall": (matches / len(cells)) if cells else 0.0,
+                         "latency_p95": p95, "writes": writes,
                          "cells": len(cells)}
     top_recall = max(v["recall"] for v in by_arch.values()) or 1.0
     top_lat = max(v["latency_p95"] for v in by_arch.values()) or 1
@@ -314,7 +317,6 @@ def _per_arch_scores(here: Path) -> dict:
     static = {"A": 1, "B": 3, "C": 2}
     top_static = max(static.values())
     coverage = {arch: by_arch[arch]["cells"] / 144.0 for arch in by_arch}
-    _ = recall, lat
     return {
         "utility": {arch: by_arch[arch]["recall"] / top_recall for arch in by_arch},
         "latency_parsimony": {arch: 1.0 - by_arch[arch]["latency_p95"] / top_lat
@@ -341,6 +343,13 @@ def verify_operator_decision(here: Path):
     answers = doc.get("selected_answers")
     if not isinstance(answers, dict):
         raise ValueError("operator decision has no structured answers")
+    allowed = {"1": set("ABC"), "10": set("ABC"),
+               **{str(n): set("AB") for n in range(2, 10)}}
+    if sorted(answers, key=int) != [str(n) for n in range(1, 11)]:
+        raise ValueError("operator decision must hold exactly answers 1..10")
+    for num, letter in answers.items():
+        if letter not in allowed[num]:
+            raise ValueError(f"answer {num}{letter} is not an offered option")
     return True, answers, doc
 
 
@@ -368,12 +377,73 @@ def derive_verdict(metrics: dict, comparison: dict, sensitivity_doc: dict,
                           "note": "technical evidence green; operator review required"}
     assert answers is not None
     # Operator answers cannot lift the evidence ceiling.
-    return blockers, {"design_decision": "INCONCLUSIVE",
-                      "status": "CLOSED_INCONCLUSIVE",
-                      "result": "INCONCLUSIVE",
+    flips = sensitivity_doc.get("flips", 0)
+    base_winner = sensitivity_doc.get("base_winner", "TIE")
+    if flips > 0:
+        return blockers, {"design_decision": "INCONCLUSIVE",
+                          "status": "CLOSED_INCONCLUSIVE",
+                          "result": "INCONCLUSIVE",
+                          "operator_review": "COMPLETE",
+                          "evidence_ceiling": ceiling,
+                          "sensitivity_flips": flips,
+                          "substance_leader": base_winner,
+                          "note": (f"recorded sensitivity flips ({flips}) cap the "
+                                   f"verdict at INCONCLUSIVE; substance leader "
+                                   f"{base_winner}; no PASS_WITH_LIMITS ticket "
+                                   f"closure is claimed")}
+    # No flips: derive from answers within the evidence ceiling.
+    compatible = (
+        answers.get("1") in ("A", "B", "C", "D")
+        and answers.get("2") == "A" and answers.get("3") == "A"
+        and answers.get("4") == "A" and answers.get("5") == "A"
+        and answers.get("6") == "A" and answers.get("7") == "A"
+        and answers.get("8") == "A" and answers.get("9") == "A"
+        and answers.get("10") in ("A", "C"))
+    if not compatible:
+        return blockers, {"design_decision": "INCONCLUSIVE",
+                          "status": "CLOSED_INCONCLUSIVE",
+                          "result": "INCONCLUSIVE",
+                          "operator_review": "COMPLETE",
+                          "evidence_ceiling": ceiling,
+                          "sensitivity_flips": 0,
+                          "substance_leader": base_winner,
+                          "note": ("operator answers incompatible with hard gates; "
+                                   "not applied; ticket stays INCONCLUSIVE")}
+    if answers.get("1") == "D" or answers.get("10") == "C":
+        return blockers, {"design_decision": "INCONCLUSIVE",
+                          "status": "CLOSED_INCONCLUSIVE",
+                          "result": "INCONCLUSIVE",
+                          "operator_review": "COMPLETE",
+                          "evidence_ceiling": ceiling,
+                          "sensitivity_flips": 0,
+                          "substance_leader": base_winner,
+                          "note": "operator recorded INCONCLUSIVE"}
+    arch_of = {"A": "A", "B": "B", "C": "C"}
+    if arch_of.get(answers.get("1")) != base_winner:
+        return blockers, {"design_decision": "INCONCLUSIVE",
+                          "status": "CLOSED_INCONCLUSIVE",
+                          "result": "INCONCLUSIVE",
+                          "operator_review": "COMPLETE",
+                          "evidence_ceiling": ceiling,
+                          "sensitivity_flips": 0,
+                          "substance_leader": base_winner,
+                          "note": ("operator architecture choice contradicts the "
+                                   "measured substance winner; not applied")}
+    decision = {"A": "CLIENT_SIDE_INDEX_ONLY",
+                "B": "ATTESTED_SCOPE_INDEXER_POC",
+                "C": "ATTESTED_SCOPE_INDEXER_POC"}.get(base_winner, "INCONCLUSIVE")
+    if decision == "INCONCLUSIVE":
+        status, result = "CLOSED_INCONCLUSIVE", "INCONCLUSIVE"
+    else:
+        status, result = "CLOSED_WITH_LIMITS", "PASS_WITH_LIMITS"
+    return blockers, {"design_decision": decision,
+                      "status": status, "result": result,
                       "operator_review": "COMPLETE",
                       "evidence_ceiling": ceiling,
-                      "note": "operator review recorded; decision derived after review"}
+                      "sensitivity_flips": 0,
+                      "substance_leader": base_winner,
+                      "note": (f"bounded evidence supports {decision} for the declared "
+                               f"research scenarios within ceiling {ceiling}")}
 
 
 SECRET_PATTERNS = [re.compile(p, re.I) for p in
@@ -530,6 +600,21 @@ ARTIFACT_TEXTS = {
 }
 
 
+def _bundle_limitations(verdict: dict) -> list[str]:
+    limitations = [
+        "tracked-Git dependency evidence; local canonical DB recheck is required before final publication",
+        "no hardware, human or production data: all rates are bounded-model checks",
+        "bounded 48-case corpus; mock quotes carry zero hardware force",
+        "same-host replay is called replay, not an external audit",
+        "hardware_tee_evidence=NOT_MEASURED always",
+    ]
+    if verdict.get("sensitivity_flips"):
+        limitations.append(
+            f"recorded sensitivity flips ({verdict['sensitivity_flips']}) cap "
+            f"the verdict; substance leader {verdict.get('substance_leader')}")
+    return limitations
+
+
 def build_bundle(here: Path, sources: list[dict], verdict: dict,
                  present: bool, answers: dict | None) -> dict:
     artifacts: dict[str, dict] = {}
@@ -584,13 +669,7 @@ def build_bundle(here: Path, sources: list[dict], verdict: dict,
         "artifacts": artifacts,
         "audit": {"auditor": AUDITOR, "producer": PRODUCER,
                   "verdict": "pass_with_limits",
-                  "limitations": [
-                      "tracked-Git dependency evidence; local canonical DB recheck is required before final publication",
-                      "no hardware, human or production data: all rates are bounded-model checks",
-                      "bounded 48-case corpus; mock quotes carry zero hardware force",
-                      "same-host replay is called replay, not an external audit",
-                      "hardware_tee_evidence=NOT_MEASURED always",
-                  ]},
+                  "limitations": _bundle_limitations(verdict)},
         "auditor": AUDITOR,
         "claims": CLAIMS,
         "config": {"min_source_count": 4, "min_verified_ratio": 1.0,
@@ -705,6 +784,8 @@ def main(argv: list[str] | None = None) -> int:
                        "= 864 observations"),
             "safety_verdict": evidence["metrics"]["safety_verdict"],
             "replicated": evidence["comparison"]["replicated"],
+            "substance_leader": verdict.get("substance_leader", "INCONCLUSIVE"),
+            "sensitivity_flips": verdict.get("sensitivity_flips", 0),
             "frozen_hashes": frozen,
             "closure_basis": "operator_architecture_decision" if present
             else "preparation_only",
