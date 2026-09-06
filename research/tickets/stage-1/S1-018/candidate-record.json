@@ -1,19 +1,19 @@
 {
   "schema": "agentos.s1-018.candidate-record/v1",
   "ticket": "S1-018",
-  "status": "CLOSED_INCONCLUSIVE",
-  "design_decision": "INCONCLUSIVE",
+  "status": "CLOSED_WITH_LIMITS",
+  "design_decision": "CLIENT_SIDE_INDEX_ONLY",
   "operator_review": "COMPLETE",
   "operator_review_n": 1,
   "hardware_tee_evidence": "NOT_MEASURED",
-  "result": "INCONCLUSIVE",
+  "result": "PASS_WITH_LIMITS",
   "bundle_path": "research/tickets/stage-1/S1-018/bundle.json",
-  "bundle_sha256": "a0c51420a3c6053c3a59c3d598dd3ac56dab77ac4f90bde72b884ad9494d48cc",
+  "bundle_sha256": "a99fc4e530ce964a3f4a3f82c39229c9a847a21a2bf29c6c0090de1163ffd9a4",
   "matrix": "48 cases x 3 architectures x 3 seeds x 2 executors = 864 observations",
   "safety_verdict": true,
   "replicated": true,
   "substance_leader": "A",
-  "sensitivity_flips": 1,
+  "sensitivity_flips": 0,
   "frozen_hashes": {
     "TASK_FOR_AGENT.md": "34b34f9c700082e1c59e129fd055234c5f22ea55e32874583ea7b8d9ffe67991",
     "build_corpus.py": "3c5878ab4c4ec47dcaadb4ea73fdf80282e008c90adf43eda01a6c38675745ce",
@@ -25,7 +25,7 @@
     "evaluator.py": "4c1ada45792b8d4fe70a82682423cbb706b12dc357f4743a59b0dc0253805f8d",
     "finalize_record.py": "22a8089ecbe91f1173d93127d3ee6572efc53d171cd1ae1fb3ac32d79d4113aa",
     "freeze.py": "466fe2c1609bd99117604ff4c5a6abb66a97011b422787e7bd73bd97a64efafa",
-    "make_bundle.py": "6db16378454a2756f452404e508f270ed340c33090416a2b3ff940c0d19db044",
+    "make_bundle.py": "50497198fd8536c4ee0a996c4b3a71342d193f740dafebeff29d6a7998528bf6",
     "models.py": "db8aba0edd06dd2932fa16f9444acf892cf5124dce9ffc80dcb361d5f8feb011",
     "operator-questionnaire.md": "aecb656591a3823d32a6874522fb84f7ce1a8ee58351efe83252cdfb9749dc8a",
     "oracle.json": "e53b8d3045dc487e25731240498a912f661b9d9b33aab6e9625b30c60c52dfa9",
@@ -37,7 +37,7 @@
     "schemas/evidence.schema.json": "43bedc0a3e30070bec18357a0c7444298380d430ba4bd87dcae9539318d098b9",
     "schemas/query.schema.json": "57c11f7f45a099f1ef4f0de7fa01e40d262454c8961cab76432e80fc26a025ad",
     "schemas/session.schema.json": "f3a4f5c5b9d742167f11fbf9e988c1b3759055df89331adb641d14cf6e564978",
-    "sensitivity.py": "135f263327a2c2cbbf010df3479518f90557870a25559d83d6a65a0ea1f9ef77",
+    "sensitivity.py": "9aa9b194fa58104ffc9811f5a54cccbe020116f35b94d952e88d54a43b6e29df",
     "source-registry.json": "ec11c3d1d3c8f0959665f6610e0fd51b501b939d009e9201b6cb63a7e6825491",
     "sources/snap-01-local-profilec-basis.md": "22e6885d71f28457ead18f418f41ad3feab9798eb466464947a51346a9e9d0d6",
     "sources/snap-02-mls-rfc9420.md": "44fb8aa76ab9e7821cffb26d5669eac64f1d7b5944490e7bc953d9dd7ca21f55",
@@ -49,5 +49,5 @@
     "trust-boundary.md": "305cba207f8437c6bbeb5e5ac2c4b59b3d52dc003b2c7157f7d202af085a578f"
   },
   "closure_basis": "operator_architecture_decision",
-  "note": "recorded sensitivity flips (1) cap the verdict at INCONCLUSIVE; substance leader A; no PASS_WITH_LIMITS ticket closure is claimed"
+  "note": "bounded evidence supports CLIENT_SIDE_INDEX_ONLY for the declared research scenarios within ceiling ATTESTED_SCOPE_INDEXER_POC"
 }

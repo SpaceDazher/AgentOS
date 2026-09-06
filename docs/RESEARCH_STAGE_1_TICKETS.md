@@ -187,7 +187,7 @@ from a lower wave to a higher wave, and S1-020 is the sole closure sink.
 | S1-015 | W4 | P2 | hci | PASS_WITH_LIMITS | S1-013 | canonical principal IDs only; petname contract rejected by the fail-closed operator gate |
 | S1-016 | W3 | P1 | formal | PASS_WITH_LIMITS | S1-003, S1-007 | bounded lineage evidence complete; design decision remains INCONCLUSIVE |
 | S1-017 | W4 | P2 | formal | READY | S1-004, S1-016 | STIT/ATL responsibility analytics placement |
-| S1-018 | W4 | P1 | privacy | READY | S1-007, S1-008, S1-009 | profile-C MLS + TEE attested-indexer PoC research |
+| S1-018 | W4 | P1 | privacy | DONE | S1-007, S1-008, S1-009 | profile-C MLS + TEE attested-indexer PoC research |
 | S1-019 | W5 | P0 | synthesis | READY | S1-004, S1-005, S1-006, S1-007, S1-008, S1-009, S1-010, S1-011, S1-012, S1-013, S1-014, S1-015, S1-016, S1-017, S1-018 | P0 architecture decision synthesis/prototype evidence |
 | S1-020 | W6 | P0 | audit | READY | S1-001..S1-019 (expanded in ticket) | independent phase audit and closure decision |
 
@@ -1337,8 +1337,8 @@ python -m agentos.cli research-plan --topic "S1-017 STIT ATL responsibility anal
 
 ### S1-018 — Profile-C MLS + TEE attested-indexer PoC research
 
-- **Status:** `INCONCLUSIVE` (canonical revision 1; design decision INCONCLUSIVE, research execution `pass_with_limits` with limits)
-- **Result:** operator review `1A 2A 3A 4A 5A 6A 7A 8A 9A 10A` (all safety-compatible, consistent with substance leader A); one recorded sensitivity flip (`lodo_complexity_parsimony` → exact A/C tie) caps the verdict per the frozen rule, so no provisional placement is granted and no `PASS_WITH_LIMITS` ticket closure is claimed. Technical evidence: 48 cases x 3 architectures x 3 seeds x 2 executors = 864 observations, PC1–PC15 zero, probes A–P pass, replay byte-identical, 260 sensitivity vectors. `hardware_tee_evidence=NOT_MEASURED` always.
+- **Status:** `PASS_WITH_LIMITS` (canonical revision 2; design decision CLIENT_SIDE_INDEX_ONLY within ceiling ATTESTED_SCOPE_INDEXER_POC, research execution `pass_with_limits` with limits)
+- **Result:** operator review `1A 2A 3A 4A 5A 6A 7A 8A 9A 10A` (all safety-compatible; 1A = client-side index only matches the deterministic substance winner A). Revision 1 closed INCONCLUSIVE on a sensitivity flip that was wall-clock noise (flips 56/84/0/1 across regenerations); revision 2 replaced the latency dimension with deterministic bytes/model-count inputs (260 vectors, 0 flips, stable A) over the SAME frozen observations and hardened the publisher with frozen-measurement validation (`--use-existing-results`). Technical evidence: 48 cases x 3 architectures x 3 seeds x 2 executors = 864 observations, PC1–PC15 zero, probes A–P pass, replay byte-identical, 260 sensitivity vectors. `hardware_tee_evidence=NOT_MEASURED` always.
 - **Priority:** `P1`
 - **Wave:** `W4`
 - **Owner:** `privacy`

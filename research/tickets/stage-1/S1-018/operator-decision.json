@@ -30,12 +30,23 @@
   "interpretation": {
     "mode": "single_operator_review",
     "answer_use": "architecture_direction_only",
-    "compatibility": "all answers safety-compatible and consistent with substance winner A",
-    "sensitivity_cap": "recorded flips cap the verdict at INCONCLUSIVE regardless",
+    "compatibility": "all answers safety-compatible; 1A (client-side index only) matches the deterministic substance winner A",
+    "sensitivity_cap": "deterministic sensitivity (model counts + artifact bytes only) shows 0 flips after the wall-clock defect was removed; the previous flips=1 cap was run-lottery noise and is void",
     "raw_policy": "structured_answers_only_no_raw_retained"
   },
   "limitations": [
     "one operator review is not a security certification",
-    "hardware_tee_evidence=NOT_MEASURED bounds every claim"
-  ]
+    "hardware_tee_evidence=NOT_MEASURED bounds every claim",
+    "sensitivity dimensions are deterministic model counts and artifact byte sizes; wall-clock latencies remain reported-only measurements"
+  ],
+  "deviation_log": [
+    {
+      "recorded_at_utc": "2026-09-05T04:00:00Z",
+      "event": "closure relied on sensitivity flips=1, but the sensitivity input consumed wall-clock latencies and was not reproducible (flips 56/84/0/1 across closure-history regenerations)",
+      "resolution": "latency dimension replaced with deterministic bytes_parsimony (canonical artifact sizes); sensitivity recomputed over the SAME frozen run-a observations; publisher hardened with --use-existing-results so closure can never re-roll the frozen measurement",
+      "corrected_at_utc": "2026-09-06T03:10:40Z",
+      "authorized_by": "OP-OPERATOR-01"
+    }
+  ],
+  "corrected_at_utc": "2026-09-06T03:10:40Z"
 }
