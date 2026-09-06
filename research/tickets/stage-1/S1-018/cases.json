@@ -1,0 +1,2207 @@
+{
+  "schema": "agentos.s1-018.corpus/v1",
+  "ticket": "S1-018",
+  "phase": "A",
+  "case_count": 48,
+  "cases": [
+    {
+      "case_id": "ML-01",
+      "class": "mls_lifecycle",
+      "description": "create group and add member",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "add_member",
+          "args": {
+            "group": "g1",
+            "member": "m2"
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "allow",
+        "post_revoke_allow": 0
+      },
+      "semantic_digest": "b3d78e080a4a0a8f43a26bd5d385dcadcb4cdbff6762de04a74a7b8a84df8eeb"
+    },
+    {
+      "case_id": "ML-02",
+      "class": "mls_lifecycle",
+      "description": "epoch commit rotates keys",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "commit_epoch",
+          "args": {
+            "group": "g1"
+          }
+        },
+        {
+          "op": "commit_epoch",
+          "args": {
+            "group": "g1"
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "allow",
+        "epochs": [
+          0,
+          1,
+          2
+        ]
+      },
+      "semantic_digest": "af99419a0286790dfd646359aefd3bbb7f9ec695889c7881c384b7677d29b405"
+    },
+    {
+      "case_id": "ML-03",
+      "class": "mls_lifecycle",
+      "description": "remove then rejoin gets new keys",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "revoke",
+          "args": {
+            "member": "m1"
+          }
+        },
+        {
+          "op": "add_member",
+          "args": {
+            "group": "g1",
+            "member": "m1"
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "allow",
+        "post_revoke_allow": 0
+      },
+      "semantic_digest": "e086ebde2835680c61dc760f8e29539408bfe873c2705c4cb7a27fae12f2e8c6"
+    },
+    {
+      "case_id": "ML-04",
+      "class": "mls_lifecycle",
+      "description": "duplicate add is idempotent",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "add_member",
+          "args": {
+            "group": "g1",
+            "member": "m1"
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "allow"
+      },
+      "semantic_digest": "64475591aed6e63756745cfa515360e6af7b20245f0231637ad8eef45504d32d"
+    },
+    {
+      "case_id": "ML-05",
+      "class": "mls_lifecycle",
+      "description": "unknown member denied",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "query_as",
+          "args": {
+            "member": "ghost",
+            "terms": [
+              "alpha"
+            ]
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "deny"
+      },
+      "semantic_digest": "80d03de80bf9d0152c2409b584b2ca0f37f42e25b155e27c193ec5998d984a7e"
+    },
+    {
+      "case_id": "ML-06",
+      "class": "mls_lifecycle",
+      "description": "empty group denies all",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": []
+          }
+        },
+        {
+          "op": "query_as",
+          "args": {
+            "member": "m1",
+            "terms": [
+              "alpha"
+            ]
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "deny"
+      },
+      "semantic_digest": "d232a60ddc303e0833bffd5c935bc1d0329e4721d0411ba82bc75661aa081716"
+    },
+    {
+      "case_id": "ML-07",
+      "class": "mls_lifecycle",
+      "description": "multi-group membership",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g2",
+            "members": [
+              "m1",
+              "m2"
+            ]
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "allow"
+      },
+      "semantic_digest": "034739543901458cc92f74170129d579e632742eb34d7e0a5f0607203cac105b"
+    },
+    {
+      "case_id": "ML-08",
+      "class": "mls_lifecycle",
+      "description": "exact scope binding enforced",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "submit",
+          "args": {
+            "doc": "d1",
+            "scope": "foreign"
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "deny"
+      },
+      "semantic_digest": "802cc33f5d1690660d6989cdb24f088434afa2e361ab0d27e24085607cd6c942"
+    },
+    {
+      "case_id": "ML-09",
+      "class": "mls_lifecycle",
+      "description": "cross-scope read denied",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "submit",
+          "args": {
+            "doc": "d1"
+          }
+        },
+        {
+          "op": "query_foreign",
+          "args": {
+            "member": "m1",
+            "scope": "foreign"
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "deny",
+        "cross_scope_read": 0
+      },
+      "semantic_digest": "063a7446cf54a37f0d9744b6dbca67d330d0594f542b77b918abcd8e62a7c73b"
+    },
+    {
+      "case_id": "ML-10",
+      "class": "mls_lifecycle",
+      "description": "submit then query roundtrip",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "submit",
+          "args": {
+            "doc": "d1"
+          }
+        },
+        {
+          "op": "build_index",
+          "args": {
+            "partition": "p1"
+          }
+        },
+        {
+          "op": "query_as",
+          "args": {
+            "member": "m1",
+            "terms": [
+              "alpha"
+            ]
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "allow"
+      },
+      "semantic_digest": "ddf7a60ca0a5bfc233751d6d8dc7e07cf3f07cafde9be053c87ad23a6e498da8"
+    },
+    {
+      "case_id": "ML-11",
+      "class": "mls_lifecycle",
+      "description": "unknown document, empty result",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "submit",
+          "args": {
+            "doc": "d1"
+          }
+        },
+        {
+          "op": "query_as",
+          "args": {
+            "member": "m1",
+            "terms": [
+              "zzz"
+            ]
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "allow",
+        "empty": true
+      },
+      "semantic_digest": "1abda2d3e04cf79cfacf6521da92dbef017a6b540b0a4fd60a7cafdcf5aac119"
+    },
+    {
+      "case_id": "ML-12",
+      "class": "mls_lifecycle",
+      "description": "wrong action denied",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "admin_as",
+          "args": {
+            "member": "m1"
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "deny"
+      },
+      "semantic_digest": "87de56ced2bb1c9b46c83763bcc9026f324f8238629a39ebe24c0afad5bf1a59"
+    },
+    {
+      "case_id": "AT-01",
+      "class": "attestation",
+      "description": "valid session serves query",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "submit",
+          "args": {
+            "doc": "d1"
+          }
+        },
+        {
+          "op": "build_index",
+          "args": {
+            "partition": "p1"
+          }
+        },
+        {
+          "op": "attest",
+          "args": {
+            "member": "m1"
+          }
+        },
+        {
+          "op": "query_session",
+          "args": {
+            "member": "m1",
+            "terms": [
+              "alpha"
+            ]
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "allow",
+        "session": "open"
+      },
+      "semantic_digest": "25e6ae09c6771723225efe6b1f38831c63e707291d4dc50696a8d755915f5a68"
+    },
+    {
+      "case_id": "AT-02",
+      "class": "attestation",
+      "description": "stale evidence denied",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "attest_tamper",
+          "args": {
+            "member": "m1",
+            "tamper": "stale"
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "deny",
+        "reason": "replay"
+      },
+      "semantic_digest": "e6b91ff3d2b298a7c361538d09d0dd6e71369ddf0495f9bc421635f92f377334"
+    },
+    {
+      "case_id": "AT-03",
+      "class": "attestation",
+      "description": "wrong measurement denied",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "attest_tamper",
+          "args": {
+            "member": "m1",
+            "tamper": "wrong_measurement"
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "deny",
+        "reason": "wrong_measurement"
+      },
+      "semantic_digest": "d7bea59dd47faa9eca3f48d9a912f686d38ac6fafa90e8ea09324c73b0251ab3"
+    },
+    {
+      "case_id": "AT-04",
+      "class": "attestation",
+      "description": "replayed nonce denied",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "attest_replay",
+          "args": {
+            "member": "m1"
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "deny",
+        "reason": "replay"
+      },
+      "semantic_digest": "200dbd964f99dc42f1d1aa1f6e2237622440163a6e6f6077fa48a20704483839"
+    },
+    {
+      "case_id": "AT-05",
+      "class": "attestation",
+      "description": "revoked TCB denied",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "attest_tamper",
+          "args": {
+            "member": "m1",
+            "tamper": "revoked_tcb"
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "deny",
+        "reason": "revoked_tcb"
+      },
+      "semantic_digest": "0177b8f968baa9f0f03502ea763b3576579a69dcc7996a89f315346799f08868"
+    },
+    {
+      "case_id": "AT-06",
+      "class": "attestation",
+      "description": "missing endorsement denied",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "attest_tamper",
+          "args": {
+            "member": "m1",
+            "tamper": "no_endorsement"
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "deny",
+        "reason": "missing_endorsement"
+      },
+      "semantic_digest": "43b37f2bb130287292d9d95f8bcb14c53e1434d5733df91ba0d7f973326ee23b"
+    },
+    {
+      "case_id": "AT-07",
+      "class": "attestation",
+      "description": "unknown signer denied",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "attest_signer",
+          "args": {
+            "member": "m1",
+            "signer": "evil-signer"
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "deny",
+        "reason": "unknown_signer"
+      },
+      "semantic_digest": "4b86bdf90c2a91fa12f2f12a5ce132ac015929f32b20b8a1aaec09348b584f88"
+    },
+    {
+      "case_id": "AT-08",
+      "class": "attestation",
+      "description": "unknown quote profile denied",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "attest_tamper",
+          "args": {
+            "member": "m1",
+            "tamper": "unknown_version"
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "deny",
+        "reason": "unknown_profile"
+      },
+      "semantic_digest": "7bd0c83bed9f1f93922255466e3ae23744c3a0f7886a2987372e0754f0b74eea"
+    },
+    {
+      "case_id": "AT-09",
+      "class": "attestation",
+      "description": "expired session denied",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "submit",
+          "args": {
+            "doc": "d1"
+          }
+        },
+        {
+          "op": "build_index",
+          "args": {
+            "partition": "p1"
+          }
+        },
+        {
+          "op": "attest",
+          "args": {
+            "member": "m1"
+          }
+        },
+        {
+          "op": "expire_session",
+          "args": {
+            "member": "m1"
+          }
+        },
+        {
+          "op": "query_session",
+          "args": {
+            "member": "m1",
+            "terms": [
+              "alpha"
+            ]
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "deny",
+        "reason": "stale_session"
+      },
+      "semantic_digest": "d118f34aefa23a71f3f9e61042209bf05d730f3d27f949d559bfb710575aa304"
+    },
+    {
+      "case_id": "AT-10",
+      "class": "attestation",
+      "description": "wrong-scope session denied",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "submit",
+          "args": {
+            "doc": "d1"
+          }
+        },
+        {
+          "op": "build_index",
+          "args": {
+            "partition": "p1"
+          }
+        },
+        {
+          "op": "attest_scope",
+          "args": {
+            "member": "m1",
+            "scope": "foreign"
+          }
+        },
+        {
+          "op": "query_session",
+          "args": {
+            "member": "m1",
+            "terms": [
+              "alpha"
+            ]
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "deny",
+        "reason": "scope_mismatch"
+      },
+      "semantic_digest": "6e9dc74a1fccd80f1a1ac2336c22f22c25eca114270d3dbd4dc679d2e1a91c65"
+    },
+    {
+      "case_id": "AT-11",
+      "class": "attestation",
+      "description": "challenge nonce reuse denied",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "attest_twice_same_nonce",
+          "args": {
+            "member": "m1"
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "deny",
+        "reason": "replay"
+      },
+      "semantic_digest": "7bd4c24094d4700595b95fd9835e5eaebe301a2231f87cae3d742b24ebfea922"
+    },
+    {
+      "case_id": "AT-12",
+      "class": "attestation",
+      "description": "no-session query denied",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "submit",
+          "args": {
+            "doc": "d1"
+          }
+        },
+        {
+          "op": "build_index",
+          "args": {
+            "partition": "p1"
+          }
+        },
+        {
+          "op": "query_session",
+          "args": {
+            "member": "m1",
+            "terms": [
+              "alpha"
+            ]
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "deny",
+        "reason": "no_session"
+      },
+      "semantic_digest": "d36fe8a32fe6a9337986315a2bf54acdb09baa530d194749f267dd4fadc207d8"
+    },
+    {
+      "case_id": "RC-01",
+      "class": "revocation_cache",
+      "description": "revocation dominates warm cache",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "submit",
+          "args": {
+            "doc": "d1"
+          }
+        },
+        {
+          "op": "build_index",
+          "args": {
+            "partition": "p1"
+          }
+        },
+        {
+          "op": "attest",
+          "args": {
+            "member": "m1"
+          }
+        },
+        {
+          "op": "query_cached",
+          "args": {
+            "member": "m1",
+            "terms": [
+              "alpha"
+            ]
+          }
+        },
+        {
+          "op": "revoke",
+          "args": {
+            "member": "m1"
+          }
+        },
+        {
+          "op": "query_cached",
+          "args": {
+            "member": "m1",
+            "terms": [
+              "alpha"
+            ]
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "deny",
+        "post_revoke_allow": 0
+      },
+      "semantic_digest": "a1b878b3ff00616b15949dae1430e51475cdbac2c7626cb48297f6d081af8e3a"
+    },
+    {
+      "case_id": "RC-02",
+      "class": "revocation_cache",
+      "description": "restart keeps warm cache but revoked stays denied",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "submit",
+          "args": {
+            "doc": "d1"
+          }
+        },
+        {
+          "op": "build_index",
+          "args": {
+            "partition": "p1"
+          }
+        },
+        {
+          "op": "attest",
+          "args": {
+            "member": "m1"
+          }
+        },
+        {
+          "op": "query_cached",
+          "args": {
+            "member": "m1",
+            "terms": [
+              "alpha"
+            ]
+          }
+        },
+        {
+          "op": "revoke",
+          "args": {
+            "member": "m1"
+          }
+        },
+        {
+          "op": "restart",
+          "args": {
+            "keep_cache": true
+          }
+        },
+        {
+          "op": "query_cached",
+          "args": {
+            "member": "m1",
+            "terms": [
+              "alpha"
+            ]
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "deny",
+        "post_revoke_allow": 0
+      },
+      "semantic_digest": "f93088ec9270a429004c2321c31af7d2037a211af83e325215763d6b001ad3e5"
+    },
+    {
+      "case_id": "RC-03",
+      "class": "revocation_cache",
+      "description": "rollback of sealed state detected",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "snapshot",
+          "args": {
+            "name": "s0"
+          }
+        },
+        {
+          "op": "commit_epoch",
+          "args": {
+            "group": "g1"
+          }
+        },
+        {
+          "op": "restore",
+          "args": {
+            "name": "s0"
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "rollback_detected"
+      },
+      "semantic_digest": "db396c861689ad33ea1bd64257bc4050b5d83aa7a0457307a9a76abdadeb5912"
+    },
+    {
+      "case_id": "RC-04",
+      "class": "revocation_cache",
+      "description": "stale session after rotation denied",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "submit",
+          "args": {
+            "doc": "d1"
+          }
+        },
+        {
+          "op": "build_index",
+          "args": {
+            "partition": "p1"
+          }
+        },
+        {
+          "op": "attest",
+          "args": {
+            "member": "m1"
+          }
+        },
+        {
+          "op": "rotate",
+          "args": {
+            "group": "g1"
+          }
+        },
+        {
+          "op": "query_session",
+          "args": {
+            "member": "m1",
+            "terms": [
+              "alpha"
+            ]
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "deny",
+        "reason": "stale_session"
+      },
+      "semantic_digest": "1ab8ed77e432f05b1f20ca0c0403fa805759a32af38bf8751ea8e717dec99c7f"
+    },
+    {
+      "case_id": "RC-05",
+      "class": "revocation_cache",
+      "description": "token invalidated on revoke",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "submit",
+          "args": {
+            "doc": "d1"
+          }
+        },
+        {
+          "op": "build_index",
+          "args": {
+            "partition": "p1"
+          }
+        },
+        {
+          "op": "attest",
+          "args": {
+            "member": "m1"
+          }
+        },
+        {
+          "op": "make_token",
+          "args": {
+            "member": "m1",
+            "terms": [
+              "alpha"
+            ]
+          }
+        },
+        {
+          "op": "revoke",
+          "args": {
+            "member": "m1"
+          }
+        },
+        {
+          "op": "use_token",
+          "args": {
+            "member": "m1"
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "deny",
+        "reason": "unknown_token"
+      },
+      "semantic_digest": "7ad9dec993143b3d9ec2226e4bc0a7387872240054daf2e1855511b443ab05bd"
+    },
+    {
+      "case_id": "RC-06",
+      "class": "revocation_cache",
+      "description": "crash before commit reconciles",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "submit_crash",
+          "args": {
+            "doc": "d1",
+            "crash": "before_commit"
+          }
+        },
+        {
+          "op": "reconcile_doc",
+          "args": {
+            "doc": "d1"
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "allow",
+        "reconciled": true
+      },
+      "semantic_digest": "0516cfa900511a2b24a3ab0faf91ee5728bd8758d7ae4ecd42bb520522f20fbc"
+    },
+    {
+      "case_id": "RC-07",
+      "class": "revocation_cache",
+      "description": "crash before audit reconciles",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "submit_crash",
+          "args": {
+            "doc": "d1",
+            "crash": "before_audit"
+          }
+        },
+        {
+          "op": "reconcile_doc",
+          "args": {
+            "doc": "d1"
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "allow",
+        "reconciled": true
+      },
+      "semantic_digest": "12e72ee57d1367e03c4b7bd18423a8a019ed1942bc1a0a3d37fbb806061b130b"
+    },
+    {
+      "case_id": "RC-08",
+      "class": "revocation_cache",
+      "description": "blind retry refused",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "submit_crash",
+          "args": {
+            "doc": "d1",
+            "crash": "before_commit"
+          }
+        },
+        {
+          "op": "blind_retry",
+          "args": {
+            "doc": "d1"
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "deny",
+        "reason": "blind_retry_refused"
+      },
+      "semantic_digest": "884c3631adbf9fe50128ab738623b68b32a1229a23b2727ad6c66fe35d6df7dd"
+    },
+    {
+      "case_id": "RC-09",
+      "class": "revocation_cache",
+      "description": "rejoin gets new keys, old token dead",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "submit",
+          "args": {
+            "doc": "d1"
+          }
+        },
+        {
+          "op": "build_index",
+          "args": {
+            "partition": "p1"
+          }
+        },
+        {
+          "op": "attest",
+          "args": {
+            "member": "m1"
+          }
+        },
+        {
+          "op": "make_token",
+          "args": {
+            "member": "m1",
+            "terms": [
+              "alpha"
+            ]
+          }
+        },
+        {
+          "op": "revoke",
+          "args": {
+            "member": "m1"
+          }
+        },
+        {
+          "op": "add_member",
+          "args": {
+            "group": "g1",
+            "member": "m1"
+          }
+        },
+        {
+          "op": "use_token",
+          "args": {
+            "member": "m1"
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "deny",
+        "post_revoke_allow": 0
+      },
+      "semantic_digest": "5b1513dcc5d17cbcf15f55a348520516016555f3d15eaa15e5d0523b954796f1"
+    },
+    {
+      "case_id": "RC-10",
+      "class": "revocation_cache",
+      "description": "epoch monotonic across restart",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "commit_epoch",
+          "args": {
+            "group": "g1"
+          }
+        },
+        {
+          "op": "restart",
+          "args": {
+            "keep_cache": false
+          }
+        },
+        {
+          "op": "commit_epoch",
+          "args": {
+            "group": "g1"
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "allow",
+        "epochs": [
+          0,
+          1,
+          2
+        ]
+      },
+      "semantic_digest": "d587687d063fcf36efe76e63b9516e5482b113f3d0f5c93c282a15ea871c74df"
+    },
+    {
+      "case_id": "RC-11",
+      "class": "revocation_cache",
+      "description": "restart clears cache when asked",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "submit",
+          "args": {
+            "doc": "d1"
+          }
+        },
+        {
+          "op": "build_index",
+          "args": {
+            "partition": "p1"
+          }
+        },
+        {
+          "op": "attest",
+          "args": {
+            "member": "m1"
+          }
+        },
+        {
+          "op": "make_token",
+          "args": {
+            "member": "m1",
+            "terms": [
+              "alpha"
+            ]
+          }
+        },
+        {
+          "op": "restart",
+          "args": {
+            "keep_cache": false
+          }
+        },
+        {
+          "op": "use_token",
+          "args": {
+            "member": "m1"
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "deny",
+        "reason": "unknown_token"
+      },
+      "semantic_digest": "9705c490f14ece9063b620bf380a1abade6cae77c52c0606bd48b7c3ce91f80d"
+    },
+    {
+      "case_id": "RC-12",
+      "class": "revocation_cache",
+      "description": "generation rotation invalidates old snapshot",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "snapshot",
+          "args": {
+            "name": "s0"
+          }
+        },
+        {
+          "op": "revoke",
+          "args": {
+            "member": "m1"
+          }
+        },
+        {
+          "op": "restore",
+          "args": {
+            "name": "s0"
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "rollback_detected"
+      },
+      "semantic_digest": "ba4a004a2ae71a5db3be5679a20b13aff9584bea4b81ed07ab8abb3173bdd57f"
+    },
+    {
+      "case_id": "LK-01",
+      "class": "leakage_unknown",
+      "description": "error carries no plaintext",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "submit",
+          "args": {
+            "doc": "d1"
+          }
+        },
+        {
+          "op": "query_as",
+          "args": {
+            "member": "ghost",
+            "terms": [
+              "alpha"
+            ]
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "deny",
+        "no_plaintext_in_error": true
+      },
+      "semantic_digest": "16170a1644db8824935419c15971b73128a76346bdeb287d87dcc33032ecac69"
+    },
+    {
+      "case_id": "LK-02",
+      "class": "leakage_unknown",
+      "description": "logs carry no keys",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "submit",
+          "args": {
+            "doc": "d1"
+          }
+        },
+        {
+          "op": "build_index",
+          "args": {
+            "partition": "p1"
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "allow",
+        "no_keys_in_audit": true
+      },
+      "semantic_digest": "d09f8433a3cf78bfb8daabd0382d72ced464bd912c7ef65e5c3681e0b5793edf"
+    },
+    {
+      "case_id": "LK-03",
+      "class": "leakage_unknown",
+      "description": "forged result digest denied",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "submit",
+          "args": {
+            "doc": "d1"
+          }
+        },
+        {
+          "op": "build_index",
+          "args": {
+            "partition": "p1"
+          }
+        },
+        {
+          "op": "attest",
+          "args": {
+            "member": "m1"
+          }
+        },
+        {
+          "op": "forge_result",
+          "args": {
+            "member": "m1",
+            "terms": [
+              "alpha"
+            ]
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "deny",
+        "reason": "forged_result"
+      },
+      "semantic_digest": "57c14fec0241cfce8db13a270bdec6967043d622e2e70b689db6fff6bf73c235"
+    },
+    {
+      "case_id": "LK-04",
+      "class": "leakage_unknown",
+      "description": "cross-tenant query denied",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "submit",
+          "args": {
+            "doc": "d1"
+          }
+        },
+        {
+          "op": "build_index",
+          "args": {
+            "partition": "p1"
+          }
+        },
+        {
+          "op": "query_tenant",
+          "args": {
+            "member": "m1",
+            "terms": [
+              "alpha"
+            ],
+            "tenant": "t-b"
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "deny"
+      },
+      "semantic_digest": "5a32f03681608809a3c47d6dcbe0b7ce73a122980fba177bb1cfb7e7f0c73934"
+    },
+    {
+      "case_id": "LK-05",
+      "class": "leakage_unknown",
+      "description": "repeated query equality observed",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "submit",
+          "args": {
+            "doc": "d1"
+          }
+        },
+        {
+          "op": "build_index",
+          "args": {
+            "partition": "p1"
+          }
+        },
+        {
+          "op": "attest",
+          "args": {
+            "member": "m1"
+          }
+        },
+        {
+          "op": "query_twice",
+          "args": {
+            "member": "m1",
+            "terms": [
+              "alpha"
+            ]
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "allow",
+        "equality_observed": true
+      },
+      "semantic_digest": "d314c259c218a1e232e4aece8380eb5e2f5a15c1688f652abfb79664aab8153c"
+    },
+    {
+      "case_id": "LK-06",
+      "class": "leakage_unknown",
+      "description": "timeout censored, not allowed",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "verifier_timeout",
+          "args": {
+            "member": "m1"
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "deny",
+        "reason": "censored"
+      },
+      "semantic_digest": "dd0f0a80ad277d8442c0d054e5ed699d6789e6e9034881b86eeff1d01bdf59f7"
+    },
+    {
+      "case_id": "LK-07",
+      "class": "leakage_unknown",
+      "description": "unknown side effect reconciles",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "submit_crash",
+          "args": {
+            "doc": "d1",
+            "crash": "before_commit"
+          }
+        },
+        {
+          "op": "reconcile_doc",
+          "args": {
+            "doc": "d1"
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "allow"
+      },
+      "semantic_digest": "c70ec947bba04f4ee7f225beb43bfdca0f27121dc7b5e14ff50cfaff38c1eb19"
+    },
+    {
+      "case_id": "LK-08",
+      "class": "leakage_unknown",
+      "description": "provider trust claim ignored",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "submit",
+          "args": {
+            "doc": "d1"
+          }
+        },
+        {
+          "op": "provider_query",
+          "args": {
+            "member": "mallory",
+            "claim": {
+              "attested": true
+            }
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "deny"
+      },
+      "semantic_digest": "af8a210da122bca8e5621eca1c544dd9d6594472407155e0400f9b8bd7cf6749"
+    },
+    {
+      "case_id": "LK-09",
+      "class": "leakage_unknown",
+      "description": "secret content censored from bundle",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "submit",
+          "args": {
+            "doc": "sek",
+            "content": "token sk-proj-abcdefgh12345678"
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "quarantined"
+      },
+      "semantic_digest": "50b81a301ac6f9b2eb04cf9081d170410e4eb7efa035cbcdb67faa1f5e39070b"
+    },
+    {
+      "case_id": "LK-10",
+      "class": "leakage_unknown",
+      "description": "empty corpus query denies cleanly",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "build_index",
+          "args": {
+            "partition": "p1"
+          }
+        },
+        {
+          "op": "query_as",
+          "args": {
+            "member": "ghost",
+            "terms": [
+              "alpha"
+            ]
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "deny"
+      },
+      "semantic_digest": "b69b9b27dd3b13925b2cf41cc65d763115f1862aa5bdb0080438c18d122df916"
+    },
+    {
+      "case_id": "LK-11",
+      "class": "leakage_unknown",
+      "description": "oversized query rejected",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "oversized_query",
+          "args": {
+            "member": "m1"
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "deny",
+        "reason": "oversized"
+      },
+      "semantic_digest": "c802d66f43a80d56b42e6e27e596b278cd81ea2d7420c09051ce50eea7edd7b1"
+    },
+    {
+      "case_id": "LK-12",
+      "class": "leakage_unknown",
+      "description": "redacted receipt counts omission",
+      "inputs": {
+        "scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "arch_scope": "home"
+      },
+      "transitions": [
+        {
+          "op": "create_group",
+          "args": {
+            "group": "g1",
+            "members": [
+              "m1"
+            ]
+          }
+        },
+        {
+          "op": "submit",
+          "args": {
+            "doc": "d1"
+          }
+        },
+        {
+          "op": "build_index",
+          "args": {
+            "partition": "p1"
+          }
+        },
+        {
+          "op": "redacted_export",
+          "args": {
+            "scope": "home"
+          }
+        }
+      ],
+      "oracle_hint": {
+        "decision": "allow",
+        "redaction_receipt": true
+      },
+      "semantic_digest": "8ea7eecff999b973dbab68e67acd499c33df73daaa8485153906dd698ae845ef"
+    }
+  ]
+}
