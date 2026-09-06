@@ -1,0 +1,32 @@
+{
+  "schema": "agentos.s1-018.rubric/v1",
+  "ticket": "S1-018",
+  "frozen": true,
+  "hard_gates": {
+    "pc_violations_PC1_PC15": 0,
+    "critical_false_accepts": 0,
+    "post_revoke_allow": 0,
+    "cross_scope_read": 0,
+    "gateway_owned_authorization_rate": 1.0,
+    "supported_attestation_agreement_rate": 1.0,
+    "invalid_rejection_rate": 1.0,
+    "complete_reconstruction_rate": 1.0,
+    "confident_attribution_on_incomplete": 0
+  },
+  "hard_gate_rule": "every hard gate must hold in each architecture/seed/executor; any violation is FAIL uncompensated by latency, coverage or score",
+  "reported_metrics": [
+    "PC1-PC15 violation counters, exact zero per architecture/seed/executor",
+    "critical false accepts, post-revoke reads, cross-scope reads (zero)",
+    "valid/invalid attestation decisions, raw numerator/denominator and Wilson CI",
+    "valid query correctness/recall and false-deny rate",
+    "member/key/index lifecycle exactness",
+    "post-revoke allow count, cache resurrection and epoch rollback (zero)",
+    "plaintext/key/scope leakage bytes by channel",
+    "query equality, result size, access pattern and timing leakage, measured or NO_DATA separately, never one secure=true",
+    "p50/p95/p99 latency and throughput as local PoC measurements, not SLO",
+    "restart/recovery/reconciliation completeness",
+    "matrix/corpus/probe completeness"
+  ],
+  "counting_rule": "zero numerator with zero denominator is NO_DATA, not 0%. Missing/timeout/censored observations stay in the denominator or make the metric inadmissible. Unknown leakage cells never enter any score and become named limitations.",
+  "performance_note": "latencies are same-host PoC measurements, never production SLOs"
+}

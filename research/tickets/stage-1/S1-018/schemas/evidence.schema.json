@@ -1,0 +1,17 @@
+{
+  "$id": "agentos.s1-018.evidence/v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "S1-018 mock attestation evidence (protocol shape only, never hardware)",
+  "type": "object",
+  "required": ["profile", "measurement", "tcb_version", "nonce", "signer_id", "epoch"],
+  "properties": {
+    "profile": { "type": "string", "enum": ["agentos.mock-quote/v1"] },
+    "measurement": { "type": "string", "minLength": 1 },
+    "tcb_version": { "type": "string", "minLength": 1 },
+    "nonce": { "type": "string", "minLength": 1 },
+    "signer_id": { "type": "string", "minLength": 1 },
+    "epoch": { "type": "integer", "minimum": 0 },
+    "endorsement": { "type": ["string", "null"] }
+  },
+  "additionalProperties": false
+}

@@ -187,7 +187,7 @@ from a lower wave to a higher wave, and S1-020 is the sole closure sink.
 | S1-015 | W4 | P2 | hci | PASS_WITH_LIMITS | S1-013 | canonical principal IDs only; petname contract rejected by the fail-closed operator gate |
 | S1-016 | W3 | P1 | formal | PASS_WITH_LIMITS | S1-003, S1-007 | bounded lineage evidence complete; design decision remains INCONCLUSIVE |
 | S1-017 | W4 | P2 | formal | PASS_WITH_LIMITS | S1-004, S1-016 | STIT/ATL responsibility analytics placement |
-| S1-018 | W4 | P1 | privacy | READY | S1-007, S1-008, S1-009 | profile-C MLS + TEE attested-indexer PoC research |
+| S1-018 | W4 | P1 | privacy | PASS_WITH_LIMITS | S1-007, S1-008, S1-009 | profile-C MLS + TEE attested-indexer PoC research |
 | S1-019 | W5 | P0 | synthesis | READY | S1-004, S1-005, S1-006, S1-007, S1-008, S1-009, S1-010, S1-011, S1-012, S1-013, S1-014, S1-015, S1-016, S1-017, S1-018 | P0 architecture decision synthesis/prototype evidence |
 | S1-020 | W6 | P0 | audit | READY | S1-001..S1-019 (expanded in ticket) | independent phase audit and closure decision |
 
@@ -1347,7 +1347,17 @@ python -m agentos.cli research-plan --topic "S1-017 STIT ATL responsibility anal
 
 ### S1-018 — Profile-C MLS + TEE attested-indexer PoC research
 
-- **Status:** `READY`
+- **Status:** `PASS_WITH_LIMITS` (canonical revision 2; decision
+  `CLIENT_SIDE_INDEX_ONLY`, with `ATTESTED_SCOPE_INDEXER_POC` as a research
+  ceiling)
+- **Result:** operator review `1A 2A 3A 4A 5A 6A 7A 8A 9A 10A`; the
+  deterministic substance winner is client-side indexing. Revision 2 replaced
+  the unstable wall-clock latency dimension with deterministic artifact-byte
+  and model-count inputs over the same frozen observations: 260 sensitivity
+  vectors, zero flips. Evidence: 48 cases x 3 architectures x 3 seeds x 2
+  executors = 864 observations; PC1-PC15 zero; probes A-P pass; replay is
+  byte-identical. `hardware_tee_evidence=NOT_MEASURED`; this is not production
+  rollout approval.
 - **Priority:** `P1`
 - **Wave:** `W4`
 - **Owner:** `privacy`

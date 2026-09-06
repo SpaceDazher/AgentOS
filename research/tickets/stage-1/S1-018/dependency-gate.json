@@ -1,0 +1,114 @@
+{
+  "schema": "agentos.s1-018.dependency-gate/v1",
+  "ticket": "S1-018",
+  "verified_commit": "b8eeddd66bdc76f273cb14066e76c63eecad2f8f",
+  "dependencies": [
+    {
+      "ticket": "S1-007",
+      "status": "PROVEN",
+      "schema": "agentos.ticket-evaluation-record/v1",
+      "verdict": "pass_with_limits",
+      "research_revision": 7,
+      "goal_id": "goal_5FX22ZHCEAW0G2B501M1DDTYSA",
+      "campaign_id": "rcamp_9AGA2BWAQ70FQQ5401M1DDTYSA",
+      "evaluation_id": "reval_6BH3G062B38G3WHH01M1DDTYW2",
+      "artifact_chain_hash": "4c344ab2e83b231e4cd14c2f69f9eb95b9b0f374f7fab3bf8651eda682390692",
+      "evidence_pack_proven": true,
+      "single_scope_tuple": true,
+      "inherited_limits": [
+        "All results are local-model measurements from a deterministic stdlib-only simulation; no production latency, storage or privacy certification is claimed.",
+        "The timing probe is a bounded same-host paired-interleaved wall-clock measurement (200 paired samples x 32 inner repeats x 3 seeds per variant, tolerance max(10% of control median, 2000ns) recomputed by the evaluator from raw samples); it cannot prove absence of all side channels.",
+        "D9 (operational complexity/migration) and D11 (profile compatibility) are inference-type cells derived from the frozen contract, the current implementation and documented profiles.",
+        "Storage overhead uses a declared fixed per-index constant (256 bytes) - a model assumption, not a measurement of a production index engine.",
+        "S1-003 and S1-005 evidence is reused only within its stated limits (see dependency-gate.json).",
+        "Producer and verifier labels are process-separated roles in one local environment, not external human auditors."
+      ],
+      "canonical_db_recheck_required": true,
+      "problems": []
+    },
+    {
+      "ticket": "S1-008",
+      "status": "PROVEN",
+      "schema": "agentos.s1-008.evaluation-record/v2",
+      "verdict": "pass_with_limits",
+      "resolution_notes": [
+        "opaque self-hash fields recorded but not independently reproducible: pack_sha256, record_sha256",
+        "evidence pack resolved at results/evidence/evidence-pack-d6b3733790d7fec92d5c5e4a4fd607495eb0146d7a9271bed16bd846f60aaee0.json"
+      ],
+      "research_revision": 15,
+      "goal_id": "goal_1XSFMXMFDMRFZSBD01M1FSQ41H",
+      "campaign_id": "rcamp_6C0AY6Y0R2NNJ7Q201M1FSQ41H",
+      "evaluation_id": "reval_85CM5QCKNS02W0HZ01M1FSQ44C",
+      "artifact_chain_hash": "5c43c03d01058ab0ad17e1dc6ed368a54c386de0b1195a750b88731a8ddc8cd7",
+      "evidence_pack_proven": false,
+      "frozen_artifacts_verified": {
+        "corpus-manifest.json": "902c9b6cd09c36fbfb42dd0a2ab4949a55287cb48d64c707edd788b8c6b21600",
+        "evaluator.py": "8cc21e4ba20de3743460f423f9c23fcc03a27426df911ce8f5c3c5fb94279066",
+        "finalize_record.py": "94ec279ff93816bf7de43074d868bf6742b8438c1d5992881fdfb804586359ff",
+        "fixtures.json": "dc018d885d055682d212181e63640b1d88772f8bb3952e08549cd9d206424cf3",
+        "make_bundle.py": "6ad890433cb4bb71c2d585f7efcca3a595f24470d001c6644d0014adaff3130e",
+        "publish_evidence_pack.py": "f801c54498f88f1792e50f1b4d2408d2e1e3a8878f9ac4d1e30cb81ffb9a7203",
+        "revocation-contract.json": "80007c14301b4accaf8259f5eb106ec7e7fdbd10fb70ff861ccd8991af4d0c25",
+        "rubric.json": "c100acc2775012923d595ed0ec1537cfaad4509cea34dea4c113aa494993eff4",
+        "runner.py": "4caaf87e8bfeb7632987359d798aa4fa446ed0eea9a0e6ade67fff8fd1abe4f5",
+        "threat-model.json": "171b8ff43411dc6a081656c935de10c84489c21618cb0e9c2a2127a5c803895f",
+        "workload-manifest.json": "6248bc2605345f84ecbc105df34ece6ccc616defc956a4873ae0f299d508fb39"
+      },
+      "revocation_contract_present": true,
+      "inherited_limits": [
+        "Same-host model-only: no production network/cache topology tested.",
+        "Process-separated auditor, not an external/independent audit firm.",
+        "Local model cannot prove absence of all network/cache side channels.",
+        "Clock assumptions: monotonic clock authoritative for elapsed; UTC wall for audit only."
+      ],
+      "canonical_db_recheck_required": true,
+      "problems": []
+    },
+    {
+      "ticket": "S1-009",
+      "status": "PROVEN",
+      "schema": "agentos.ticket-evaluation-record/v2",
+      "verdict": "pass_with_limits",
+      "research_revision": 11,
+      "goal_id": "goal_B87S5W4AVDSXN04J01M1JJGE20",
+      "campaign_id": "rcamp_0SV9HGD5JNEBT99901M1JJGE20",
+      "evaluation_id": "reval_KJWPMSJE08BGDVNP01M1JJGE2W",
+      "artifact_chain_hash": "1d1b2debbbb2ac9ff76a65ffe352152c207d7a3ea71073af56a37679b464192b",
+      "packs_proven": true,
+      "tracked_verified": 25,
+      "adapter_boundary_present": true,
+      "inherited_limits": [
+        "Same-host, process-separated (not external human auditor).",
+        "No full third-party content archiving.",
+        "No streaming/push binding coverage for MCP/A2A.",
+        "SM6/SM8/SM11 remain unsupported under S1-009-FU-01/FU-02 and S1-011; S1-010 remains tool-poisoning only."
+      ],
+      "canonical_db_recheck_required": true,
+      "problems": []
+    }
+  ],
+  "dependencies_proven": true,
+  "scope_isolation_baseline_available": true,
+  "revocation_baseline_available": true,
+  "adapter_boundary_available": true,
+  "population_human_claims_proven": false,
+  "hardware_tee_evidence": "NOT_MEASURED",
+  "inherited_limits": [
+    "[S1-007] All results are local-model measurements from a deterministic stdlib-only simulation; no production latency, storage or privacy certification is claimed.",
+    "[S1-007] The timing probe is a bounded same-host paired-interleaved wall-clock measurement (200 paired samples x 32 inner repeats x 3 seeds per variant, tolerance max(10% of control median, 2000ns) recomputed by the evaluator from raw samples); it cannot prove absence of all side channels.",
+    "[S1-007] D9 (operational complexity/migration) and D11 (profile compatibility) are inference-type cells derived from the frozen contract, the current implementation and documented profiles.",
+    "[S1-007] Storage overhead uses a declared fixed per-index constant (256 bytes) - a model assumption, not a measurement of a production index engine.",
+    "[S1-007] S1-003 and S1-005 evidence is reused only within its stated limits (see dependency-gate.json).",
+    "[S1-007] Producer and verifier labels are process-separated roles in one local environment, not external human auditors.",
+    "[S1-008] Same-host model-only: no production network/cache topology tested.",
+    "[S1-008] Process-separated auditor, not an external/independent audit firm.",
+    "[S1-008] Local model cannot prove absence of all network/cache side channels.",
+    "[S1-008] Clock assumptions: monotonic clock authoritative for elapsed; UTC wall for audit only.",
+    "[S1-009] Same-host, process-separated (not external human auditor).",
+    "[S1-009] No full third-party content archiving.",
+    "[S1-009] No streaming/push binding coverage for MCP/A2A.",
+    "[S1-009] SM6/SM8/SM11 remain unsupported under S1-009-FU-01/FU-02 and S1-011; S1-010 remains tool-poisoning only."
+  ],
+  "canonical_db_recheck_required": true,
+  "note": "Discovery-based proof from origin/main bytes incl. git archive; no IDs/hashes copied from prose; status is never upgraded."
+}

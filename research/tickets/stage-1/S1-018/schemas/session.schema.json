@@ -1,0 +1,27 @@
+{
+  "$id": "agentos.s1-018.session/v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "S1-018 attested session binding (exact, non-authoritative)",
+  "type": "object",
+  "required": ["session_id", "scope", "member", "group_epoch", "index_epoch", "measurement", "policy_version", "expiry_ms"],
+  "properties": {
+    "session_id": { "type": "string", "minLength": 1 },
+    "scope": {
+      "type": "object",
+      "required": ["tenant_id", "workspace_id", "goal_id"],
+      "properties": {
+        "tenant_id": { "type": "string", "minLength": 1 },
+        "workspace_id": { "type": "string", "minLength": 1 },
+        "goal_id": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "member": { "type": "string", "minLength": 1 },
+    "group_epoch": { "type": "integer", "minimum": 0 },
+    "index_epoch": { "type": "integer", "minimum": 0 },
+    "measurement": { "type": "string", "minLength": 1 },
+    "policy_version": { "type": "string", "minLength": 1 },
+    "expiry_ms": { "type": "integer", "minimum": 0 }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,24 @@
+{
+  "$id": "agentos.s1-018.query/v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "S1-018 query request (observable contract, all architectures)",
+  "type": "object",
+  "required": ["query_id", "scope", "terms", "requester"],
+  "properties": {
+    "query_id": { "type": "string", "minLength": 1 },
+    "scope": {
+      "type": "object",
+      "required": ["tenant_id", "workspace_id", "goal_id"],
+      "properties": {
+        "tenant_id": { "type": "string", "minLength": 1 },
+        "workspace_id": { "type": "string", "minLength": 1 },
+        "goal_id": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "terms": { "type": "array", "items": { "type": "string" } },
+    "requester": { "type": "string", "minLength": 1 },
+    "profile": { "type": "string", "enum": ["agentos.profile-c/v1"] }
+  },
+  "additionalProperties": false
+}

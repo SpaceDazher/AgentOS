@@ -1,0 +1,62 @@
+{
+  "schema": "agentos.s1-018.threat-model/v1",
+  "ticket": "S1-018",
+  "assets": [
+    "MLS group secrets, epoch secrets and derived index keys",
+    "document/query plaintext",
+    "tenant/goal/scope/member identity",
+    "index contents, postings, result identifiers and access patterns",
+    "attestation challenge, evidence, endorsement, reference values and appraisal",
+    "cached query tokens, sealed state, audit/lineage and revocation evidence"
+  ],
+  "adversaries": [
+    "malicious host/OS/storage/network outside the TEE",
+    "revoked or cross-scope member holding cached material",
+    "stale/replayed/forged quote or wrong measurement",
+    "rollback of sealed state, index epoch or reference values",
+    "malicious or compromised indexer code",
+    "provider payload claiming trust or capability expansion",
+    "error/log/size/timing/access-pattern observer",
+    "crash, timeout, partial write and unknown outcome"
+  ],
+  "trusted_computing_base": [
+    "PoC model code (frozen, hashed) plus Python 3.12 stdlib it runs on",
+    "host-owned appraisal inputs: trust anchors, reference values, endorsements, appraisal policy version, challenge nonces",
+    "AgentOS Gateway/Gate allow/deny path (unchanged, unobserved by analytics)"
+  ],
+  "explicitly_untrusted": [
+    "host OS/storage/network outside the modeled boundary",
+    "provider payloads claiming attested=true or capability grants",
+    "mock quotes (protocol-shape only, zero hardware force)",
+    "any sealed-state snapshot offered after a crash"
+  ],
+  "assumptions": [
+    "bounded corpus and bounded state space (declared per scenario)",
+    "deterministic single-host execution for replay equality",
+    "monotonic clock for elapsed measurement; UTC wall for audit labels only",
+    "redaction receipts are honest about omitted-entity counts"
+  ],
+  "unknowns_not_measured": [
+    "physical attacks",
+    "microarchitectural side channels",
+    "vendor key compromise",
+    "rollback guarantees of real sealed storage",
+    "production topology, SLOs and key ceremonies",
+    "hardware TEE behavior of any kind (hardware_tee_evidence=NOT_MEASURED)"
+  ],
+  "unknown_rule": "every UNKNOWN/NOT_MEASURED cell carries no score by default and becomes a named limitation",
+  "invariant_catalog": ["PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10", "PC11", "PC12", "PC13", "PC14", "PC15"],
+  "threat_to_probe": {
+    "stale_evidence": ["A"], "wrong_measurement": ["B"], "replay": ["C"],
+    "revoked_tcb": ["D"], "revoked_member_cache": ["E"], "rollback": ["F"],
+    "cross_scope": ["G"], "error_plaintext": ["H"], "log_leak": ["I"],
+    "forged_result": ["J"], "hidden_access_pattern": ["K"],
+    "restart_resurrection": ["L"], "provider_trust_claim": ["M"],
+    "unknown_quote": ["N"], "crash_audit_gap": ["O"], "blind_retry": ["P"]
+  },
+  "residual_risks": [
+    "model-scale evidence says nothing about hardware, side channels or production",
+    "redaction receipts expose omitted-entity counts by design",
+    "single-operator review is not a security certification"
+  ]
+}

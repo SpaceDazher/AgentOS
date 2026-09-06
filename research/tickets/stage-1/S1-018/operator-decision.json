@@ -1,0 +1,52 @@
+{
+  "schema": "agentos.s1-018.operator-decision/v1",
+  "ticket": "S1-018",
+  "decision_id": "S1-018-OPERATOR-2026-09-05",
+  "decided_at_utc": "2026-09-05T04:00:00Z",
+  "operator_id": "OP-OPERATOR-01",
+  "scope": "single_architecture_decision",
+  "questionnaire_sha256": "aecb656591a3823d32a6874522fb84f7ce1a8ee58351efe83252cdfb9749dc8a",
+  "selected_answers": {
+    "1": "A",
+    "2": "A",
+    "3": "A",
+    "4": "A",
+    "5": "A",
+    "6": "A",
+    "7": "A",
+    "8": "A",
+    "9": "A",
+    "10": "A"
+  },
+  "answer_string": "1A 2A 3A 4A 5A 6A 7A 8A 9A 10A",
+  "approved_artifact_hashes": {
+    "profile-c-contract.json": "fd6b6f06dd1ff4a8903899313470114cd4c59a9b8d732c09213f7aba406c9358",
+    "cases.json": "a38af8ae5ae60221ae66b7ab15cbb25a0ecbba8ea9cd72364edf3ff4e96700dd",
+    "oracle.json": "e53b8d3045dc487e25731240498a912f661b9d9b33aab6e9625b30c60c52dfa9",
+    "rubric.json": "c580cab68245b469900990f2a2a66ad2923375e94e2ba448f8b48f6090ad7500",
+    "decision-rule.json": "42287b08367dd02011accb2eb697b737c19344c7284c05dc3043a3f938db3a6f",
+    "threat-model.json": "4d15187747df54f20d0bd9bb854077930f19299983e12f9a096ef1c9c6cb4800"
+  },
+  "interpretation": {
+    "mode": "single_operator_review",
+    "answer_use": "architecture_direction_only",
+    "compatibility": "all answers safety-compatible; 1A (client-side index only) matches the deterministic substance winner A",
+    "sensitivity_cap": "deterministic sensitivity (model counts + artifact bytes only) shows 0 flips after the wall-clock defect was removed; the previous flips=1 cap was run-lottery noise and is void",
+    "raw_policy": "structured_answers_only_no_raw_retained"
+  },
+  "limitations": [
+    "one operator review is not a security certification",
+    "hardware_tee_evidence=NOT_MEASURED bounds every claim",
+    "sensitivity dimensions are deterministic model counts and artifact byte sizes; wall-clock latencies remain reported-only measurements"
+  ],
+  "deviation_log": [
+    {
+      "recorded_at_utc": "2026-09-05T04:00:00Z",
+      "event": "closure relied on sensitivity flips=1, but the sensitivity input consumed wall-clock latencies and was not reproducible (flips 56/84/0/1 across closure-history regenerations)",
+      "resolution": "latency dimension replaced with deterministic bytes_parsimony (canonical artifact sizes); sensitivity recomputed over the SAME frozen run-a observations; publisher hardened with --use-existing-results so closure can never re-roll the frozen measurement",
+      "corrected_at_utc": "2026-09-06T03:10:40Z",
+      "authorized_by": "OP-OPERATOR-01"
+    }
+  ],
+  "corrected_at_utc": "2026-09-06T03:10:40Z"
+}
