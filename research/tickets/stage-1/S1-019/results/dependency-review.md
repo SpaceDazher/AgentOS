@@ -1,6 +1,31 @@
-# S1-019 dependency review — blocked before synthesis
+# S1-019 dependency review — publication blocker resolved
 
-Verdict: **BLOCKED_DEPENDENCY**. This is not an S1-019 completion record.
+Current status: **CANONICAL_VERIFICATION_REQUIRED**. This is not an S1-019
+completion record or a full dependency-gate PASS.
+
+## Resolution after operator authorization
+
+Canonical main now contains `19ff320adfe7153267fb634268038ae16ba25a16`:
+S1-014 evaluation record, content-addressed canonical/ticket packs, the original
+approved preparation bundle, portable chain input and canonical artifact bodies.
+The original operator answers and frozen research inputs were not rewritten.
+S1-014 remains `pass_with_limits`, operator_review_n=1, human_study_n=0,
+comparative_human_effectiveness=NOT_MEASURED.
+
+Publication evidence: 23 targeted tests passed (including real browser), full
+suite 1138 tests exit 0 with one checkpoint-before-crash skip, corpus 78/78,
+wiki 3667 files/9381 links with no issues, and 62 tracked hashes plus the full
+chain verified from a clean Git archive without a DB. The first full-suite
+attempt failed because this new worktree lacked the required local test DB
+and S1-008 raw traces; after provisioning an isolated SQLite snapshot and the
+existing traces, the exact full suite passed. No tests were weakened.
+
+S1-019 availability and wall-clock reports now use that immutable main commit.
+All 18 evaluation records are present and parse strictly. Full schema-specific
+pack/identity/chain/frozen-input verification still precedes synthesis; the
+availability checker intentionally does not grant authorization.
+
+## Historical blocker diagnosis (retained, no longer current)
 
 ## Immutable input
 
@@ -35,7 +60,7 @@ publication from a missing local run. They are diagnostic evidence only:
 neither the local database nor this report is a portable canonical dependency
 proof, and the pack has not been independently qualified here for publication.
 
-## Required recovery
+## Recovery sequence
 
 1. In S1-014 scope, independently verify the local evaluation, current bundle,
    limitations and pack; rerun canonicalization if any binding is stale.
@@ -49,4 +74,6 @@ proof, and the pack has not been independently qualified here for publication.
 
 TASK_FOR_AGENT.md sections 2 and 20 prohibit proceeding with an unverified
 dependency. No final synthesis, operator approval, research-plan acceptance,
-S1-019 closure, push or merge has been manufactured to bypass this blocker.
+or S1-019 closure has been manufactured to bypass the dependency gate.
+Steps 1–3 were completed with the operator's explicit publication/merge
+authorization. Step 4's full dependency verification remains to be implemented.
