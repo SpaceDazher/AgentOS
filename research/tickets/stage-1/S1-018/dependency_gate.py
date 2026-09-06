@@ -94,6 +94,84 @@ def _check_hash(value, label: str, problems: list[str]) -> None:
         problems.append(f"{label} is not a lowercase SHA-256")
 
 
+def _resolve_verified(ticket: str, rel: str, expected_sha: str | None,
+                      problems: list[str], label: str,
+                      require_addressed: bool = True) -> tuple[str | None, bytes | None]:
+    """Resolve a record-referenced path against candidate roots.
+
+    Candidates in order: ticket-relative expansion, then repo-root as
+    written. A candidate is accepted ONLY if its git-show bytes equal its
+    git-archive bytes AND match the record's expected file hash. The hash
+    is the arbiter, never the path spelling. Content-addressed filenames
+    are required for packs; plain binding files rely on recorded hashes.
+    Returns (resolved_rel, bytes).
+    """
+    if not isinstance(rel, str) or not rel or "\x00" in rel or rel.startswith("-"):
+        problems.append(f"{label} path is not a clean relative path: {rel!r}")
+        return None, None
+    expanded = f"research/tickets/stage-1/{ticket}/{rel}" \
+        if not rel.startswith("research/") else rel
+    candidates = []
+    if contained(expanded, ticket):
+        candidates.append(expanded)
+    if rel != expanded and not rel.startswith("research/tickets/stage-1/"):
+        # Repo-root-relative reference (top-level results/ tree). Accept only
+        # with a hash proof below; traversal already excluded by construction.
+        if ".." not in rel.split("/") and not rel.startswith("/"):
+            candidates.append(rel)
+    elif contained(rel, ticket) and rel != expanded:
+        candidates.append(rel)
+    verified: list[tuple[str, bytes]] = []
+    for candidate in candidates:
+        try:
+            raw_show = git_show(ORIGIN_MAIN, candidate)
+            raw_archive = git_archive_bytes_repo_root(ORIGIN_MAIN, candidate)
+        except RuntimeError:
+            continue
+        if raw_show != raw_archive:
+            problems.append(f"{label} show/archive bytes differ at {candidate}")
+            continue
+        if expected_sha is not None and sha(raw_show) != expected_sha:
+            problems.append(f"{label} file sha mismatch at {candidate}")
+            continue
+        if require_addressed and not Path(candidate).stem.endswith(sha(raw_show)):
+            problems.append(f"{label} path not content-addressed: {candidate}")
+            continue
+        verified.append((candidate, raw_show))
+    if len(verified) > 1 and verified[0][1] != verified[1][1]:
+        problems.append(f"{label} resolves ambiguously with different bytes")
+        return None, None
+    if not verified:
+        problems.append(f"{label} absent from verified commit (tried: {candidates})")
+        return None, None
+    return verified[0]
+
+
+def git_archive_bytes_repo_root(ref: str, rel: str) -> bytes:
+    """git archive read for a repo-root-relative path (no ticket scoping)."""
+    if not BRANCH.fullmatch(ref or ""):
+        raise RuntimeError("invalid archive Git ref")
+    if not rel or "\x00" in rel or rel.startswith("-") or rel.startswith("/"):
+        raise RuntimeError(f"invalid archive path: {rel}")
+    if ".." in rel.split("/") or "\\" in rel:
+        raise RuntimeError(f"archive path escapes repo root: {rel}")
+    proc = git_run(["archive", ref, "--", rel])
+    if proc.returncode != 0:
+        raise RuntimeError(f"git archive {ref} {rel} failed: "
+                           f"{proc.stderr.decode(errors='replace')[:160]}")
+    try:
+        with tarfile.open(fileobj=io.BytesIO(proc.stdout), mode="r:*") as tar:
+            member = tar.getmember(rel)
+            if member.issym() or member.islnk():
+                raise RuntimeError(f"archive member is a link: {rel}")
+            handle = tar.extractfile(member)
+            if handle is None:
+                raise RuntimeError(f"archive member unreadable: {rel}")
+            return handle.read()
+    except (tarfile.TarError, KeyError) as exc:
+        raise RuntimeError(f"git archive parse failed for {rel}: {exc}") from exc
+
+
 def _load_record(ticket: str, problems: list[str]) -> dict | None:
     try:
         raw = git_show(ORIGIN_MAIN, f"research/tickets/stage-1/{ticket}/evaluation-record.json")
@@ -268,21 +346,47 @@ def check_s1_008(problems: list[str]) -> dict:
             problems.append(f"record missing binding field {key}")
     _check_hash(record.get("artifact_chain_hash"), "record artifact_chain_hash",
                 problems)
-    # Referenced evidence pack: must exist in the verified commit.
+    # Referenced evidence pack: must exist in the verified commit with
+    # hash-verified bytes (ticket-relative or repo-root resolution).
     entry = record.get("evidence_pack") or {}
     pack_rel = entry.get("path")
-    pack_resolved = f"research/tickets/stage-1/{ticket}/{pack_rel}" \
-        if isinstance(pack_rel, str) and not pack_rel.startswith("research/") else pack_rel
-    if not contained(pack_resolved, ticket):
-        problems.append(f"evidence pack path escapes ticket dir: {pack_rel}")
-    else:
+    pack_file_sha = entry.get("pack_sha256") or entry.get("sha256")
+    pack_resolved, pack_raw = _resolve_verified(
+        ticket, pack_rel, None, problems, "evidence pack")
+    pack_doc = None
+    if pack_raw is not None:
         try:
-            raw_show = git_show(ORIGIN_MAIN, pack_resolved)
-            raw_archive = git_archive_bytes(ORIGIN_MAIN, pack_resolved, ticket)
-            if raw_show != raw_archive:
-                problems.append("evidence pack show/archive bytes differ")
-        except RuntimeError as exc:
-            problems.append(f"referenced evidence pack absent from verified commit: {exc}")
+            pack_doc = json.loads(pack_raw.decode("utf-8"))
+        except (UnicodeDecodeError, ValueError) as exc:
+            problems.append(f"evidence pack is not valid JSON: {exc}")
+        if isinstance(pack_doc, dict):
+            for key, expected in (("goal_id", record.get("goal_id")),
+                                  ("campaign_id", record.get("campaign_id")),
+                                  ("evaluation_id", record.get("evaluation_id")),
+                                  ("artifact_chain_hash",
+                                   record.get("artifact_chain_hash")),
+                                  ("result", record.get("result"))):
+                if pack_doc.get(key) != expected:
+                    problems.append(f"evidence pack binding mismatch: {key}")
+    opaque = [k for k in ("pack_sha256", "record_sha256")
+              if isinstance((entry if k == "pack_sha256" else record).get(k), str)
+              and HEX64.fullmatch((entry if k == "pack_sha256" else record)[k])]
+    pack_note = ("opaque self-hash fields recorded but not independently "
+                 "reproducible: " + ", ".join(opaque)) if opaque else None
+    # Evidence-binding result files resolve the same hash-arbiter way.
+    # They carry recorded hashes rather than content-addressed filenames.
+    binding = record.get("evidence_binding") or {}
+    for key in ("comparison", "evaluation_result"):
+        item = binding.get(key) if isinstance(binding, dict) else None
+        if not isinstance(item, dict):
+            continue
+        if not isinstance(item.get("sha256"), str) or \
+                not HEX64.fullmatch(item["sha256"]):
+            problems.append(f"evidence binding {key} has no valid sha256")
+            continue
+        _resolve_verified(ticket, item.get("path"), item.get("sha256"),
+                          problems, f"evidence binding {key}",
+                          require_addressed=False)
     # Frozen artifacts ARE tracked: verify every hash from git archive bytes.
     frozen = record.get("frozen_artifacts")
     verified_frozen: dict[str, str] = {}
@@ -313,8 +417,14 @@ def check_s1_008(problems: list[str]) -> dict:
         contract = {}
     limitations = [x for x in (record.get("limitations") or [])
                    if isinstance(x, str) and x.strip()]
+    notes = []
+    if pack_note:
+        notes.append(pack_note)
+    if pack_resolved:
+        notes.append(f"evidence pack resolved at {pack_resolved}")
     return {"ticket": ticket, "status": "PROVEN" if not problems else "NOT_PROVEN",
             "schema": record.get("schema"), "verdict": verdict,
+            "resolution_notes": notes,
             "research_revision": record.get("research_revision"),
             "goal_id": record.get("goal_id"), "campaign_id": record.get("campaign_id"),
             "evaluation_id": record.get("evaluation_id"),

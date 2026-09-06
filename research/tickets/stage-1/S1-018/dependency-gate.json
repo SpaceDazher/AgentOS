@@ -28,9 +28,13 @@
     },
     {
       "ticket": "S1-008",
-      "status": "NOT_PROVEN",
+      "status": "PROVEN",
       "schema": "agentos.s1-008.evaluation-record/v2",
       "verdict": "pass_with_limits",
+      "resolution_notes": [
+        "opaque self-hash fields recorded but not independently reproducible: pack_sha256, record_sha256",
+        "evidence pack resolved at results/evidence/evidence-pack-d6b3733790d7fec92d5c5e4a4fd607495eb0146d7a9271bed16bd846f60aaee0.json"
+      ],
       "research_revision": 15,
       "goal_id": "goal_1XSFMXMFDMRFZSBD01M1FSQ41H",
       "campaign_id": "rcamp_6C0AY6Y0R2NNJ7Q201M1FSQ41H",
@@ -58,9 +62,7 @@
         "Clock assumptions: monotonic clock authoritative for elapsed; UTC wall for audit only."
       ],
       "canonical_db_recheck_required": true,
-      "problems": [
-        "referenced evidence pack absent from verified commit: git show origin/main:research/tickets/stage-1/S1-008/results/evidence/evidence-pack-d6b3733790d7fec92d5c5e4a4fd607495eb0146d7a9271bed16bd846f60aaee0.json failed: fatal: path 'research/tickets/stage-1/S1-008/results/evidence/evidence-pack-d6b3733790d7fec92d5c5e4a4fd607495eb0146d7a9271bed16bd846f60aaee0.json' does not exis"
-      ]
+      "problems": []
     },
     {
       "ticket": "S1-009",
@@ -85,10 +87,10 @@
       "problems": []
     }
   ],
-  "dependencies_proven": false,
-  "scope_isolation_baseline_available": false,
-  "revocation_baseline_available": false,
-  "adapter_boundary_available": false,
+  "dependencies_proven": true,
+  "scope_isolation_baseline_available": true,
+  "revocation_baseline_available": true,
+  "adapter_boundary_available": true,
   "inherited_limits": [
     "[S1-007] All results are local-model measurements from a deterministic stdlib-only simulation; no production latency, storage or privacy certification is claimed.",
     "[S1-007] The timing probe is a bounded same-host paired-interleaved wall-clock measurement (200 paired samples x 32 inner repeats x 3 seeds per variant, tolerance max(10% of control median, 2000ns) recomputed by the evaluator from raw samples); it cannot prove absence of all side channels.",
