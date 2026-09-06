@@ -1,0 +1,23 @@
+{
+  "$id": "agentos.s1-017.annotation/v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "S1-017 responsibility annotation (derived, never authoritative)",
+  "type": "object",
+  "required": ["model_version", "input_trace_digest", "assumptions", "observed_facts", "derived_claims", "unknowns", "counterfactuals", "confidence_class", "scope", "created_at", "producer_id", "authority"],
+  "properties": {
+    "model_version": { "type": "string", "minLength": 1 },
+    "input_trace_digest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "assumptions": { "type": "array", "items": { "type": "string" } },
+    "observed_facts": { "type": "array", "items": { "type": "string" } },
+    "derived_claims": { "type": "array", "items": { "type": "string" } },
+    "unknowns": { "type": "array", "items": { "type": "string" } },
+    "counterfactuals": { "type": "array", "items": { "type": "string" } },
+    "confidence_class": { "type": "string", "enum": ["PROVEN", "SUPPORTED", "UNDERDETERMINED"] },
+    "scope": { "type": "object" },
+    "created_at": { "type": "string", "minLength": 1 },
+    "producer_id": { "type": "string", "minLength": 1 },
+    "authority": { "type": "boolean", "enum": [false] },
+    "supersedes": { "type": ["string", "null"] }
+  },
+  "additionalProperties": false
+}

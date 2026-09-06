@@ -1,0 +1,286 @@
+{
+  "artifacts": {
+    "research_plan": {
+      "content": "Answer ontology Q2: where STIT/ATL responsibility analytics must live so it never becomes a second authorization mechanism. Evidence-first cycle with frozen corpus, three placements, adversarial probes and process-separated replay.",
+      "producer": "agentos-s1-017-producer",
+      "claim_refs": [
+        "CL-F1",
+        "CL-L1"
+      ]
+    },
+    "source_registry": {
+      "content": "Eight evidence roles: local ontology Q2, audit/runtime boundaries, formal constraints, S1-004 formal execution, S1-016 lineage binding, primary STIT semantics (Belnap/Horty), primary ATL semantics (Alur/Henzinger/Kupferman), causality/accountability limits (Halpern).",
+      "producer": "agentos-s1-017-producer",
+      "claim_refs": [
+        "CL-R1",
+        "CL-L1"
+      ]
+    },
+    "feature_catalog": {
+      "content": "Analyzer features: bounded STIT deliberative evaluation, ATL coalition ability with explicit environment moves, fail-closed defeaters (missing authority, redaction, identity, unreconciled unknowns, adversarial markers), annotation envelope with authority=false.",
+      "producer": "agentos-s1-017-producer",
+      "claim_refs": [
+        "CL-A1",
+        "CL-R1"
+      ]
+    },
+    "architecture_models": {
+      "content": "Placements A/B/C over one observable contract: A offline analysis of immutable export (baseline), B derived export annotation with recomputable index, C bounded runtime annotation never read by the gateway. Gateway ownership is machine-checked (R1).",
+      "producer": "agentos-s1-017-producer",
+      "claim_refs": [
+        "CL-D1",
+        "CL-R1"
+      ]
+    },
+    "mental_model": {
+      "content": "Responsibility is an explanation over a bounded model, never an authority: actor/authority/action/choice/alternative/attribution are separate terms; absence of an event is not proof of absence of ability; incomplete traces abstain.",
+      "producer": "agentos-s1-017-producer",
+      "claim_refs": [
+        "CL-A1"
+      ]
+    },
+    "ontology": {
+      "content": "Terms: actor (canonical principal), authority (gateway-verified grant/approval/lease), action, choice point, available alternative, attempt, causal contribution, STIT attribution, ATL ability, operational accountability, responsibility annotation (authority=false), legal/moral blame (OUT_OF_SCOPE).",
+      "producer": "agentos-s1-017-producer",
+      "claim_refs": [
+        "CL-A1",
+        "CL-D1"
+      ]
+    },
+    "mathematical_model": {
+      "content": "Bounded concurrent-game model: full state enumeration, deterministic STIT (guarantee + difference-making over authorised alternatives) and ATL (forcing strategies under modeled environment moves); underdetermination is a first-class outcome.",
+      "producer": "agentos-s1-017-producer",
+      "claim_refs": [
+        "CL-F1",
+        "CL-L1"
+      ]
+    },
+    "synthesis_and_gaps": {
+      "content": "Gaps: no human-subject validation, no production conformance, bounded state space, single-operator review; counterfactual policy and observability assumptions are recorded per annotation.",
+      "producer": "agentos-s1-017-producer",
+      "claim_refs": [
+        "CL-D1",
+        "CL-L1"
+      ]
+    },
+    "independent_audit": {
+      "content": "Auditor recomputes every observation from corpus bytes, checks R1-R14, compares verdicts against a construction-intent oracle that never ran the analyzer, and replicates the 864-observation matrix across two processes.",
+      "producer": "agentos-s1-017-independent-verifier",
+      "claim_refs": [
+        "CL-F1",
+        "CL-L1"
+      ]
+    },
+    "platform_plan": {
+      "content": {
+        "Scope": "Bounded responsibility analytics placement decision; no production rollout, no legal or moral attribution, no second authorization path.",
+        "Architecture": "Stdlib bounded game engine, shared analyzer, evaluator/comparator, publisher; one frozen corpus and oracle.",
+        "Workstreams": "Freeze; final semantics; matrix; probes; replay; sensitivity; operator decision; canonical publication.",
+        "Milestones": "PREPARATION_READY after technical gates; bounded closure after admissible operator review and canonicalization.",
+        "Verification": "Targeted suites, real recomputation, probes A-P with controls, replication record, native normalizer pass, wiki-check.",
+        "Risks": "Bounded corpus, model assumptions, single-operator review limits.",
+        "Open decisions": "Production implementation conformance needs a future ticket."
+      },
+      "producer": "agentos-s1-017-producer",
+      "claim_refs": [
+        "CL-D1",
+        "CL-L1"
+      ]
+    },
+    "progress": {
+      "content": "Phase A frozen fixtures; Phase B final semantics, full matrix, probes A-P, replay, sensitivity and operator decision.",
+      "producer": "agentos-s1-017-producer",
+      "claim_refs": [
+        "CL-F1"
+      ]
+    }
+  },
+  "audit": {
+    "auditor": "agentos-s1-017-independent-verifier",
+    "producer": "agentos-s1-017-producer",
+    "verdict": "pass_with_limits",
+    "limitations": [
+      "tracked-Git dependency evidence; local canonical DB recheck is required before final publication",
+      "no human, legal, moral or production data: all rates are technical model checks",
+      "bounded 48-scenario corpus; no arbitrary-system attribution claims",
+      "same-host process separation is called replay, not an external audit",
+      "sensitivity inputs are deterministic model counts and artifact byte sizes only; wall-clock latencies are reported separately and never enter the decision"
+    ]
+  },
+  "auditor": "agentos-s1-017-independent-verifier",
+  "claims": [
+    {
+      "id": "CL-F1",
+      "s1_017_class": "formal_semantics",
+      "claim_class": "fact",
+      "text": "Deliberative STIT and bounded ATL are evaluated over a fully enumerated bounded model with explicit choice partitions and environment moves across 864 observations.",
+      "support": [
+        "SRC-S1-017-06",
+        "SRC-S1-017-07"
+      ]
+    },
+    {
+      "id": "CL-A1",
+      "s1_017_class": "audit_explanation",
+      "claim_class": "inference",
+      "text": "Annotations explain who could have done what under declared alternatives; absence of an event is never treated as proof of absence of ability.",
+      "support": [
+        "SRC-S1-017-08",
+        "SRC-S1-017-02"
+      ]
+    },
+    {
+      "id": "CL-D1",
+      "s1_017_class": "design_inference",
+      "claim_class": "inference",
+      "text": "Placement evidence is compared over one observable contract with unweighted safety gates and deterministic sensitivity dimensions (259 vectors, zero flips, leader A).",
+      "support": [
+        "SRC-S1-017-03",
+        "SRC-S1-017-05"
+      ]
+    },
+    {
+      "id": "CL-R1",
+      "s1_017_class": "runtime_boundary",
+      "claim_class": "fact",
+      "text": "Gateway owns 100% of authorization decisions; annotations are accepted and ignored by the decision path, machine-checked in every observation.",
+      "support": [
+        "SRC-S1-017-02",
+        "SRC-S1-017-01"
+      ]
+    },
+    {
+      "id": "CL-M1",
+      "s1_017_class": "measurement",
+      "claim_class": "fact",
+      "text": "864 technical observations: R1-R14 zero, oracle agreement 100%, abstention correctness 100%, probes A-P detected with controls.",
+      "support": [
+        "SRC-S1-017-04",
+        "SRC-S1-017-03"
+      ]
+    },
+    {
+      "id": "CL-C1",
+      "s1_017_class": "decision",
+      "claim_class": "target",
+      "text": "Placement decision OFFLINE_ANALYTICS recorded with operator review; no legal, moral or production-conformance claim is made.",
+      "support": [
+        "SRC-S1-017-01",
+        "SRC-S1-017-05"
+      ]
+    },
+    {
+      "id": "CL-L1",
+      "s1_017_class": "limitation",
+      "claim_class": "assumption",
+      "text": "Bounded scenarios, single-operator review, same-host replay; recognition/effectiveness and arbitrary-system correctness remain unmeasured.",
+      "support": [
+        "SRC-S1-017-08"
+      ]
+    }
+  ],
+  "config": {
+    "min_source_count": 6,
+    "min_verified_ratio": 1.0,
+    "required_artifacts": [
+      "research_plan",
+      "source_registry",
+      "feature_catalog",
+      "architecture_models",
+      "mental_model",
+      "ontology",
+      "mathematical_model",
+      "synthesis_and_gaps",
+      "independent_audit",
+      "platform_plan",
+      "progress"
+    ]
+  },
+  "producer": "agentos-s1-017-producer",
+  "sources": [
+    {
+      "id": "SRC-S1-017-01",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-017/sources/snap-01-src05-ontology-q2.md",
+      "title": "SRC-05 sections 4/9, question Q2",
+      "source_type": "ontology",
+      "verification_status": "verified",
+      "verifier": "s1-017-source-review-2026-09-05",
+      "verification_method": "tracked-file-hash-review",
+      "content": "# SRC-05 ontology input, sections 4/9, question Q2 (S1-017 evidence role: ontology)\n\nProvenance: no standalone SRC-05 file exists in this repository (searched\n`research/**`, `docs/**`, 2026-09-05). This snapshot freezes the locally\navailable formulation of ontology question Q2 plus the repo ontology it\nconstrains. The absence of a separate SRC-05 document is recorded here, not\nhidden. Follows the same local-formulation precedent as prior tickets.\n\nCanonical URI: https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-017/sources/snap-01-src05-ontology-q2.md\nPublisher: AgentOS research (local ontology formulation)\nVersion: freeze 2026-09-05 (base commit 091ade2)\nRetrieved at: 2026-09-05T00:00:00Z\nEvidence role: ontology (Q2 responsibility-analytics placement question)\nAccess/license: internal design input, full-text excerpt authorized locally\n\n## Q2 (verbatim ticket lineage)\n\nCan STIT/ATL annotations explain who could have done what, which alternatives\nwere available, and why a result occurred; and where must these computations\nlive so they never become a second, hidden authorization mechanism?\n\n## Repo ontology constrained by Q2 (spec/SPEC.md, verbatim)\n\nRoles: Requester (human user) creates Goals and approves/rejects at gates;\nApprover consumes exact-action approvals (one-time, bound); Worker executes\nTasks inside isolated workspaces; Evaluator runs checks and produces records\nbut never accepts; Gate moves Goals to ACCEPTED/REJECTED and is the sole path\nto terminal acceptance.\n\n\"Conversation history is never the sole copy of decisions/approvals/state.\"\n\"Artifact versions are immutable; corrections create a new version +\nSUPERSEDES.\" \"Approvals bind to actor + exact operation + exact canonical\narguments + expiry and are consumed atomically exactly once.\"\n\nS1-017 use: Q2 asks where STIT/ATL computation lives. The ontology above fixes\nthe non-negotiables: only Gate/Gateway decide; annotations are derived data.\nNo legal/moral/production claim is sourced here.\n"
+    },
+    {
+      "id": "SRC-S1-017-02",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-017/sources/snap-02-audit-runtime-boundaries.md",
+      "title": "SRC-01 s10 L5/L6 / SRC-03 s4 audit-runtime boundaries",
+      "source_type": "audit-boundary",
+      "verification_status": "verified",
+      "verifier": "s1-017-source-review-2026-09-05",
+      "verification_method": "tracked-file-hash-review",
+      "content": "# Audit/runtime boundaries: SRC-01 section 10 L5/L6, SRC-03 section 4 (S1-017 evidence role: audit-boundary)\n\nProvenance: excerpts of tracked repo files at base commit 091ade2\n(`spec/SPEC.md` sections 2/4/6, `src/agentos/gateway.py` approval pipeline,\n`src/agentos/journal.py` atomic journal). Internal design inputs; full files\nremain in the repo. Role labels follow the ticket's source map; the excerpts\nare the locally inspectable substance.\n\nCanonical URI: https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-017/sources/snap-02-audit-runtime-boundaries.md\nPublisher: AgentOS repo (spec + reference implementation)\nVersion: SPEC v1.0 at 091ade2, freeze 2026-09-05\nRetrieved at: 2026-09-05T00:00:00Z\nEvidence role: audit-boundary (gateway ownership, atomic evidence)\nAccess/license: local repo files, full-text excerpt authorized\n\n## SRC-01 section 10 L5/L6 (lease/fencing boundaries, paraphrased)\n\n- L5-class: mutating intent is recorded BEFORE the effect; repeats without a\n  recorded outcome surface UNKNOWN_OUTCOME + reconciliation, never blind retry.\n- L6-class: mutating ops require a live RUNNING run with an unexpired lease\n  verified in SQL; fence tokens come from a monotonic persisted counter and\n  are stamped into the activity record.\n\n## SRC-03 section 4 (lifecycle/state semantics, paraphrased with identifiers)\n\n- Approval lifecycle GRANTED → CONSUMED | EXPIRED | REVOKED with exactly-once\n  conditional-UPDATE consumption over (nonce, actor, operation,\n  tool_identity, canonical args, target, expiry).\n- Transition + audit event commit in ONE sqlite transaction (journal); the\n  audit chain is hash-linked (`prev_event_sha256`); evidence packs fail loudly\n  on chain gaps.\n- Memory scoping enforced at SQL level; cross-scope reads raise\n  MemoryScopeViolation. External content is untrusted and can never expand\n  capabilities, policy, or scope.\n\nS1-017 use: grounds invariants R1 (gateway ownership), R2 (non-authority),\nR3 (immutable evidence), R5 (complete authority chain) and R12-adjacent\natomicity. Crash/reconciliation semantics are inherited for worker-crash and\nunknown-outcome scenarios.\n"
+    },
+    {
+      "id": "SRC-S1-017-03",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-004/formal-program",
+      "title": "SRC-06 sections 1-2/7 formal-model constraints",
+      "source_type": "formal-constraints",
+      "verification_status": "verified",
+      "verifier": "s1-017-source-review-2026-09-05",
+      "verification_method": "tracked-file-hash-review",
+      "content": "# SRC-06 formal/model constraints, sections 1-2 and 7 (S1-017 evidence role: formal-constraints)\n\nProvenance: excerpts of `origin/main` tracked bytes from the S1-004 formal\nprogram (`alloy/*.als`, `tla/*.tla`, `simulator/*.py`), which is the repo's\nexecutable formal baseline. No formal text is invented; scope notes below\nquote file structure, not semantics.\n\nCanonical URI: https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-004/formal-program\nPublisher: AgentOS S1-004 formal program (origin/main bytes)\nVersion: agentos_structural_v1/v2 (.als), agentos_transitions_v1 (.tla/.cfg),\ninvariant_simulator.py; retrieved 2026-09-05\nRetrieved at: 2026-09-05T00:00:00Z\nEvidence role: formal-constraints (bounded commands, scopes, simulator discipline)\nAccess/license: local repo bytes, excerpt authorized\n\n## SRC-06 sections 1-2 (bounded modeling discipline, observed)\n\n- Alloy commands carry exact scopes (`for 4 but exactly 2 Grant, exactly 2\n  Right, exactly 1 IdentityMembership`): bounded, enumerated, no universal\n  claims beyond the stated scope.\n- Near-miss commands expect UNSAT (`NearMissDualIdentity`,\n  `NearMissTwoScopes`, `NearMissRightsExpansion`): the model must REJECT\n  dual identity, dual scope and rights expansion by construction.\n- TLA+ transition system with .cfg bounds; TLC verdicts record engine\n  version, distinct/generated state counts and temporal properties checked.\n\n## SRC-06 section 7 (simulation discipline, observed)\n\n- `simulator/invariant_simulator.py` with `run_acceptance.py` and\n  `run_formal.py`; seeded runs (seed-11/22/33) with config/result/trace_digest\n  triples; probes file alongside results.\n\nS1-017 use: the S1-017 bounded Kripke/concurrent-game model follows the same\ndiscipline (exact scopes, near-miss rejection, seeded determinism, engine\nmarkers with versions and counts). A `checked=true` marker or narrative log\nalone is never cited as proof.\n"
+    },
+    {
+      "id": "SRC-S1-017-04",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-004/results/formal-evidence",
+      "title": "S1-004 canonical formal execution evidence",
+      "source_type": "formal-execution",
+      "verification_status": "verified",
+      "verifier": "s1-017-source-review-2026-09-05",
+      "verification_method": "tracked-file-hash-review",
+      "content": "# S1-004 canonical formal execution evidence (S1-017 evidence role: formal-execution)\n\nProvenance: excerpts of `origin/main` tracked bytes (evaluation record,\nformal summary, Alloy/TLC verdicts). Record: result `pass_with_limits`,\nrevision 7, goal `goal_Z9TP87YGTAMDPD9801M18BSRXE`,\nevaluation `reval_5JJ8C83TCA8CNQ5Q01M18BSRZX`,\nchain `ce1fcfd5e17cec41ae8c23233b276b709f6da5f978da0ad11a0cdb07f2f1d349`,\ntracked pack `research/tickets/stage-1/S1-004/results/evidence/evidence-pack-98f6b998909983706ea993e6877b56b003bb64f5228a50559bdb4e01feb98841.json`.\n\nCanonical URI: https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-004/results/formal-evidence\nPublisher: AgentOS S1-004 (canonical rev 7)\nVersion: canonical record at origin/main, retrieved 2026-09-05\nRetrieved at: 2026-09-05T00:00:00Z\nEvidence role: formal-execution (Alloy/TLC/simulation markers)\nAccess/license: local repo bytes, excerpt authorized\n\n## Execution markers (origin/main bytes)\n\n- Alloy: SAT on valid grant/promotion commands within stated scopes; UNSAT on\n  dual-identity, dual-scope and rights-expansion near-miss commands.\n- TLC: `completed_no_error: true`, 271168 distinct states of 903731\n  generated, temporal properties checked, named invariants verified\n  (ActivationWithinOneTick, BudgetConservation, NoBlindRetry,\n  RevocationMonotonicity, among others).\n- Simulator: seeds 11/22/33 with config/result/trace_digest triples and a\n  probes file; `run_acceptance.py` + `run_formal.py` entry points.\n\n## Honest limits carried\n\n- Bounds are explicit per command/config; nothing is proven beyond the\n  enumerated scopes and checked properties.\n- Same-host execution; engine versions recorded in verdict files.\n- S1-017 runs its own bounded model; S1-004 runs are precedent for\n  discipline, never S1-017 proof.\n"
+    },
+    {
+      "id": "SRC-S1-017-05",
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-017/sources/snap-05-s1-016-expected-binding.md",
+      "title": "S1-016 expected lineage/audit binding (no values assumed)",
+      "source_type": "lineage-binding",
+      "verification_status": "verified",
+      "verifier": "s1-017-source-review-2026-09-05",
+      "verification_method": "tracked-file-hash-review",
+      "content": "# S1-016 expected lineage/audit binding (S1-017 evidence role: lineage-binding)\n\nStatus: EXPECTED BINDING DESCRIPTION ONLY — S1-016 is not canonicalized in\n`origin/main` (verified 2026-09-05: no evaluation-record.json at\n`origin/main:research/tickets/stage-1/S1-016/`). NO goal/campaign/evaluation\nIDs, revision, chain, result, pack hashes or decision values are stated here:\ninventing them is explicitly forbidden and the Phase B gate must obtain them\nprogrammatically after merge/canonicalization.\n\nCanonical URI: https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-017/sources/snap-05-s1-016-expected-binding.md\nPublisher: AgentOS S1-017 Phase A (binding expectation, not evidence)\nVersion: expectation freeze 2026-09-05\nRetrieved at: 2026-09-05T00:00:00Z\nEvidence role: lineage-binding (what Phase B will verify)\nAccess/license: internal preparation note\n\n## What Phase B will prove from immutable bytes (no values assumed)\n\n- S1-016 branch `codex/s1-016-workspace-lineage` merged/canonicalized into a\n  verifiable ref; exact ticket/revision/goal/campaign/evaluation/result/full\n  64-hex chain read from the canonical evaluation record (never typed by hand).\n- File/payload/self SHA-256 of canonical and ticket packs, content-addressed\n  filenames, pack bindings, and `git archive <verified-commit>` bytes for the\n  record and frozen artifacts.\n- The SELECTED lineage representation among FLAT_RUNTIME_PROV_EXPORT,\n  RICH_RUNTIME_PROV_DICTIONARY, HYBRID_MINIMAL_LINEAGE (or INCONCLUSIVE),\n  with L1–L12 counters, reconstruction/export semantics and every inherited\n  limitation carried without status upgrade.\n- The S1-016 decision gives provenance edges ZERO policy authority (a\n  contrary decision would trip S1-017 stop/escalation and block Phase B).\n- Absence of path traversal, symlink escape, stale/missing/extra refs.\n\n## S1-017 independence guard\n\nPhase A proceeds without S1-016 bytes. S1-017 scenarios carry their own\nbounded transition systems and audit event sequences; S1-016 lineage is\nconsumed only as frozen input in Phase B, never as an oracle for S1-017\nscenario outcomes. Copying artifacts across branches to bypass the gate is\nforbidden.\n"
+    },
+    {
+      "id": "SRC-S1-017-06",
+      "canonical_uri": "https://global.oup.com/academic/product/facing-the-future-9780198240119",
+      "title": "Belnap/Perloff/Xu Facing the Future (STIT primary)",
+      "source_type": "stit-primary",
+      "verification_status": "verified",
+      "verifier": "s1-017-source-review-2026-09-05",
+      "verification_method": "tracked-file-hash-review",
+      "content": "# Bibliographic record: STIT agency/responsibility semantics (primary source) (S1-017 evidence role: stit-primary)\n\nFull-text status: BIBLIOGRAPHIC RECORD ONLY (not a full-text snapshot).\nThe work below is an in-copyright monograph; no text is reproduced. Tests run\noffline and never fetch this source. Primary formal semantics is separated\nfrom surveys: this entry is the primary source.\n\nCanonical URI: https://global.oup.com/academic/product/facing-the-future-9780198240119\nPublisher: Oxford University Press\nVersion: Nuel Belnap, Michael Perloff, Ming Xu — \"Facing the Future: Agents\nand Choices in Our Indeterminist World\", Oxford, 2001 (brains/worms/wormholes\nbranching-time agency; deliberative STIT operator; agency vs mere causation)\nRetrieved at: 2026-09-05T00:00:00Z\nEvidence role: stit-primary (seeing-to-it-that, choice, agency)\nAccess/license: commercial monograph via publisher/academic libraries (not vendored)\nAvailability: publisher page resolvable 2026-09-05 (title, authors, edition)\n\n## Concepts relied upon (identifiers, not copied text)\n\n- Branching-time histories; an agent's choice as a partition cell of\n  histories through a moment; `stit` (deliberative: the agent's choice\n  guarantees the outcome AND a rejected alternative allowed its absence).\n- Agency requires a real choice between alternatives available to THAT agent\n  at THAT moment; absence of alternatives never grounds responsibility.\n- Model-relativity: STIT verdicts hold in a declared model with declared\n  choice partitions, never about the world simpliciter.\n\n## S1-017 interpretation (design inference, not the monograph's text)\n\n- STIT attribution in S1-017 requires a frozen choice partition with proven\n  available alternatives; otherwise the answer is UNDERDETERMINED.\n- The bounded implementation covers the deliberative fragment only; full STIT\n  (epistemic/deontic extensions) is explicitly out of scope and never claimed.\n\nNo conformance claim to the full logic is made.\n"
+    },
+    {
+      "id": "SRC-S1-017-07",
+      "canonical_uri": "https://doi.org/10.1145/646836.646878",
+      "title": "Alur/Henzinger/Kupferman ATL (primary)",
+      "source_type": "atl-primary",
+      "verification_status": "verified",
+      "verifier": "s1-017-source-review-2026-09-05",
+      "verification_method": "tracked-file-hash-review",
+      "content": "# Bibliographic record: ATL / strategic ability semantics (primary source) (S1-017 evidence role: atl-primary)\n\nFull-text status: BIBLIOGRAPHIC RECORD ONLY (not a full-text snapshot).\nThe paper below is ACM-copyrighted scholarship; no text is reproduced. Tests\nrun offline and never fetch this source. Primary formal semantics is\nseparated from surveys: this entry is the primary source.\n\nCanonical URI: https://doi.org/10.1145/646836.646878\nPublisher: Association for Computing Machinery (Journal of the ACM)\nVersion: Rajeev Alur, Thomas A. Henzinger, Orna Kupferman —\n\"Alternating-time Temporal Logic\", J. ACM 49(5), 2002, pp. 672–713\n(concurrent game structures; coalition strategy quantifiers <<A>>;\ntemporal objectives; model checking ATL)\nRetrieved at: 2026-09-05T00:00:00Z\nEvidence role: atl-primary (coalition ability, strategy quantification)\nAccess/license: ACM Digital Library (not vendored)\nAvailability: DOI resolvable 2026-09-05 (citation metadata, authors, venue)\n\n## Concepts relied upon (identifiers, not copied text)\n\n- Concurrent game structures: states, agents, moves per agent, transition\n  function; a play results from all agents' simultaneous moves.\n- `<<A>> φ` (A coalition has a collective strategy forcing φ): existential\n  strategy quantification over the coalition, universal over environment\n  (opponent) moves; temporal objectives (next/eventually/always/until).\n- Ability is relative to the declared move repertoire: unmodeled moves are\n  not capability evidence, and environment moves must be modeled explicitly\n  (adversarial by default for ability claims).\n\n## S1-017 interpretation (design inference, not the paper's text)\n\n- ATL ability in S1-017 requires an explicit environment-move model;\n  coalition ability computed without environment moves is UNDERDETERMINED\n  (probe K).\n- The bounded implementation covers finite deterministic concurrent games\n  with declared objectives only; full ATL* / incomplete-information\n  extensions are out of scope and never claimed.\n\nNo conformance claim to the full logic is made.\n"
+    },
+    {
+      "id": "SRC-S1-017-08",
+      "canonical_uri": "https://mitpress.mit.edu/9780262035026/actual-causality/",
+      "title": "Halpern Actual Causality + PROV-DM accountability limits",
+      "source_type": "causality-limits",
+      "verification_status": "verified",
+      "verifier": "s1-017-source-review-2026-09-05",
+      "verification_method": "tracked-file-hash-review",
+      "content": "# Bibliographic record: actual causality and audit-accountability limits (S1-017 evidence role: causality-limits)\n\nFull-text status: BIBLIOGRAPHIC RECORD ONLY (not a full-text snapshot).\nThe works below are in-copyright scholarship/public standards; no text is\nreproduced. Tests run offline and never fetch these sources.\n\nPrimary entry — causal limits:\nCanonical URI: https://mitpress.mit.edu/9780262035026/actual-causality/\nPublisher: The MIT Press\nVersion: Joseph Y. Halpern — \"Actual Causality\", MIT Press, 2016\n(structural-equation models; but-for + minimality + contingency test for\nactual cause; cause vs explanation vs blame distinguished across chapters)\nRetrieved at: 2026-09-05T00:00:00Z\nEvidence role: causality-limits (model-relativity of cause; correlation,\nordering and co-occurrence never establish causation without a model rule)\nAccess/license: commercial monograph (not vendored)\nAvailability: publisher page resolvable 2026-09-05\n\nAccountability entry — provenance records support audit but decide nothing:\nCanonical URI: https://www.w3.org/TR/prov-dm/\nPublisher: World Wide Web Consortium (W3C)\nVersion: PROV-DM: The PROV Data Model, W3C Recommendation 30 April 2013\nRetrieved at: 2026-09-05T00:00:00Z\nEvidence role: causality-limits (Entity/Activity/Agent records as audit\nsubstrate; records describe, they do not authorize or blame)\nAccess/license: W3C Document License (not vendored)\nAvailability: canonical URI resolvable 2026-09-05\n\n## Principles relied upon (citations, not copied text)\n\n- Actual causation is model-relative: the same event pattern yields different\n  causes under different structural models; a cause verdict never outruns its\n  declared model, contingencies and normality assumptions.\n- Correlation, temporal ordering and co-occurrence are not causation without\n  an explicit model rule (but-for/minimality/contingency discipline).\n- Responsibility/blame needs strictly more than causation (intent, knowledge,\n  obligation, reasonable alternatives); S1-017 never computes blame —\n  legal/moral blame is OUT_OF_SCOPE by contract.\n- Provenance records (PROV-DM) are audit substrate: they support\n  reconstruction of who/what/when linkages and decide no ALLOW/DENY.\n\n## S1-017 interpretation (design inference, not the sources' text)\n\n- Every S1-017 annotation carries assumptions + unknowns + counterfactuals;\n  model disagreement or incomplete traces force abstention (R10).\n- Missing events never prove missing possibilities (R10/E-probe family).\n\nNo conformance claim is made.\n"
+    }
+  ],
+  "operator_review_n": 1,
+  "design_decision": "OFFLINE_ANALYTICS",
+  "placement": "OFFLINE_ANALYTICS",
+  "sensitivity_flips": 0
+}

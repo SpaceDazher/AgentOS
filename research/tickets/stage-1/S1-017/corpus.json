@@ -1,0 +1,5173 @@
+{
+  "schema": "agentos.s1-017.corpus/v1",
+  "ticket": "S1-017",
+  "phase": "B",
+  "scenario_count": 48,
+  "cases": [
+    {
+      "scenario_id": "CS-01",
+      "class": "complete_supported",
+      "description": "grant allows read effect",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "grant1": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "read"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "read",
+          "args": {
+            "path": "doc"
+          },
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "grant1"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        },
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "wait",
+          "args": {},
+          "to": "s0",
+          "authority_required": null,
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev0"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "read",
+            "decision": "ALLOW",
+            "ref": "ev1"
+          },
+          {
+            "seq": 1,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "wait",
+            "decision": "ALLOW",
+            "ref": "ev0"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "stit_holds"
+      },
+      "tags": [
+        "grant"
+      ],
+      "semantic_digest": "e7d03bdbc7c64b7b10cef43861a59cfff5a7cb2b536d51eb5fc1278867736a9c"
+    },
+    {
+      "scenario_id": "CS-02",
+      "class": "complete_supported",
+      "description": "denied desired alternative: no attribution for the unachieved write",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "grant1": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "read"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "read",
+          "args": {
+            "path": "doc"
+          },
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "grant1"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        },
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "wait",
+          "args": {},
+          "to": "s0",
+          "authority_required": null,
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev0"
+        },
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "write",
+          "args": {},
+          "to": "s0",
+          "authority_required": {
+            "grant_id": "nope"
+          },
+          "outcome": "denied",
+          "environment_move": null,
+          "audit_ref": "ev2"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "read",
+            "decision": "ALLOW",
+            "ref": "ev1"
+          },
+          {
+            "seq": 1,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "wait",
+            "decision": "ALLOW",
+            "ref": "ev0"
+          },
+          {
+            "seq": 2,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "write",
+            "decision": "DENY",
+            "ref": "ev2"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "written"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "stit_absent"
+      },
+      "tags": [
+        "denial"
+      ],
+      "semantic_digest": "51bc87063299de67893474b3b02755f9602e79c857d721c29ff39af4b734f4b8"
+    },
+    {
+      "scenario_id": "CS-03",
+      "class": "complete_supported",
+      "description": "delegated child action attributed",
+      "principals": [
+        {
+          "principal_id": "prin_parent",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        },
+        {
+          "principal_id": "prin_child",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "g-parent": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "delegate"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {
+            "grants": {
+              "g-child": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "read"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s2",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_parent",
+          "action": "delegate",
+          "args": {
+            "child": "prin_child",
+            "actions": [
+              "read"
+            ]
+          },
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "g-parent"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        },
+        {
+          "from": "s1",
+          "actor": "prin_child",
+          "action": "read",
+          "args": {
+            "delegation": "g-parent"
+          },
+          "to": "s2",
+          "authority_required": {
+            "grant_id": "g-child"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev2"
+        },
+        {
+          "from": "s1",
+          "actor": "prin_child",
+          "action": "wait",
+          "args": {},
+          "to": "s1",
+          "authority_required": null,
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev0c"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_parent",
+            "action": "delegate",
+            "decision": "ALLOW",
+            "ref": "ev1"
+          },
+          {
+            "seq": 1,
+            "kind": "audit",
+            "actor": "prin_child",
+            "action": "read",
+            "decision": "ALLOW",
+            "ref": "ev2"
+          },
+          {
+            "seq": 2,
+            "kind": "audit",
+            "actor": "prin_child",
+            "action": "wait",
+            "decision": "ALLOW",
+            "ref": "ev0c"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_child",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "stit_holds"
+      },
+      "tags": [
+        "delegation"
+      ],
+      "semantic_digest": "7c87ddf81aa22d7dd4c44643d6fba63438540b62bf3b3a9ee585da5c75116c4d"
+    },
+    {
+      "scenario_id": "CS-04",
+      "class": "complete_supported",
+      "description": "revoke before decision denies",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "grant1": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "read"
+                ],
+                "revoked": true,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "read",
+          "args": {
+            "path": "doc"
+          },
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "grant1"
+          },
+          "outcome": "denied",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        },
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "wait",
+          "args": {},
+          "to": "s0",
+          "authority_required": null,
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev0"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "read",
+            "decision": "DENY",
+            "ref": "ev1"
+          },
+          {
+            "seq": 1,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "wait",
+            "decision": "ALLOW",
+            "ref": "ev0"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "stit_absent"
+      },
+      "tags": [
+        "denial",
+        "revocation"
+      ],
+      "semantic_digest": "bf4f0b54f5c9a4cd9097b5655cac1410e12771f140dfc9fd08fa08b0259640cc"
+    },
+    {
+      "scenario_id": "CS-05",
+      "class": "complete_supported",
+      "description": "approval consumed once",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "grant1": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "read"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "read",
+          "args": {
+            "path": "doc"
+          },
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "grant1"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        },
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "wait",
+          "args": {},
+          "to": "s0",
+          "authority_required": null,
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev0"
+        },
+        {
+          "from": "s1",
+          "actor": "prin_A",
+          "action": "read",
+          "args": {
+            "reuse": "consumed"
+          },
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "grant1"
+          },
+          "outcome": "denied",
+          "environment_move": null,
+          "audit_ref": "ev3"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "read",
+            "decision": "ALLOW",
+            "ref": "ev1"
+          },
+          {
+            "seq": 1,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "wait",
+            "decision": "ALLOW",
+            "ref": "ev0"
+          },
+          {
+            "seq": 2,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "read",
+            "decision": "DENY",
+            "ref": "ev3"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "stit_holds"
+      },
+      "tags": [
+        "denial"
+      ],
+      "semantic_digest": "87663170970f7f3c0520969d319476c6ad23cd7beeda686a5cdad6bf7dcb67df"
+    },
+    {
+      "scenario_id": "CS-06",
+      "class": "complete_supported",
+      "description": "lease expiry denies",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "grant1": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "read"
+                ],
+                "revoked": false,
+                "expired": true
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "read",
+          "args": {
+            "path": "doc"
+          },
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "grant1"
+          },
+          "outcome": "denied",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        },
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "wait",
+          "args": {},
+          "to": "s0",
+          "authority_required": null,
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev0"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "read",
+            "decision": "DENY",
+            "ref": "ev1"
+          },
+          {
+            "seq": 1,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "wait",
+            "decision": "ALLOW",
+            "ref": "ev0"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "stit_absent"
+      },
+      "tags": [
+        "denial",
+        "revocation"
+      ],
+      "semantic_digest": "a517884257b526a51cf593994ed4f4c57fe88c8116f56ac7383ada18b84da21e"
+    },
+    {
+      "scenario_id": "CS-07",
+      "class": "complete_supported",
+      "description": "worker crash reconciled to effect",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "grant1": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "read"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "read",
+          "args": {
+            "path": "doc"
+          },
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "grant1"
+          },
+          "outcome": "unknown",
+          "environment_move": null,
+          "audit_ref": "ev1",
+          "reconciled_as": "effect"
+        },
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "wait",
+          "args": {},
+          "to": "s0",
+          "authority_required": null,
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev0"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "read",
+            "decision": "UNKNOWN",
+            "ref": "ev1"
+          },
+          {
+            "seq": 1,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "wait",
+            "decision": "ALLOW",
+            "ref": "ev0"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "stit_holds"
+      },
+      "tags": [
+        "unknown"
+      ],
+      "semantic_digest": "2ce8bf5d2f6a903ca45c117a864406bffbf8c063d7b21a1748ffebf4fbb1f112"
+    },
+    {
+      "scenario_id": "CS-08",
+      "class": "complete_supported",
+      "description": "coalition ability vs adversarial env",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "gA": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "push"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "push",
+          "args": {},
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "gA"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        },
+        {
+          "from": "s0",
+          "actor": "env",
+          "action": "perturb",
+          "args": {},
+          "to": "s0",
+          "authority_required": null,
+          "outcome": "effect",
+          "environment_move": "perturb",
+          "audit_ref": "ev9"
+        },
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "wait",
+          "args": {},
+          "to": "s0",
+          "authority_required": null,
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev0"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "push",
+            "decision": "ALLOW",
+            "ref": "ev1"
+          },
+          {
+            "seq": 1,
+            "kind": "audit",
+            "actor": "env",
+            "action": "perturb",
+            "decision": "ALLOW",
+            "ref": "ev9"
+          },
+          {
+            "seq": 2,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "wait",
+            "decision": "ALLOW",
+            "ref": "ev0"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "atl",
+      "environment": "adversarial",
+      "oracle_hint": {
+        "kind": "atl_holds"
+      },
+      "tags": [
+        "coalition"
+      ],
+      "semantic_digest": "61aed0ec889dcba233a52d2623cec1708d78524e651ffc27213a513f4ece978b"
+    },
+    {
+      "scenario_id": "CS-09",
+      "class": "complete_supported",
+      "description": "multi-step delegated chain",
+      "principals": [
+        {
+          "principal_id": "prin_parent",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        },
+        {
+          "principal_id": "prin_child",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "g1": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "step"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {
+            "grants": {
+              "g2": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "step"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s2",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_parent",
+          "action": "step",
+          "args": {
+            "delegate": "prin_child"
+          },
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "g1"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        },
+        {
+          "from": "s1",
+          "actor": "prin_child",
+          "action": "step",
+          "args": {},
+          "to": "s2",
+          "authority_required": {
+            "grant_id": "g2"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev2"
+        },
+        {
+          "from": "s1",
+          "actor": "prin_child",
+          "action": "wait",
+          "args": {},
+          "to": "s1",
+          "authority_required": null,
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev0c"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_parent",
+            "action": "step",
+            "decision": "ALLOW",
+            "ref": "ev1"
+          },
+          {
+            "seq": 1,
+            "kind": "audit",
+            "actor": "prin_child",
+            "action": "step",
+            "decision": "ALLOW",
+            "ref": "ev2"
+          },
+          {
+            "seq": 2,
+            "kind": "audit",
+            "actor": "prin_child",
+            "action": "wait",
+            "decision": "ALLOW",
+            "ref": "ev0c"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_child",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "stit_holds"
+      },
+      "tags": [
+        "delegation",
+        "grant"
+      ],
+      "semantic_digest": "2bfed0dc0c7f8052620e23fda6eb820165194af8dbeb960f4edeaadbf62e143a"
+    },
+    {
+      "scenario_id": "CS-10",
+      "class": "complete_supported",
+      "description": "derive effect from two sources",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "g": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "derive"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "derived"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "derive",
+          "args": {
+            "sources": [
+              "s1",
+              "s2"
+            ]
+          },
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "g"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        },
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "wait",
+          "args": {},
+          "to": "s0",
+          "authority_required": null,
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev0"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "derive",
+            "decision": "ALLOW",
+            "ref": "ev1"
+          },
+          {
+            "seq": 1,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "wait",
+            "decision": "ALLOW",
+            "ref": "ev0"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "derived"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "stit_holds"
+      },
+      "tags": [
+        "grant"
+      ],
+      "semantic_digest": "f80ff277db57ce637b539f71825317f32d2a68e0e467bb3358176cc1500e2759"
+    },
+    {
+      "scenario_id": "CS-11",
+      "class": "complete_supported",
+      "description": "merge lineage effect",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "g": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "merge"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "merged"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "merge",
+          "args": {
+            "sources": [
+              "a",
+              "b"
+            ]
+          },
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "g"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        },
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "wait",
+          "args": {},
+          "to": "s0",
+          "authority_required": null,
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev0"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "merge",
+            "decision": "ALLOW",
+            "ref": "ev1"
+          },
+          {
+            "seq": 1,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "wait",
+            "decision": "ALLOW",
+            "ref": "ev0"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "merged"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "stit_holds"
+      },
+      "tags": [
+        "grant"
+      ],
+      "semantic_digest": "d8621c8adfa66239d937421d7bd1cdc90773e679603b2632c18702815bfa9160"
+    },
+    {
+      "scenario_id": "CS-12",
+      "class": "complete_supported",
+      "description": "on-behalf attributes canonical service actor despite shared display",
+      "principals": [
+        {
+          "principal_id": "prin_svc",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "display": "Helper"
+        },
+        {
+          "principal_id": "prin_owner",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "display": "Helper"
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "g": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "act"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_svc",
+          "action": "act",
+          "args": {
+            "on_behalf": "prin_owner"
+          },
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "g"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        },
+        {
+          "from": "s0",
+          "actor": "prin_svc",
+          "action": "wait",
+          "args": {},
+          "to": "s0",
+          "authority_required": null,
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev0"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_svc",
+            "action": "act",
+            "decision": "ALLOW",
+            "ref": "ev1"
+          },
+          {
+            "seq": 1,
+            "kind": "audit",
+            "actor": "prin_svc",
+            "action": "wait",
+            "decision": "ALLOW",
+            "ref": "ev0"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_svc",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "stit_holds"
+      },
+      "tags": [
+        "delegation",
+        "identity"
+      ],
+      "semantic_digest": "ee20a615d7f6c459574c28c195996fafb03fa708a88845e639868254b6bbac1c"
+    },
+    {
+      "scenario_id": "CN-01",
+      "class": "complete_no_responsibility",
+      "description": "single authorised action",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "g": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "read"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "read",
+          "args": {},
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "g"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "read",
+            "decision": "ALLOW",
+            "ref": "ev1"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "stit_absent"
+      },
+      "tags": [
+        "grant"
+      ],
+      "semantic_digest": "61909d823e2128e51f4fc20e2eea4aab8d8eee1acf7a5d42ec60c628cc6efff3"
+    },
+    {
+      "scenario_id": "CN-02",
+      "class": "complete_no_responsibility",
+      "description": "all alternatives denied",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {}
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s0d",
+          "authority": {},
+          "phase": "denied"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "read",
+          "args": {},
+          "to": "s0d",
+          "authority_required": {
+            "grant_id": "missing"
+          },
+          "outcome": "denied",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        },
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "write",
+          "args": {},
+          "to": "s0d",
+          "authority_required": {
+            "grant_id": "missing"
+          },
+          "outcome": "denied",
+          "environment_move": null,
+          "audit_ref": "ev2"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "read",
+            "decision": "DENY",
+            "ref": "ev1"
+          },
+          {
+            "seq": 1,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "write",
+            "decision": "DENY",
+            "ref": "ev2"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "stit_absent"
+      },
+      "tags": [
+        "denial"
+      ],
+      "semantic_digest": "c69a4e37b3149f79ac501924bf63cc0140fe192ff789bd5a282ad944d83dce4d"
+    },
+    {
+      "scenario_id": "CN-03",
+      "class": "complete_no_responsibility",
+      "description": "revoked grant attempted",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "grant1": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "read"
+                ],
+                "revoked": true,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "read",
+          "args": {
+            "path": "doc"
+          },
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "grant1"
+          },
+          "outcome": "denied",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "read",
+            "decision": "DENY",
+            "ref": "ev1"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "stit_absent"
+      },
+      "tags": [
+        "revocation"
+      ],
+      "semantic_digest": "4963841325d64cf19f7ad27b0a30faed851f2a5e0d14ded6746cd5c199825ca4"
+    },
+    {
+      "scenario_id": "CN-04",
+      "class": "complete_no_responsibility",
+      "description": "expired approval attempted",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "grant1": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "read"
+                ],
+                "revoked": false,
+                "expired": true
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "read",
+          "args": {
+            "path": "doc"
+          },
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "grant1"
+          },
+          "outcome": "denied",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "read",
+            "decision": "DENY",
+            "ref": "ev1"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "stit_absent"
+      },
+      "tags": [
+        "denial",
+        "revocation"
+      ],
+      "semantic_digest": "b0575e1ff0cab38661bb2f31117a798b102ffea71f6ef4d1c4f1ca0d349a19e0"
+    },
+    {
+      "scenario_id": "CN-05",
+      "class": "complete_no_responsibility",
+      "description": "unknown reconciled as failed, no effect",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "grant1": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "read"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "read",
+          "args": {
+            "path": "doc"
+          },
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "grant1"
+          },
+          "outcome": "unknown",
+          "environment_move": null,
+          "audit_ref": "ev1",
+          "reconciled_as": "failed"
+        },
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "wait",
+          "args": {},
+          "to": "s0",
+          "authority_required": null,
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev0"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "read",
+            "decision": "UNKNOWN",
+            "ref": "ev1"
+          },
+          {
+            "seq": 1,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "wait",
+            "decision": "ALLOW",
+            "ref": "ev0"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "stit_absent"
+      },
+      "tags": [
+        "unknown"
+      ],
+      "semantic_digest": "3a12bd1f3e7d24579aa694e46557763ee113630aac7c737a093690edfcef968b"
+    },
+    {
+      "scenario_id": "CN-06",
+      "class": "complete_no_responsibility",
+      "description": "environment move alone causes outcome",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "g": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "read"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "read",
+          "args": {},
+          "to": "s0",
+          "authority_required": {
+            "grant_id": "g"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        },
+        {
+          "from": "s0",
+          "actor": "env",
+          "action": "flip",
+          "args": {},
+          "to": "s1",
+          "authority_required": null,
+          "outcome": "effect",
+          "environment_move": "flip",
+          "audit_ref": "ev9"
+        },
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "wait",
+          "args": {},
+          "to": "s0",
+          "authority_required": null,
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev0"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "read",
+            "decision": "ALLOW",
+            "ref": "ev1"
+          },
+          {
+            "seq": 1,
+            "kind": "audit",
+            "actor": "env",
+            "action": "flip",
+            "decision": "ALLOW",
+            "ref": "ev9"
+          },
+          {
+            "seq": 2,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "wait",
+            "decision": "ALLOW",
+            "ref": "ev0"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "stit_absent"
+      },
+      "tags": [
+        "coalition"
+      ],
+      "semantic_digest": "715e2cc995e78b0c4cffbc226486ebc81a55ecb44a463480212a0e6f8ab2e275"
+    },
+    {
+      "scenario_id": "CN-07",
+      "class": "complete_no_responsibility",
+      "description": "attempt denied, no effect",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "grant1": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "read"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "read",
+          "args": {
+            "path": "doc"
+          },
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "missing"
+          },
+          "outcome": "denied",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        },
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "wait",
+          "args": {},
+          "to": "s0",
+          "authority_required": null,
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev0"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "read",
+            "decision": "DENY",
+            "ref": "ev1"
+          },
+          {
+            "seq": 1,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "wait",
+            "decision": "ALLOW",
+            "ref": "ev0"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "stit_absent"
+      },
+      "tags": [
+        "denial"
+      ],
+      "semantic_digest": "f4ed348e50c370f0f526be9b0d151950c00e9f3bdb962fa42596357b888ffe68"
+    },
+    {
+      "scenario_id": "CN-08",
+      "class": "complete_no_responsibility",
+      "description": "duplicate retry is a single effect",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "grant1": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "read"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "read",
+          "args": {
+            "path": "doc"
+          },
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "grant1"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        },
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "wait",
+          "args": {},
+          "to": "s0",
+          "authority_required": null,
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev0"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "read",
+            "decision": "ALLOW",
+            "ref": "ev1"
+          },
+          {
+            "seq": 1,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "wait",
+            "decision": "ALLOW",
+            "ref": "ev0"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "stit_holds"
+      },
+      "tags": [
+        "grant"
+      ],
+      "semantic_digest": "50f3f548380e442a6cfdd4f88e9580d597bee3be9a5997a6686bed1ab16c6790"
+    },
+    {
+      "scenario_id": "CN-09",
+      "class": "complete_no_responsibility",
+      "description": "supervisor override denies",
+      "principals": [
+        {
+          "principal_id": "prin_sup",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        },
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "g": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "read",
+                  "override"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s0d",
+          "authority": {},
+          "phase": "denied"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_sup",
+          "action": "override",
+          "args": {
+            "delegated": "prin_A"
+          },
+          "to": "s0d",
+          "authority_required": {
+            "grant_id": "g"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev0"
+        },
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "read",
+          "args": {},
+          "to": "s0d",
+          "authority_required": {
+            "grant_id": "g"
+          },
+          "outcome": "denied",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_sup",
+            "action": "override",
+            "decision": "ALLOW",
+            "ref": "ev0"
+          },
+          {
+            "seq": 1,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "read",
+            "decision": "DENY",
+            "ref": "ev1"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_sup",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "stit_absent"
+      },
+      "tags": [
+        "denial",
+        "delegation"
+      ],
+      "semantic_digest": "2ad80c5fe96aff8d163876ce2b32a997e29a9c5ffc42678daaf26c672a2f722f"
+    },
+    {
+      "scenario_id": "CN-10",
+      "class": "complete_no_responsibility",
+      "description": "out-of-scope request denied",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "g": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "read"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s0d",
+          "authority": {},
+          "phase": "denied"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "read",
+          "args": {
+            "scope": "foreign"
+          },
+          "to": "s0d",
+          "authority_required": {
+            "grant_id": "g"
+          },
+          "outcome": "denied",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "read",
+            "decision": "DENY",
+            "ref": "ev1"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "stit_absent"
+      },
+      "tags": [
+        "denial"
+      ],
+      "semantic_digest": "879ecbb2085d57ef2b7e5de7b827af4e85968f8e766e0b85e75024b905e4498b"
+    },
+    {
+      "scenario_id": "CN-11",
+      "class": "complete_no_responsibility",
+      "description": "alternative leads to same outcome, no difference",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "g": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "read",
+                  "write"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "read",
+          "args": {},
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "g"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        },
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "write",
+          "args": {},
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "g"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev2"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "read",
+            "decision": "ALLOW",
+            "ref": "ev1"
+          },
+          {
+            "seq": 1,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "write",
+            "decision": "ALLOW",
+            "ref": "ev2"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "stit_absent"
+      },
+      "tags": [
+        "grant"
+      ],
+      "semantic_digest": "1cc1d861b7a330a0404a5a1a45a102e499a0e322f32dc621ed74192a8f44be41"
+    },
+    {
+      "scenario_id": "CN-12",
+      "class": "complete_no_responsibility",
+      "description": "coalition lacks strategy against environment",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "g": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "push"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "push",
+          "args": {},
+          "to": "s0",
+          "authority_required": {
+            "grant_id": "g"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        },
+        {
+          "from": "s0",
+          "actor": "env",
+          "action": "block",
+          "args": {},
+          "to": "s1",
+          "authority_required": null,
+          "outcome": "effect",
+          "environment_move": "block",
+          "audit_ref": "ev9"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "push",
+            "decision": "ALLOW",
+            "ref": "ev1"
+          },
+          {
+            "seq": 1,
+            "kind": "audit",
+            "actor": "env",
+            "action": "block",
+            "decision": "ALLOW",
+            "ref": "ev9"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "atl_absent"
+      },
+      "tags": [
+        "coalition"
+      ],
+      "semantic_digest": "484b579f073ecc197db1a77c6ef1ea33a2cf81fbdc33ea3e8d4c22ce547bdbba"
+    },
+    {
+      "scenario_id": "UD-01",
+      "class": "underdetermined",
+      "description": "incomplete trace, grant record missing",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {},
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "read",
+          "args": {},
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "g-missing"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "read",
+            "decision": "ALLOW",
+            "ref": "ev1"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "underdetermined"
+      },
+      "tags": [
+        "incomplete"
+      ],
+      "semantic_digest": "ef50cff991bff925e227887c7cae8ddb1016b9252581115b708497eb70368ebe"
+    },
+    {
+      "scenario_id": "UD-02",
+      "class": "underdetermined",
+      "description": "redacted trace hides actor",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "g": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "read"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_X",
+          "action": "read",
+          "args": {},
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "g"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_X",
+            "action": "read",
+            "decision": "ALLOW",
+            "ref": "ev1"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": [
+          "actor"
+        ]
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "underdetermined"
+      },
+      "tags": [
+        "incomplete"
+      ],
+      "semantic_digest": "f9468fa076497973d4a9b1cd126a3691b2f5101c85f07bcf826d1d8e1c9200d7"
+    },
+    {
+      "scenario_id": "UD-03",
+      "class": "underdetermined",
+      "description": "ambiguous indistinguishable alternatives",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "g": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "read"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "read",
+          "args": {},
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "g"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        },
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "read",
+          "args": {
+            "duplicate_paths": true
+          },
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "g"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev1b"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "read",
+            "decision": "ALLOW",
+            "ref": "ev1"
+          },
+          {
+            "seq": 1,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "read",
+            "decision": "ALLOW",
+            "ref": "ev1b"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "underdetermined"
+      },
+      "tags": [
+        "incomplete"
+      ],
+      "semantic_digest": "764da185faf9fe412bb8638fa5564a2b3b937f0e66059055b0b030c52a047c9e"
+    },
+    {
+      "scenario_id": "UD-04",
+      "class": "underdetermined",
+      "description": "model disagreement abstains",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "grant1": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "read"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "read",
+          "args": {
+            "path": "doc"
+          },
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "grant1"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        },
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "wait",
+          "args": {},
+          "to": "s0",
+          "authority_required": null,
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev0"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "read",
+            "decision": "ALLOW",
+            "ref": "ev1"
+          },
+          {
+            "seq": 1,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "wait",
+            "decision": "ALLOW",
+            "ref": "ev0"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "adversarial",
+      "oracle_hint": {
+        "kind": "underdetermined"
+      },
+      "tags": [
+        "incomplete",
+        "delegation"
+      ],
+      "semantic_digest": "df597a459a577a7b1fe8aa22221beb1c716bdf88949d1b65a316e01493720310"
+    },
+    {
+      "scenario_id": "UD-05",
+      "class": "underdetermined",
+      "description": "unknown after revoke without reconcile",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "grant1": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "read"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "read",
+          "args": {
+            "path": "doc"
+          },
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "grant1"
+          },
+          "outcome": "unknown",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        },
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "wait",
+          "args": {},
+          "to": "s0",
+          "authority_required": null,
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev0"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "read",
+            "decision": "UNKNOWN",
+            "ref": "ev1"
+          },
+          {
+            "seq": 1,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "wait",
+            "decision": "ALLOW",
+            "ref": "ev0"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "underdetermined"
+      },
+      "tags": [
+        "unknown",
+        "revocation",
+        "incomplete"
+      ],
+      "semantic_digest": "db121f8c4bc3c327288ee31522f9553e7b874a8ea01d3793b4b82ad56924c38b"
+    },
+    {
+      "scenario_id": "UD-06",
+      "class": "underdetermined",
+      "description": "revocation status missing",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "g": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "read"
+                ],
+                "revoked": "UNKNOWN",
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "read",
+          "args": {},
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "g"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "read",
+            "decision": "ALLOW",
+            "ref": "ev1"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "underdetermined"
+      },
+      "tags": [
+        "revocation",
+        "incomplete"
+      ],
+      "semantic_digest": "cd49cd8d504e25f1a9e0d2a12c943b7422c08c2c4f639c10f89b826538d8a6d4"
+    },
+    {
+      "scenario_id": "UD-07",
+      "class": "underdetermined",
+      "description": "partial delegation chain",
+      "principals": [
+        {
+          "principal_id": "prin_child",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "g-child": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "read"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_child",
+          "action": "read",
+          "args": {
+            "delegation": "unknown-parent"
+          },
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "g-child"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_child",
+            "action": "read",
+            "decision": "ALLOW",
+            "ref": "ev1"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_child",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "underdetermined"
+      },
+      "tags": [
+        "delegation",
+        "incomplete"
+      ],
+      "semantic_digest": "6f820cde4572368ea0fa2276fa6b37be8a08970963a24b5c489e4670daa5879f"
+    },
+    {
+      "scenario_id": "UD-08",
+      "class": "underdetermined",
+      "description": "conflicting order with same-named actors",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "display": "Helper"
+        },
+        {
+          "principal_id": "prin_B",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "display": "Helper"
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "g": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "read"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "read",
+          "args": {},
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "g"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        },
+        {
+          "from": "s0",
+          "actor": "prin_B",
+          "action": "read",
+          "args": {
+            "same_display": "Helper"
+          },
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "g"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev1x"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "read",
+            "decision": "ALLOW",
+            "ref": "ev1"
+          },
+          {
+            "seq": 1,
+            "kind": "audit",
+            "actor": "prin_B",
+            "action": "read",
+            "decision": "ALLOW",
+            "ref": "ev1x"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "underdetermined"
+      },
+      "tags": [
+        "incomplete",
+        "identity"
+      ],
+      "semantic_digest": "17c252b4157f419e290705e2c68923fa5d1e05781052ec9ae2016e9b49c13255"
+    },
+    {
+      "scenario_id": "UD-09",
+      "class": "underdetermined",
+      "description": "redacted content hides effect",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "g": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "read"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "read",
+          "args": {},
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "g"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "read",
+            "decision": "ALLOW",
+            "ref": "ev1"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": [
+          "content"
+        ]
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "underdetermined"
+      },
+      "tags": [
+        "incomplete"
+      ],
+      "semantic_digest": "9519b422da8effe6f04e0d00aea2a0153f3b0f1e943b5f7063fc5f1abb3cb936"
+    },
+    {
+      "scenario_id": "UD-10",
+      "class": "underdetermined",
+      "description": "coalition with unknown environment",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "g": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "push"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "push",
+          "args": {},
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "g"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        },
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "wait",
+          "args": {},
+          "to": "s0",
+          "authority_required": null,
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev0"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "push",
+            "decision": "ALLOW",
+            "ref": "ev1"
+          },
+          {
+            "seq": 1,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "wait",
+            "decision": "ALLOW",
+            "ref": "ev0"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "atl",
+      "environment": "adversarial",
+      "oracle_hint": {
+        "kind": "underdetermined"
+      },
+      "tags": [
+        "coalition",
+        "unknown",
+        "incomplete"
+      ],
+      "semantic_digest": "069a67f527913d12a8b5509c3f87cde9fdec96d18429c0a5d37f5acaf02cdebe"
+    },
+    {
+      "scenario_id": "UD-11",
+      "class": "underdetermined",
+      "description": "display collision without canonical binding abstains",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "display": "Alex"
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "g": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "read"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "read",
+          "args": {},
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "g"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        },
+        {
+          "from": "s0",
+          "actor": "prin_B",
+          "action": "read",
+          "args": {},
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "g"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev2"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "read",
+            "decision": "ALLOW",
+            "ref": "ev1"
+          },
+          {
+            "seq": 1,
+            "kind": "audit",
+            "actor": "prin_B",
+            "action": "read",
+            "decision": "ALLOW",
+            "ref": "ev2"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "underdetermined"
+      },
+      "tags": [
+        "identity",
+        "incomplete"
+      ],
+      "semantic_digest": "e654b76e3613f6c30a002465444ab07ea1a4ac0dca1e8c92a3575a078ec2d6a1"
+    },
+    {
+      "scenario_id": "UD-12",
+      "class": "underdetermined",
+      "description": "legacy version gaps",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "g": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "read"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "read",
+          "args": {
+            "legacy_gap": "v1-missing"
+          },
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "g"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "read",
+            "decision": "ALLOW",
+            "ref": "ev1"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "underdetermined"
+      },
+      "tags": [
+        "incomplete"
+      ],
+      "semantic_digest": "334a678fb7023737497296adb11848bebd4ddf1e84714c7048fbb5c73fbe5449"
+    },
+    {
+      "scenario_id": "AX-01",
+      "class": "adversarial_or_invalid",
+      "description": "annotation suggesting allow after DENY changes nothing (no attribution)",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "grant1": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "read"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "read",
+          "args": {
+            "path": "doc"
+          },
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "missing"
+          },
+          "outcome": "denied",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        },
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "wait",
+          "args": {},
+          "to": "s0",
+          "authority_required": null,
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev0"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "read",
+            "decision": "DENY",
+            "ref": "ev1"
+          },
+          {
+            "seq": 1,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "wait",
+            "decision": "ALLOW",
+            "ref": "ev0"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "stit_absent"
+      },
+      "tags": [
+        "denial",
+        "revocation"
+      ],
+      "semantic_digest": "670b883e08c0a92563759ebe3440fc49082e792dfd72bb2f3fb2a1b45d46ce4c"
+    },
+    {
+      "scenario_id": "AX-02",
+      "class": "adversarial_or_invalid",
+      "description": "dropped delegator edge abstains",
+      "principals": [
+        {
+          "principal_id": "prin_child",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "g-child": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "read"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_child",
+          "action": "read",
+          "args": {
+            "delegation": "missing-parent"
+          },
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "g-child"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_child",
+            "action": "read",
+            "decision": "ALLOW",
+            "ref": "ev1"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_child",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "underdetermined"
+      },
+      "tags": [
+        "delegation"
+      ],
+      "semantic_digest": "a709561a06a993088e1b397de05f53fc05c291ed77738dc71adb0ed710166f58"
+    },
+    {
+      "scenario_id": "AX-03",
+      "class": "adversarial_or_invalid",
+      "description": "revoke removed is detected",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "grant1": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "read"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "read",
+          "args": {
+            "revoke_removed": "grant1"
+          },
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "grant1"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        },
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "wait",
+          "args": {},
+          "to": "s0",
+          "authority_required": null,
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev0"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "read",
+            "decision": "ALLOW",
+            "ref": "ev1"
+          },
+          {
+            "seq": 1,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "wait",
+            "decision": "ALLOW",
+            "ref": "ev0"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "invalid"
+      },
+      "tags": [
+        "revocation"
+      ],
+      "semantic_digest": "b7abc3b65922e1fdb75777faba2b200632d8471c272b8d89f391bc6e816d4f94"
+    },
+    {
+      "scenario_id": "AX-04",
+      "class": "adversarial_or_invalid",
+      "description": "unavailable declared available",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {},
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "read",
+          "args": {},
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "phantom"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "read",
+            "decision": "ALLOW",
+            "ref": "ev1"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "invalid"
+      },
+      "tags": [
+        "denial"
+      ],
+      "semantic_digest": "9d8308804b3ade6953ec1ccf5ac2620f8859ff33cb2dd2e50ed197065157f457"
+    },
+    {
+      "scenario_id": "AX-05",
+      "class": "adversarial_or_invalid",
+      "description": "absence sold as proof fails",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {},
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "read",
+          "args": {
+            "absence_claim": true
+          },
+          "to": "s1",
+          "authority_required": null,
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "read",
+            "decision": "ALLOW",
+            "ref": "ev1"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "invalid"
+      },
+      "tags": [
+        "incomplete"
+      ],
+      "semantic_digest": "7d1f07fe4f4527df6800889c49bd0de39c3c439b3363ec94b2a5dd517705a986"
+    },
+    {
+      "scenario_id": "AX-06",
+      "class": "adversarial_or_invalid",
+      "description": "petname collapse refused",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "display": "Alex"
+        },
+        {
+          "principal_id": "prin_B",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          },
+          "display": "Alex"
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "g": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "read"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "Alex",
+          "action": "read",
+          "args": {},
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "g"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "Alex",
+            "action": "read",
+            "decision": "ALLOW",
+            "ref": "ev1"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "invalid"
+      },
+      "tags": [
+        "identity"
+      ],
+      "semantic_digest": "fdf25c0ca8c947a0b18e1cfc7286aebc82b2ac7d7065d070474d05c96b203e56"
+    },
+    {
+      "scenario_id": "AX-07",
+      "class": "adversarial_or_invalid",
+      "description": "cross-goal trace mix rejected",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "g": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "read"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "read",
+          "args": {
+            "foreign_trace": "t-b"
+          },
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "g"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "read",
+            "decision": "ALLOW",
+            "ref": "ev1"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "invalid"
+      },
+      "tags": [
+        "incomplete"
+      ],
+      "semantic_digest": "9cebe5066cda3c7f70c13bbb0d98a7866e557e388a456d1dad32091878fcff16"
+    },
+    {
+      "scenario_id": "AX-08",
+      "class": "adversarial_or_invalid",
+      "description": "modal result creating capability refused",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {},
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "granted"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "escalate",
+          "args": {},
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "modal"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "escalate",
+            "decision": "ALLOW",
+            "ref": "ev1"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "invalid"
+      },
+      "tags": [
+        "denial"
+      ],
+      "semantic_digest": "0189db8174b26f166ad7dd5d3beb721bbdfadfe59de99570dc930ca9e87035c3"
+    },
+    {
+      "scenario_id": "AX-09",
+      "class": "adversarial_or_invalid",
+      "description": "post-hoc audit mutation detected",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "grant1": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "read"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "read",
+          "args": {
+            "mutated": "ev1"
+          },
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "grant1"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        },
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "wait",
+          "args": {},
+          "to": "s0",
+          "authority_required": null,
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev0"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "read",
+            "decision": "ALLOW",
+            "ref": "ev1"
+          },
+          {
+            "seq": 1,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "wait",
+            "decision": "ALLOW",
+            "ref": "ev0"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "invalid"
+      },
+      "tags": [
+        "grant"
+      ],
+      "semantic_digest": "86dca09655ac3afdb37318ce13e683ce6013e3e29ea0ca6927ab075af06fb4e4"
+    },
+    {
+      "scenario_id": "AX-10",
+      "class": "adversarial_or_invalid",
+      "description": "partial labeled success without reconciliation fails",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "grant1": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "read"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "read",
+          "args": {
+            "path": "doc"
+          },
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "grant1"
+          },
+          "outcome": "unknown",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        },
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "wait",
+          "args": {},
+          "to": "s0",
+          "authority_required": null,
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev0"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "read",
+            "decision": "UNKNOWN",
+            "ref": "ev1"
+          },
+          {
+            "seq": 1,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "wait",
+            "decision": "ALLOW",
+            "ref": "ev0"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "none",
+      "oracle_hint": {
+        "kind": "underdetermined"
+      },
+      "tags": [
+        "unknown"
+      ],
+      "semantic_digest": "ee48e57b018bcec1cbc6855d24acde9fa295122b0e5da5fb8b6cb4a778018640"
+    },
+    {
+      "scenario_id": "AX-11",
+      "class": "adversarial_or_invalid",
+      "description": "coalition ability without environment moves is incomplete",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "g": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "push"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "push",
+          "args": {},
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "g"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "push",
+            "decision": "ALLOW",
+            "ref": "ev1"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "atl",
+      "environment": "adversarial",
+      "oracle_hint": {
+        "kind": "invalid"
+      },
+      "tags": [
+        "coalition"
+      ],
+      "semantic_digest": "43adc77258288885b398b562399e89f34c3b1a8baa24dfc1d35043d6f1793761"
+    },
+    {
+      "scenario_id": "AX-12",
+      "class": "adversarial_or_invalid",
+      "description": "hidden model disagreement fails",
+      "principals": [
+        {
+          "principal_id": "prin_A",
+          "scope": {
+            "tenant_id": "t-a",
+            "workspace_id": "w-1",
+            "goal_id": "g-1"
+          }
+        }
+      ],
+      "states": [
+        {
+          "state_id": "s0",
+          "authority": {
+            "grants": {
+              "grant1": {
+                "scope": {
+                  "tenant_id": "t-a",
+                  "workspace_id": "w-1",
+                  "goal_id": "g-1"
+                },
+                "actions": [
+                  "read"
+                ],
+                "revoked": false,
+                "expired": false
+              }
+            }
+          },
+          "phase": "ready"
+        },
+        {
+          "state_id": "s1",
+          "authority": {},
+          "phase": "done"
+        }
+      ],
+      "initial": "s0",
+      "transitions": [
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "read",
+          "args": {
+            "path": "doc"
+          },
+          "to": "s1",
+          "authority_required": {
+            "grant_id": "grant1"
+          },
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev1"
+        },
+        {
+          "from": "s0",
+          "actor": "prin_A",
+          "action": "wait",
+          "args": {},
+          "to": "s0",
+          "authority_required": null,
+          "outcome": "effect",
+          "environment_move": null,
+          "audit_ref": "ev0"
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "seq": 0,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "read",
+            "decision": "ALLOW",
+            "ref": "ev1"
+          },
+          {
+            "seq": 1,
+            "kind": "audit",
+            "actor": "prin_A",
+            "action": "wait",
+            "decision": "ALLOW",
+            "ref": "ev0"
+          }
+        ],
+        "request_scope": {
+          "tenant_id": "t-a",
+          "workspace_id": "w-1",
+          "goal_id": "g-1"
+        },
+        "redacted": []
+      },
+      "objective": {
+        "kind": "phase",
+        "phase": "done"
+      },
+      "focal": "prin_A",
+      "question": "stit",
+      "environment": "adversarial",
+      "oracle_hint": {
+        "kind": "underdetermined"
+      },
+      "tags": [
+        "delegation",
+        "incomplete"
+      ],
+      "semantic_digest": "c3f5bf9d740ce9df4b64cf0f48b03e00fcd34c0b190340ee886a0a5f74a2b1cb"
+    }
+  ]
+}

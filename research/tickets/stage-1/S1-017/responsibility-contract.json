@@ -1,0 +1,62 @@
+{
+  "$id": "agentos.s1-017.responsibility-contract/v1",
+  "title": "S1-017 responsibility vocabulary and claim boundaries (authoritative, versioned)",
+  "schema_version": "s1-017.responsibility/v1",
+  "ticket": "S1-017",
+  "phase": "A",
+  "vocabulary": {
+    "actor": "observed principal/process; always a canonical principal ID, never a display name",
+    "authority": "capability/approval/lease verified by the gateway; the only allow/deny source",
+    "action": "observed operation/effect with exact args",
+    "choice_point": "a model state where the bounded model enumerates admissible alternatives",
+    "available_alternative": "an action provably available in the bounded transition model",
+    "attempt": "a request that could have been granted or denied",
+    "causal_contribution": "a link inside the declared causal model, never inferred from ordering alone",
+    "stit_attribution": "the agent sees to it that a formula holds in the declared model (choice made a difference)",
+    "atl_ability": "a coalition holds a strategy forcing a temporal objective in the declared game (environment quantified adversarially)",
+    "operational_accountability": "audit binds actor, authority, request, decision and effect/absence marker",
+    "responsibility_annotation": "derived explanation with provenance and confidence; authority=false always",
+    "legal_moral_blame": "OUT_OF_SCOPE, always; no model output may assert it"
+  },
+  "annotation_fields": [
+    "model_version", "input_trace_digest", "assumptions", "observed_facts",
+    "derived_claims", "unknowns", "counterfactuals", "confidence_class",
+    "scope", "created_at", "producer_id", "authority"
+  ],
+  "confidence_classes": ["PROVEN", "SUPPORTED", "UNDERDETERMINED"],
+  "confidence_rule": "PROVEN requires exhaustive evaluation over the declared bounded state space; anything less is SUPPORTED at most; incomplete traces, ambiguous alternatives or model disagreement force UNDERDETERMINED (abstain, never guess)",
+  "underdetermination_rule": "when available alternatives cannot be rebuilt from audit data, the answer is UNDERDETERMINED. Absence of an event never proves absence of a possibility. Correlation/ordering never proves causation without a model rule.",
+  "hard_invariants": {
+    "R1": "gateway ownership: 100% of runtime authorization decisions belong to Gateway/Gate; analytics is absent from the allow/deny path",
+    "R2": "non-authority: an annotation creates no capability, grant, approval, lease, policy, scope, task transition or terminal decision",
+    "R3": "immutable evidence: analytics never mutates source audit/lineage rows; a correction is a new annotation + supersedes",
+    "R4": "trace binding: every conclusion binds an exact immutable trace digest, actor, goal, scope, model and corpus version",
+    "R5": "complete authority chain: attribution needs actor, request, exact action/args, decision, grant/denial/revocation and effect/absence marker",
+    "R6": "alternatives provenance: each alternative is proven by the transition model or marked UNKNOWN; producer summary never suffices",
+    "R7": "revocation awareness: post-revoke action is never explained by the old grant without an explicit violation; revoked authority is not available",
+    "R8": "delegation completeness: child attribution carries delegator, delegation chain, scope, expiry/revocation and exact allowed actions",
+    "R9": "no identity collapse: actor, worker, delegator, approver and service principal never merge over display names",
+    "R10": "underdetermination: incomplete traces, ambiguous alternatives or model disagreement abstain instead of attributing confidently",
+    "R11": "privacy/scope: analysis/export reveals no hidden scopes, principals, content or alternatives; redaction is visible and counted",
+    "R12": "reproducibility: identical frozen inputs give identical semantic results; provenance mismatch blocks comparison/publication",
+    "R13": "no overclaim: formal results speak only for the declared bounded model/state space, never as facts about arbitrary worlds",
+    "R14": "audit reconstruction: the decision rebuilds from raw canonical events without trusting producer verdict/summary"
+  },
+  "forbidden": [
+    "STIT/ATL result, score or explanation changing ALLOW/DENY",
+    "absence of alternatives read as fault or responsibility",
+    "capability/approval/lease/scope/revocation derived from a modal graph",
+    "post-hoc annotation rewriting a source event or history",
+    "probabilistic/heuristic inference published as proven fact",
+    "the model named as a legal, moral or production-conformance oracle"
+  ],
+  "compatibility": {
+    "allow_unknown_fields": false,
+    "allow_unknown_annotation_field": false,
+    "allow_duplicate_json_keys": false,
+    "allow_nan_infinity": false,
+    "allow_remote_ref": false,
+    "allow_traversal_in_ids": false,
+    "rule": "any compatibility violation fails closed"
+  }
+}
