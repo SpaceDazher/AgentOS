@@ -1129,9 +1129,14 @@ python -m agentos.cli research-plan --topic "S1-013 solo expert comprehension an
 - **Status:** `PASS_WITH_LIMITS` — operator design review recorded: provisional
   default `CARD_WITH_GRAPH_DRILLDOWN` (`operator_review_n=1`);
   `human_study_n=0`, `comparative_human_effectiveness=NOT_MEASURED`; no
-  card/graph winner was established by a human study. Canonical research-plan
-  evaluation record is still required before S1-014 can satisfy a downstream
-  dependency gate.
+  card/graph winner was established by a human study. Canonical publication:
+  revision 1, goal `goal_EWE2CVDFA4XAF44G01M1V85P0D`, evaluation
+  `reval_JVG9RGY8KK98DXBX01M1V85P3E`, chain
+  `2dbdc8535840d58809940568208a465fac9dd863819bad34be1fcf558e50296b`.
+  Tracked record: `research/tickets/stage-1/S1-014/evaluation-record.json`.
+  Its content-addressed canonical/ticket packs preserve the approved input
+  separately from the derived closure bundle; operator answers are unchanged.
+  Offline validation: `finalize_record.py --verify-tracked` in the ticket directory.
 - **Priority:** `P1`
 - **Wave:** `W4`
 - **Owner:** `hci`

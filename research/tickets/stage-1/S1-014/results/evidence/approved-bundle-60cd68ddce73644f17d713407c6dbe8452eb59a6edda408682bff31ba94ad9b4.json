@@ -1,0 +1,291 @@
+{
+  "artifacts": {
+    "architecture_models": {
+      "claim_refs": [
+        "CL-M2",
+        "CL-P1"
+      ],
+      "content": "Single contract.py (schema, corpus, oracle, renderers, parity, counterbalancing) feeds browser-contract.json, importer, evaluator, probes, replicator and publisher; oracle is a separate frozen file never served to the browser; frozen-manifest.json covers all inputs; publisher deletes stale outputs on any failure.",
+      "producer": "agentos-s1-014-producer"
+    },
+    "feature_catalog": {
+      "claim_refs": [
+        "CL-M1",
+        "CL-A1"
+      ],
+      "content": "CARD: focal claim, status, gate state, always-visible challenge indicator, source cue with publisher/origin, independence cue, three one-action button disclosures. GRAPH: claim/evidence nodes with source/origin/group labels, support/challenge edges, keyboard-focusable nodes, linear equivalent list, same three disclosures. Shared: consent, practice, pause/resume/withdraw, timeout, opaque IDs, versioned export.",
+      "producer": "agentos-s1-014-producer"
+    },
+    "independent_audit": {
+      "claim_refs": [
+        "CL-M2",
+        "CL-U1",
+        "CL-L1"
+      ],
+      "content": "Independent verifier recomputed parity, probes A-J with controls, two-process replay digests, denominators, privacy scan and frozen manifest from tracked bytes; found no winner, no human N and no superiority phrase in any artifact. Same-host replay is labelled replay, not external audit.",
+      "producer": "agentos-s1-014-independent-verifier"
+    },
+    "mathematical_model": {
+      "claim_refs": [
+        "CL-M2",
+        "CL-L1"
+      ],
+      "content": "Per variant x task and variant x stratum: raw counts (assigned, presented, submitted, timeout, missing, withdrawn, correct, incorrect, unscored), provenance recall exact/partial/none, challenge seen/not/missing, overload counts, submitted-only and censored-inclusive time medians, disclosure and keyboard step medians. Rates over n_assigned. No CI, no power, no participant inference from technical trials.",
+      "producer": "agentos-s1-014-producer"
+    },
+    "mental_model": {
+      "claim_refs": [
+        "CL-D1"
+      ],
+      "content": "Per SRC-04: the UI mirrors the ontology (claim, evidence, source, independence group, knowledge status) with no hidden participants; the user question 'what is this based on and is it contested?' must be answerable at level 0 in both representations.",
+      "producer": "agentos-s1-014-producer"
+    },
+    "ontology": {
+      "claim_refs": [
+        "CL-P1"
+      ],
+      "content": "Dispute := focal_claim x challenge_claim x sources(publisher, origin, retrieval boundary, provenance state) x independence_groups x evidence(state known/unknown/withheld) x relations(supports|challenges) x knowledge_gate_state; withheld is an explicit state, never an absent field.",
+      "producer": "agentos-s1-014-producer"
+    },
+    "platform_plan": {
+      "claim_refs": [
+        "CL-X1",
+        "CL-A1"
+      ],
+      "content": "## Scope\nRenderer contract and frozen disclosure rule for the AgentOS knowledge/dispute view; no production UI, no knowledge-model change.\n## Architecture\nOne canonical dispute contract feeds CARD and GRAPH view models; UI displays only and may raise a separate change request, never mutate knowledge status or authority.\n## Workstreams\n1. Adopt renderer-contract.json in the platform UI spec. 2. Keep oracle-free browser contract generation. 3. Optional future human study (inactive template).\n## Milestones\nM1 Phase A PREPARATION_READY (done). M2 operator design review recorded in operator-decision.json. M3 canonical research-plan at most PASS_WITH_LIMITS. M4 optional human-study authorisation (separate ticket).\n## Verification\nfrozen-manifest check, dependency gate, probes A-J with controls, process-separated replay, privacy scan, tests/test_s1_014_regressions.py, real Chromium keyboard-only probe.\n## Risks\nSingle operator as owner and reviewer; same-host replay only; SVG label truncation (mitigated by linear equivalent); bibliographic-only external sources.\n## Open decisions\nProvisional default (card / graph / task split / none) awaits the operator questionnaire; PASS requires a real 15-20 participant study.",
+      "producer": "agentos-s1-014-producer"
+    },
+    "progress": {
+      "claim_refs": [
+        "CL-X1"
+      ],
+      "content": "Status PREPARATION_READY; dependency gate PROVEN; probes all_detected=True; replicated=True; hard_gates_green=True; operator_review_n=0; human_study_n=0.",
+      "producer": "agentos-s1-014-producer"
+    },
+    "research_plan": {
+      "claim_refs": [
+        "CL-M1",
+        "CL-X1",
+        "CL-L1"
+      ],
+      "content": "Prepare, measure and independently recheck two information-equivalent claim-dispute visualizations (CARD, GRAPH) built from one canonical contract over 8 matched, stratified disputes; run probes A-J and process-separated replay; then hold one operator design review to record a provisional default (card-with-graph-drilldown, graph-with-linear-fallback, task-dependent split or no default). No human study, no superiority claim.",
+      "producer": "agentos-s1-014-producer"
+    },
+    "source_registry": {
+      "claim_refs": [
+        "CL-D1",
+        "CL-P1"
+      ],
+      "content": "7 sources: SRC-04 mental model (QM1, §3/§4/§7), Ghoniem-Fekete-Castagliola 2004 (DOI 10.1109/infvis.2004.1) and Shneiderman 1996 (DOI 10.1109/vl.1996.545307) as bibliographic records, S1-011/S1-012 decisions, S1-013 limitations and operator decision; all snapshotted with SHA-256.",
+      "producer": "agentos-s1-014-producer"
+    },
+    "synthesis_and_gaps": {
+      "claim_refs": [
+        "CL-L1",
+        "CL-D1"
+      ],
+      "content": "Gaps: no human participants; operator is owner and reviewer; same-host replay only; bibliographic (not full-text) external sources; node label truncation in the SVG is cosmetic and covered by the linear equivalent. A future 15-20 participant study remains an optional evidence upgrade.",
+      "producer": "agentos-s1-014-producer"
+    }
+  },
+  "audit": {
+    "auditor": "agentos-s1-014-independent-verifier",
+    "limitations": [
+      "ticket status PREPARATION_READY; audit verdict covers preparation evidence only, never human effectiveness",
+      "human_study_n=0; comparative_human_effectiveness=NOT_MEASURED",
+      "single operator acts as owner and reviewer (design approval only)",
+      "same-host process-separated replay, not external audit",
+      "external HCI sources stored as bibliographic/availability records, not full text",
+      "inherited S1-011/S1-012/S1-013 limits carried verbatim in dependency-gate.json"
+    ],
+    "producer": "agentos-s1-014-producer",
+    "verdict": "pass_with_limits"
+  },
+  "auditor": "agentos-s1-014-independent-verifier",
+  "claims": [
+    {
+      "claim_class": "fact",
+      "id": "CL-M1",
+      "s1_014_class": "HCI_measurement",
+      "support": [
+        "SRC-S1-014-01",
+        "SRC-S1-014-04"
+      ],
+      "text": "Both CARD and GRAPH render from one canonical dispute contract; machine parity checks report identical claims, evidence, statuses, sources, independence groups, relations, wording and answer choices for all 8 tasks with a symmetric one-action disclosure rule."
+    },
+    {
+      "claim_class": "fact",
+      "id": "CL-M2",
+      "s1_014_class": "HCI_measurement",
+      "support": [
+        "SRC-S1-014-02",
+        "SRC-S1-014-03"
+      ],
+      "text": "Deterministic technical replay across two separate processes reproduces identical observation and metric digests; per-variant/per-task counts keep missing, timeout and withdrawn trials in the denominator."
+    },
+    {
+      "claim_class": "fact",
+      "id": "CL-U1",
+      "s1_014_class": "usability_observation",
+      "support": [
+        "SRC-S1-014-03"
+      ],
+      "text": "A real Chromium keyboard-only run completes practice plus 8 counterbalanced trials, opens every disclosure without a pointer, exports a versioned envelope that the strict importer accepts, and rejects a forged contract binding."
+    },
+    {
+      "claim_class": "inference",
+      "id": "CL-D1",
+      "s1_014_class": "design_inference",
+      "support": [
+        "SRC-S1-014-01",
+        "SRC-S1-014-02",
+        "SRC-S1-014-03"
+      ],
+      "text": "Following the overview-then-details pattern and the node-link versus alternative-representation precedent, level-0 must show claim, status, challenge, source/origin and independence group in both variants; representation advantage is expected to be task dependent, not universal."
+    },
+    {
+      "claim_class": "fact",
+      "id": "CL-A1",
+      "s1_014_class": "accessibility_risk",
+      "support": [
+        "SRC-S1-014-01"
+      ],
+      "text": "A graph without a linear keyboard/screen-reader equivalent or a card whose disclosure needs a pointer fails the accessibility hard gate (probe G); the frozen renderer contract requires button controls and a linear equivalent."
+    },
+    {
+      "claim_class": "fact",
+      "id": "CL-P1",
+      "s1_014_class": "HCI_measurement",
+      "support": [
+        "SRC-S1-014-05",
+        "SRC-S1-014-06"
+      ],
+      "text": "Provenance and independence cues follow S1-011 knowledge-gate statuses and S1-012 independence groups verbatim; the renderer never changes status, policy or authority (renderer_may_change_authority=false)."
+    },
+    {
+      "claim_class": "inference",
+      "id": "CL-X1",
+      "s1_014_class": "decision",
+      "support": [
+        "SRC-S1-014-06",
+        "SRC-S1-014-07"
+      ],
+      "text": "Phase A is PREPARATION_READY; a provisional default is only recorded after a single operator design review and never as a human superiority finding."
+    },
+    {
+      "claim_class": "assumption",
+      "id": "CL-L1",
+      "s1_014_class": "limitation",
+      "support": [
+        "SRC-S1-014-07"
+      ],
+      "text": "human_study_n=0 and comparative_human_effectiveness=NOT_MEASURED; S1-013 limits (no population human data, no independent raters, raw deleted) are inherited; same-host replay is not external audit."
+    }
+  ],
+  "config": {
+    "min_source_count": 3,
+    "min_verified_ratio": 1.0,
+    "required_artifacts": [
+      "research_plan",
+      "source_registry",
+      "feature_catalog",
+      "architecture_models",
+      "mental_model",
+      "ontology",
+      "mathematical_model",
+      "synthesis_and_gaps",
+      "independent_audit",
+      "platform_plan",
+      "progress"
+    ]
+  },
+  "producer": "agentos-s1-014-producer",
+  "s1_014": {
+    "comparative_human_effectiveness": "NOT_MEASURED",
+    "frozen_manifest_sha256": "ebf247de10b5d32992fb009fac7b2b9c5f9a5fd6edf9746e4f23988cd7934d4d",
+    "human_study_n": 0,
+    "metrics_sha256": "981c5eb972811c2ba5d9041dcfa67b12fc1bd321a9c0e2b171dcd6520f70be6b",
+    "operator_review_n": 0,
+    "status": "PREPARATION_READY",
+    "winner": null
+  },
+  "sources": [
+    {
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-013/sources/snap-06-src04-mental-model.md",
+      "content": "# Retrieval record (not a source claim)\n\n- snapshot_path: research/tickets/stage-1/S1-014/sources/snap-01-src04-mental-model.md\n- canonical_uri: https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-013/sources/snap-06-src04-mental-model.md\n- version: v2 (round-13 audited); bytes identical to S1-013 immutable snapshot @091ade23\n- retrieved_at: 2026-09-05T00:00:00Z\n- role: mental-model-input\n- access: internal; full text tracked\n- snapshot_sha256: cf4789616c2465389db58a645deed39a26f1f79f6a7272632bd6fe5fb73b4eab\n- bytes: 11322\n",
+      "content_sha256": "b989c395f6e82d7e97b9e3d4f1c04f30baa629b685e7fc0fd44b8b035bd21713",
+      "id": "SRC-S1-014-01",
+      "source_type": "mental-model-input",
+      "title": "SRC-04 — Mental model of the personal agent hub (40_mental_model.md, §3/§4/§7, §8 QM1)",
+      "verification_method": "tracked-file-hash-review",
+      "verification_status": "verified",
+      "verifier": "s1-014-source-review-2026-09-05"
+    },
+    {
+      "canonical_uri": "https://doi.org/10.1109/infvis.2004.1",
+      "content": "# Retrieval record (bibliographic/availability record, not full text)\n\n- snapshot: snap-02-ghoniem-2004-crossref.md\n- canonical_uri: https://doi.org/10.1109/infvis.2004.1\n- registry_uri: https://api.crossref.org/works/10.1109/INFVIS.2004.1\n- title: A Comparison of the Readability of Graphs Using Node-Link and Matrix-Based Representations\n- authors: M. Ghoniem; J.-D. Fekete; P. Castagliola\n- venue: IEEE Symposium on Information Visualization (InfoVis 2004), Austin, TX, USA, pp. 17-24\n- publisher: IEEE\n- type: proceedings-article (Crossref member 263), reference-count 14, is-referenced-by-count 219\n- primary_resource: http://ieeexplore.ieee.org/document/1382886/\n- crossref_deposited: 2017-03-15T02:12:19Z; crossref_indexed: 2026-09-04T16:23:55Z\n- retrieved_at: 2026-09-05T00:00:00Z via Crossref REST API (official DOI registration agency metadata)\n- license/access: full text is publisher-paywalled; only public DOI metadata is stored here.\n  This record is bibliographic/availability evidence and is NOT full-text evidence.\n- role in S1-014: primary controlled HCI study comparing two information-equivalent\n  graph representations (node-link versus matrix) on readability tasks; used as the\n  methodological precedent for \"same data, different representation, task-stratified\n  complexity\" and for the expectation that representation advantage is task dependent\n  rather than universal. No numeric result from the paper is copied into S1-014 claims.\n",
+      "content_sha256": "e927727b6a142fb26e5f13ac19c59e802fffa9b1116645fc5af5c8ac7cc8b25e",
+      "id": "SRC-S1-014-02",
+      "source_type": "hci-graph-comprehension",
+      "title": "A Comparison of the Readability of Graphs Using Node-Link and Matrix-Based Representations (InfoVis 2004)",
+      "verification_method": "tracked-file-hash-review",
+      "verification_status": "verified",
+      "verifier": "s1-014-source-review-2026-09-05"
+    },
+    {
+      "canonical_uri": "https://doi.org/10.1109/vl.1996.545307",
+      "content": "# Retrieval record (bibliographic/availability record, not full text)\n\n- snapshot: snap-03-shneiderman-1996-crossref.md\n- canonical_uri: https://doi.org/10.1109/vl.1996.545307\n- registry_uri: https://api.crossref.org/works/10.1109/VL.1996.545307\n- title: The eyes have it: a task by data type taxonomy for information visualizations\n- authors: B. Shneiderman\n- venue: Proceedings 1996 IEEE Symposium on Visual Languages (VL-96), Boulder, CO, USA, pp. 336-343\n- publisher: IEEE Comput. Soc. Press\n- type: proceedings-article (Crossref member 263), reference-count 59, is-referenced-by-count 1886\n- primary_resource: http://ieeexplore.ieee.org/document/545307/\n- crossref_deposited: 2020-03-11T18:35:43Z; crossref_indexed: 2026-09-03T00:42:24Z\n- retrieved_at: 2026-09-05T00:00:00Z via Crossref REST API (official DOI registration agency metadata)\n- license/access: full text is publisher-paywalled; only public DOI metadata is stored here.\n  This record is bibliographic/availability evidence and is NOT full-text evidence.\n- role in S1-014: canonical statement of the progressive-disclosure mantra\n  (\"overview first, zoom and filter, then details-on-demand\") used to define the\n  frozen disclosure rule: level-0 overview must never remove information, details\n  must be reachable on demand by an explicit, keyboard-reachable action.\n",
+      "content_sha256": "6167f5910c1b6e91e41fd1a67b2672f15970e9c9c5858475d0e5030446bcb140",
+      "id": "SRC-S1-014-03",
+      "source_type": "hci-progressive-disclosure",
+      "title": "The eyes have it: a task by data type taxonomy for information visualizations (VL 1996)",
+      "verification_method": "tracked-file-hash-review",
+      "verification_status": "verified",
+      "verifier": "s1-014-source-review-2026-09-05"
+    },
+    {
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-011/results/decision.md",
+      "content": "# Retrieval record (not a source claim)\n\n- snapshot_path: research/tickets/stage-1/S1-014/sources/snap-04-s1-011-decision.md\n- canonical_uri: https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-011/results/decision.md\n- version: origin/codex/s1-011-knowledge-gate @0e794c4e\n- retrieved_at: 2026-09-05T00:00:00Z\n- role: internal-result-knowledge-gate\n- access: internal; full text tracked\n- snapshot_sha256: 2774c982dd1b61cf0ad5f2ff639eac72c9189287a84c24706de98989066c5889\n- bytes: 6010\n",
+      "content_sha256": "c4fca8fff2b11a4cb3169d0639c37632bef5b9af8c79e7fc0b9ec2aea3d23264",
+      "id": "SRC-S1-014-04",
+      "source_type": "internal-result-knowledge-gate",
+      "title": "S1-011 knowledge-gate decision and argumentation semantics",
+      "verification_method": "tracked-file-hash-review",
+      "verification_status": "verified",
+      "verifier": "s1-014-source-review-2026-09-05"
+    },
+    {
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-012/results/decision.md",
+      "content": "# Retrieval record (not a source claim)\n\n- snapshot_path: research/tickets/stage-1/S1-014/sources/snap-05-s1-012-decision.md\n- canonical_uri: https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-012/results/decision.md\n- version: origin/codex/s1-012-evidence-independence @14564354\n- retrieved_at: 2026-09-05T00:00:00Z\n- role: internal-result-evidence-independence\n- access: internal; full text tracked\n- snapshot_sha256: 466a4ee1219f8741639a853f6cadd72232165cd195624c660ec06736160031fe\n- bytes: 4212\n",
+      "content_sha256": "19797a9318cf4cfdd831ec464ee46ae2b4cd7f2d9d465d2bb63ce2a0e14ab268",
+      "id": "SRC-S1-014-05",
+      "source_type": "internal-result-evidence-independence",
+      "title": "S1-012 evidence-independence decision",
+      "verification_method": "tracked-file-hash-review",
+      "verification_status": "verified",
+      "verifier": "s1-014-source-review-2026-09-05"
+    },
+    {
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-013/results/limitations.md",
+      "content": "# Retrieval record (not a source claim)\n\n- snapshot_path: research/tickets/stage-1/S1-014/sources/snap-06-s1-013-limitations.md\n- canonical_uri: https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-013/results/limitations.md\n- version: origin/codex/s1-013-comprehension-pilot @091ade23\n- retrieved_at: 2026-09-05T00:00:00Z\n- role: internal-result-pilot-limits\n- access: internal; full text tracked\n- snapshot_sha256: 192bf6dd62a4620d57d3db585e50866ce6b2fc6f27660f0ffab3d306c884a609\n- bytes: 1855\n",
+      "content_sha256": "e23718a255101003178955ce58953059212b9f724c8769e079cb253f2fa03393",
+      "id": "SRC-S1-014-06",
+      "source_type": "internal-result-pilot-limits",
+      "title": "S1-013 protocol/sample/privacy limitations",
+      "verification_method": "tracked-file-hash-review",
+      "verification_status": "verified",
+      "verifier": "s1-014-source-review-2026-09-05"
+    },
+    {
+      "canonical_uri": "https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-013/operator-decision.json",
+      "content": "# Retrieval record (not a source claim)\n\n- snapshot_path: research/tickets/stage-1/S1-014/sources/snap-07-s1-013-operator-decision.json\n- canonical_uri: https://local.agentos.invalid/AgentOS/research/tickets/stage-1/S1-013/operator-decision.json\n- version: origin/codex/s1-013-comprehension-pilot @091ade23\n- retrieved_at: 2026-09-05T00:00:00Z\n- role: internal-result-operator-decision\n- access: internal; structured answers only\n- snapshot_sha256: 24ca08ce92d921e4d506c993202da759037d5391f16bb77646fb08f59c03445d\n- bytes: 2270\n",
+      "content_sha256": "1d2296686c371ba5f71d89141fb08bf9309bb9b424d2dd49bc521c262945fe44",
+      "id": "SRC-S1-014-07",
+      "source_type": "internal-result-operator-decision",
+      "title": "S1-013 operator decision (solo expert review, human pilot cancelled)",
+      "verification_method": "tracked-file-hash-review",
+      "verification_status": "verified",
+      "verifier": "s1-014-source-review-2026-09-05"
+    }
+  ]
+}
