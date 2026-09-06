@@ -1,0 +1,22 @@
+{
+  "schema": "agentos.s1-019.decision-input-policy/v1",
+  "required_tickets": [
+    "S1-004", "S1-005", "S1-006", "S1-007", "S1-008",
+    "S1-009", "S1-010", "S1-011", "S1-012", "S1-013",
+    "S1-014", "S1-015", "S1-016", "S1-017", "S1-018"
+  ],
+  "rule": "Wall-clock values may be evidence but may not select a cross-ticket architecture.",
+  "exceptions": {
+    "S1-004": "formal-run duration is reporting-only",
+    "S1-005": "legacy measurement admitted only when the latency-free counterfactual preserves the winner",
+    "S1-006": "latency is deterministic model time",
+    "S1-007": "legacy timing admitted only when both candidates are WITHIN_TOLERANCE and D1 is equal",
+    "S1-008": "native revocation SLO only; raw latency is forbidden in S1-019 ranking",
+    "S1-013": "fixture-owned logical t_ms",
+    "S1-014": "fixture-owned logical event time",
+    "S1-015": "deterministic latency proxy",
+    "S1-016": "architecture winner quarantined; only INCONCLUSIVE and safety findings are admissible",
+    "S1-017": "wall-clock excluded from semantic metrics and sensitivity",
+    "S1-018": "wall-clock excluded from semantic metrics and sensitivity"
+  }
+}
