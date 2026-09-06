@@ -1,15 +1,15 @@
 {
   "schema": "agentos.s1-017.candidate-record/v1",
   "ticket": "S1-017",
-  "status": "PREPARATION_READY",
-  "design_decision": "INCONCLUSIVE",
-  "placement": null,
+  "status": "CLOSED_WITH_LIMITS",
+  "design_decision": "OFFLINE_ANALYTICS",
+  "placement": "OFFLINE_ANALYTICS",
   "sensitivity_flips": 0,
-  "operator_review": "REQUIRED",
-  "operator_review_n": 0,
-  "result": "PREPARATION_READY",
+  "operator_review": "COMPLETE",
+  "operator_review_n": 1,
+  "result": "PASS_WITH_LIMITS",
   "bundle_path": "research/tickets/stage-1/S1-017/bundle.json",
-  "bundle_sha256": "38565713588958e8a3aeaa6dc322953963ae54f81db40828ba8f67dd7f675c45",
+  "bundle_sha256": "32f0490591e82806ffb8d8e9badc1f8398fb2ee1063a1b92c8366f18024e6f58",
   "matrix": "48 scenarios x 3 placements x 3 seeds x 2 executors = 864 observations",
   "safety_verdict": true,
   "replicated": true,
@@ -25,7 +25,7 @@
     "evaluator.py": "c31dbedae82ed1c4868cbe034623cc666aeeb681df09620a88f3c88ff327e898",
     "finalize_record.py": "0a1e11dbe3c8e3eec5220f1a7e501dfbc4a239e0abde366e5ddab23224b8f244",
     "freeze.py": "349f1fc2fc5c5cc3fb1672c151ea2568e04a4d97782686b026cdd306dc992236",
-    "make_bundle.py": "a0844691fef6c9dcc6f40db08f6266de3bff61db59286d6acc9cff00ac62225e",
+    "make_bundle.py": "23897eb36352dc3fe48be8a565f7740b1e8b7137c7c86de0c83a1dfd73b49847",
     "models.py": "eff8383d04164c85cc6bed0c688a505c0fcd6c741435495e4276100c417a27b1",
     "operator-questionnaire.md": "903fd997f9e88b136c0d2cb80adce4174fceed134bdf4406545c8ebca76b2bb9",
     "oracle.json": "72556e58631a36d78a39640db095f1f325bf66de0976693a60fda1ae99d5452d",
@@ -47,6 +47,6 @@
     "sources/snap-08-causality-accountability-limits.md": "1148bbcb9799b644ff41a4920f8454eb17c420b32f7a52e37713aaf842288f95",
     "threat-model.json": "ee1bbdb2e46d8f4c0ae585c81573cffe80747581b11b8f8246d316f89632be95"
   },
-  "closure_basis": "preparation_only",
-  "note": "technical evidence green; operator review required"
+  "closure_basis": "operator_architecture_decision",
+  "note": "bounded evidence supports OFFLINE_ANALYTICS as a non-authoritative responsibility analytics layer for the declared scenarios; it does not establish legal or moral blame, production conformance, or correctness for arbitrary systems"
 }

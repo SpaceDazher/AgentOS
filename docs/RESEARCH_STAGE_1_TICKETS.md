@@ -186,7 +186,7 @@ from a lower wave to a higher wave, and S1-020 is the sole closure sink.
 | S1-014 | W4 | P1 | hci | READY | S1-011, S1-013 | claim-dispute card versus graph |
 | S1-015 | W4 | P2 | hci | READY | S1-013 | petname principal naming study |
 | S1-016 | W3 | P1 | formal | READY | S1-003, S1-007 | flat workspace scope versus PROV-Dictionary lineage |
-| S1-017 | W4 | P2 | formal | READY | S1-004, S1-016 | STIT/ATL responsibility analytics placement |
+| S1-017 | W4 | P2 | formal | DONE | STIT/ATL responsibility analytics placement |
 | S1-018 | W4 | P1 | privacy | READY | S1-007, S1-008, S1-009 | profile-C MLS + TEE attested-indexer PoC research |
 | S1-019 | W5 | P0 | synthesis | READY | S1-004, S1-005, S1-006, S1-007, S1-008, S1-009, S1-010, S1-011, S1-012, S1-013, S1-014, S1-015, S1-016, S1-017, S1-018 | P0 architecture decision synthesis/prototype evidence |
 | S1-020 | W6 | P0 | audit | READY | S1-001..S1-019 (expanded in ticket) | independent phase audit and closure decision |
@@ -1257,7 +1257,8 @@ python -m agentos.cli research-plan --topic "S1-016 workspace lineage flat scope
 
 ### S1-017 — STIT/ATL responsibility analytics placement
 
-- **Status:** `READY`
+- **Status:** `PASS_WITH_LIMITS` (canonical revision 2; placement OFFLINE_ANALYTICS, research execution `pass_with_limits` with limits)
+- **Result:** operator review `1A 2A 3A 4A 5A 6A 7A 8A 9A 10A`; placement `OFFLINE_ANALYTICS` — responsibility analytics runs offline over immutable audit/lineage export only; annotations are non-authoritative (`authority=false`), never read by the Gateway, and legal/moral blame is OUT_OF_SCOPE. Technical evidence: 48 scenarios x 3 placements x 3 seeds x 2 executors = 864 observations, R1–R14 zero, gateway-owned authorization 100%, construction-oracle agreement 100% (non-circular: oracle never ran the analyzer, analyzer never reads hints), abstention correctness 100%, false/missed attribution 0, probes A–P 16/16 with controls, replay byte-identical; sensitivity 259 deterministic vectors (model counts + artifact bytes only, no wall-clock), leader A, 0 flips.
 - **Priority:** `P2`
 - **Wave:** `W4`
 - **Owner:** `formal`

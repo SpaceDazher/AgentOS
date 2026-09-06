@@ -337,10 +337,14 @@ def build_sources(here: Path) -> list[dict]:
         raw = snapshot.read_bytes()
         if sha(raw) != entry["sha256"] or len(raw) != entry["bytes"]:
             raise ValueError(f"snapshot drift: {entry['id']}")
-        sources.append({"id": entry["id"], "role": entry["role"],
-                        "uri": entry["canonical_uri"],
-                        "status": entry.get("kind", ""),
-                        "sha256": entry["sha256"]})
+        sources.append({"id": entry["id"],
+                        "canonical_uri": entry["canonical_uri"],
+                        "title": entry["title"],
+                        "source_type": entry["role"],
+                        "verification_status": "verified",
+                        "verifier": "s1-017-source-review-2026-09-05",
+                        "verification_method": "tracked-file-hash-review",
+                        "content": snapshot.read_text(encoding="utf-8")[:4000]})
     if len(sources) < 6:
         raise ValueError("source registry below six evidence roles")
     return sources
@@ -360,20 +364,27 @@ ARTIFACT_TEXTS = {
 }
 
 CLAIMS = [
-    {"id": "CL-F1", "s1_017_class": "formal_semantics",
-     "text": "Deliberative STIT and bounded ATL are evaluated over a fully enumerated bounded model with explicit choice partitions and environment moves."},
-    {"id": "CL-A1", "s1_017_class": "audit_explanation",
-     "text": "Annotations explain who could have done what under declared alternatives; absence of an event is never treated as proof of absence of ability."},
-    {"id": "CL-D1", "s1_017_class": "design_inference",
-     "text": "Placement evidence is compared over one observable contract with unweighted safety gates and deterministic sensitivity dimensions."},
-    {"id": "CL-R1", "s1_017_class": "runtime_boundary",
-     "text": "Gateway owns 100% of authorization decisions; annotations are accepted and ignored by the decision path, which is machine-checked."},
-    {"id": "CL-M1", "s1_017_class": "measurement",
-     "text": "864 technical observations: R1-R14 zero, oracle agreement 100%, abstention correctness 100%, probes A-P detected with controls."},
-    {"id": "CL-C1", "s1_017_class": "decision",
-     "text": "Placement decision recorded with operator review; no legal, moral or production-conformance claim is made."},
-    {"id": "CL-L1", "s1_017_class": "limitation",
-     "text": "Bounded scenarios, single-operator review, same-host replay; recognition/effectiveness and arbitrary-system correctness remain unmeasured."},
+    {"id": "CL-F1", "s1_017_class": "formal_semantics", "claim_class": "fact",
+     "text": "Deliberative STIT and bounded ATL are evaluated over a fully enumerated bounded model with explicit choice partitions and environment moves across 864 observations.",
+     "support": ["SRC-S1-017-06", "SRC-S1-017-07"]},
+    {"id": "CL-A1", "s1_017_class": "audit_explanation", "claim_class": "inference",
+     "text": "Annotations explain who could have done what under declared alternatives; absence of an event is never treated as proof of absence of ability.",
+     "support": ["SRC-S1-017-08", "SRC-S1-017-02"]},
+    {"id": "CL-D1", "s1_017_class": "design_inference", "claim_class": "inference",
+     "text": "Placement evidence is compared over one observable contract with unweighted safety gates and deterministic sensitivity dimensions (259 vectors, zero flips, leader A).",
+     "support": ["SRC-S1-017-03", "SRC-S1-017-05"]},
+    {"id": "CL-R1", "s1_017_class": "runtime_boundary", "claim_class": "fact",
+     "text": "Gateway owns 100% of authorization decisions; annotations are accepted and ignored by the decision path, machine-checked in every observation.",
+     "support": ["SRC-S1-017-02", "SRC-S1-017-01"]},
+    {"id": "CL-M1", "s1_017_class": "measurement", "claim_class": "fact",
+     "text": "864 technical observations: R1-R14 zero, oracle agreement 100%, abstention correctness 100%, probes A-P detected with controls.",
+     "support": ["SRC-S1-017-04", "SRC-S1-017-03"]},
+    {"id": "CL-C1", "s1_017_class": "decision", "claim_class": "target",
+     "text": "Placement decision OFFLINE_ANALYTICS recorded with operator review; no legal, moral or production-conformance claim is made.",
+     "support": ["SRC-S1-017-01", "SRC-S1-017-05"]},
+    {"id": "CL-L1", "s1_017_class": "limitation", "claim_class": "assumption",
+     "text": "Bounded scenarios, single-operator review, same-host replay; recognition/effectiveness and arbitrary-system correctness remain unmeasured.",
+     "support": ["SRC-S1-017-08"]},
 ]
 
 
@@ -408,6 +419,22 @@ def build_bundle(here: Path, sources: list[dict], verdict: dict,
                 "producer": PRODUCER}
         else:
             artifacts[kind] = {"content": ARTIFACT_TEXTS[kind], "producer": PRODUCER}
+    claim_ids = {c["id"] for c in CLAIMS}
+    refs_map = {
+        "research_plan": ["CL-F1", "CL-L1"],
+        "source_registry": ["CL-R1", "CL-L1"],
+        "feature_catalog": ["CL-A1", "CL-R1"],
+        "architecture_models": ["CL-D1", "CL-R1"],
+        "mental_model": ["CL-A1"],
+        "ontology": ["CL-A1", "CL-D1"],
+        "mathematical_model": ["CL-F1", "CL-L1"],
+        "synthesis_and_gaps": ["CL-D1", "CL-L1"],
+        "independent_audit": ["CL-F1", "CL-L1"],
+        "platform_plan": ["CL-D1", "CL-L1"],
+        "progress": ["CL-F1"],
+    }
+    for kind, artifact in artifacts.items():
+        artifact["claim_refs"] = [c for c in refs_map[kind] if c in claim_ids]
     artifacts["independent_audit"]["producer"] = AUDITOR
     limitations = audit_limitations(verdict, present)
     bundle = {
