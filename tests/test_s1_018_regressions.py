@@ -374,3 +374,62 @@ class TestSourcesPresent(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestSensitivityDeterminism(unittest.TestCase):
+    """HIGH-1 fix: sensitivity must never consume wall-clock measurements."""
+
+    def test_no_wallclock_dimension(self):
+        source = (S1018 / "sensitivity.py").read_text("utf-8")
+        self.assertNotIn("latency_parsimony", source)
+        bundle_source = (S1018 / "make_bundle.py").read_text("utf-8")
+        self.assertNotIn("latency_parsimony", bundle_source)
+        self.assertIn("bytes_parsimony", source)
+
+    def test_analyze_stable_on_frozen_run(self):
+        import importlib.util as _ilu
+        spec = _ilu.spec_from_file_location("s1018_sens_det", S1018 / "sensitivity.py")
+        sens = _ilu.module_from_spec(spec)
+        spec.loader.exec_module(sens)
+        obs = json.loads((S1018 / "results" / "run-a" / "observations.json")
+                         .read_text("utf-8"))["observations"]
+        oracle = json.loads((S1018 / "oracle.json").read_text("utf-8"))["entries"]
+
+        def canon(v):
+            return json.dumps(v, sort_keys=True, separators=(",", ":"),
+                              ensure_ascii=False)
+
+        by = {}
+        for arch in ("A", "B", "C"):
+            cells = [o["core"] for o in obs
+                     if o["core"].get("placement") == arch
+                     and o["core"].get("status") == "ok"]
+            matches = sum(1 for o in cells if o.get("decision") ==
+                          oracle.get(o.get("scenario_id"), {}).get(arch, {})
+                          .get("expected_decision"))
+            by[arch] = {"recall": matches / len(cells) if cells else 0.0,
+                        "writes": sum(len(o.get("steps", [])) for o in cells),
+                        "bytes": sum(len(canon(o).encode()) for o in cells),
+                        "cells": len(cells)}
+        top_recall = max(v["recall"] for v in by.values()) or 1.0
+        top_w = max(v["writes"] for v in by.values()) or 1
+        top_b = max(v["bytes"] for v in by.values()) or 1
+        static = {"A": 1, "B": 3, "C": 2}
+        scores = {"utility": {a: by[a]["recall"] / top_recall for a in by},
+                  "bytes_parsimony": {a: 1.0 - by[a]["bytes"] / top_b for a in by},
+                  "write_parsimony": {a: 1.0 - by[a]["writes"] / top_w for a in by},
+                  "complexity_parsimony": {a: 1.0 - static[a] / 4 for a in by},
+                  "coverage_parsimony": {a: by[a]["cells"] / 144.0 for a in by}}
+        first = sens.analyze(scores)
+        second = sens.analyze(scores)
+        self.assertEqual(first, second)
+        saved = json.loads((S1018 / "results" / "sensitivity.json")
+                           .read_text("utf-8"))
+        self.assertEqual(saved["flips"], first["flips"])
+        self.assertEqual(saved["base_winner"], first["base_winner"])
+        self.assertEqual(saved["vector_count"], first["vector_count"])
+
+    def test_publisher_honors_frozen_measurement(self):
+        source = (S1018 / "make_bundle.py").read_text("utf-8")
+        self.assertIn("--use-existing-results", source)
+        self.assertIn("existing_runs", source)
