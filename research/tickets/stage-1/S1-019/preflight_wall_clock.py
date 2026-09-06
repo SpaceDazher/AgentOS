@@ -36,6 +36,7 @@ ALLOWED_CLOCK_FILES = {
     "S1-007": {"runner.py"},
     "S1-008": {"runner.py"},
     "S1-016": {"runner.py", "evaluator.py"},
+    "S1-017": {"runner.py"},
     "S1-018": {"runner.py"},
 }
 

@@ -135,6 +135,7 @@ class WallClockPreflightTests(unittest.TestCase):
         self.assertEqual(policy["S1-016"]["architecture_decision"], "deny")
         self.assertEqual(policy["S1-017"]["wall_clock"], "deny")
         self.assertEqual(policy["S1-018"]["wall_clock"], "deny")
+        self.assertEqual(preflight.ALLOWED_CLOCK_FILES["S1-017"], {"runner.py"})
 
     def test_latency_free_scoring_source_is_required(self):
         prefix = "research/tickets/stage-1/S1-017"
