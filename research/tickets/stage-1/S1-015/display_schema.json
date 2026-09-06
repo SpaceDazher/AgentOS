@@ -1,0 +1,108 @@
+{
+  "$id": "agentos.s1-015.display-envelope/v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "S1-015 principal-display envelope (authoritative, shared)",
+  "description": "One rendered principal-display. UI, fixtures, importer and evaluator share this exact schema. Petname is display-only; authority fields carry canonical IDs only.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "case_id",
+    "variant",
+    "principal_id",
+    "principal_type",
+    "scope",
+    "tenant",
+    "petname_owner_id",
+    "petname",
+    "petname_normalized",
+    "petname_state",
+    "petname_version",
+    "supersedes",
+    "canonical_display",
+    "ambiguity",
+    "candidates",
+    "confusable_flag",
+    "confusable_reason",
+    "accessibility_text",
+    "copy_id_available",
+    "approval",
+    "on_behalf",
+    "provenance",
+    "updated_at",
+    "no_authority",
+    "disambiguation_cues"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "enum": ["s1-015.display-envelope/v1"] },
+    "case_id": { "type": "string", "pattern": "^(BEN|COL|LIF|UNI|APR)-[0-9]{2}$" },
+    "variant": { "type": "string", "enum": ["baseline", "petname"] },
+    "principal_id": { "type": "string", "minLength": 1 },
+    "principal_type": { "type": "string", "enum": ["human", "platform_agent", "external_agent"] },
+    "scope": { "type": "string", "minLength": 1 },
+    "tenant": { "type": "string", "minLength": 1 },
+    "petname_owner_id": { "type": "string", "minLength": 1 },
+    "petname": { "type": ["string", "null"] },
+    "petname_normalized": { "type": ["string", "null"] },
+    "petname_state": { "type": "string", "enum": ["active", "renamed", "deleted", "none"] },
+    "petname_version": { "type": "integer", "minimum": 0 },
+    "supersedes": { "type": ["integer", "null"], "minimum": 0 },
+    "canonical_display": { "type": "string", "minLength": 1 },
+    "ambiguity": { "type": "boolean" },
+    "candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["principal_id", "scope"],
+        "properties": {
+          "principal_id": { "type": "string", "minLength": 1 },
+          "scope": { "type": "string", "minLength": 1 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "confusable_flag": { "type": "boolean" },
+    "confusable_reason": { "type": ["string", "null"] },
+    "accessibility_text": { "type": "string", "minLength": 1 },
+    "copy_id_available": { "type": "boolean" },
+    "approval": {
+      "type": "object",
+      "required": ["actor", "target", "operation", "tool", "tool_version", "args", "expiry"],
+      "properties": {
+        "actor": { "type": "string", "minLength": 1 },
+        "target": { "type": "string", "minLength": 1 },
+        "operation": { "type": "string", "minLength": 1 },
+        "tool": { "type": "string", "minLength": 1 },
+        "tool_version": { "type": "string", "minLength": 1 },
+        "args": { "type": "object" },
+        "expiry": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "on_behalf": {
+      "type": ["object", "null"],
+      "required": ["actor", "beneficiary"],
+      "properties": {
+        "actor": { "type": "string", "minLength": 1 },
+        "beneficiary": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "provenance": { "type": "string", "minLength": 1 },
+    "updated_at": { "type": "string", "minLength": 1 },
+    "no_authority": { "type": "string", "enum": ["petname-display-only-no-authority"] },
+    "disambiguation_cues": { "type": "array", "items": { "type": "string" } },
+    "display_warnings": { "type": "array", "items": { "type": "string" } },
+    "lifecycle_note": { "type": ["string", "null"] }
+  },
+  "additionalProperties": false,
+  "compatibility": {
+    "allow_unknown_fields": false,
+    "allow_unknown_schema_version": false,
+    "allow_unknown_enum": false,
+    "allow_duplicate_json_keys": false,
+    "allow_nan_infinity": false,
+    "allow_remote_ref": false,
+    "allow_traversal_in_ids": false,
+    "rule": "any compatibility violation fails closed (reject envelope)"
+  }
+}

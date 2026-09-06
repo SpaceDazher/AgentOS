@@ -184,7 +184,7 @@ from a lower wave to a higher wave, and S1-020 is the sole closure sink.
 | S1-012 | W2 | P0 | knowledge | PASS_WITH_LIMITS | S1-001, S1-003, S1-011 | evidence independence and Beta/Sybil calibration |
 | S1-013 | W3 | P1 | hci | PASS_WITH_LIMITS | S1-011, S1-012 | solo expert conformance review; human effectiveness not measured |
 | S1-014 | W4 | P1 | hci | PASS_WITH_LIMITS | S1-011, S1-013 | claim-dispute card versus graph |
-| S1-015 | W4 | P2 | hci | READY | S1-013 | petname principal naming study |
+| S1-015 | W4 | P2 | hci | PASS_WITH_LIMITS | S1-013 | canonical principal IDs only; petname contract rejected by the fail-closed operator gate |
 | S1-016 | W3 | P1 | formal | PASS_WITH_LIMITS | S1-003, S1-007 | bounded lineage evidence complete; design decision remains INCONCLUSIVE |
 | S1-017 | W4 | P2 | formal | READY | S1-004, S1-016 | STIT/ATL responsibility analytics placement |
 | S1-018 | W4 | P1 | privacy | READY | S1-007, S1-008, S1-009 | profile-C MLS + TEE attested-indexer PoC research |
@@ -1182,7 +1182,10 @@ python -m agentos.cli research-plan --topic "S1-014 claim dispute visualization 
 
 ### S1-015 — Petname principal naming study
 
-- **Status:** `READY`
+- **Status:** `PASS_WITH_LIMITS` (canonical revision 3; design decision `CANONICAL_ID_ONLY`, ticket state `CLOSED_WITH_LIMITS`)
+- **Result:** operator review `1A 2B 3A 4A 5A 6A 7A 8A 9A 10A 11A 12A`; answer `2B` rejects every petname display contract under the frozen fail-closed rules. The bounded product decision is therefore canonical principal IDs only, not a petname rollout. Technical evidence: 40 cases x 2 variants x 3 seeds x 2 executors = 480 observations, all 10 hard counters zero, probes A-N pass, replay is byte-identical, and the real Edge browser probe passes. `operator_review_n=1`, `human_study_n=0`, `recognition_improvement=NOT_MEASURED`; no human-recognition or production claim is made.
+- **Canonical binding:** goal `goal_GVZZJZ1ES1FJEH8J01M1S1ZJQR`; campaign `rcamp_BBTEFSFVX053RP5A01M1S1ZJQR`; evaluation `reval_TESV3741QKVTCKZV01M1S1ZJRE`; chain `c3d49c1a2611f145bfaed3e69784dde8ef5bee13b8bddd919f84d614b593f4f1` (`chain_fresh=true`).
+- **Tracked evidence:** `research/tickets/stage-1/S1-015/results/evidence/evidence-pack-993f23aadbb10cef441caca21a6db5b9736d00dc50c72c367c7fbb0c8538e2e7.json`; ticket pack `research/tickets/stage-1/S1-015/results/evidence/ticket-pack-6893ae38f649500bbd8cb99e3ef68c204bd5909d57b3ed5fc1c4c4ccb23027e6.json`.
 - **Priority:** `P2`
 - **Wave:** `W4`
 - **Owner:** `hci`
