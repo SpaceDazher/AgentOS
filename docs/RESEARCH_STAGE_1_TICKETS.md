@@ -188,7 +188,7 @@ from a lower wave to a higher wave, and S1-020 is the sole closure sink.
 | S1-016 | W3 | P1 | formal | PASS_WITH_LIMITS | S1-003, S1-007 | bounded lineage evidence complete; design decision remains INCONCLUSIVE |
 | S1-017 | W4 | P2 | formal | PASS_WITH_LIMITS | S1-004, S1-016 | STIT/ATL responsibility analytics placement |
 | S1-018 | W4 | P1 | privacy | PASS_WITH_LIMITS | S1-007, S1-008, S1-009 | profile-C MLS + TEE attested-indexer PoC research |
-| S1-019 | W5 | P0 | synthesis | READY | S1-004, S1-005, S1-006, S1-007, S1-008, S1-009, S1-010, S1-011, S1-012, S1-013, S1-014, S1-015, S1-016, S1-017, S1-018 | P0 architecture decision synthesis/prototype evidence |
+| S1-019 | W5 | P0 | synthesis | PASS_WITH_LIMITS | S1-004, S1-005, S1-006, S1-007, S1-008, S1-009, S1-010, S1-011, S1-012, S1-013, S1-014, S1-015, S1-016, S1-017, S1-018 | P0 architecture decision synthesis/prototype evidence |
 | S1-020 | W6 | P0 | audit | READY | S1-001..S1-019 (expanded in ticket) | independent phase audit and closure decision |
 
 ## Active tickets
@@ -1415,7 +1415,7 @@ python -m agentos.cli research-plan --topic "S1-018 profile C MLS TEE attested i
 
 ### S1-019 — P0 platform architecture decision synthesis and prototype evidence
 
-- **Status:** `READY`
+- **Status:** `PASS_WITH_LIMITS`
 - **Priority:** `P0`
 - **Wave:** `W5`
 - **Owner:** `synthesis`
@@ -1463,6 +1463,14 @@ python -m agentos.cli research-plan --topic "S1-018 profile C MLS TEE attested i
   contradictory, unaudited, or if synthesis requires a production build or
   deployment-specific legal/high-risk determination (PARK-01).
 - **Bundle path:** `research/tickets/stage-1/S1-019/bundle.json`
+- **Canonical result:** revision `2`, goal
+  `goal_2APXT5MCZ7X4P71J01M1X4F9J0`, evaluation
+  `reval_6MEPCD6VQ0TWYG0B01M1X4F9Q1`, artifact chain
+  `63d09cfd34e84015283c92a03cbe9d80718f2b3f49acefa6e261282ed07ec17b`.
+  All six EP rows are `ADOPT_WITH_LIMITS`; 144 observations have SYN1–SYN18
+  equal to zero, probes A–P detected in both runs, and 264 deterministic
+  sensitivity trials produced zero flips. Production, deployment, legal,
+  hardware, population-human and Goal-acceptance authority remain excluded.
 - **PowerShell command:**
 
 ```powershell
