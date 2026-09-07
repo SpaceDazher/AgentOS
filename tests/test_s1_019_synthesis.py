@@ -116,9 +116,26 @@ class SynthesisInputTests(unittest.TestCase):
         self.assertTrue(all(item["excluded"]
                             for item in first["unknown_incomparable_exclusion_checks"]))
 
-    def test_operator_answers_are_not_fabricated(self):
+    def test_operator_answers_are_real_bounded_and_fresh(self):
         self.assertTrue((TICKET / "operator-questionnaire.md").is_file())
-        self.assertFalse((TICKET / "operator-decision.json").exists())
+        decision = self.load("operator-decision.json")
+        self.assertEqual(decision["answer_tokens"],
+                         [f"{number}A" for number in range(1, 11)])
+        self.assertEqual(decision["selected_answers"],
+                         {str(number): "A" for number in range(1, 11)})
+        self.assertEqual(decision["derived_status"], "PASS_WITH_LIMITS")
+        self.assertTrue(decision["hard_gates_all_pass"])
+        self.assertTrue(decision["operator_cannot_override_hard_gates"])
+        self.assertFalse(decision["production_authority"])
+        self.assertFalse(decision["goal_acceptance_authority"])
+        bindings = {
+            "questionnaire_sha256": TICKET / "operator-questionnaire.md",
+            "frozen_manifest_sha256": TICKET / "frozen-manifest.json",
+            "technical_comparison_sha256": TICKET / "results/comparison.json",
+            "decision_matrix_sha256": TICKET / "decision-matrix.json",
+        }
+        for key, path in bindings.items():
+            self.assertEqual(decision[key], hashlib.sha256(path.read_bytes()).hexdigest())
 
     def test_frozen_manifest_binds_publication_tools(self):
         files = self.load("frozen-manifest.json")["files"]

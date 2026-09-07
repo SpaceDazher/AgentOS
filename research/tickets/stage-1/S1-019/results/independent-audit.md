@@ -1,14 +1,14 @@
 # S1-019 technical independent audit
 
-Verdict: **TECHNICAL_CANDIDATE**, ceiling **PASS_WITH_LIMITS**. Canonical
-publication is deliberately blocked until a real operator answers the frozen
-questionnaire.
+Verdict: **PASS_WITH_LIMITS** after the technical candidate and the real
+operator decision. Canonical publication remains pending until the FLOW-11
+bundle is committed and recorded in the canonical database.
 
 The audit recomputed the dependency and wall-clock gates, inspected the
 separate corpus/oracle binding, and compared two child-process runs. Run A
-used agentos-s1-019-producer (PID 4252, nonce s1019-A-001) and Run B used
-agentos-s1-019-independent-verifier (PID 34544, nonce s1019-B-001) at commit
-857b88c0c23e560f332be090fed69861de95172f.
+used agentos-s1-019-producer (PID 29380, nonce s1019-A-001) and Run B used
+agentos-s1-019-independent-verifier (PID 30316, nonce s1019-B-001) at commit
+b5aa97406bb478f206fd18fa97bb43efd380419b.
 
 - 18/18 dependency records are proven from immutable commit
   19ff320adfe7153267fb634268038ae16ba25a16.
@@ -21,6 +21,10 @@ agentos-s1-019-independent-verifier (PID 34544, nonce s1019-B-001) at commit
   741f9f031739f88c04ecb5d7f04c945be8677d84e863aef8b7ca49c54e144a24.
 - Deterministic sensitivity executed 264 perturbations with zero flips and
   zero unknown-dependent decisions.
+- Operator `operator-daniil-2026-09-06` selected `1A` through `10A`; the
+  decision is bound to the frozen questionnaire, manifest, comparison and
+  decision matrix. It cannot override hard gates and grants no production or
+  Goal-acceptance authority.
 
 Residual limits: evidence is bounded, same-host and process-separated; the ten
 source snapshots are local research inputs; production-like, external-audit,
