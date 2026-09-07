@@ -111,6 +111,14 @@ class SynthesisInputTests(unittest.TestCase):
         self.assertTrue((TICKET / "operator-questionnaire.md").is_file())
         self.assertFalse((TICKET / "operator-decision.json").exists())
 
+    def test_frozen_manifest_binds_publication_tools(self):
+        files = self.load("frozen-manifest.json")["files"]
+        for name in ("operator_verify.py", "make_bundle.py", "finalize_record.py"):
+            rel = f"research/tickets/stage-1/S1-019/{name}"
+            self.assertIn(rel, files)
+            self.assertEqual(hashlib.sha256((REPO / rel).read_bytes()).hexdigest(),
+                             files[rel])
+
     def test_unsafe_evidence_path_is_rejected(self):
         for path in ("../x", "/x", "C:/x", "x\\y"):
             with self.subTest(path=path), self.assertRaises(ValueError):

@@ -39,6 +39,9 @@ FILES = (
     "research/tickets/stage-1/S1-019/sensitivity.py",
     "research/tickets/stage-1/S1-019/runner.py",
     "research/tickets/stage-1/S1-019/operator-questionnaire.md",
+    "research/tickets/stage-1/S1-019/operator_verify.py",
+    "research/tickets/stage-1/S1-019/make_bundle.py",
+    "research/tickets/stage-1/S1-019/finalize_record.py",
 )
 
 
