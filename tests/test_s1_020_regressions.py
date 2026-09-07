@@ -177,7 +177,20 @@ class S1020ContractTests(unittest.TestCase):
                 tampered["probe_rejections"][key]["detected"] = "PASS"
             self.assertFalse(self.gate.probe_pass(ticket, tampered))
 
-    def test_20_canonical_record_binds_wiki_and_content_addresses(self):
+    def test_20_s1_005_probe_verdicts_require_exact_rejections(self):
+        doc = json.loads((ROOT / "research" / "tickets" / "stage-1" / "S1-005" /
+                          "results" / "sensitivity-analysis.json").read_text(encoding="utf-8"))
+        self.assertTrue(self.gate.probe_pass("S1-005", doc))
+        for tampered_probes in (
+            {"A": ["accepted"], "B": doc["probe_rejections"]["B"]},
+            {"A": doc["probe_rejections"]["A"]},
+            {"A": doc["probe_rejections"]["A"], "B": []},
+        ):
+            tampered = copy.deepcopy(doc)
+            tampered["probe_rejections"] = tampered_probes
+            self.assertFalse(self.gate.probe_pass("S1-005", tampered))
+
+    def test_21_canonical_record_binds_wiki_and_content_addresses(self):
         record = json.loads((TICKET / "evaluation-record.json").read_text(encoding="utf-8"))
         self.assertEqual(record["result"], "pass_with_limits")
         self.assertTrue(record["wiki_check_ok"])

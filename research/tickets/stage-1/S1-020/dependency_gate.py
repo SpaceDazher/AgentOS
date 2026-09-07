@@ -133,8 +133,13 @@ def probe_pass(ticket: str, doc: dict[str, Any]) -> bool:
         return (doc.get("acceptance") or {}).get("verdict") == "PASS" and \
             (doc.get("probes") or {}).get("all_passed") is True
     if number == 5:
+        probes = doc.get("probe_rejections") or {}
         return str(doc.get("verdict", "")).lower() == "pass_with_limits" and \
-            len(doc.get("probe_rejections") or {}) >= 2
+            set(probes) == {"A", "B"} and all(
+                isinstance(reasons, list) and reasons and all(
+                    isinstance(reason, str) and "reject" in reason.lower()
+                    for reason in reasons)
+                for reasons in probes.values())
     if number == 6:
         probes = doc.get("probe_rejections") or {}
         return probes == {"A_unsafe_resume": "FAIL",
