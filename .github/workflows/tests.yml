@@ -28,7 +28,11 @@ jobs:
       - name: Verify research integrity (SHA-256 pin)
         shell: bash
         run: |
-          echo "3b1df2d6efe8cedc128d1ccde6f07ae189902e9638548dc09f4263dfe7db0f1c  research/agentos_confident_result/agentos_evidence_review.md" | sha256sum -c -
+          # Hash the immutable Git blob, not the checkout bytes: Windows may
+          # materialize CRLF while the research pin is defined over Git LF.
+          git show HEAD:research/agentos_confident_result/agentos_evidence_review.md \
+            | sha256sum \
+            | grep -qi '^3b1df2d6efe8cedc128d1ccde6f07ae189902e9638548dc09f4263dfe7db0f1c '
 
       - name: Run test suite (no LLM/network required)
         env:
