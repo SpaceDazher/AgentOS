@@ -44,28 +44,15 @@ def _sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _restore_production_sensitivity(saved: str) -> None:
-    """Best-effort regeneration of the tracked sensitivity file with a
-    guaranteed restore (isolation fix): re-run the production evaluator
-    so a working environment still verifies byte-identical regeneration;
-    if regeneration fails for any reason, write back `saved` so the
-    tracked evidence file is never left deleted, and never mask the
-    test's own outcome (no re-raise)."""
-    import os as _os
-    try:
-        saved_doc = json.loads(saved)
-        env = dict(_os.environ)
-        if saved_doc.get("run_nonce"):
-            env["AGENTOS_RUN_NONCE"] = saved_doc["run_nonce"]
-        else:
-            env.pop("AGENTOS_RUN_NONCE", None)
-        subprocess.run(
-            [sys.executable, str(S1005 / "evaluator.py"),
-             "--ticket", str(S1005), "--out", str(S1005 / "results")],
-            check=True, capture_output=True, timeout=600, env=env)
-    except Exception:
-        (S1005 / "results" / "sensitivity-analysis.json").write_text(
-            saved, encoding="utf-8")
+def _restore_production_sensitivity(saved: bytes) -> None:
+    """Restore the tracked evidence byte-for-byte after a mutation probe.
+
+    Re-running the evaluator here is not isolation: its environment fields
+    legitimately differ between Windows and Linux and can leave the Git
+    worktree dirty even when the test itself passes.  The evaluator is what
+    the test exercises; cleanup must restore the exact pre-test bytes.
+    """
+    (S1005 / "results" / "sensitivity-analysis.json").write_bytes(saved)
 
 
 def _fresh():
@@ -286,8 +273,8 @@ class F1F6BundleBuilderBehaviorTests(TestCase):
         run nonce so the file is byte-identical to its prior state."""
         import make_bundle
         orig_nonce = make_bundle._LAST_RUN_NONCE
-        saved = (S1005 / "results" / "sensitivity-analysis.json").read_text(
-            encoding="utf-8")
+        sensitivity_path = S1005 / "results" / "sensitivity-analysis.json"
+        saved = sensitivity_path.read_bytes()
         make_bundle._LAST_RUN_NONCE = "review-r2-test-nonce"
 
         def command_factory():
@@ -307,8 +294,7 @@ class F1F6BundleBuilderBehaviorTests(TestCase):
         finally:
             _restore_production_sensitivity(saved)
             make_bundle._LAST_RUN_NONCE = orig_nonce
-            assert (S1005 / "results" / "sensitivity-analysis.json").read_text(
-                encoding="utf-8") == saved
+            assert sensitivity_path.read_bytes() == saved
 
     def test_run_evaluator_rejects_nonzero_exit(self):
         with self.assertRaises(SystemExit):
@@ -349,8 +335,8 @@ class F1F6BundleBuilderBehaviorTests(TestCase):
         R3 finding 2)."""
         import make_bundle
         orig_nonce = make_bundle._LAST_RUN_NONCE
-        saved = (S1005 / "results" / "sensitivity-analysis.json").read_text(
-            encoding="utf-8")
+        sensitivity_path = S1005 / "results" / "sensitivity-analysis.json"
+        saved = sensitivity_path.read_bytes()
         make_bundle._LAST_RUN_NONCE = "review-r2-stale-nonce"
 
         def command_factory():
@@ -369,8 +355,7 @@ class F1F6BundleBuilderBehaviorTests(TestCase):
         # the impostor run failed closed (SystemExit above); the production
         # restore reproduces the deterministic saved verdict exactly
         self.assertEqual(
-            (S1005 / "results" / "sensitivity-analysis.json").read_text(
-                encoding="utf-8"),
+            sensitivity_path.read_bytes(),
             saved)
 
     def test_make_bundle_verifies_commit_and_digest_binding(self):

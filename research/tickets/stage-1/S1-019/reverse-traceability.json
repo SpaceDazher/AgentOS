@@ -1,0 +1,332 @@
+{
+  "rows": [
+    {
+      "claim_refs": [
+        "CLAIM-S1-001"
+      ],
+      "ep_decisions": [
+        "EP-01",
+        "EP-02"
+      ],
+      "evidence_record": "research/tickets/stage-1/S1-001/evaluation-record.json",
+      "limitations": [
+        "The auditor role is process-separated and adversarial but is not an external human or independently operated model.",
+        "The run verifies the frozen 12-record queue only; it does not verify all 176 historical u records.",
+        "Canonical pages and metadata were reviewed live, but full third-party content was not archived in this repository."
+      ],
+      "status": "pass_with_limits",
+      "ticket_id": "S1-001"
+    },
+    {
+      "claim_refs": [
+        "CLAIM-S1-002"
+      ],
+      "ep_decisions": [
+        "EP-02"
+      ],
+      "evidence_record": "research/tickets/stage-1/S1-002/evaluation-record.json",
+      "limitations": [
+        "The benchmark is a short single-process local SQLite/WAL baseline with deterministic arrivals and a small read handler, not production traffic.",
+        "Distributed worker count, external calls, revocation, fan-out, failover, and multi-region behavior remain unverified.",
+        "The auditor role is adversarial and process-separated but not an external human or independently operated model.",
+        "The 20 ms p95 value remains an internal target; no production SLO or customer commitment is authorized."
+      ],
+      "status": "pass_with_limits",
+      "ticket_id": "S1-002"
+    },
+    {
+      "claim_refs": [
+        "CLAIM-S1-003"
+      ],
+      "ep_decisions": [
+        "EP-03"
+      ],
+      "evidence_record": "research/tickets/stage-1/S1-003/evaluation-record.json",
+      "limitations": [],
+      "status": "pass",
+      "ticket_id": "S1-003"
+    },
+    {
+      "claim_refs": [
+        "CLAIM-S1-004"
+      ],
+      "ep_decisions": [
+        "EP-01",
+        "EP-03",
+        "EP-08"
+      ],
+      "evidence_record": "research/tickets/stage-1/S1-004/evaluation-record.json",
+      "limitations": [
+        "Bounded evidence: Alloy scopes are 3-5 atoms per command; the TLC model bounds are 2 grants, 1 decision, Alloc=3, MaxTick=4, MaxPub=2; no unbounded proof is claimed.",
+        "The simulator exercises the design contract (transactional outbox, fencing, reconciliation), not deployed production code; Core AgentOS does not yet implement the grant/outbox service.",
+        "Producer and verifier labels, and acceptance reruns, are process-separated in one local environment; they are not off-host or external human audits.",
+        "Executed on a Java 8 JRE with tla2tools 1.7.0 (TLC2 2.15); the current tla2tools 2.0 build requires Java 11+ and was not executed.",
+        "LIVE1/LIVE2 are bounded traces (tick model, simulator replay) plus design obligations for the implementation, not unbounded liveness proofs.",
+        "Stale-ack fencing is zero in random acceptance runs by construction and is evidenced deterministically by probe A duplicate-ack suppression and the SAF2 negative mutation."
+      ],
+      "status": "pass_with_limits",
+      "ticket_id": "S1-004"
+    },
+    {
+      "claim_refs": [
+        "CLAIM-S1-005"
+      ],
+      "ep_decisions": [
+        "EP-05"
+      ],
+      "evidence_record": "research/tickets/stage-1/S1-005/evaluation-record.json",
+      "limitations": [
+        "Boundary measurements are same-host and bounded; multi-host partition semantics and orchestrator restart latencies are unknown and excluded from scoring (bounded in sensitivity S3).",
+        "The recommendation is a research decision for the MVP; it is not a production deployment, availability, or reliability claim.",
+        "S1-002 and S1-004 evidence is PASS_WITH_LIMITS and is reused only within its stated limits.",
+        "Producer and verifier labels are process-separated roles in one local environment, not external human auditors.",
+        "The containers restart/recovery cell remains unknown until a bounded container prototype is measured (production deployments are out of scope for this ticket)."
+      ],
+      "status": "pass_with_limits",
+      "ticket_id": "S1-005"
+    },
+    {
+      "claim_refs": [
+        "CLAIM-S1-006"
+      ],
+      "ep_decisions": [
+        "EP-05",
+        "EP-08"
+      ],
+      "evidence_record": "research/tickets/stage-1/S1-006/evaluation-record.json",
+      "limitations": [
+        "Model-based comparison on a same-host research station: durable-engine costs combine S1-005 E1/E2 measurements with documented lease/visibility assumptions (100 ms lease timeout, 105 ms modeled recovery); no vendor engine was installed.",
+        "Low/nominal arrival rates link to the S1-002 planning envelope; the 20,000/s high load is an explicit simulator saturation probe, not a production profile.",
+        "Multi-host partition behaviour and vendor timer semantics are unknown and excluded from scoring.",
+        "Producer and verifier labels are process-separated roles in one local environment, not external human auditors.",
+        "Migration triggers remain design obligations until a production-like follow-up benchmark measures them."
+      ],
+      "status": "pass_with_limits",
+      "ticket_id": "S1-006"
+    },
+    {
+      "claim_refs": [
+        "CLAIM-S1-007"
+      ],
+      "ep_decisions": [
+        "EP-04"
+      ],
+      "evidence_record": "research/tickets/stage-1/S1-007/evaluation-record.json",
+      "limitations": [
+        "All results are local-model measurements from a deterministic stdlib-only simulation; no production latency, storage or privacy certification is claimed.",
+        "The timing probe is a bounded same-host paired-interleaved wall-clock measurement (200 paired samples x 32 inner repeats x 3 seeds per variant, tolerance max(10% of control median, 2000ns) recomputed by the evaluator from raw samples); it cannot prove absence of all side channels.",
+        "D9 (operational complexity/migration) and D11 (profile compatibility) are inference-type cells derived from the frozen contract, the current implementation and documented profiles.",
+        "Storage overhead uses a declared fixed per-index constant (256 bytes) - a model assumption, not a measurement of a production index engine.",
+        "S1-003 and S1-005 evidence is reused only within its stated limits (see dependency-gate.json).",
+        "Producer and verifier labels are process-separated roles in one local environment, not external human auditors."
+      ],
+      "status": "pass_with_limits",
+      "ticket_id": "S1-007"
+    },
+    {
+      "claim_refs": [
+        "CLAIM-S1-008"
+      ],
+      "ep_decisions": [
+        "EP-03"
+      ],
+      "evidence_record": "research/tickets/stage-1/S1-008/evaluation-record.json",
+      "limitations": [
+        "Same-host model-only: no production network/cache topology tested.",
+        "Process-separated auditor, not an external/independent audit firm.",
+        "Local model cannot prove absence of all network/cache side channels.",
+        "Clock assumptions: monotonic clock authoritative for elapsed; UTC wall for audit only."
+      ],
+      "status": "pass_with_limits",
+      "ticket_id": "S1-008"
+    },
+    {
+      "claim_refs": [
+        "CLAIM-S1-009"
+      ],
+      "ep_decisions": [
+        "EP-02",
+        "EP-05"
+      ],
+      "evidence_record": "research/tickets/stage-1/S1-009/evaluation-record.json",
+      "limitations": [
+        "Same-host, process-separated (not external human auditor).",
+        "No full third-party content archiving.",
+        "No streaming/push binding coverage for MCP/A2A.",
+        "SM6/SM8/SM11 remain unsupported under S1-009-FU-01/FU-02 and S1-011; S1-010 remains tool-poisoning only."
+      ],
+      "status": "pass_with_limits",
+      "ticket_id": "S1-009"
+    },
+    {
+      "claim_refs": [
+        "CLAIM-S1-010"
+      ],
+      "ep_decisions": [
+        "EP-02",
+        "EP-03",
+        "EP-05"
+      ],
+      "evidence_record": "research/tickets/stage-1/S1-010/evaluation-record.json",
+      "limitations": [
+        "Same-host process separation (verifier-A/verifier-B runner processes with distinct evaluator children), not an external human auditor or independently implemented auditor.",
+        "Cloud Phase A proves tracked Git evidence only; canonical DB state is rechecked in local Phase B.",
+        "pre_approved is a boolean entitlement in the evaluated model; exact-action+operation+expiry approval binding must be enforced by the production gateway."
+      ],
+      "status": "pass_with_limits",
+      "ticket_id": "S1-010"
+    },
+    {
+      "claim_refs": [
+        "CLAIM-S1-011"
+      ],
+      "ep_decisions": [
+        "EP-04"
+      ],
+      "evidence_record": "research/tickets/stage-1/S1-011/evaluation-record.json",
+      "limitations": [
+        "tracked-Git evidence only; live DB recheck required in Phase B",
+        "provisional independence threshold uncalibrated (S1-012)",
+        "operator workload is a simulation estimate (S1-013)",
+        "corpus-bounded claims: no cyclic attack graphs evaluated",
+        "no SHACL mapping for attack/support/justification relations"
+      ],
+      "status": "pass_with_limits",
+      "ticket_id": "S1-011"
+    },
+    {
+      "claim_refs": [
+        "CLAIM-S1-012"
+      ],
+      "ep_decisions": [
+        "EP-08"
+      ],
+      "evidence_record": "research/tickets/stage-1/S1-012/evaluation-record.json",
+      "limitations": [
+        "tracked-Git evidence only; live DB recheck required in Phase B",
+        "planning threshold stays a hypothesis (no suitable data)",
+        "Beta formulas are standard results with independent computation, not archived primary full text",
+        "holdout is lineage-isolated but author-visible, not blinded",
+        "operator workload unmeasured; no human study claimed",
+        "corpus-bounded claims: no cyclic attack graphs evaluated"
+      ],
+      "status": "pass_with_limits",
+      "ticket_id": "S1-012"
+    },
+    {
+      "claim_refs": [
+        "CLAIM-S1-013"
+      ],
+      "ep_decisions": [
+        "EP-01"
+      ],
+      "evidence_record": "research/tickets/stage-1/S1-013/evaluation-record.json",
+      "limitations": [
+        "tracked-Git dependency evidence; local canonical DB recheck is required before final publication",
+        "no human data: all rates are dry-run tooling checks",
+        "source coverage and verification limits remain explicit in the registry",
+        "Beta-free design; no reputation-as-authority anywhere",
+        "holdout concept not applicable pre-pilot; synthetic corpus is author-visible by construction",
+        "one operator authorized an accelerated scripted expert review; no independent human grading was performed",
+        "the originally specified 15-20-person pilot was cancelled, so human comprehension and effectiveness remain NOT_MEASURED"
+      ],
+      "status": "pass_with_limits",
+      "ticket_id": "S1-013"
+    },
+    {
+      "claim_refs": [
+        "CLAIM-S1-014"
+      ],
+      "ep_decisions": [
+        "EP-02"
+      ],
+      "evidence_record": "research/tickets/stage-1/S1-014/evaluation-record.json",
+      "limitations": [
+        "ticket status PASS_WITH_LIMITS; audit verdict covers preparation evidence only, never human effectiveness",
+        "human_study_n=0; comparative_human_effectiveness=NOT_MEASURED",
+        "single operator acts as owner and reviewer (design approval only)",
+        "same-host process-separated replay, not external audit",
+        "external HCI sources stored as bibliographic/availability records, not full text",
+        "inherited S1-011/S1-012/S1-013 limits carried verbatim in dependency-gate.json"
+      ],
+      "status": "pass_with_limits",
+      "ticket_id": "S1-014"
+    },
+    {
+      "claim_refs": [
+        "CLAIM-S1-015"
+      ],
+      "ep_decisions": [
+        "EP-01",
+        "EP-04"
+      ],
+      "evidence_record": "research/tickets/stage-1/S1-015/evaluation-record.json",
+      "limitations": [
+        "tracked-Git dependency evidence; local canonical DB recheck is required before final publication",
+        "no human data: all rates are technical dry-run checks",
+        "source coverage and verification limits remain explicit in the registry",
+        "one operator design review prohibited a petname contract; CANONICAL_ID_ONLY is the fail-closed product decision; recognition improvement NOT_MEASURED",
+        "same-host replay is called replay, not an external audit"
+      ],
+      "status": "pass_with_limits",
+      "ticket_id": "S1-015"
+    },
+    {
+      "claim_refs": [
+        "CLAIM-S1-016"
+      ],
+      "ep_decisions": [
+        "EP-08"
+      ],
+      "evidence_record": "research/tickets/stage-1/S1-016/evaluation-record.json",
+      "limitations": [
+        "tracked-Git dependency evidence; local canonical DB recheck is required before final publication",
+        "no human or production data: all rates are technical model checks",
+        "bounded 48-scenario corpus; no arbitrary distributed execution claims",
+        "same-host replay is called replay, not an external audit",
+        "sensitivity parsimony consumes wall-clock latencies; recorded flips are noise-sensitive and a deterministic latency proxy is deferred",
+        "recorded sensitivity flips (1) cap the verdict; substance leader FLAT_RUNTIME_PROV_EXPORT",
+        "operator review recorded; verdict remains INCONCLUSIVE; substance leader FLAT_RUNTIME_PROV_EXPORT"
+      ],
+      "status": "pass_with_limits",
+      "ticket_id": "S1-016"
+    },
+    {
+      "claim_refs": [
+        "CLAIM-S1-017"
+      ],
+      "ep_decisions": [
+        "EP-05"
+      ],
+      "evidence_record": "research/tickets/stage-1/S1-017/evaluation-record.json",
+      "limitations": [
+        "tracked-Git dependency evidence; local canonical DB recheck is required before final publication",
+        "no human, legal, moral or production data: all rates are technical model checks",
+        "bounded 48-scenario corpus; no arbitrary-system attribution claims",
+        "same-host process separation is called replay, not an external audit",
+        "sensitivity inputs are deterministic model counts and artifact byte sizes only; wall-clock latencies are reported separately and never enter the decision"
+      ],
+      "status": "pass_with_limits",
+      "ticket_id": "S1-017"
+    },
+    {
+      "claim_refs": [
+        "CLAIM-S1-018"
+      ],
+      "ep_decisions": [
+        "EP-08"
+      ],
+      "evidence_record": "research/tickets/stage-1/S1-018/evaluation-record.json",
+      "limitations": [
+        "tracked-Git dependency evidence; local canonical DB recheck is required before final publication",
+        "no hardware, human or production data: all rates are bounded-model checks",
+        "bounded 48-case corpus; mock quotes carry zero hardware force",
+        "same-host replay is called replay, not an external audit",
+        "hardware_tee_evidence=NOT_MEASURED always"
+      ],
+      "status": "pass_with_limits",
+      "ticket_id": "S1-018"
+    }
+  ],
+  "schema": "agentos.s1-019.reverse-traceability/v1"
+}

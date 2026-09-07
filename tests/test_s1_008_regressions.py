@@ -17,6 +17,11 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 S1_008_DIR = REPO_ROOT / "research" / "tickets" / "stage-1" / "S1-008"
 RESULTS_DIR = REPO_ROOT / "results"
+RAW_RESULTS_AVAILABLE = (
+    (RESULTS_DIR / "run-a-clean" / "raw-traces").is_dir()
+    and (RESULTS_DIR / "run-b-clean" / "raw-traces").is_dir()
+)
+EVALUATION_RESULT_AVAILABLE = (RESULTS_DIR / "evaluation-result.json").is_file()
 
 
 def _sha256_file(path: Path) -> str:
@@ -93,6 +98,8 @@ class TestFrozenArtifacts(unittest.TestCase):
         self.assertEqual(gates["max_allow_after_commit"], 0)
 
 
+@unittest.skipUnless(RAW_RESULTS_AVAILABLE,
+                     "S1-008 raw measurement runs are intentionally not tracked")
 class TestMatrixCrossProduct(unittest.TestCase):
     """Verify exact 4×2×3×3=72 matrix cells in raw traces."""
 
@@ -167,6 +174,8 @@ class TestMatrixCrossProduct(unittest.TestCase):
         self.assertEqual(seeds, {"seed11", "seed12", "seed13"})
 
 
+@unittest.skipUnless(RAW_RESULTS_AVAILABLE,
+                     "S1-008 raw measurement runs are intentionally not tracked")
 class TestHardCounters(unittest.TestCase):
     """Verify that all hard counters are zero (fail-closed)."""
 
@@ -211,6 +220,8 @@ class TestHardCounters(unittest.TestCase):
                 self.assertGreater(derived[counter], 0)
 
 
+@unittest.skipUnless(RAW_RESULTS_AVAILABLE,
+                     "S1-008 raw measurement runs are intentionally not tracked")
 class TestLatencyBounds(unittest.TestCase):
     """Verify that max latency ≤ 5000ms (target)."""
 
@@ -227,6 +238,8 @@ class TestLatencyBounds(unittest.TestCase):
                             f"Max latency {max_lat}ms exceeds 5000ms target")
 
 
+@unittest.skipUnless(EVALUATION_RESULT_AVAILABLE,
+                     "S1-008 local evaluation result is intentionally not tracked")
 class TestProbeDetection(unittest.TestCase):
     """Verify that all probes A-F are detected with violations."""
 
@@ -248,6 +261,8 @@ class TestProbeDetection(unittest.TestCase):
                              f"Probe {label} has 0 violations")
 
 
+@unittest.skipUnless(RAW_RESULTS_AVAILABLE,
+                     "S1-008 raw measurement runs are intentionally not tracked")
 class TestHashBinding(unittest.TestCase):
     """Verify that all traces pass hash binding verification."""
 
@@ -266,6 +281,8 @@ class TestHashBinding(unittest.TestCase):
                            f"Trace {t.get('trial_id')} hash mismatch")
 
 
+@unittest.skipUnless(RAW_RESULTS_AVAILABLE,
+                     "S1-008 raw measurement runs are intentionally not tracked")
 class TestProvenance(unittest.TestCase):
     """Verify run provenance: different executors and output roots."""
 
@@ -434,6 +451,8 @@ class TestEvaluationRecord(unittest.TestCase):
         if self.record is None:
             self.skipTest("No record")
         db_path = REPO_ROOT / ".agentos-research" / "platform-stage-1" / "agentos.db"
+        if not db_path.is_file():
+            self.skipTest("live canonical DB is intentionally not tracked")
         conn = sqlite3.connect(db_path)
         try:
             rows = conn.execute(

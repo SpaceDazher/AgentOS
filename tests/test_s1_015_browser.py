@@ -7,6 +7,7 @@ DOM-only assertions without a browser process are not evidence.
 Run: $env:PYTHONPATH="src"; py -3.12 -m unittest tests.test_s1_015_browser -v
 """
 import json
+import importlib.util
 import os
 import shutil
 import subprocess
@@ -29,6 +30,8 @@ def _writable_tmp() -> Path:
     return root
 
 
+@unittest.skipUnless(importlib.util.find_spec("playwright") is not None,
+                     "optional Playwright browser evidence dependency is absent")
 class TestBrowserProbe(unittest.TestCase):
     def test_real_browser_flow_and_import(self):
         tmp = Path(tempfile.mkdtemp(prefix="s1015-bt-", dir=str(_writable_tmp())))

@@ -213,20 +213,22 @@ class TestRealWorktreeCampaign(unittest.TestCase):
 
     def test_docker_sandbox_is_networkless_readonly_and_digest_pinned(self):
         from agentos.autoresearch import AutoresearchError, DockerSandbox
+        executable = str((Path.cwd() / "tools" / "docker.exe").resolve())
+        worktree = (Path.cwd() / "worktree").resolve()
         with self.assertRaises(AutoresearchError):
             DockerSandbox(image="python:3.11",
-                          executable="C:/tools/docker.exe")
+                          executable=executable)
         sandbox = DockerSandbox(
             image="python@sha256:" + "a" * 64,
-            executable="C:/tools/docker.exe")
+            executable=executable)
         cmd = sandbox.build_command(
-            ["python", "candidate.py"], Path("C:/worktree"))
+            ["python", "candidate.py"], worktree)
         self.assertIn("--network", cmd)
         self.assertIn("none", cmd)
         self.assertIn("--read-only", cmd)
         self.assertIn("--cap-drop", cmd)
         self.assertIn("no-new-privileges", cmd)
-        self.assertIn("type=bind,src=C:\\worktree,dst=/workspace,rw", cmd)
+        self.assertIn(f"type=bind,src={worktree},dst=/workspace,rw", cmd)
         self.assertEqual(cmd[-2:], ["python", "candidate.py"])
 
     def test_out_of_scope_change_quarantines_campaign(self):

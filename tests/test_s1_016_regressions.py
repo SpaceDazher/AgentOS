@@ -16,6 +16,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 S1016 = ROOT / "research" / "tickets" / "stage-1" / "S1-016"
+SHACL_AVAILABLE = (
+    importlib.util.find_spec("rdflib") is not None
+    and importlib.util.find_spec("pyshacl") is not None
+)
 
 
 def _load_ticket_module(name: str):
@@ -155,6 +159,9 @@ class TestCorpus(unittest.TestCase):
             self.assertIn("expected_terminal_digest", entry)
             self.assertIn("expected_reconstruction_digest", entry)
 
+    @unittest.skipUnless(
+        SHACL_AVAILABLE,
+        "optional pinned rdflib/pySHACL evidence engines are absent")
     def test_generator_deterministic(self):
         first, first_oracle = build_corpus.build()
         second, second_oracle = build_corpus.build()
@@ -341,6 +348,9 @@ class TestExportImportRoundtrip(unittest.TestCase):
         self.assertNotIn(sha("x".encode()), json.dumps(doc))
 
 
+@unittest.skipUnless(
+    SHACL_AVAILABLE,
+    "optional pinned rdflib/pySHACL evidence engines are absent")
 class TestShaclAndAudit(unittest.TestCase):
     def test_engine_identity_pinned(self):
         versions = shacl_runner.engine_identity()

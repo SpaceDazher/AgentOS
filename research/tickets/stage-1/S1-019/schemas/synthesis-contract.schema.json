@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "authority": {
+      "type": "string"
+    },
+    "claim_classes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "contract_version": {
+      "type": "string"
+    },
+    "dispositions": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "duplicate_json_keys": {
+      "const": "REJECT"
+    },
+    "entities": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "goal_acceptance_authority": {
+      "const": false
+    },
+    "hard_invariants": {
+      "type": "object"
+    },
+    "non_finite_numbers": {
+      "const": "REJECT"
+    },
+    "production_authority": {
+      "const": false
+    },
+    "remote_schema_refs": {
+      "const": "REJECT"
+    },
+    "schema": {
+      "const": "agentos.s1-019.synthesis-contract/v1"
+    },
+    "unknown_fields": {
+      "const": "REJECT"
+    },
+    "unknown_values": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "unsafe_paths": {
+      "const": "REJECT"
+    }
+  },
+  "required": [
+    "schema",
+    "contract_version",
+    "entities",
+    "hard_invariants",
+    "production_authority",
+    "goal_acceptance_authority"
+  ],
+  "type": "object"
+}

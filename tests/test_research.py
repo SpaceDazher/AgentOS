@@ -49,8 +49,13 @@ class TestResearchPlanner(unittest.TestCase):
                 "SELECT storage_path, content_sha256 FROM research_artifact"
                 " WHERE goal_id=?", (result["goal_id"],)):
             p = Path(row[0])
-            self.assertTrue(str(p).startswith(
-                str(self.root / "goals" / result["goal_id"] / "research")))
+            expected_parent = (
+                self.root / "goals" / result["goal_id"] / "research")
+            # Windows may persist the same temporary directory through its
+            # 8.3 alias (RUNNER~1) while tempfile exposes the long spelling.
+            # Filesystem identity preserves the confinement assertion without
+            # treating those equivalent names as different directories.
+            self.assertTrue(p.parent.samefile(expected_parent))
             self.assertEqual(
                 __import__("hashlib").sha256(p.read_bytes()).hexdigest(),
                 row[1],

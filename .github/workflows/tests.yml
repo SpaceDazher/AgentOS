@@ -13,8 +13,33 @@ jobs:
         python-version: ["3.11", "3.12"]
         os: [windows-latest, ubuntu-latest]
     runs-on: ${{ matrix.os }}
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src
     steps:
+      - name: Preserve byte-addressed research artifacts
+        shell: bash
+        run: |
+          # Evidence hashes are defined over the bytes stored in Git.  The
+          # Windows runner otherwise converts text blobs to CRLF at checkout
+          # and invalidates content-addressed records before tests start.
+          git config --global core.autocrlf false
+
       - uses: actions/checkout@v4
+        with:
+          # Research evidence binds historical commits by full SHA.  A
+          # shallow checkout makes valid provenance look unresolvable.
+          fetch-depth: 0
+
+      - name: Materialize portable research dependency refs
+        shell: bash
+        run: |
+          # Historical dependency gates require the origin ref and, when a
+          # local ref exists, require it to match.  PR checkout fetches only
+          # the PR/main refs, so reproduce the evidence-ref namespace without
+          # checking out or executing content from those branches.
+          git fetch --no-tags origin \
+            '+refs/heads/codex/*:refs/remotes/origin/codex/*' \
+            '+refs/heads/codex/*:refs/heads/codex/*'
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
@@ -24,11 +49,14 @@ jobs:
       - name: Verify research integrity (SHA-256 pin)
         shell: bash
         run: |
-          echo "3b1df2d6efe8cedc128d1ccde6f07ae189902e9638548dc09f4263dfe7db0f1c  research/agentos_confident_result/agentos_evidence_review.md" | sha256sum -c -
+          # Hash the immutable Git blob, not the checkout bytes: Windows may
+          # materialize CRLF while the research pin is defined over Git LF.
+          git show HEAD:research/agentos_confident_result/agentos_evidence_review.md \
+            | sha256sum \
+            | grep -qi '^3b1df2d6efe8cedc128d1ccde6f07ae189902e9638548dc09f4263dfe7db0f1c '
 
       - name: Run test suite (no LLM/network required)
         env:
-          PYTHONPATH: ${{ github.workspace }}/src
           AGENTOS_HOME: ${{ runner.temp }}/agentos-home
         shell: bash
         run: python -m unittest discover -s tests -v

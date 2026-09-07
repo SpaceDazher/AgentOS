@@ -411,6 +411,22 @@ class TestResearchSeriesLifecycle(unittest.TestCase):
         barrier = threading.Barrier(2)
         results: list[dict] = []
         errors: list[BaseException] = []
+        first_evaluation_entered = threading.Event()
+        release_first_evaluation = threading.Event()
+        real_store_evaluation = research_module._store_evaluation
+        store_lock = threading.Lock()
+        store_calls = 0
+
+        def delayed_first_evaluation(*args, **kwargs):
+            nonlocal store_calls
+            with store_lock:
+                store_calls += 1
+                first = store_calls == 1
+            if first:
+                first_evaluation_entered.set()
+                if not release_first_evaluation.wait(timeout=10):
+                    raise TimeoutError("test did not release first evaluation")
+            return real_store_evaluation(*args, **kwargs)
 
         def worker() -> None:
             db = open_db(db_path)
@@ -428,10 +444,18 @@ class TestResearchSeriesLifecycle(unittest.TestCase):
         # isolates the canonical DB reservation and evaluation path.
         with mock.patch.object(
                 research_module, "_attach_research_outputs",
-                side_effect=lambda db, root, goal_id, result: result):
+                side_effect=lambda db, root, goal_id, result: result), \
+                mock.patch.object(
+                    research_module, "_store_evaluation",
+                    side_effect=delayed_first_evaluation):
             threads = [threading.Thread(target=worker) for _ in range(2)]
             for thread in threads:
                 thread.start()
+            self.assertTrue(first_evaluation_entered.wait(timeout=10))
+            # Give the other owner a deterministic chance to observe the
+            # committed campaign while the first evaluation is still absent.
+            threading.Event().wait(0.2)
+            release_first_evaluation.set()
             for thread in threads:
                 thread.join(timeout=30)
         self.assertFalse(errors, errors)
