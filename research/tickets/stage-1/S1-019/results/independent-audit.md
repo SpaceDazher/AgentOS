@@ -6,9 +6,9 @@ bundle is committed and recorded in the canonical database.
 
 The audit recomputed the dependency and wall-clock gates, inspected the
 separate corpus/oracle binding, and compared two child-process runs. Run A
-used agentos-s1-019-producer (PID 24056, nonce s1019-A-001) and Run B used
-agentos-s1-019-independent-verifier (PID 32844, nonce s1019-B-001) at commit
-b36db460093b04a4e3c3a92a033c603ad65c0208.
+used agentos-s1-019-producer (PID 10368, nonce s1019-A-001) and Run B used
+agentos-s1-019-independent-verifier (PID 17160, nonce s1019-B-001) at commit
+bb6fb1da3ee91f87651bc6e90bed1580501d1ee3.
 
 - 18/18 dependency records are proven from immutable commit
   19ff320adfe7153267fb634268038ae16ba25a16.
