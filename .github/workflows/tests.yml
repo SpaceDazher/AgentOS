@@ -16,6 +16,14 @@ jobs:
     env:
       PYTHONPATH: ${{ github.workspace }}/src
     steps:
+      - name: Preserve byte-addressed research artifacts
+        shell: bash
+        run: |
+          # Evidence hashes are defined over the bytes stored in Git.  The
+          # Windows runner otherwise converts text blobs to CRLF at checkout
+          # and invalidates content-addressed records before tests start.
+          git config --global core.autocrlf false
+
       - uses: actions/checkout@v4
         with:
           # Research evidence binds historical commits by full SHA.  A
