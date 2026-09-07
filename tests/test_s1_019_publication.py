@@ -37,7 +37,7 @@ class S1019PublicationTests(unittest.TestCase):
         record = self.record
         self.assertEqual(record["schema"], "agentos.ticket-evaluation-record/v2")
         self.assertEqual(record["ticket_id"], "S1-019")
-        self.assertEqual(record["research_revision"], 1)
+        self.assertEqual(record["research_revision"], 2)
         self.assertEqual(record["result"], "pass_with_limits")
         self.assertRegex(record["goal_id"], r"^goal_")
         self.assertRegex(record["campaign_id"], r"^rcamp_")

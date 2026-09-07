@@ -3,13 +3,13 @@
 Status: **PASS_WITH_LIMITS** (research-only; no production or Goal-acceptance
 authority).
 
-- Canonical revision: `1`
-- Goal: `goal_PF6HN3XZSB9ZSF6V01M1X448YX`
-- Campaign: `rcamp_QXPYDG83MQYPQVFG01M1X448YX`
-- Evaluation: `reval_YXKQZS5ZYZAZZ1B101M1X44934`
-- Artifact chain: `22cdd09c3932033ce2ce120ae9f9afb0c31a93d1f4de3893bb4e3db663c66093`
+- Canonical revision: `2`
+- Goal: `goal_2APXT5MCZ7X4P71J01M1X4F9J0`
+- Campaign: `rcamp_DGX91JM5W0DXFP7Q01M1X4F9J0`
+- Evaluation: `reval_6MEPCD6VQ0TWYG0B01M1X4F9Q1`
+- Artifact chain: `63d09cfd34e84015283c92a03cbe9d80718f2b3f49acefa6e261282ed07ec17b`
 - Canonical evidence pack:
-  `results/evidence/evidence-pack-4facf64d5a8a00e82805110a62a67b756f7d64754024ac10e7229c0adeed71d9.json`
+  `results/evidence/evidence-pack-84499e38f1b8a917798fc306d03252f7abace00527017d115c6ce11f202f96be.json`
 
 The six P0 rows EP-01..EP-05 and EP-08 are adopted only with their recorded
 limits. The frozen 72-case corpus ran in two distinct processes (144 complete
