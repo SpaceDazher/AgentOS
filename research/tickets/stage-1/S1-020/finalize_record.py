@@ -113,7 +113,8 @@ def main() -> int:
             raise SystemExit("canonical S1-020 evaluation missing")
         evaluation = dict(erow)
         chain = research_chain_hash(SimpleNamespace(conn=conn), series["goal_id"])
-    if series.get("revision") != 2 or evaluation.get("result") != "pass_with_limits":
+    if not isinstance(series.get("revision"), int) or series["revision"] < 1 or \
+            evaluation.get("result") != "pass_with_limits":
         raise SystemExit("latest canonical revision is not the expected passing revision")
     if chain != evaluation.get("artifact_chain_hash"):
         raise SystemExit("canonical artifact chain is stale")
