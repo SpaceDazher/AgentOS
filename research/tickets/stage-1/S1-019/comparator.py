@@ -100,6 +100,18 @@ def compare(run_a: dict, run_b: dict, roots: tuple[str, str]) -> dict:
                            if item.get("probe_detected")}
         if observed_probes != set(PROBES):
             problems.append(f"{label}: probes A-P not all detected")
+        by_id = {item.get("case_id"): item for item in observations}
+        for item in observations:
+            if not item.get("probe"):
+                continue
+            control = by_id.get(item.get("benign_control_case_id"))
+            if not isinstance(control, dict) or control.get("class") != "happy" or \
+                    control.get("ep_id") != item.get("ep_id"):
+                problems.append(f"{label}: probe {item.get('probe')} lacks benign control")
+        attempted = {item.get("attempted_invariant") for item in observations
+                     if item.get("attempted_invariant")}
+        if attempted != set(SYN_IDS):
+            problems.append(f"{label}: SYN attack/control coverage incomplete")
         for item in observations:
             expected = oracle.get(item.get("case_id"), {})
             if item.get("decision") != expected.get("decision"):

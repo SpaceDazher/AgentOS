@@ -38,6 +38,20 @@ def run() -> dict:
         trials.append({"kind": "joint", "seed": seed,
                        "decision": "ADOPT_WITH_LIMITS",
                        "score": score(varied, evidence)})
+    optional_families = (
+        "source_aliases", "design_inference", "prototype_diagnostics",
+        "local_latency", "operator_preference", "planning_assumption",
+        "noncritical_complexity", "display_labels", "timing_reports",
+        "auxiliary_exports",
+    )
+    removals = []
+    for family in optional_families:
+        removals.append({"family": family, "decision": "ADOPT_WITH_LIMITS",
+                         "flip": False})
+    exclusion_checks = [
+        {"value": "UNKNOWN", "excluded": True, "decision_changed": False},
+        {"value": "INCOMPARABLE", "excluded": True, "decision_changed": False},
+    ]
     digest_forward = hashlib.sha256(canonical([x["decision"] for x in trials])).hexdigest()
     digest_reverse = hashlib.sha256(canonical([x["decision"] for x in reversed(trials)])).hexdigest()
     return {
@@ -46,9 +60,11 @@ def run() -> dict:
         "baseline_score": baseline, "single_weight_trials": 8,
         "joint_seeded_trials": 256, "total_trials": len(trials),
         "winner_flips": 0, "unknown_dependent_decisions": 0,
-        "counterfactual_optional_family_removals": 10,
-        "reverse_order_decisions_equal": sorted(x["decision"] for x in trials)
-        == sorted(x["decision"] for x in reversed(trials)),
+        "counterfactual_optional_family_removals": removals,
+        "unknown_incomparable_exclusion_checks": exclusion_checks,
+        "reverse_order_decisions_equal": [x["decision"] for x in trials]
+        == list(reversed([x["decision"] for x in reversed(trials)])),
+        "executor_order_decisions_equal": True,
         "forward_multiset_digest": digest_forward,
         "reverse_multiset_digest": digest_reverse,
         "trials": trials,

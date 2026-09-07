@@ -60,6 +60,10 @@ class SynthesisInputTests(unittest.TestCase):
             controls = {item["wall_clock_control"] for item in cases
                         if item["wall_clock_rule"] == rule}
             self.assertEqual(controls, {True, False})
+        happy = {item["case_id"] for item in cases if item["class"] == "happy"}
+        for item in cases:
+            if item["class"] == "adversarial":
+                self.assertIn(item["benign_control_case_id"], happy)
 
     def test_decision_rows_are_bounded_and_evidence_backed(self):
         rows = self.load("decision-matrix.json")["rows"]
@@ -106,6 +110,11 @@ class SynthesisInputTests(unittest.TestCase):
         self.assertGreaterEqual(first["total_trials"], 264)
         self.assertEqual(first["wall_clock_inputs"], [])
         self.assertEqual(first["winner_flips"], 0)
+        self.assertEqual(len(first["counterfactual_optional_family_removals"]), 10)
+        self.assertTrue(all(not item["flip"]
+                            for item in first["counterfactual_optional_family_removals"]))
+        self.assertTrue(all(item["excluded"]
+                            for item in first["unknown_incomparable_exclusion_checks"]))
 
     def test_operator_answers_are_not_fabricated(self):
         self.assertTrue((TICKET / "operator-questionnaire.md").is_file())

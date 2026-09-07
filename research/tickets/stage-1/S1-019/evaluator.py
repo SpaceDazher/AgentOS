@@ -115,6 +115,7 @@ def evaluate_case(case: dict) -> dict:
         "candidate": case["candidate"], "decision": decision,
         "probe": probe, "probe_detected": detected,
         "attempted_invariant": condition.get("attempted_invariant"),
+        "benign_control_case_id": case.get("benign_control_case_id"),
         "wall_clock_rule": case.get("wall_clock_rule"),
         "wall_clock_control": case.get("wall_clock_control"),
         "production_authority": False, "goal_acceptance_authority": False,
@@ -151,7 +152,8 @@ def evaluate(executor_id: str, nonce: str) -> dict:
     semantic = [{
         key: item[key] for key in ("case_id", "ep_id", "candidate", "decision",
                                    "probe", "probe_detected", "production_authority",
-                                   "goal_acceptance_authority", "authority_mutations")
+                                   "goal_acceptance_authority", "authority_mutations",
+                                   "benign_control_case_id")
     } for item in observations]
     commit = subprocess.run(["git", "-C", str(REPO), "rev-parse", "HEAD"],
                             capture_output=True, text=True, check=True).stdout.strip()

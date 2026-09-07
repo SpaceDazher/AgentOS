@@ -305,6 +305,9 @@ def build_corpus(rows: list[dict]) -> None:
                     "audit_evidence_refs": row["audit_evidence_refs"],
                     "condition": condition, "production_authority": False,
                     "goal_acceptance_authority": False,
+                    "benign_control_case_id": (
+                        f"C-{ep_index * 12 + local + 1:03d}"
+                        if class_name == "adversarial" else None),
                     "wall_clock_rule": clock_rules[(ep_index * 4 + local) % len(clock_rules)],
                     "wall_clock_control": class_name == "happy",
                 })
