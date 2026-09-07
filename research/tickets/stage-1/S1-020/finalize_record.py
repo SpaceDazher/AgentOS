@@ -17,6 +17,8 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[3]
 sys.path.insert(0, str(ROOT / "src"))
 from agentos.research import _manifest_hash, _normalise_config, research_chain_hash
+from agentos.db import open_db
+from agentos.wiki import WikiBuilder
 
 
 SECRET_PATTERNS = (
@@ -120,6 +122,14 @@ def main() -> int:
     if config_errors or manifest_errors or manifest != series.get("manifest_sha256"):
         raise SystemExit("bundle/canonical manifest mismatch")
 
+    wiki_db = open_db(db_file)
+    try:
+        wiki_check = WikiBuilder(wiki_db, Path(args.db).resolve()).check()
+    finally:
+        wiki_db.close()
+    if wiki_check.get("ok") is not True or wiki_check.get("issues"):
+        raise SystemExit("wiki projection check failed")
+
     runtime = Path(args.db).resolve() / "goals" / series["goal_id"] / "evidence-pack.json"
     canonical_raw = runtime.read_bytes()
     pack = json.loads(canonical_raw)
@@ -145,6 +155,7 @@ def main() -> int:
         "sensitivity": json.loads((HERE / "results/sensitivity.json").read_text(encoding="utf-8")),
         "dependency_gate": gate,
         "coverage_matrix": json.loads((HERE / "coverage-matrix.json").read_text(encoding="utf-8")),
+        "wiki_check": wiki_check,
     }
     raw_payload_hash = sha(canonical(raw_payload))
     raw_archive = publish("raw-archive", canonical(
@@ -183,7 +194,8 @@ def main() -> int:
         "tracked_artifact_hashes": tracked,
         "auditor_identity": "agentos-s1-020-independent-auditor",
         "subject_producer": "agentos-s1-020-bundle-producer",
-        "auditor_distinct": True, "wiki_check_ok": True,
+        "auditor_distinct": True, "wiki_check": wiki_check,
+        "wiki_check_ok": wiki_check["ok"],
         "production_authority": False, "goal_acceptance_authority": False,
         "parked_items_reopened": False,
     }

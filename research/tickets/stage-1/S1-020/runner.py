@@ -59,11 +59,14 @@ def run() -> dict:
             target = results / f"run-{suffix}" / "observations.json"
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_text(json.dumps(output, indent=2, sort_keys=True,
-                                          ensure_ascii=False) + "\n", encoding="utf-8")
+                                          ensure_ascii=False) + "\n", encoding="utf-8",
+                              newline="\n")
         (results / "comparison.json").write_text(
-            json.dumps(comparison, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+            json.dumps(comparison, indent=2, sort_keys=True) + "\n", encoding="utf-8",
+            newline="\n")
         (results / "sensitivity.json").write_text(
-            json.dumps(sensitivity, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+            json.dumps(sensitivity, indent=2, sort_keys=True) + "\n", encoding="utf-8",
+            newline="\n")
         summary = {"schema": "agentos.s1-020.run-summary/v1",
                    "verdict": comparison["verdict"], "verified_commit": BASE_COMMIT,
                    "execution_commit": execution_commit, "runs": 2, "cases_per_run": 60,
@@ -72,7 +75,8 @@ def run() -> dict:
                    "all_prior_dependencies": 19, "all_prior_probes": 19,
                    "goal_accepted": False, "production_certified": False}
         (results / "summary.json").write_text(
-            json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+            json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8",
+            newline="\n")
         return summary
     finally:
         shutil.rmtree(temp, ignore_errors=True)

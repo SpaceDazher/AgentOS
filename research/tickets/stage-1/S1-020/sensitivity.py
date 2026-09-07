@@ -52,6 +52,7 @@ if __name__ == "__main__":
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
     result = run()
-    args.out.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    args.out.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8",
+                        newline="\n")
     print(json.dumps({"runs": result["runs"], "winner_flips": result["winner_flips"]}))
     raise SystemExit(0 if result["all_stable"] else 2)

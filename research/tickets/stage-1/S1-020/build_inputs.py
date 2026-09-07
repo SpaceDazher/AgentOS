@@ -36,7 +36,7 @@ def write(name: str, value: object) -> None:
     path = HERE / name
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(value, indent=2, sort_keys=True, ensure_ascii=False,
-                               allow_nan=False) + "\n", encoding="utf-8")
+                               allow_nan=False) + "\n", encoding="utf-8", newline="\n")
 
 
 PROBE_PATHS = {
@@ -45,8 +45,8 @@ PROBE_PATHS = {
     "S1-003": "research/tickets/stage-1/S1-003/probe-results.json",
     "S1-004": "research/tickets/stage-1/S1-004/results/simulation/manifest.json",
     "S1-005": "research/tickets/stage-1/S1-005/results/sensitivity-analysis.json",
-    "S1-006": "research/tickets/stage-1/S1-006/results/probes.json",
-    "S1-007": "research/tickets/stage-1/S1-007/results/probes.json",
+    "S1-006": "research/tickets/stage-1/S1-006/results/sensitivity-analysis.json",
+    "S1-007": "research/tickets/stage-1/S1-007/results/sensitivity-analysis.json",
     "S1-008": "research/tickets/stage-1/S1-008/evaluation-record.json",
     **{f"S1-{n:03d}": f"research/tickets/stage-1/S1-{n:03d}/results/probes.json"
        for n in range(9, 20)},

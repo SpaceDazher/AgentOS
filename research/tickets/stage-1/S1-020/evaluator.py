@@ -212,7 +212,7 @@ def main() -> int:
     result = evaluate(args.executor_id, args.nonce, args.verified_commit)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(result, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
-                        encoding="utf-8")
+                        encoding="utf-8", newline="\n")
     print(json.dumps({"verdict": result["verdict"], "matched": result["matched"]}))
     return 0 if result["verdict"] == "PASS_WITH_LIMITS" else 2
 

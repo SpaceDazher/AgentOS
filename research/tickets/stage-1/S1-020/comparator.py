@@ -98,6 +98,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     a, b = (json.loads(path.read_text(encoding="utf-8")) for path in (args.run_a, args.run_b))
     result = compare(a, b, True)
-    args.out.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    args.out.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8",
+                        newline="\n")
     print(json.dumps({"verdict": result["verdict"], "problems": result["problems"]}))
     raise SystemExit(0 if result["verdict"] == "PASS_WITH_LIMITS" else 2)

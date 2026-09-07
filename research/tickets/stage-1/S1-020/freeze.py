@@ -39,7 +39,8 @@ def main() -> int:
                 "base_commit": BASE_COMMIT, "files": hashes,
                 "decision_inputs_exclude_wall_clock": True}
     (HERE / "frozen-manifest.json").write_text(
-        json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8",
+        newline="\n")
     print(json.dumps({"files": len(hashes), "base_commit": BASE_COMMIT}))
     return 0
 

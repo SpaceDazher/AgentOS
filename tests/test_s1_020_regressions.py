@@ -155,6 +155,31 @@ class S1020ContractTests(unittest.TestCase):
         self.assertTrue(comparison["process_separation_verified"])
         self.assertEqual(comparison["verified_commit"], BASE_COMMIT)
 
+    def test_19_s1_006_and_s1_007_probe_verdicts_fail_closed(self):
+        for ticket in ("S1-006", "S1-007"):
+            doc = json.loads((ROOT / "research" / "tickets" / "stage-1" / ticket /
+                              "results" / "sensitivity-analysis.json").read_text(encoding="utf-8"))
+            self.assertTrue(self.gate.probe_pass(ticket, doc))
+            tampered = copy.deepcopy(doc)
+            key = next(iter(tampered["probe_rejections"]))
+            if ticket == "S1-006":
+                tampered["probe_rejections"][key] = "PASS"
+            else:
+                tampered["probe_rejections"][key]["detected"] = "PASS"
+            self.assertFalse(self.gate.probe_pass(ticket, tampered))
+
+    def test_20_canonical_record_binds_wiki_and_content_addresses(self):
+        record = json.loads((TICKET / "evaluation-record.json").read_text(encoding="utf-8"))
+        self.assertEqual(record["result"], "pass_with_limits")
+        self.assertTrue(record["wiki_check_ok"])
+        self.assertTrue(record["wiki_check"]["ok"])
+        self.assertEqual(record["wiki_check"]["issues"], [])
+        for key in ("evidence_pack", "ticket_pack", "raw_archive"):
+            binding = record[key]
+            raw = (ROOT / binding["path"]).read_bytes()
+            self.assertEqual(__import__("hashlib").sha256(raw).hexdigest(), binding["sha256"])
+            self.assertIn(binding["sha256"], Path(binding["path"]).name)
+
 
 if __name__ == "__main__":
     unittest.main()

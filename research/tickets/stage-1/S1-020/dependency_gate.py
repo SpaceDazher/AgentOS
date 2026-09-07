@@ -135,9 +135,20 @@ def probe_pass(ticket: str, doc: dict[str, Any]) -> bool:
     if number == 5:
         return str(doc.get("verdict", "")).lower() == "pass_with_limits" and \
             len(doc.get("probe_rejections") or {}) >= 2
-    if number in (6, 7):
-        probes = doc.get("probes") or []
-        return isinstance(probes, list) and len(probes) >= (3 if number == 6 else 4)
+    if number == 6:
+        probes = doc.get("probe_rejections") or {}
+        return probes == {"A_unsafe_resume": "FAIL",
+                          "B_incomparable": "INCOMPARABLE/NO_DATA",
+                          "C_blind_retry": "FAIL"}
+    if number == 7:
+        probes = doc.get("probe_rejections") or {}
+        required = {"A_existence_oracle", "B_stale_cache", "C_postfilter",
+                    "D_forged_scope_provenance_loss"}
+        return set(probes) == required and all(
+            isinstance(value, dict) and value.get("detected") == value.get("expected")
+            and any(isinstance(count, int) and count > 0
+                    for count in (value.get("iso") or {}).values())
+            for value in probes.values())
     if number == 8:
         return _all_true(doc.get("probe_results") or {}, "detected")
     if number == 9:
@@ -309,7 +320,7 @@ def main() -> int:
                   "status": "BLOCKED_DEPENDENCY", "dependencies_proven": False,
                   "all_prior_probes_pass": False, "error": str(exc)}
     args.out.write_text(json.dumps(result, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
-                        encoding="utf-8")
+                        encoding="utf-8", newline="\n")
     print(json.dumps({"status": result["status"],
                       "dependencies": len(result.get("dependencies") or []),
                       "probes": len(result.get("probe_results") or [])}))
