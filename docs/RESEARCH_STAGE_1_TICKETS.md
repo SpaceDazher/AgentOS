@@ -1480,11 +1480,11 @@ python -m agentos.cli research-plan --topic "S1-019 P0 platform architecture dec
 
 ### S1-020 — Independent phase audit and closure decision
 
-- **Status:** `PASS_WITH_LIMITS` — canonical research revision 3: goal
-  `goal_X50K2JZRJXM1WA1R01M1X842RV`, campaign
-  `rcamp_3BMYEWB5S29E5NY601M1X842RV`, evaluation
-  `reval_VBHVFD4XGRSMGV6801M1X842WG`, artifact chain
-  `ebda3a55…b9bedad`, evidence-pack/v3 `e9b61e16…4389598` with
+- **Status:** `PASS_WITH_LIMITS` — canonical research revision 4: goal
+  `goal_M1V15TBW84HNPGZR01M1X90N96`, campaign
+  `rcamp_AX20TTMZ49YGV47Q01M1X90N96`, evaluation
+  `reval_CN6VZ3VNRTV8PSNZ01M1X90NBD`, artifact chain
+  `115204da…92a43f0`, evidence-pack/v3 `322cb504…9c17cec` with
   `chain_fresh=true` and `latest_evaluation_valid=true`. The immutable audit
   resolves 19/19 dependencies and 19/19 prior probe sources; two distinct
   processes match 120/120 observations and 256 sensitivity runs have zero
