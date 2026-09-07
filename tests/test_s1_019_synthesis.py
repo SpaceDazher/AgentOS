@@ -22,6 +22,7 @@ def module(name):
 evaluator = module("evaluator")
 comparator = module("comparator")
 sensitivity = module("sensitivity")
+finalizer = module("finalize_record")
 
 
 class SynthesisInputTests(unittest.TestCase):
@@ -158,6 +159,11 @@ class SynthesisInputTests(unittest.TestCase):
         for path in ("../x", "/x", "C:/x", "x\\y"):
             with self.subTest(path=path), self.assertRaises(ValueError):
                 evaluator.safe_repo_path(path)
+
+    def test_secret_signature_requires_a_token_boundary(self):
+        self.assertFalse(finalizer.contains_secret(
+            b"wiki/_generated/tasks/task-task_0FD2WJ3V3SRWWSJB01M1X448ZT.md"))
+        self.assertTrue(finalizer.contains_secret(b"token=" + b"sk-" + b"x" * 20))
 
 
 if __name__ == "__main__":

@@ -19,6 +19,14 @@ sys.path.insert(0, str(REPO / "src"))
 from agentos.research import _manifest_hash, _normalise_config, research_chain_hash
 
 
+_SECRET_PATTERNS = (
+    re.compile(rb"(?<![A-Za-z0-9_-])sk-[A-Za-z0-9_-]{20,}"),
+    re.compile(rb"(?<![A-Za-z0-9_])ghp_[A-Za-z0-9]{20,}"),
+    re.compile(rb"(?<![A-Z0-9])AKIA[A-Z0-9]{16}"),
+    re.compile(rb"-----BEGIN (?:RSA |EC )?PRIVATE KEY-----"),
+)
+
+
 def canonical(value) -> bytes:
     return json.dumps(value, sort_keys=True, separators=(",", ":"),
                       ensure_ascii=False).encode("utf-8")
@@ -26,6 +34,11 @@ def canonical(value) -> bytes:
 
 def sha(raw: bytes) -> str:
     return hashlib.sha256(raw).hexdigest()
+
+
+def contains_secret(raw: bytes) -> bool:
+    """Recognise complete credential signatures, never identifier substrings."""
+    return any(pattern.search(raw) for pattern in _SECRET_PATTERNS)
 
 
 def publish(prefix: str, raw: bytes) -> dict:
@@ -62,17 +75,13 @@ def check_clean_archive() -> dict[str, str]:
 
 
 def secret_scan() -> None:
-    patterns = (re.compile(rb"sk-[A-Za-z0-9_-]{20,}"),
-                re.compile(rb"ghp_[A-Za-z0-9]{20,}"),
-                re.compile(rb"AKIA[A-Z0-9]{16}"),
-                re.compile(rb"-----BEGIN (?:RSA |EC )?PRIVATE KEY-----"))
     for path in TICKET.rglob("*"):
         if not path.is_file() or "__pycache__" in path.parts:
             continue
         raw = path.read_bytes()
         if b"\x00" in raw:
             continue
-        if any(pattern.search(raw) for pattern in patterns):
+        if contains_secret(raw):
             raise ValueError(f"secret marker in {path.name}")
 
 
