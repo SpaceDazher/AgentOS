@@ -6,9 +6,9 @@ questionnaire.
 
 The audit recomputed the dependency and wall-clock gates, inspected the
 separate corpus/oracle binding, and compared two child-process runs. Run A
-used agentos-s1-019-producer (PID 26888, nonce s1019-A-001) and Run B used
-agentos-s1-019-independent-verifier (PID 20012, nonce s1019-B-001) at commit
-885b93d7255d88fc93a73c1fd856197344ec4b3e.
+used agentos-s1-019-producer (PID 4252, nonce s1019-A-001) and Run B used
+agentos-s1-019-independent-verifier (PID 34544, nonce s1019-B-001) at commit
+857b88c0c23e560f332be090fed69861de95172f.
 
 - 18/18 dependency records are proven from immutable commit
   19ff320adfe7153267fb634268038ae16ba25a16.
@@ -18,7 +18,7 @@ agentos-s1-019-independent-verifier (PID 20012, nonce s1019-B-001) at commit
 - SYN1-SYN18 recompute to zero for each run.
 - Probes A-P were all created and detected through the evaluator path.
 - Semantic digest is identical:
-  af8e82e60d476972ac5b2b211461d4a13f9607d1e28013406e05b4d769039065.
+  741f9f031739f88c04ecb5d7f04c945be8677d84e863aef8b7ca49c54e144a24.
 - Deterministic sensitivity executed 264 perturbations with zero flips and
   zero unknown-dependent decisions.
 
