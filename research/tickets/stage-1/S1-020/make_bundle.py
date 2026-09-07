@@ -114,7 +114,7 @@ def build() -> dict:
         "config": {"min_source_count": 29, "min_verified_ratio": 1.0,
                    "required_artifacts": list(FLOW)},
         "sources": sources, "claims": claims, "artifacts": artifacts,
-        "audit": {"subject_producer": "agentos-stage-1-ticket-producers",
+        "audit": {"subject_producer": "agentos-s1-020-bundle-producer",
                   "auditor": "agentos-s1-020-independent-auditor",
                   "verdict": "pass_with_limits", "limitations": limitations},
         "s1_020": {"base_commit": gate["verified_commit"],
@@ -135,14 +135,15 @@ def main() -> int:
     bundle = build()
     (HERE / "bundle.json").write_text(
         json.dumps(bundle, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
-        encoding="utf-8")
+        encoding="utf-8", newline="\n")
     candidate = {"schema": "agentos.s1-020.candidate-record/v1",
                  "status": "PASS_WITH_LIMITS", "bundle_sha256": sha(HERE / "bundle.json"),
                  "comparison_sha256": bundle["s1_020"]["comparison_sha256"],
                  "production_authority": False, "goal_acceptance_authority": False,
                  "parked_items_reopened": False, "canonicalized": False}
     (HERE / "candidate-record.json").write_text(
-        json.dumps(candidate, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        json.dumps(candidate, indent=2, sort_keys=True) + "\n", encoding="utf-8",
+        newline="\n")
     print(json.dumps({"status": candidate["status"], "sources": len(bundle["sources"]),
                       "bundle_sha256": candidate["bundle_sha256"]}))
     return 0
