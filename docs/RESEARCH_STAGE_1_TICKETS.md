@@ -189,7 +189,7 @@ from a lower wave to a higher wave, and S1-020 is the sole closure sink.
 | S1-017 | W4 | P2 | formal | PASS_WITH_LIMITS | S1-004, S1-016 | STIT/ATL responsibility analytics placement |
 | S1-018 | W4 | P1 | privacy | PASS_WITH_LIMITS | S1-007, S1-008, S1-009 | profile-C MLS + TEE attested-indexer PoC research |
 | S1-019 | W5 | P0 | synthesis | PASS_WITH_LIMITS | S1-004, S1-005, S1-006, S1-007, S1-008, S1-009, S1-010, S1-011, S1-012, S1-013, S1-014, S1-015, S1-016, S1-017, S1-018 | P0 architecture decision synthesis/prototype evidence |
-| S1-020 | W6 | P0 | audit | READY | S1-001..S1-019 (expanded in ticket) | independent phase audit and closure decision |
+| S1-020 | W6 | P0 | audit | PASS_WITH_LIMITS | S1-001..S1-019 (expanded in ticket) | independent phase audit and closure decision |
 
 ## Active tickets
 
@@ -1480,7 +1480,18 @@ python -m agentos.cli research-plan --topic "S1-019 P0 platform architecture dec
 
 ### S1-020 — Independent phase audit and closure decision
 
-- **Status:** `READY`
+- **Status:** `PASS_WITH_LIMITS` — canonical research revision 2: goal
+  `goal_V369DNWAKCE2Z9NM01M1X75C3H`, campaign
+  `rcamp_MXJETY3YXZM3W39B01M1X75C3H`, evaluation
+  `reval_EQ6YQF66SEAFS2ZB01M1X75C68`, artifact chain
+  `059b5588…c0cc42f`, evidence-pack/v3 `4033d67a…7644b4e` with
+  `chain_fresh=true` and `latest_evaluation_valid=true`. The immutable audit
+  resolves 19/19 dependencies and 19/19 prior probe sources; two distinct
+  processes match 120/120 observations and 256 sensitivity runs have zero
+  flips. Limits remain: same-host process separation is not an external audit,
+  every inherited bounded finding remains binding, no Goal acceptance or
+  production/legal/rollout authority is granted, and PARK-01..PARK-04 remain
+  parked.
 - **Priority:** `P0`
 - **Wave:** `W6`
 - **Owner:** `audit`
