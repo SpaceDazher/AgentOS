@@ -843,6 +843,8 @@ class TestReviewR2Corrections(unittest.TestCase):
         record = json.loads((S1007 / "evaluation-record.json")
                             .read_text(encoding="utf-8"))
         db = ROOT / ".agentos-research/platform-stage-1/agentos.db"
+        if not db.is_file():
+            self.skipTest("live canonical DB is intentionally not tracked")
         c = sqlite3.connect(db)
         c.row_factory = sqlite3.Row
         ev = c.execute(
@@ -1068,8 +1070,10 @@ class TestReviewR3Corrections(unittest.TestCase):
 
         record = json.loads((S1007 / "evaluation-record.json")
                             .read_text(encoding="utf-8"))
-        c = sqlite3.connect(
-            ROOT / ".agentos-research/platform-stage-1/agentos.db")
+        db = ROOT / ".agentos-research/platform-stage-1/agentos.db"
+        if not db.is_file():
+            self.skipTest("live canonical DB is intentionally not tracked")
+        c = sqlite3.connect(db)
         created_at = c.execute(
             "SELECT created_at FROM research_evaluation WHERE id=?",
             (record["evaluation_id"],)).fetchone()[0]

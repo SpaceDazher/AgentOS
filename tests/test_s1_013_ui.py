@@ -15,6 +15,25 @@ def module(n):
     spec=importlib.util.spec_from_file_location("s1013_ui_"+n,T/(n+".py"))
     m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m);return m
 
+def node_playwright_available():
+    node = shutil.which("node")
+    if node is None:
+        return False
+    env = dict(os.environ)
+    if not env.get("NODE_PATH"):
+        suffix = Path(".cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules")
+        for root in Path(sys.executable).resolve().parents:
+            bundled = root / suffix
+            if bundled.is_dir():
+                env["NODE_PATH"] = str(bundled)
+                break
+    try:
+        return subprocess.run(
+            [node, "-e", "require('playwright')"], capture_output=True,
+            text=True, env=env, timeout=10).returncode == 0
+    except (OSError, subprocess.SubprocessError):
+        return False
+
 class TestPrototypeContract(unittest.TestCase):
     def test_browser_contract_matches_canonical_inputs(self):
         c=module("runner").contract
@@ -37,6 +56,8 @@ class TestPrototypeContract(unittest.TestCase):
         self.assertNotIn("Date.now()",js)
         self.assertIn("performance.now()",js)
 
+    @unittest.skipUnless(node_playwright_available(),
+                         "optional Node Playwright evidence dependency is absent")
     def test_real_browser_export_import_and_score(self):
         node=shutil.which("node")
         self.assertIsNotNone(node,"Install/configure Node for required real browser check")

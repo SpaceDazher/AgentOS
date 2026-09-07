@@ -341,6 +341,10 @@ class TestExportImportRoundtrip(unittest.TestCase):
         self.assertNotIn(sha("x".encode()), json.dumps(doc))
 
 
+@unittest.skipUnless(
+    importlib.util.find_spec("rdflib") is not None
+    and importlib.util.find_spec("pyshacl") is not None,
+    "optional pinned rdflib/pySHACL evidence engines are absent")
 class TestShaclAndAudit(unittest.TestCase):
     def test_engine_identity_pinned(self):
         versions = shacl_runner.engine_identity()
