@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "rows": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "maxItems": 6,
+      "minItems": 6,
+      "type": "array"
+    },
+    "schema": {
+      "const": "agentos.s1-019.decision-matrix/v1"
+    }
+  },
+  "required": [
+    "schema",
+    "rows"
+  ],
+  "type": "object"
+}

@@ -1,0 +1,235 @@
+{
+  "overall_ceiling": "PASS_WITH_LIMITS",
+  "rows": [
+    {
+      "assumption_refs": [
+        "ASM-01"
+      ],
+      "audit_evidence_refs": [
+        "research/tickets/stage-1/S1-015/evaluation-record.json"
+      ],
+      "candidate": "CANONICAL_PRINCIPAL_PER_INSTALLATION",
+      "candidate_set": [
+        "SHARED_OWNER_CREDENTIAL",
+        "CANONICAL_PRINCIPAL_PER_INSTALLATION",
+        "EXTERNAL_IDP_FULL"
+      ],
+      "confidence_class": "BOUNDED_RESEARCH",
+      "conflicting_or_unknown_evidence": [
+        "production_conformance=NOT_MEASURED"
+      ],
+      "direct_evidence_refs": [
+        "research/tickets/stage-1/S1-001/evaluation-record.json",
+        "research/tickets/stage-1/S1-004/evaluation-record.json",
+        "research/tickets/stage-1/S1-015/evaluation-record.json"
+      ],
+      "disposition": "ADOPT_WITH_LIMITS",
+      "ep_id": "EP-01",
+      "goal_acceptance_authority": false,
+      "hard_gate_results": {
+        "dependency_proof": "PASS_WITH_LIMITS",
+        "wall_clock_isolation": "PASS_WITH_LIMITS"
+      },
+      "invalidation_condition": "Any hard-invariant failure or contradictory production-like evidence.",
+      "limitation_refs": [
+        "LIM-01"
+      ],
+      "production_authority": false,
+      "question": "Which identity boundary is admissible for participant connections?",
+      "rationale": "Research baseline preserves AgentOS authority invariants; production evidence is absent.",
+      "reentry_condition": "Re-evaluate after production-like and independently audited evidence."
+    },
+    {
+      "assumption_refs": [
+        "ASM-02"
+      ],
+      "audit_evidence_refs": [
+        "research/tickets/stage-1/S1-010/evaluation-record.json"
+      ],
+      "candidate": "CONTENT_ADDRESSED_SIGNED_REGISTRY",
+      "candidate_set": [
+        "MUTABLE_NAME_REGISTRY",
+        "CONTENT_ADDRESSED_SIGNED_REGISTRY",
+        "PUBLIC_MARKETPLACE"
+      ],
+      "confidence_class": "BOUNDED_RESEARCH",
+      "conflicting_or_unknown_evidence": [
+        "production_conformance=NOT_MEASURED"
+      ],
+      "direct_evidence_refs": [
+        "research/tickets/stage-1/S1-001/evaluation-record.json",
+        "research/tickets/stage-1/S1-009/evaluation-record.json",
+        "research/tickets/stage-1/S1-010/evaluation-record.json"
+      ],
+      "disposition": "ADOPT_WITH_LIMITS",
+      "ep_id": "EP-02",
+      "goal_acceptance_authority": false,
+      "hard_gate_results": {
+        "dependency_proof": "PASS_WITH_LIMITS",
+        "wall_clock_isolation": "PASS_WITH_LIMITS"
+      },
+      "invalidation_condition": "Any hard-invariant failure or contradictory production-like evidence.",
+      "limitation_refs": [
+        "LIM-02"
+      ],
+      "production_authority": false,
+      "question": "Which registry boundary is admissible for agents and modules?",
+      "rationale": "Research baseline preserves AgentOS authority invariants; production evidence is absent.",
+      "reentry_condition": "Re-evaluate after production-like and independently audited evidence."
+    },
+    {
+      "assumption_refs": [
+        "ASM-03"
+      ],
+      "audit_evidence_refs": [
+        "research/tickets/stage-1/S1-010/evaluation-record.json"
+      ],
+      "candidate": "EXACT_ACTION_SCOPED_GRANTS",
+      "candidate_set": [
+        "ROLE_ONLY",
+        "EXACT_ACTION_SCOPED_GRANTS",
+        "UNBOUNDED_SUBDELEGATION"
+      ],
+      "confidence_class": "BOUNDED_RESEARCH",
+      "conflicting_or_unknown_evidence": [
+        "production_conformance=NOT_MEASURED"
+      ],
+      "direct_evidence_refs": [
+        "research/tickets/stage-1/S1-004/evaluation-record.json",
+        "research/tickets/stage-1/S1-008/evaluation-record.json",
+        "research/tickets/stage-1/S1-010/evaluation-record.json"
+      ],
+      "disposition": "ADOPT_WITH_LIMITS",
+      "ep_id": "EP-03",
+      "goal_acceptance_authority": false,
+      "hard_gate_results": {
+        "dependency_proof": "PASS_WITH_LIMITS",
+        "wall_clock_isolation": "PASS_WITH_LIMITS"
+      },
+      "invalidation_condition": "Any hard-invariant failure or contradictory production-like evidence.",
+      "limitation_refs": [
+        "LIM-03"
+      ],
+      "production_authority": false,
+      "question": "Which delegation and approval model is admissible?",
+      "rationale": "Research baseline preserves AgentOS authority invariants; production evidence is absent.",
+      "reentry_condition": "Re-evaluate after production-like and independently audited evidence."
+    },
+    {
+      "assumption_refs": [
+        "ASM-04"
+      ],
+      "audit_evidence_refs": [
+        "research/tickets/stage-1/S1-015/evaluation-record.json"
+      ],
+      "candidate": "PER_SCOPE_PROJECTION_WITH_RLS",
+      "candidate_set": [
+        "SHARED_UNSCOPED_STORE",
+        "PER_SCOPE_PROJECTION_WITH_RLS",
+        "PROFILE_C_MLS"
+      ],
+      "confidence_class": "BOUNDED_RESEARCH",
+      "conflicting_or_unknown_evidence": [
+        "production_conformance=NOT_MEASURED"
+      ],
+      "direct_evidence_refs": [
+        "research/tickets/stage-1/S1-007/evaluation-record.json",
+        "research/tickets/stage-1/S1-011/evaluation-record.json",
+        "research/tickets/stage-1/S1-015/evaluation-record.json"
+      ],
+      "disposition": "ADOPT_WITH_LIMITS",
+      "ep_id": "EP-04",
+      "goal_acceptance_authority": false,
+      "hard_gate_results": {
+        "dependency_proof": "PASS_WITH_LIMITS",
+        "wall_clock_isolation": "PASS_WITH_LIMITS"
+      },
+      "invalidation_condition": "Any hard-invariant failure or contradictory production-like evidence.",
+      "limitation_refs": [
+        "LIM-04"
+      ],
+      "production_authority": false,
+      "question": "Which workspace and content isolation model is admissible?",
+      "rationale": "Research baseline preserves AgentOS authority invariants; production evidence is absent.",
+      "reentry_condition": "Re-evaluate after production-like and independently audited evidence."
+    },
+    {
+      "assumption_refs": [
+        "ASM-05"
+      ],
+      "audit_evidence_refs": [
+        "research/tickets/stage-1/S1-010/evaluation-record.json"
+      ],
+      "candidate": "PROVIDER_NEUTRAL_GATEWAY",
+      "candidate_set": [
+        "DIRECT_PEER_EFFECTS",
+        "PROVIDER_NEUTRAL_GATEWAY",
+        "PROTOCOL_NATIVE_AUTHORITY"
+      ],
+      "confidence_class": "BOUNDED_RESEARCH",
+      "conflicting_or_unknown_evidence": [
+        "production_conformance=NOT_MEASURED"
+      ],
+      "direct_evidence_refs": [
+        "research/tickets/stage-1/S1-006/evaluation-record.json",
+        "research/tickets/stage-1/S1-009/evaluation-record.json",
+        "research/tickets/stage-1/S1-010/evaluation-record.json"
+      ],
+      "disposition": "ADOPT_WITH_LIMITS",
+      "ep_id": "EP-05",
+      "goal_acceptance_authority": false,
+      "hard_gate_results": {
+        "dependency_proof": "PASS_WITH_LIMITS",
+        "wall_clock_isolation": "PASS_WITH_LIMITS"
+      },
+      "invalidation_condition": "Any hard-invariant failure or contradictory production-like evidence.",
+      "limitation_refs": [
+        "LIM-05"
+      ],
+      "production_authority": false,
+      "question": "Which inter-agent control-plane boundary is admissible?",
+      "rationale": "Research baseline preserves AgentOS authority invariants; production evidence is absent.",
+      "reentry_condition": "Re-evaluate after production-like and independently audited evidence."
+    },
+    {
+      "assumption_refs": [
+        "ASM-08"
+      ],
+      "audit_evidence_refs": [
+        "research/tickets/stage-1/S1-018/evaluation-record.json"
+      ],
+      "candidate": "HASH_CHAIN_OUTBOX_RECONCILIATION",
+      "candidate_set": [
+        "BEST_EFFORT_LOG",
+        "HASH_CHAIN_OUTBOX_RECONCILIATION",
+        "HARDWARE_ATTESTED_GLOBAL_LOG"
+      ],
+      "confidence_class": "BOUNDED_RESEARCH",
+      "conflicting_or_unknown_evidence": [
+        "production_conformance=NOT_MEASURED"
+      ],
+      "direct_evidence_refs": [
+        "research/tickets/stage-1/S1-004/evaluation-record.json",
+        "research/tickets/stage-1/S1-006/evaluation-record.json",
+        "research/tickets/stage-1/S1-016/evaluation-record.json",
+        "research/tickets/stage-1/S1-018/evaluation-record.json"
+      ],
+      "disposition": "ADOPT_WITH_LIMITS",
+      "ep_id": "EP-08",
+      "goal_acceptance_authority": false,
+      "hard_gate_results": {
+        "dependency_proof": "PASS_WITH_LIMITS",
+        "wall_clock_isolation": "PASS_WITH_LIMITS"
+      },
+      "invalidation_condition": "Any hard-invariant failure or contradictory production-like evidence.",
+      "limitation_refs": [
+        "LIM-08"
+      ],
+      "production_authority": false,
+      "question": "Which audit, provenance, and effect-delivery baseline is admissible?",
+      "rationale": "Research baseline preserves AgentOS authority invariants; production evidence is absent.",
+      "reentry_condition": "Re-evaluate after production-like and independently audited evidence."
+    }
+  ],
+  "schema": "agentos.s1-019.decision-matrix/v1"
+}

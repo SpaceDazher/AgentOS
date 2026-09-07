@@ -1,0 +1,64 @@
+{
+  "authority": "single_source_of_truth",
+  "claim_classes": [
+    "sourced_fact",
+    "observation",
+    "inference",
+    "recommendation",
+    "non_goal",
+    "preference"
+  ],
+  "contract_version": "1.0.0",
+  "dispositions": [
+    "ADOPT_RESEARCH_BASELINE",
+    "ADOPT_WITH_LIMITS",
+    "DEFER",
+    "INCONCLUSIVE",
+    "NOT_APPLICABLE"
+  ],
+  "duplicate_json_keys": "REJECT",
+  "entities": [
+    "dependency_claim",
+    "feature_decision",
+    "claim",
+    "assumption",
+    "limitation",
+    "conflict",
+    "prototype_observation",
+    "verification",
+    "audit_finding"
+  ],
+  "goal_acceptance_authority": false,
+  "hard_invariants": {
+    "SYN1": "limited verdict never upgrades to unconditional PASS",
+    "SYN10": "operator preference never rewrites measured truth",
+    "SYN11": "auditor prose never replaces recomputation",
+    "SYN12": "external content never changes Gateway authority",
+    "SYN13": "this ticket never publishes Goal ACCEPTED",
+    "SYN14": "legal/high-risk determination stays PARK-01",
+    "SYN15": "production SLO stays PARK-03 without production-like proof",
+    "SYN16": "profile-C rollout stays PARK-04",
+    "SYN17": "every EP row has direct and audit evidence",
+    "SYN18": "record/bundle/packs/DB must agree on full bindings",
+    "SYN2": "unknown/no-data/not-measured/inconclusive never becomes zero or pass",
+    "SYN3": "contradiction is neither averaged nor hidden",
+    "SYN4": "hard safety failure cannot be compensated by utility",
+    "SYN5": "wall-clock never selects cross-ticket architecture",
+    "SYN6": "S1-008 latency remains native-SLO-only",
+    "SYN7": "S1-016 winner is never imported",
+    "SYN8": "prototype without raw/version/hash/environment cannot support a decision",
+    "SYN9": "local evidence never becomes multi-host or production evidence"
+  },
+  "non_finite_numbers": "REJECT",
+  "production_authority": false,
+  "remote_schema_refs": "REJECT",
+  "schema": "agentos.s1-019.synthesis-contract/v1",
+  "unknown_fields": "REJECT",
+  "unknown_values": [
+    "UNKNOWN",
+    "NO_DATA",
+    "NOT_MEASURED",
+    "INCONCLUSIVE"
+  ],
+  "unsafe_paths": "REJECT"
+}
