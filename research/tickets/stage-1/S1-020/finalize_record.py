@@ -127,7 +127,7 @@ def main() -> int:
     try:
         wiki_check = WikiBuilder(wiki_db, Path(args.db).resolve()).check()
     finally:
-        wiki_db.close()
+        wiki_db.conn.close()
     if wiki_check.get("ok") is not True or wiki_check.get("issues"):
         raise SystemExit("wiki projection check failed")
 
