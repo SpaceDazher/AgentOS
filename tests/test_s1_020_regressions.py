@@ -120,7 +120,16 @@ class S1020ContractTests(unittest.TestCase):
                          {f"S1-{n:03d}" for n in range(1, 21)})
         self.assertEqual({r["parked_id"] for r in matrix["parked_rows"]},
                          {f"PARK-{n:02d}" for n in range(1, 5)})
-        self.assertTrue(matrix["open_item_rows"])
+        self.assertEqual(len(matrix["open_item_rows"]), 38)
+        audit_rows = {"NO-BENCHMARK", "NO-USER-STUDY", "NO-LEGAL-QUALIFICATION",
+                      "NO-RUNTIME-RDF-SHACL-LLM-VERIFIER", "PLANNING-NUMBERS",
+                      "REMAINING-QUANTITATIVE-ASSUMPTIONS", "UNVERIFIED-SOURCE-TAIL",
+                      "SOURCE-REGISTRY-CONTROLLED-DEVIATION", "SOURCE-REGISTRY-ZSV-TAIL",
+                      "NEXT-STEP-1-BENCHMARK", "NEXT-STEP-2-P0-SYNTHESIS",
+                      "NEXT-STEP-3-COMPREHENSION-PILOT", "NEXT-STEP-4-PROFILE-C-POC",
+                      "NEXT-STEP-5-PROMOTE-CITED-U"}
+        self.assertTrue(audit_rows.issubset({r["open_item_id"]
+                                             for r in matrix["open_item_rows"]}))
         self.assertTrue(all(row["ticket_mappings"] for row in matrix["open_item_rows"]))
 
     def test_15_corpus_is_balanced_and_oracle_separate(self):
