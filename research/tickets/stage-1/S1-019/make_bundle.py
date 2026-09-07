@@ -79,7 +79,8 @@ def build() -> dict:
     if comparison.get("verdict") != "TECHNICAL_CANDIDATE":
         raise ValueError("technical comparison failed")
     sources = [{
-        "id": item["alias"], "canonical_uri": "file:///" + item["canonical_path"],
+        "id": item["alias"],
+        "canonical_uri": "https://local.agentos.invalid/" + item["canonical_path"],
         "title": item["title"], "source_type": "frozen_research_snapshot",
         "content_sha256": item["sha256"], "verification_status": "verified",
         "verifier": "agentos-s1-019-source-freezer",

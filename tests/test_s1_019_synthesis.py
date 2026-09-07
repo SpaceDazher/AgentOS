@@ -5,6 +5,8 @@ import json
 from pathlib import Path
 import unittest
 
+from agentos.research import _canonical_uri
+
 REPO = Path(__file__).resolve().parents[1]
 TICKET = REPO / "research/tickets/stage-1/S1-019"
 
@@ -35,6 +37,13 @@ class SynthesisInputTests(unittest.TestCase):
             self.assertTrue(path.is_file())
             self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(),
                              source["sha256"])
+
+    def test_flow_bundle_uses_canonical_source_uris(self):
+        bundle = self.load("bundle.json")
+        self.assertEqual(len(bundle["sources"]), 10)
+        for source in bundle["sources"]:
+            self.assertEqual(_canonical_uri(source["canonical_uri"]),
+                             source["canonical_uri"])
 
     def test_corpus_is_exact_and_oracle_is_separate(self):
         cases_doc = self.load("cases.json")
