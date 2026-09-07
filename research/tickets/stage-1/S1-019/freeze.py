@@ -9,6 +9,8 @@ TICKET = Path(__file__).resolve().parent
 REPO = TICKET.parents[3]
 
 FILES = (
+    "research/tickets/stage-1/S1-019/build_inputs.py",
+    "research/tickets/stage-1/S1-019/freeze.py",
     "research/tickets/stage-1/S1-019/decision-input-policy.json",
     "research/tickets/stage-1/S1-019/dependency_gate.py",
     "research/tickets/stage-1/S1-019/preflight_wall_clock.py",
