@@ -20,6 +20,17 @@ jobs:
           # shallow checkout makes valid provenance look unresolvable.
           fetch-depth: 0
 
+      - name: Materialize portable research dependency refs
+        shell: bash
+        run: |
+          # Historical dependency gates require the origin ref and, when a
+          # local ref exists, require it to match.  PR checkout fetches only
+          # the PR/main refs, so reproduce the evidence-ref namespace without
+          # checking out or executing content from those branches.
+          git fetch --no-tags origin \
+            '+refs/heads/codex/*:refs/remotes/origin/codex/*' \
+            '+refs/heads/codex/*:refs/heads/codex/*'
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
