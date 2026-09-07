@@ -970,9 +970,6 @@ def _reserve_research_key(db, research_key: str, manifest: str):
     cannot create two goals.  A caller that loses the race waits for the
     winner's immutable series row and then reuses it.
     """
-    existing = _series_exact(db, research_key, manifest)
-    if existing:
-        return None, existing
     owner = new_id("rlock")
     deadline = time.monotonic() + 30.0
     while True:
@@ -984,8 +981,6 @@ def _reserve_research_key(db, research_key: str, manifest: str):
                     " FROM research_series WHERE research_key=?"
                     " ORDER BY revision DESC LIMIT 1", (research_key,)
                 ).fetchone()
-                if existing and existing["manifest_sha256"] == manifest:
-                    return None, existing
                 # A terminated host process cannot release its reservation.
                 # Expire only rows older than the bounded campaign window;
                 # active callers remain protected by the unique key lock.
@@ -995,6 +990,23 @@ def _reserve_research_key(db, research_key: str, manifest: str):
                     " '-' || ? || ' seconds')",
                     (research_key, _RESEARCH_LOCK_TTL_SECONDS),
                 )
+                if existing and existing["manifest_sha256"] == manifest:
+                    recorded = c.execute(
+                        "SELECT 1 FROM research_evaluation"
+                        " WHERE campaign_id=? LIMIT 1",
+                        (existing["campaign_id"],),
+                    ).fetchone()
+                    if recorded:
+                        return None, existing
+                    # Campaign persistence and its first evaluation are one
+                    # logical publication.  If the original owner is still
+                    # evaluating, this INSERT conflicts and the caller waits.
+                    # If the owner crashed, stale-lock cleanup above lets one
+                    # caller acquire recovery ownership.
+                    c.execute(
+                        "INSERT INTO research_series_lock(research_key, owner_token)"
+                        " VALUES (?,?)", (research_key, owner))
+                    return owner, existing
                 c.execute(
                     "INSERT INTO research_series_lock(research_key, owner_token)"
                     " VALUES (?,?)", (research_key, owner))
@@ -1006,7 +1018,13 @@ def _reserve_research_key(db, research_key: str, manifest: str):
                 raise
             existing = _series_exact(db, research_key, manifest)
             if existing:
-                return None, existing
+                recorded = db.conn.execute(
+                    "SELECT 1 FROM research_evaluation"
+                    " WHERE campaign_id=? LIMIT 1",
+                    (existing["campaign_id"],),
+                ).fetchone()
+                if recorded:
+                    return None, existing
             if time.monotonic() >= deadline:
                 raise ResearchValidationError(
                     f"research key '{research_key}' is busy; retry safely") from exc
@@ -1335,12 +1353,9 @@ def _persist_campaign_body(db, root: Path, topic: str, config: Mapping[str, Any]
                 "storage_path": str(path), "claim_refs": list(artifact["claim_ids"]),
                 "producer": artifact["producer"] or "system",
             })
-        # The lock is only coordination state; never leave it behind after a
-        # successful canonical write.  A failure path releases it below.
-        if lock_token:
-            c.execute("DELETE FROM research_series_lock"
-                      " WHERE research_key=? AND owner_token=?",
-                      (key, lock_token))
+        # Keep the reservation across the campaign commit and the first
+        # append-only evaluation.  Releasing it here creates a window where
+        # an exact concurrent repeat can append the same evaluation version.
         db.conn.execute("COMMIT")
     except Exception:
         db.conn.rollback()
@@ -1639,6 +1654,11 @@ def run_research_plan(db, root_dir: str | Path, topic: str,
                 artifact_rows.append(artifact)
             resumed_existing = True
         except Exception as exc:
+            if lock_token:
+                try:
+                    _release_research_lock(db, series_key, lock_token)
+                except Exception:
+                    pass
             return {"status": "fail",
                     "summary": "research recovery failed",
                     "next_actions": [
@@ -1649,12 +1669,27 @@ def run_research_plan(db, root_dir: str | Path, topic: str,
     result_kind = ("pass_with_limits"
                    if not failures and normalized["audit"].get("verdict") == "pass_with_limits"
                    else ("pass" if not failures else "fail"))
-    evaluation = _store_evaluation(
-        db, goal_id, result_kind, failures,
-        normalized["audit"].get("limitations", []),
-        {"audit": normalized["audit"], "config": dict(config_norm),
-         "next_actions": next_actions},
-    )
+    try:
+        evaluation = _store_evaluation(
+            db, goal_id, result_kind, failures,
+            normalized["audit"].get("limitations", []),
+            {"audit": normalized["audit"], "config": dict(config_norm),
+             "next_actions": next_actions},
+        )
+    except Exception as exc:
+        return {"status": "fail", "summary": "research evaluation failed",
+                "next_actions": [
+                    f"repair research evaluation: {type(exc).__name__}: {exc}"],
+                "artifacts": []}
+    finally:
+        if lock_token:
+            try:
+                _release_research_lock(db, series_key, lock_token)
+            except Exception:
+                # The evaluation is already durable.  A leaked lock is safe:
+                # exact repeats discover the recorded evaluation, and a later
+                # reservation cleans stale locks.  Never roll back evidence.
+                pass
     artifacts = [dict(row) for row in artifact_rows]
     sources = [{k: s[k] for k in (
         "id", "canonical_uri", "title", "source_type", "content_sha256",
